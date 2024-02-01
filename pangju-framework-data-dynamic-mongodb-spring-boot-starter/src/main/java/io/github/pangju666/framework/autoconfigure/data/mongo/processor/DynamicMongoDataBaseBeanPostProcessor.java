@@ -1,0 +1,37 @@
+package io.github.pangju666.framework.autoconfigure.data.mongo.processor;
+
+import io.github.pangju666.framework.autoconfigure.data.mongo.annotation.DynamicMongoDataBase;
+import io.github.pangju666.framework.autoconfigure.data.mongo.utils.DynamicMongoUtils;
+import io.github.pangju666.framework.data.mongo.repository.BaseRepository;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.BeanFactoryAware;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.beans.factory.config.BeanPostProcessor;
+import org.springframework.data.mongodb.core.MongoTemplate;
+
+import java.util.Objects;
+
+public class DynamicMongoDataBaseBeanPostProcessor implements BeanPostProcessor, BeanFactoryAware {
+	private BeanFactory beanFactory;
+
+	@Override
+	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
+		this.beanFactory = beanFactory;
+	}
+
+	@Override
+	public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
+		if (bean instanceof BaseRepository<?> baseRepository) {
+			DynamicMongoDataBase annotation = bean.getClass().getAnnotation(DynamicMongoDataBase.class);
+			if (Objects.nonNull(annotation)) {
+				MongoTemplate mongoTemplate = DynamicMongoUtils.getMongoTemplate(annotation.value(), beanFactory);
+				if (Objects.isNull(mongoTemplate)) {
+					throw new NoSuchBeanDefinitionException("数据源 " + annotation.value() + " 不存在，请检查名称是否正确");
+				}
+				baseRepository.init(mongoTemplate);
+			}
+		}
+		return bean;
+	}
+}

@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>3.2.2</version>
+		<relativePath/>
+	</parent>
+	<groupId>io.github.pangju666</groupId>
+	<artifactId>pangju-framework-spring-boot-starter-parent</artifactId>
+	<version>1.0.0</version>
+	<packaging>pom</packaging>
+
+	<name>pangju-framework-spring-boot-starter-parent</name>
+	<description>java 后端框架 Spring Boot Starter 父级依赖</description>
+	<url>https://github.com/pangju666/java-pangju-framework-spring-boot-starter</url>
+
+	<modules>
+		<module>pangju-framework-spring-boot-starter</module>
+		<module>pangju-framework-data-dynamic-redis-spring-boot-starter</module>
+		<module>pangju-framework-data-dynamic-mongodb-spring-boot-starter</module>
+		<module>pangju-framework-data-mybatis-plus-spring-boot-starter</module>
+		<module>pangju-framework-web-spring-boot-starter</module>
+		<module>pangju-framework-web-authenticate-spring-boot-starter</module>
+		<module>pangju-framework-web-log-spring-boot-starter</module>
+		<module>pangju-framework-knife4j-spring-boot-starter</module>
+	</modules>
+
+	<properties>
+		<skipTests>true</skipTests>
+		<framework.version>1.0.0</framework.version>
+		<spock-spring-boot-starter.version>1.0.0</spock-spring-boot-starter.version>
+		<gpg.plugins.version>3.1.0</gpg.plugins.version>
+	</properties>
+
+	<licenses>
+		<license>
+			<name>Apache License, Version 2.0</name>
+			<url>https://www.apache.org/licenses/LICENSE-2.0</url>
+		</license>
+	</licenses>
+
+	<developers>
+		<developer>
+			<id>pangju</id>
+			<name>majiale</name>
+			<email>2281525307@qq.com</email>
+		</developer>
+	</developers>
+
+	<scm>
+		<connection>scm:git@github.com:pangju666/java-pangju-framework-spring-boot-starter.git</connection>
+		<developerConnection>scm:git@github.com:pangju666/java-pangju-framework-spring-boot-starter.git
+		</developerConnection>
+		<url>https://github.com/pangju666/java-pangju-framework-spring-boot-starter</url>
+	</scm>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>io.github.pangju666</groupId>
+				<artifactId>pangju-framework-parent</artifactId>
+				<version>${framework.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+			<dependency>
+				<groupId>io.github.pangju666</groupId>
+				<artifactId>pangju-framework-spring-boot-starter</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.github.pangju666</groupId>
+				<artifactId>pangju-framework-web-spring-boot-starter</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.github.pangju666</groupId>
+				<artifactId>pangju-framework-data-dynamic-redis-spring-boot-starter</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.github.pangju666</groupId>
+				<artifactId>pangju-framework-data-dynamic-mongodb-spring-boot-starter</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.github.pangju666</groupId>
+				<artifactId>pangju-framework-data-mybatis-plus-spring-boot-starter</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.github.pangju666</groupId>
+				<artifactId>pangju-framework-web-authenticate-spring-boot-starter</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.github.pangju666</groupId>
+				<artifactId>pangju-framework-web-log-spring-boot-starter</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.github.pangju666</groupId>
+				<artifactId>pangju-framework-knife4j-spring-boot-starter</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.github.pangju666</groupId>
+				<artifactId>pangju-spock-spring-boot-starter</artifactId>
+				<version>${spock-spring-boot-starter.version}</version>
+				<scope>test</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+	<build>
+		<testSourceDirectory>
+			src/test/groovy
+		</testSourceDirectory>
+		<plugins>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>versions-maven-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-gpg-plugin</artifactId>
+				<version>${gpg.plugins.version}</version>
+			</plugin>
+		</plugins>
+	</build>
+
+	<distributionManagement>
+		<snapshotRepository>
+			<id>sonatype-nexus-snapshots</id>
+			<name>Sonatype Nexus Snapshots</name>
+			<url>https://s01.oss.sonatype.org/content/repositories/snapshots/</url>
+		</snapshotRepository>
+		<repository>
+			<id>sonatype-nexus-staging</id>
+			<name>Nexus Release Repository</name>
+			<url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+		</repository>
+	</distributionManagement>
+</project>

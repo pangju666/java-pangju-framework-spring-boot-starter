@@ -1,0 +1,3 @@
+io.github.pangju666.framework.autoconfigure.data.redis.ClientResourcesAutoConfiguration
+io.github.pangju666.framework.autoconfigure.data.redis.DynamicRedisAutoConfiguration
+io.github.pangju666.framework.autoconfigure.cache.DynamicRedisCacheAutoConfiguration

@@ -1,0 +1,3 @@
+io.github.pangju666.framework.autoconfigure.web.log.WebLogAutoConfiguration
+io.github.pangju666.framework.autoconfigure.web.log.KafkaAutoConfiguration
+io.github.pangju666.framework.autoconfigure.web.log.MongoAutoConfiguration

@@ -1,0 +1,5 @@
+io.github.pangju666.framework.autoconfigure.concurrent.TaskExecutionAutoConfiguration
+io.github.pangju666.framework.autoconfigure.validation.ValidationAutoConfiguration
+io.github.pangju666.framework.autoconfigure.jackson.JacksonAutoConfiguration
+io.github.pangju666.framework.autoconfigure.context.StaticSpringContext
+io.github.pangju666.framework.autoconfigure.web.client.RestTemplateAutoConfiguration
