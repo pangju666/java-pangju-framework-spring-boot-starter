@@ -16,9 +16,9 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @AutoConfiguration(after = org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration.class)
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @ConditionalOnClass({Servlet.class, DispatcherServlet.class, WebMvcConfigurer.class, KafkaTemplate.class})
-@ConditionalOnProperty(prefix = "chang-tech.web.log", name = "enabled", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(prefix = "pangju.web.log", name = "enabled", havingValue = "true", matchIfMissing = true)
 public class KafkaAutoConfiguration {
-	@ConditionalOnProperty(prefix = "chang-tech.web.log", name = "kafka.topic")
+	@ConditionalOnProperty(prefix = "pangju.web.log", name = "kafka.topic")
 	@ConditionalOnMissingBean(WebLogSender.class)
 	@ConditionalOnBean(KafkaTemplate.class)
 	@Bean
@@ -26,7 +26,7 @@ public class KafkaAutoConfiguration {
 		return new KafkaWebLogSender(properties, beanFactory);
 	}
 
-	@ConditionalOnProperty(prefix = "chang-tech.web.log", name = "kafka.topic")
+	@ConditionalOnProperty(prefix = "pangju.web.log", name = "kafka.topic")
 	@ConditionalOnBean(KafkaWebLogSender.class)
 	@Bean
 	public WebLogKafkaListener webLogKafkaListener(BeanFactory beanFactory) {

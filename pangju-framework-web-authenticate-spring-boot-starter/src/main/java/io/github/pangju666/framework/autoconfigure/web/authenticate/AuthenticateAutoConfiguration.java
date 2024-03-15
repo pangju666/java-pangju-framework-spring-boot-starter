@@ -38,7 +38,7 @@ public class AuthenticateAutoConfiguration {
 			.collect(Collectors.toSet());
 	}
 
-	@ConditionalOnExpression("#{environment['chang-tech.web.authenticate.algorithm'] == null || T(io.github.pangju666.framework.autoconfigure.web.authenticate.enums.PasswordAlgorithm).AES256.name().equals(environment['chang-tech.web.authenticate.algorithm'].toUpperCase()) || T(io.github.pangju666.framework.autoconfigure.web.authenticate.enums.PasswordAlgorithm).RSA.name().equals(environment['chang-tech.web.authenticate.algorithm'].toUpperCase())}")
+	@ConditionalOnExpression("#{environment['pangju.web.authenticate.algorithm'] == null || T(io.github.pangju666.framework.autoconfigure.web.authenticate.enums.PasswordAlgorithm).AES256.name().equals(environment['pangju.web.authenticate.algorithm'].toUpperCase()) || T(io.github.pangju666.framework.autoconfigure.web.authenticate.enums.PasswordAlgorithm).RSA.name().equals(environment['pangju.web.authenticate.algorithm'].toUpperCase())}")
 	@Bean
 	public FilterRegistrationBean<AuthenticateKeyFilter> authenticateKeyFilterFilterRegistrationBean(AuthenticatedProperties properties) {
 		FilterRegistrationBean<AuthenticateKeyFilter> filterRegistrationBean = new FilterRegistrationBean<>(new AuthenticateKeyFilter(properties, excludePathPatterns));

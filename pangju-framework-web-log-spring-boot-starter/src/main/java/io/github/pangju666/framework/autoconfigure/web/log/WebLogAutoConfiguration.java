@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 @AutoConfiguration
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @ConditionalOnClass({Servlet.class, DispatcherServlet.class, WebMvcConfigurer.class})
-@ConditionalOnProperty(prefix = "chang-tech.web.log", name = "enabled", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(prefix = "pangju.web.log", name = "enabled", havingValue = "true", matchIfMissing = true)
 @EnableConfigurationProperties(WebLogProperties.class)
 public class WebLogAutoConfiguration {
 	private Set<String> excludePathPatterns = Collections.emptySet();

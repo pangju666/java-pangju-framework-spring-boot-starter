@@ -14,7 +14,7 @@ public class WebLogKafkaListener {
 		this.receiver = beanFactory.getBean(WebLogReceiver.class);
 	}
 
-	@KafkaListener(topics = "${chang-tech.web.log.kafka.topic}")
+	@KafkaListener(topics = "${pangju.web.log.kafka.topic}")
 	public void listenRequestLog(ConsumerRecord<String, WebLog> record, Acknowledgment ack) {
 		WebLog webLog = record.value();
 		receiver.receive(webLog);
