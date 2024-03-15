@@ -3,14 +3,14 @@
 		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
-		<groupId>org.springframework.boot</groupId>
-		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.2.2</version>
+		<groupId>io.github.pangju666</groupId>
+		<artifactId>pangju-dependencies</artifactId>
+		<version>1.0.0</version>
 		<relativePath/>
 	</parent>
 	<groupId>io.github.pangju666</groupId>
 	<artifactId>pangju-framework-spring-boot-starter-parent</artifactId>
-	<version>1.0.0</version>
+	<version>1.0.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<name>pangju-framework-spring-boot-starter-parent</name>
@@ -30,9 +30,9 @@
 
 	<properties>
 		<skipTests>true</skipTests>
-		<framework.version>1.0.0</framework.version>
-		<spock-spring-boot-starter.version>1.0.0</spock-spring-boot-starter.version>
-		<gpg.plugins.version>3.1.0</gpg.plugins.version>
+		<dependencies.version>1.0.0</dependencies.version>
+		<framework.version>1.0.0-SNAPSHOT</framework.version>
+		<spock-spring-boot-starter.version>1.0.0-SNAPSHOT</spock-spring-boot-starter.version>
 	</properties>
 
 	<licenses>
@@ -45,7 +45,7 @@
 	<developers>
 		<developer>
 			<id>pangju</id>
-			<name>majiale</name>
+			<name>胖橘</name>
 			<email>2281525307@qq.com</email>
 		</developer>
 	</developers>
@@ -68,49 +68,50 @@
 			</dependency>
 			<dependency>
 				<groupId>io.github.pangju666</groupId>
+				<artifactId>pangju-spock-spring-boot-starter</artifactId>
+				<version>${spock-spring-boot-starter.version}</version>
+				<scope>test</scope>
+			</dependency>
+
+			<dependency>
+				<groupId>io.github.pangju666</groupId>
 				<artifactId>pangju-framework-spring-boot-starter</artifactId>
-				<version>${project.version}</version>
+				<version>1.0.0-SNAPSHOT</version>
 			</dependency>
 			<dependency>
 				<groupId>io.github.pangju666</groupId>
 				<artifactId>pangju-framework-web-spring-boot-starter</artifactId>
-				<version>${project.version}</version>
+				<version>1.0.0-SNAPSHOT</version>
 			</dependency>
 			<dependency>
 				<groupId>io.github.pangju666</groupId>
 				<artifactId>pangju-framework-data-dynamic-redis-spring-boot-starter</artifactId>
-				<version>${project.version}</version>
+				<version>1.0.0-SNAPSHOT</version>
 			</dependency>
 			<dependency>
 				<groupId>io.github.pangju666</groupId>
 				<artifactId>pangju-framework-data-dynamic-mongodb-spring-boot-starter</artifactId>
-				<version>${project.version}</version>
+				<version>1.0.0-SNAPSHOT</version>
 			</dependency>
 			<dependency>
 				<groupId>io.github.pangju666</groupId>
 				<artifactId>pangju-framework-data-mybatis-plus-spring-boot-starter</artifactId>
-				<version>${project.version}</version>
+				<version>1.0.0-SNAPSHOT</version>
 			</dependency>
 			<dependency>
 				<groupId>io.github.pangju666</groupId>
 				<artifactId>pangju-framework-web-authenticate-spring-boot-starter</artifactId>
-				<version>${project.version}</version>
+				<version>1.0.0-SNAPSHOT</version>
 			</dependency>
 			<dependency>
 				<groupId>io.github.pangju666</groupId>
 				<artifactId>pangju-framework-web-log-spring-boot-starter</artifactId>
-				<version>${project.version}</version>
+				<version>1.0.0-SNAPSHOT</version>
 			</dependency>
 			<dependency>
 				<groupId>io.github.pangju666</groupId>
 				<artifactId>pangju-framework-knife4j-spring-boot-starter</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>io.github.pangju666</groupId>
-				<artifactId>pangju-spock-spring-boot-starter</artifactId>
-				<version>${spock-spring-boot-starter.version}</version>
-				<scope>test</scope>
+				<version>1.0.0-SNAPSHOT</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
@@ -121,13 +122,12 @@
 		</testSourceDirectory>
 		<plugins>
 			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>versions-maven-plugin</artifactId>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-release-plugin</artifactId>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-gpg-plugin</artifactId>
-				<version>${gpg.plugins.version}</version>
 			</plugin>
 		</plugins>
 	</build>
