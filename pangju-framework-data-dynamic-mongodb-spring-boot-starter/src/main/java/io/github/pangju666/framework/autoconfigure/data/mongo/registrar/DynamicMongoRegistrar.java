@@ -119,7 +119,6 @@ public class DynamicMongoRegistrar implements EnvironmentAware, ImportBeanDefini
 				String templateBeanName = DynamicMongoUtils.getMongoTemplateBeanName(name);
 				beanDefinitionRegistry.registerBeanDefinition(templateBeanName, templateBeanDefinition);
 
-
 				// GridFs
 				GridFsMongoDatabaseFactory gridFsMongoDatabaseFactory = new GridFsMongoDatabaseFactory(databaseFactorySupport, connectionDetails);
 				GridFsTemplate gridFsTemplate = new GridFsTemplate(gridFsMongoDatabaseFactory, template.getConverter(), (connectionDetails.getGridFs() != null) ? connectionDetails.getGridFs().getBucket() : null);
@@ -128,7 +127,6 @@ public class DynamicMongoRegistrar implements EnvironmentAware, ImportBeanDefini
 				AbstractBeanDefinition gridFsTemplateBeanDefinition = gridFsTemplateBeanBuilder.getRawBeanDefinition();
 				String gridFsTemplateBeanName = DynamicMongoUtils.getGridFsTemplateBeanName(name);
 				beanDefinitionRegistry.registerBeanDefinition(gridFsTemplateBeanName, gridFsTemplateBeanDefinition);
-
 
 				if (dynamicMongoProperties.getPrimary().equals(name)) {
 					clientSettingsBeanDefinition.setPrimary(true);
