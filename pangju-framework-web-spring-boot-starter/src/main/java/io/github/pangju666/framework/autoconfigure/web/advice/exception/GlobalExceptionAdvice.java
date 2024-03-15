@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.tomcat.util.http.fileupload.impl.SizeLimitExceededException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.ConversionNotSupportedException;
@@ -17,6 +18,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplicat
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.converter.HttpMessageNotWritableException;
+import org.springframework.util.unit.DataSize;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
@@ -29,12 +31,16 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.async.AsyncRequestTimeoutException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.multipart.MultipartException;
 import org.springframework.web.multipart.support.MissingServletRequestPartException;
 import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.servlet.NoHandlerFoundException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
@@ -119,6 +125,29 @@ public class GlobalExceptionAdvice {
 		return Result.failByMessage("请求体读取失败");
 	}
 
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	@ExceptionHandler(value = MaxUploadSizeExceededException.class)
+	public Result<Void> handleMaxUploadSizeExceededException(MaxUploadSizeExceededException e) {
+		log.error("上传文件大小超过限制", e);
+		if (e.getMaxUploadSize() == -1) {
+			if (Objects.nonNull(e.getCause()) &&
+				e.getCause() instanceof IllegalStateException illegalStateException &&
+				Objects.nonNull(illegalStateException.getCause()) &&
+				illegalStateException.getCause() instanceof SizeLimitExceededException sizeLimitExceededException) {
+				return Result.failByMessage("上传文件大小超过" + DataSize.ofBytes(sizeLimitExceededException.getPermittedSize()).toMegabytes() + "MB");
+			}
+			return Result.failByMessage("上传文件大小超过限制");
+		}
+		return Result.failByMessage("上传文件大小超过" + DataSize.ofBytes(e.getMaxUploadSize()).toMegabytes() + "MB");
+	}
+
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	@ExceptionHandler(value = MultipartException.class)
+	public Result<Void> handleMultipartException(MultipartException e) {
+		log.error("上传文件失败", e);
+		return Result.failByMessage("上传文件失败");
+	}
+
 	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 	@ExceptionHandler(value = HttpMessageNotWritableException.class)
 	public Result<Void> handleHttpMessageNotWritableException(HttpMessageNotWritableException e) {
@@ -133,9 +162,9 @@ public class GlobalExceptionAdvice {
 		List<ObjectError> objectErrors = bindingResult.getAllErrors();
 		if (!objectErrors.isEmpty()) {
 			FieldError fieldError = (FieldError) objectErrors.iterator().next();
-			return Result.fail(ConstantPool.ERROR_VALIDATION_CODE, StringUtils.defaultString(fieldError.getDefaultMessage()));
+			return Result.fail(ConstantPool.VALIDATION_ERROR_RESPONSE_CODE, StringUtils.defaultString(fieldError.getDefaultMessage()));
 		}
-		return Result.fail(ConstantPool.ERROR_VALIDATION_CODE, "请求参数验证不合法");
+		return Result.fail(ConstantPool.VALIDATION_ERROR_RESPONSE_CODE, "请求参数验证不合法");
 	}
 
 	@ResponseStatus(HttpStatus.OK)
@@ -144,9 +173,9 @@ public class GlobalExceptionAdvice {
 		Set<ConstraintViolation<?>> constraints = e.getConstraintViolations();
 		if (!constraints.isEmpty()) {
 			ConstraintViolation<?> constraint = constraints.iterator().next();
-			return Result.fail(ConstantPool.ERROR_VALIDATION_CODE, StringUtils.defaultString(constraint.getMessage()));
+			return Result.fail(ConstantPool.VALIDATION_ERROR_RESPONSE_CODE, StringUtils.defaultString(constraint.getMessage()));
 		}
-		return Result.fail(ConstantPool.ERROR_VALIDATION_CODE, "请求参数验证不合法");
+		return Result.fail(ConstantPool.VALIDATION_ERROR_RESPONSE_CODE, "请求参数验证不合法");
 	}
 
 	@ResponseStatus(HttpStatus.NOT_FOUND)
@@ -155,9 +184,15 @@ public class GlobalExceptionAdvice {
 		return Result.failByMessage("请求路径：" + e.getRequestURL() + "不存在");
 	}
 
+	@ResponseStatus(HttpStatus.NOT_FOUND)
+	@ExceptionHandler(value = NoResourceFoundException.class)
+	public Result<Void> handleNoResourceFoundException(NoResourceFoundException e) {
+		return Result.failByMessage("请求资源：" + e.getResourcePath() + "不存在");
+	}
+
 	@ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
 	@ExceptionHandler(value = AsyncRequestTimeoutException.class)
-	public Result<Void> handleNoHandlerFoundException(AsyncRequestTimeoutException e) {
+	public Result<Void> handleAsyncRequestTimeoutException(AsyncRequestTimeoutException e) {
 		log.error("异步请求超时", e);
 		return Result.failByMessage("异步请求超时");
 	}
@@ -166,20 +201,20 @@ public class GlobalExceptionAdvice {
 	@ExceptionHandler(value = IOException.class)
 	public Result<Void> handleIOException(IOException e) {
 		log.error("IO异常", e);
-		return Result.fail(ConstantPool.ERROR_SERVER_CODE, "服务器内部错误");
+		return Result.fail(ConstantPool.SERVER_ERROR_RESPONSE_CODE, "服务器内部错误");
 	}
 
 	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 	@ExceptionHandler(value = RuntimeException.class)
-	public Result<Void> handleException(RuntimeException e) {
+	public Result<Void> handleRuntimeException(RuntimeException e) {
 		log.error("运行时异常", e);
-		return Result.fail(ConstantPool.ERROR_SERVER_CODE, "服务器内部错误");
+		return Result.fail(ConstantPool.SERVER_ERROR_RESPONSE_CODE, "服务器内部错误");
 	}
 
 	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 	@ExceptionHandler(value = Exception.class)
 	public Result<Void> handleException(Exception e) {
 		log.error("系统级异常", e);
-		return Result.fail(ConstantPool.ERROR_SERVER_CODE, "服务器内部错误");
+		return Result.fail(ConstantPool.SERVER_ERROR_RESPONSE_CODE, "服务器内部错误");
 	}
 }

@@ -2,13 +2,17 @@ package io.github.pangju666.framework.autoconfigure.web.advice.crypto;
 
 import io.github.pangju666.commons.lang.utils.ReflectionUtils;
 import io.github.pangju666.framework.autoconfigure.context.StaticSpringContext;
-import io.github.pangju666.framework.autoconfigure.web.annotation.crypto.RequestBodyDecrypt;
-import io.github.pangju666.framework.autoconfigure.web.annotation.crypto.RequestBodyFieldDecrypt;
+import io.github.pangju666.framework.autoconfigure.web.annotation.crypto.DecryptRequestBody;
+import io.github.pangju666.framework.autoconfigure.web.annotation.crypto.DecryptRequestBodyField;
 import io.github.pangju666.framework.autoconfigure.web.utils.CryptoUtils;
 import io.github.pangju666.framework.core.exception.base.ServiceException;
 import jakarta.servlet.Servlet;
 import org.apache.commons.codec.DecoderException;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.jasypt.exceptions.EncryptionOperationNotPossibleException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -22,18 +26,11 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.servlet.mvc.method.annotation.RequestBodyAdvice;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
 import java.util.*;
 
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
@@ -51,9 +48,9 @@ public class RequestBodyDecryptAdvice implements RequestBodyAdvice {
 	@Override
 	public HttpInputMessage beforeBodyRead(HttpInputMessage inputMessage, MethodParameter parameter, Type targetType,
 										   Class<? extends HttpMessageConverter<?>> converterType) {
-		RequestBodyDecrypt annotation = parameter.getParameterAnnotation(RequestBodyDecrypt.class);
+		DecryptRequestBody annotation = parameter.getParameterAnnotation(DecryptRequestBody.class);
 		if (Objects.isNull(annotation)) {
-			annotation = parameter.getMethodAnnotation(RequestBodyDecrypt.class);
+			annotation = parameter.getMethodAnnotation(DecryptRequestBody.class);
 		}
 		if (Objects.isNull(annotation)) {
 			return inputMessage;
@@ -65,13 +62,12 @@ public class RequestBodyDecryptAdvice implements RequestBodyAdvice {
 			if (StringUtils.isBlank(requestBodyStr)) {
 				return inputMessage;
 			}
-			byte[] plainText = CryptoUtils.decrypt(requestBodyStr, key, annotation.algorithm(), annotation.encoding(), annotation.transformation());
+			byte[] plainText = CryptoUtils.decrypt(requestBodyStr, key, annotation.algorithm(), annotation.encoding());
 			return new MappingJacksonInputMessage(new ByteArrayInputStream(plainText), inputMessage.getHeaders());
 		} catch (IOException e) {
 			logger.error("请求体读取失败", e);
 			throw new ServiceException("请求体读取失败");
-		} catch (NoSuchPaddingException | IllegalBlockSizeException | NoSuchAlgorithmException | BadPaddingException |
-				 InvalidKeyException | InvalidKeySpecException | InvalidAlgorithmParameterException e) {
+		} catch (EncryptionOperationNotPossibleException e) {
 			logger.error("请求数据解密失败", e);
 			throw new ServiceException("请求数据解密失败");
 		} catch (DecoderException e) {
@@ -86,56 +82,79 @@ public class RequestBodyDecryptAdvice implements RequestBodyAdvice {
 								Class<? extends HttpMessageConverter<?>> converterType) {
 		Field[] fields = body.getClass().getDeclaredFields();
 		for (Field field : fields) {
-			RequestBodyFieldDecrypt annotation = field.getAnnotation(RequestBodyFieldDecrypt.class);
+			DecryptRequestBodyField annotation = field.getAnnotation(DecryptRequestBodyField.class);
 			if (Objects.isNull(annotation)) {
 				continue;
 			}
+			if (ClassUtils.isPrimitiveOrWrapper(field.getType())) {
+				continue;
+			}
+
 			try {
+				Object fieldValue = ReflectionUtils.getFieldValue(body, field);
+				if (Objects.isNull(fieldValue)) {
+					continue;
+				}
+
+				String key = StaticSpringContext.getProperty(annotation.key());
+				if (StringUtils.isBlank(key)) {
+					logger.error("属性：{} 值为空", annotation.key());
+					throw new ServiceException("秘钥读取失败");
+				}
+
 				if (String.class.isAssignableFrom(field.getType())) {
-					ReflectionUtils.setAccessible(field, body);
-					String value = (String) field.get(body);
+					String value = (String) fieldValue;
 					if (StringUtils.isNotBlank(value)) {
-						String key = StaticSpringContext.getProperty(annotation.key());
-						value = CryptoUtils.decryptToString(value, key, annotation.algorithm(), annotation.encoding(), annotation.transformation());
-						field.set(body, value);
-						field.setAccessible(false);
+						value = CryptoUtils.decryptToString(value, key, annotation.algorithm(), annotation.encoding());
+						ReflectionUtils.setFieldValue(body, field, value);
+					}
+				} else if (Map.class.isAssignableFrom(field.getType())) {
+					Class<?> genericType = ReflectionUtils.getClassGenericType(field.getType(), 1);
+					if (String.class.isAssignableFrom(genericType)) {
+						Map<?, String> map = (Map<?, String>) fieldValue;
+						if (MapUtils.isNotEmpty(map)) {
+							Map<Object, String> newMap = new HashMap<>(map.size());
+							for (Map.Entry<?, String> entry : map.entrySet()) {
+								if (StringUtils.isBlank(entry.getValue())) {
+									newMap.put(entry.getKey(), entry.getValue());
+								} else {
+									newMap.put(entry.getKey(), CryptoUtils.decryptToString(entry.getValue(),
+										key, annotation.algorithm(), annotation.encoding()));
+								}
+							}
+							ReflectionUtils.setFieldValue(body, field, newMap);
+						}
 					}
 				} else if (Collection.class.isAssignableFrom(field.getType())) {
 					Class<?> genericType = ReflectionUtils.getClassGenericType(field.getType());
 					if (String.class.isAssignableFrom(genericType)) {
-						ReflectionUtils.setAccessible(field, body);
-						Collection<String> collection = (Collection<String>) field.get(body);
-						String key = StaticSpringContext.getProperty(annotation.key());
-						if (Objects.nonNull(collection)) {
+						Collection<String> collection = (Collection<String>) fieldValue;
+						if (CollectionUtils.isNotEmpty(collection)) {
 							if (List.class.isAssignableFrom(field.getType())) {
-								List<String> values = new ArrayList<>(collection.size());
+								List<String> list = new ArrayList<>(collection.size());
 								for (String element : collection) {
 									if (StringUtils.isBlank(element)) {
-										values.add(element);
+										list.add(element);
+									} else {
+										list.add(CryptoUtils.decryptToString(element, key, annotation.algorithm(), annotation.encoding()));
 									}
-									values.add(CryptoUtils.decryptToString(element, key, annotation.algorithm(), annotation.encoding(), annotation.transformation()));
 								}
-								field.set(body, values);
+								ReflectionUtils.setFieldValue(body, field, list);
 							} else if (Set.class.isAssignableFrom(field.getType())) {
-								Set<String> values = new HashSet<>(collection.size());
+								Set<String> set = new HashSet<>(collection.size());
 								for (String element : collection) {
 									if (StringUtils.isBlank(element)) {
-										values.add(element);
+										set.add(element);
+									} else {
+										set.add(CryptoUtils.decryptToString(element, key, annotation.algorithm(), annotation.encoding()));
 									}
-									values.add(CryptoUtils.decryptToString(element, key, annotation.algorithm(), annotation.encoding(), annotation.transformation()));
 								}
-								field.set(body, values);
+								ReflectionUtils.setFieldValue(body, field, set);
 							}
-							field.setAccessible(false);
 						}
 					}
 				}
-			} catch (IllegalAccessException e) {
-				logger.error("请求体读取失败", e);
-				throw new ServiceException("请求体读取失败");
-			} catch (NoSuchPaddingException | IllegalBlockSizeException | NoSuchAlgorithmException |
-					 BadPaddingException |
-					 InvalidKeyException | InvalidKeySpecException | InvalidAlgorithmParameterException e) {
+			} catch (EncryptionOperationNotPossibleException e) {
 				logger.error("请求数据解密失败", e);
 				throw new ServiceException("请求数据解密失败");
 			} catch (DecoderException e) {
@@ -147,7 +166,8 @@ public class RequestBodyDecryptAdvice implements RequestBodyAdvice {
 	}
 
 	@Override
-	public Object handleEmptyBody(Object body, HttpInputMessage inputMessage, MethodParameter parameter, Type targetType, Class<? extends HttpMessageConverter<?>> converterType) {
+	public Object handleEmptyBody(Object body, HttpInputMessage inputMessage, MethodParameter parameter,
+								  Type targetType, Class<? extends HttpMessageConverter<?>> converterType) {
 		return body;
 	}
 }

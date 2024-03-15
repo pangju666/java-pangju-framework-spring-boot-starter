@@ -30,27 +30,27 @@ public class MongoDBExceptionAdvice {
 	@ExceptionHandler(value = MongoExecutionTimeoutException.class)
 	public Result<Void> handleMongoExecutionTimeoutException(MongoExecutionTimeoutException e) {
 		log.error("MongoDB执行超时", e);
-		return Result.fail(ConstantPool.ERROR_DATABASE_CODE, "MongoDB执行超时");
+		return Result.fail(ConstantPool.DATA_ERROR_RESPONSE_CODE, "MongoDB执行超时");
 	}
 
 	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 	@ExceptionHandler(value = MongoTimeoutException.class)
 	public Result<Void> handleMongoTimeoutException(MongoTimeoutException e) {
 		log.error("MongoDB连接超时", e);
-		return Result.fail(ConstantPool.ERROR_DATABASE_CODE, "MongoDB连接超时");
+		return Result.fail(ConstantPool.DATA_ERROR_RESPONSE_CODE, "MongoDB连接超时");
 	}
 
 	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 	@ExceptionHandler(value = MongoSocketReadTimeoutException.class)
 	public Result<Void> handleMongoSocketReadTimeoutException(MongoSocketReadTimeoutException e) {
 		log.error("MongoDB读取超时", e);
-		return Result.fail(ConstantPool.ERROR_DATABASE_CODE, "MongoDB读取超时");
+		return Result.fail(ConstantPool.DATA_ERROR_RESPONSE_CODE, "MongoDB读取超时");
 	}
 
 	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 	@ExceptionHandler(value = MongoException.class)
 	public Result<Void> handleMongoException(MongoException e) {
 		log.error("MongoDB抛出异常", e);
-		return Result.fail(ConstantPool.ERROR_DATABASE_CODE, "MongoDB错误");
+		return Result.fail(ConstantPool.DATA_ERROR_RESPONSE_CODE, "MongoDB错误");
 	}
 }

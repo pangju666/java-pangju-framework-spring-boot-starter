@@ -18,8 +18,6 @@ import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.EnvironmentAware;
-import org.springframework.core.env.Environment;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -35,13 +33,12 @@ import java.util.Map;
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @ConditionalOnClass({Servlet.class, DispatcherServlet.class, WebMvcConfigurer.class})
 @EnableConfigurationProperties({RequestLimitProperties.class, RequestRepeatProperties.class})
-public class WebMvcAutoConfiguration implements WebMvcConfigurer, BeanFactoryAware, EnvironmentAware {
+public class WebMvcAutoConfiguration implements WebMvcConfigurer, BeanFactoryAware {
 	private final RequestLimitProperties requestLimitProperties;
 	private final RequestRepeatProperties requestRepeatProperties;
 	private final List<BaseRequestInterceptor> interceptors;
 	private List<String> excludePathPatterns = Collections.emptyList();
 	private BeanFactory beanFactory;
-	private Environment environment;
 
 	public WebMvcAutoConfiguration(RequestLimitProperties requestLimitProperties,
 								   RequestRepeatProperties requestRepeatProperties,
@@ -66,14 +63,9 @@ public class WebMvcAutoConfiguration implements WebMvcConfigurer, BeanFactoryAwa
 	}
 
 	@Override
-	public void setEnvironment(Environment environment) {
-		this.environment = environment;
-	}
-
-	@Override
 	public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
 		resolvers.add(new EnumRequestParamArgumentResolver());
-		resolvers.add(new EncryptRequestParamArgumentResolver(environment));
+		resolvers.add(new EncryptRequestParamArgumentResolver());
 	}
 
 	@Override

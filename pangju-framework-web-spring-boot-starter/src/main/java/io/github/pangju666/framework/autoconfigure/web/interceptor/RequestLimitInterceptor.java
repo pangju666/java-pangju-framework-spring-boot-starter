@@ -34,7 +34,7 @@ public class RequestLimitInterceptor extends BaseRequestInterceptor {
 			if (StringUtils.hasText(properties.getRedis().getTemplateBeanName())) {
 				this.redisTemplate = beanFactory.getBean(properties.getRedis().getTemplateBeanName(), RedisTemplate.class);
 			} else {
-				this.redisTemplate = beanFactory.getBean(ConstantPool.DEFAULT_REDIS_TEMPLATE_BEAN_NAME, RedisTemplate.class);
+				this.redisTemplate = beanFactory.getBean("redisTemplate", RedisTemplate.class);
 			}
 		}
 		if (Objects.isNull(this.redisTemplate)) {

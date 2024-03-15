@@ -3,14 +3,18 @@ package io.github.pangju666.framework.autoconfigure.web.advice.crypto;
 import io.github.pangju666.commons.lang.utils.JsonUtils;
 import io.github.pangju666.commons.lang.utils.ReflectionUtils;
 import io.github.pangju666.framework.autoconfigure.context.StaticSpringContext;
-import io.github.pangju666.framework.autoconfigure.web.annotation.crypto.ResponseBodyEncrypt;
-import io.github.pangju666.framework.autoconfigure.web.annotation.crypto.ResponseBodyFieldEncrypt;
+import io.github.pangju666.framework.autoconfigure.web.annotation.crypto.EncryptResponseBody;
+import io.github.pangju666.framework.autoconfigure.web.annotation.crypto.EncryptResponseBodyField;
 import io.github.pangju666.framework.autoconfigure.web.utils.CryptoUtils;
 import io.github.pangju666.framework.core.exception.base.ServiceException;
 import io.github.pangju666.framework.web.model.Result;
 import jakarta.servlet.Servlet;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.jasypt.exceptions.EncryptionOperationNotPossibleException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -27,14 +31,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
 import java.lang.reflect.Field;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
 import java.util.*;
 
 @Order(Ordered.HIGHEST_PRECEDENCE)
@@ -59,9 +56,9 @@ public class ResponseBodyEncryptAdvice implements ResponseBodyAdvice<Object> {
 		if (selectedConverterType.isAssignableFrom(MappingJackson2HttpMessageConverter.class)) {
 			encryptFields(body);
 		}
-		ResponseBodyEncrypt annotation = returnType.getMethodAnnotation(ResponseBodyEncrypt.class);
+		EncryptResponseBody annotation = returnType.getMethodAnnotation(EncryptResponseBody.class);
 		if (Objects.isNull(annotation)) {
-			annotation = returnType.getDeclaringClass().getAnnotation(ResponseBodyEncrypt.class);
+			annotation = returnType.getDeclaringClass().getAnnotation(EncryptResponseBody.class);
 		}
 		if (Objects.nonNull(annotation)) {
 			String key = StaticSpringContext.getProperty(annotation.key());
@@ -74,13 +71,13 @@ public class ResponseBodyEncryptAdvice implements ResponseBodyAdvice<Object> {
 		return body;
 	}
 
-	private Object encryptBody(Object body, ResponseBodyEncrypt annotation, String key) {
+	private Object encryptBody(Object body, EncryptResponseBody annotation, String key) {
 		try {
 			if (body instanceof byte[] bytes) {
-				return CryptoUtils.encrypt(ArrayUtils.nullToEmpty(bytes), key, annotation.algorithm(), annotation.encoding(), annotation.transformation());
+				return CryptoUtils.encrypt(ArrayUtils.nullToEmpty(bytes), key, annotation.algorithm(), annotation.encoding());
 			}
 			if (body instanceof String content) {
-				return CryptoUtils.encryptToString(StringUtils.defaultString(content).getBytes(), key, annotation.algorithm(), annotation.encoding(), annotation.transformation());
+				return CryptoUtils.encryptToString(StringUtils.defaultString(content).getBytes(), key, annotation.algorithm(), annotation.encoding());
 			}
 			if (body instanceof Result<?> data) {
 				if (Objects.isNull(data.data())) {
@@ -88,21 +85,20 @@ public class ResponseBodyEncryptAdvice implements ResponseBodyAdvice<Object> {
 				}
 				if (data.data().getClass().isAssignableFrom(String.class)) {
 					String bodyData = StringUtils.defaultString((String) data.data());
-					String result = CryptoUtils.encryptToString(bodyData.getBytes(), key, annotation.algorithm(), annotation.encoding(), annotation.transformation());
+					String result = CryptoUtils.encryptToString(bodyData.getBytes(), key, annotation.algorithm(), annotation.encoding());
 					return Result.ok(result);
 				} else if (data.data().getClass().isAssignableFrom(byte[].class)) {
 					byte[] bodyData = ArrayUtils.nullToEmpty((byte[]) data.data());
-					byte[] result = CryptoUtils.encrypt(bodyData, key, annotation.algorithm(), annotation.encoding(), annotation.transformation());
+					byte[] result = CryptoUtils.encrypt(bodyData, key, annotation.algorithm(), annotation.encoding());
 					return Result.ok(result);
 				}
 				String content = JsonUtils.toString(data.data());
-				String result = CryptoUtils.encryptToString(content.getBytes(), key, annotation.algorithm(), annotation.encoding(), annotation.transformation());
+				String result = CryptoUtils.encryptToString(content.getBytes(), key, annotation.algorithm(), annotation.encoding());
 				return Result.ok(result);
 			}
 			String content = JsonUtils.toString(body);
-			return CryptoUtils.encrypt(content.getBytes(), key, annotation.algorithm(), annotation.encoding(), annotation.transformation());
-		} catch (NoSuchPaddingException | IllegalBlockSizeException | NoSuchAlgorithmException | BadPaddingException |
-				 InvalidKeyException | InvalidKeySpecException | InvalidAlgorithmParameterException e) {
+			return CryptoUtils.encrypt(content.getBytes(), key, annotation.algorithm(), annotation.encoding());
+		} catch (EncryptionOperationNotPossibleException e) {
 			logger.error("响应数据加密失败", e);
 			throw new ServiceException("响应数据加密失败");
 		}
@@ -119,65 +115,81 @@ public class ResponseBodyEncryptAdvice implements ResponseBodyAdvice<Object> {
 		} else {
 			fields = body.getClass().getDeclaredFields();
 		}
+
 		for (Field field : fields) {
-			ResponseBodyFieldEncrypt annotation = field.getAnnotation(ResponseBodyFieldEncrypt.class);
+			EncryptResponseBodyField annotation = field.getAnnotation(EncryptResponseBodyField.class);
 			if (Objects.isNull(annotation)) {
 				continue;
 			}
+			if (ClassUtils.isPrimitiveOrWrapper(field.getType())) {
+				continue;
+			}
+
 			try {
+				Object fieldValue = ReflectionUtils.getFieldValue(body, field);
+				if (Objects.isNull(fieldValue)) {
+					continue;
+				}
+
+				String key = StaticSpringContext.getProperty(annotation.key());
+				if (StringUtils.isBlank(key)) {
+					logger.error("属性：{} 值为空", annotation.key());
+					throw new ServiceException("秘钥读取失败");
+				}
+
 				if (String.class.isAssignableFrom(field.getType())) {
-					ReflectionUtils.setAccessible(field, body);
-					String value = (String) field.get(body);
+					String value = (String) fieldValue;
 					if (StringUtils.isNotBlank(value)) {
-						String key = StaticSpringContext.getProperty(annotation.key());
-						if (StringUtils.isBlank(key)) {
-							logger.error("属性：{} 值为空", annotation.key());
-							throw new ServiceException("秘钥读取失败");
+						value = CryptoUtils.encryptToString(value.getBytes(), key, annotation.algorithm(), annotation.encoding());
+						ReflectionUtils.setFieldValue(body, field, value);
+					}
+				} else if (Map.class.isAssignableFrom(field.getType())) {
+					Class<?> genericType = ReflectionUtils.getClassGenericType(field.getType(), 1);
+					if (String.class.isAssignableFrom(genericType)) {
+						Map<?, String> map = (Map<?, String>) fieldValue;
+						if (MapUtils.isNotEmpty(map)) {
+							Map<Object, String> newMap = new HashMap<>(map.size());
+							for (Map.Entry<?, String> entry : map.entrySet()) {
+								if (StringUtils.isBlank(entry.getValue())) {
+									newMap.put(entry.getKey(), entry.getValue());
+								} else {
+									newMap.put(entry.getKey(), CryptoUtils.encryptToString(entry.getValue().getBytes(),
+										key, annotation.algorithm(), annotation.encoding()));
+								}
+							}
+							ReflectionUtils.setFieldValue(body, field, newMap);
 						}
-						value = CryptoUtils.encryptToString(value.getBytes(), key, annotation.algorithm(), annotation.encoding(), annotation.transformation());
-						field.set(body, value);
-						field.setAccessible(false);
 					}
 				} else if (Collection.class.isAssignableFrom(field.getType())) {
 					Class<?> genericType = ReflectionUtils.getClassGenericType(body.getClass());
 					if (String.class.isAssignableFrom(genericType)) {
-						ReflectionUtils.setAccessible(field, body);
-						Collection<String> collection = (Collection<String>) field.get(body);
-						String key = StaticSpringContext.getProperty(annotation.key());
-						if (StringUtils.isBlank(key)) {
-							logger.error("属性：{} 值为空", annotation.key());
-							throw new ServiceException("秘钥读取失败");
-						}
-						if (Objects.nonNull(collection)) {
+						Collection<String> collection = (Collection<String>) fieldValue;
+						if (CollectionUtils.isNotEmpty(collection)) {
 							if (List.class.isAssignableFrom(field.getType())) {
-								List<String> values = new ArrayList<>(collection.size());
+								List<String> list = new ArrayList<>(collection.size());
 								for (String element : collection) {
 									if (StringUtils.isBlank(element)) {
-										values.add(element);
+										list.add(element);
+									} else {
+										list.add(CryptoUtils.encryptToString(element.getBytes(), key, annotation.algorithm(), annotation.encoding()));
 									}
-									values.add(CryptoUtils.encryptToString(element.getBytes(), key, annotation.algorithm(), annotation.encoding(), annotation.transformation()));
 								}
-								field.set(body, values);
+								ReflectionUtils.setFieldValue(body, field, list);
 							} else if (Set.class.isAssignableFrom(field.getType())) {
-								Set<String> values = new HashSet<>(collection.size());
+								Set<String> set = new HashSet<>(collection.size());
 								for (String element : collection) {
 									if (StringUtils.isBlank(element)) {
-										values.add(element);
+										set.add(element);
+									} else {
+										set.add(CryptoUtils.encryptToString(element.getBytes(), key, annotation.algorithm(), annotation.encoding()));
 									}
-									values.add(CryptoUtils.encryptToString(element.getBytes(), key, annotation.algorithm(), annotation.encoding(), annotation.transformation()));
 								}
-								field.set(body, values);
+								ReflectionUtils.setFieldValue(body, field, set);
 							}
-							field.setAccessible(false);
 						}
 					}
 				}
-			} catch (IllegalAccessException e) {
-				logger.error("响应体读取失败", e);
-				throw new ServiceException("响应体读取失败");
-			} catch (NoSuchPaddingException | IllegalBlockSizeException | NoSuchAlgorithmException |
-					 BadPaddingException |
-					 InvalidKeyException | InvalidKeySpecException | InvalidAlgorithmParameterException e) {
+			} catch (EncryptionOperationNotPossibleException e) {
 				logger.error("响应数据加密失败", e);
 				throw new ServiceException("响应数据加密失败");
 			}

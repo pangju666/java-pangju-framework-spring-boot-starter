@@ -2,8 +2,7 @@ package io.github.pangju666.framework.autoconfigure.web.enums;
 
 public enum Algorithm {
 	BASE64,
-	RSA_PRIVATE,
-	RSA_PUBLIC,
-	AES,
+	RSA,
+	AES256,
 	HEX
 }

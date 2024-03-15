@@ -28,13 +28,13 @@ public class RedisExceptionAdvice {
 	@ExceptionHandler(value = RedisConnectionFailureException.class)
 	public Result<Void> handleRedisConnectionFailureException(RedisConnectionFailureException e) {
 		log.error("redis连接超时异常", e);
-		return Result.fail(ConstantPool.ERROR_DATABASE_CODE, "Redis连接超时");
+		return Result.fail(ConstantPool.DATA_ERROR_RESPONSE_CODE, "Redis连接超时");
 	}
 
 	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 	@ExceptionHandler(value = DataAccessException.class)
 	public Result<Void> handleDataAccessException(DataAccessException e) {
 		log.error("数据访问异常", e);
-		return Result.fail(ConstantPool.ERROR_DATABASE_CODE, "服务器内部错误");
+		return Result.fail(ConstantPool.DATA_ERROR_RESPONSE_CODE, "服务器内部错误");
 	}
 }

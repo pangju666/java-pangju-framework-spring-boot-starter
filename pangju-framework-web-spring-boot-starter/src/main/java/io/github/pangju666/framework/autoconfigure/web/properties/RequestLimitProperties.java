@@ -2,7 +2,7 @@ package io.github.pangju666.framework.autoconfigure.web.properties;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@ConfigurationProperties(prefix = "chang-tech.web.request.limit")
+@ConfigurationProperties(prefix = "pangju.web.request.limit")
 public class RequestLimitProperties {
 	private Type type = Type.EXPIRE_MAP;
 	private Redis redis = new Redis();

@@ -11,15 +11,9 @@ import java.lang.annotation.*;
 public @interface EncryptRequestParam {
 	String key();
 
-	Algorithm algorithm() default Algorithm.AES;
-
+	Algorithm algorithm() default Algorithm.AES256;
 	Encoding encoding() default Encoding.BASE64;
-
-	String transformation() default "";
-
 	String name() default "";
-
 	boolean required() default true;
-
 	String defaultValue() default "";
 }

@@ -7,13 +7,9 @@ import java.util.concurrent.TimeUnit;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE, ElementType.METHOD})
 public @interface RequestLimit {
-	int duration();
-
+	int duration() default 1;
 	TimeUnit timeUnit() default TimeUnit.SECONDS;
-
 	int count();
-
 	boolean global() default false;
-
 	String message() default "请求次数已达上限，请稍候再试";
 }
