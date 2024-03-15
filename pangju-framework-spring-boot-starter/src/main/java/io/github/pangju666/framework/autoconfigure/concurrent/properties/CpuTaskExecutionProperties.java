@@ -5,7 +5,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.time.Duration;
 
-@ConfigurationProperties(prefix = "chang-tech.task.execution.cpu")
+@ConfigurationProperties(prefix = "pangju.task.execution.cpu")
 public class CpuTaskExecutionProperties {
 	private boolean enabled = false;
 	private Duration keepAlive = Duration.ofSeconds(60);
