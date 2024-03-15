@@ -16,6 +16,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.Part;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.MediaType;
 import org.springframework.util.StopWatch;
@@ -53,10 +54,12 @@ public class WebLogFilter extends BaseRequestFilter {
 		Date requestDate = new Date();
 		try {
 			HandlerExecutionChain handlerMappingHandler = requestMappingHandlerMapping.getHandler(request);
-			if (Objects.nonNull(handlerMappingHandler) && (handlerMappingHandler.getHandler() instanceof HandlerMethod handlerMethod)) {
+			if (Objects.nonNull(handlerMappingHandler) &&
+				(handlerMappingHandler.getHandler() instanceof HandlerMethod handlerMethod)) {
 				Class<?> targetClass = handlerMethod.getBeanType();
 				Method targetMethod = handlerMethod.getMethod();
-				if (Objects.nonNull(targetMethod.getAnnotation(WebLogIgnore.class)) || Objects.nonNull(targetClass.getAnnotation(WebLogIgnore.class))) {
+				if (Objects.nonNull(targetMethod.getAnnotation(WebLogIgnore.class)) ||
+					Objects.nonNull(targetClass.getAnnotation(WebLogIgnore.class))) {
 					filterChain.doFilter(request, response);
 					return;
 				}
@@ -90,13 +93,16 @@ public class WebLogFilter extends BaseRequestFilter {
 			if (properties.getRequest().isQueryParams()) {
 				requestLog.setQueryParams(RequestUtils.getParameterMap(requestWrapper));
 			}
-			if (properties.getRequest().isMultipart() && StringUtils.startsWithIgnoreCase(requestWrapper.getContentType(), MediaType.MULTIPART_FORM_DATA_VALUE)) {
+			if (properties.getRequest().isMultipart() &&
+				StringUtils.startsWithIgnoreCase(requestWrapper.getContentType(), MediaType.MULTIPART_FORM_DATA_VALUE)) {
 				requestLog.setContentType(MediaType.MULTIPART_FORM_DATA_VALUE);
-				requestLog.setFormData(RequestUtils.getMultipartMap(requestWrapper));
-				requestWrapper.getParts().stream()
-					.filter(part -> Objects.isNull(part.getContentType()))
-					.map(Part::getName)
-					.forEach(fieldName -> requestLog.getQueryParams().remove(fieldName));
+				try {
+					requestLog.setFormData(RequestUtils.getMultipartMap(requestWrapper));
+					requestWrapper.getParts().stream()
+						.map(Part::getName)
+						.forEach(fieldName -> requestLog.getQueryParams().remove(fieldName));
+				} catch (IllegalStateException ignored) {
+				}
 			} else if (properties.getRequest().isBody()) {
 				requestLog.setBody(RequestUtils.getRequestBodyMap(requestWrapper));
 			}
@@ -113,30 +119,38 @@ public class WebLogFilter extends BaseRequestFilter {
 			}
 			responseLog.setContentType(responseWrapper.getContentType());
 			responseLog.setCharacterEncoding(responseWrapper.getCharacterEncoding());
-			webLog.setResponse(responseLog);
-
-			if (StringUtils.equalsAnyIgnoreCase(responseWrapper.getContentType(), MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_UTF8_VALUE)) {
-				String responseBodyStr = new String(responseWrapper.getContentAsByteArray());
-				if (StringUtils.isBlank(responseBodyStr)) {
-					responseLog.setBody(null);
-				}
-				JsonObject responseBody = JsonUtils.parseString(responseBodyStr).getAsJsonObject();
-				if (responseBody.has("code") && responseBody.has("message")) {
-					if (properties.getResponse().isBody()) {
-						responseLog.setBody(JsonUtils.fromJson(responseBody, new TypeToken<Result<?>>() {
-						}));
+			if (properties.getResponse().isBody()) {
+				if (properties.getResponse().isBodyData()) {
+					if (!StringUtils.equalsAnyIgnoreCase(responseWrapper.getContentType(),
+						MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_UTF8_VALUE)) {
+						responseLog.setBody(Base64.encodeBase64String(responseWrapper.getContentAsByteArray()));
 					} else {
-						Result<?> result = new Result<>(responseBody.getAsJsonPrimitive("message").getAsString(),
-							responseBody.getAsJsonPrimitive("code").getAsInt(), null);
-						responseLog.setBody(result);
+						String responseBodyStr = new String(responseWrapper.getContentAsByteArray());
+						if (StringUtils.isNotBlank(responseBodyStr)) {
+							responseLog.setBody(JsonUtils.fromString(responseBodyStr, new TypeToken<Object>() {
+							}));
+						}
 					}
 				} else {
-					if (properties.getResponse().isBody()) {
-						responseLog.setBody(JsonUtils.fromJson(responseBody, new TypeToken<Object>() {
-						}));
+					if (StringUtils.equalsAnyIgnoreCase(responseWrapper.getContentType(),
+						MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_UTF8_VALUE)) {
+						String responseBodyStr = new String(responseWrapper.getContentAsByteArray());
+						if (StringUtils.isNotBlank(responseBodyStr)) {
+							JsonObject responseBody = JsonUtils.parseString(responseBodyStr).getAsJsonObject();
+							if (responseBody.has("code") && responseBody.has("message")) {
+								Result<?> result = new Result<>(
+									responseBody.getAsJsonPrimitive("message").getAsString(),
+									responseBody.getAsJsonPrimitive("code").getAsInt(),
+									null
+								);
+								responseLog.setBody(result);
+							}
+						}
 					}
 				}
 			}
+			webLog.setResponse(responseLog);
+
 			sender.send(webLog);
 		}
 	}

@@ -2,7 +2,7 @@ package io.github.pangju666.framework.autoconfigure.web.log.properties;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@ConfigurationProperties(prefix = "chang-tech.web.log")
+@ConfigurationProperties(prefix = "pangju.web.log")
 public class WebLogProperties {
 	private Kafka kafka = new Kafka();
 	private Mongo mongo = new Mongo();
@@ -93,10 +93,10 @@ public class WebLogProperties {
 	}
 
 	public static class Request {
-		boolean headers = true;
-		boolean queryParams = true;
-		boolean body = true;
-		boolean multipart = true;
+		private boolean headers = true;
+		private boolean queryParams = true;
+		private boolean body = true;
+		private boolean multipart = true;
 
 		public boolean isHeaders() {
 			return headers;
@@ -132,8 +132,9 @@ public class WebLogProperties {
 	}
 
 	public static class Response {
-		boolean headers = true;
-		boolean body = false;
+		private boolean headers = true;
+		private boolean body = true;
+		private boolean bodyData = false;
 
 		public boolean isHeaders() {
 			return headers;
@@ -149,6 +150,14 @@ public class WebLogProperties {
 
 		public void setBody(boolean body) {
 			this.body = body;
+		}
+
+		public boolean isBodyData() {
+			return bodyData;
+		}
+
+		public void setBodyData(boolean bodyData) {
+			this.bodyData = bodyData;
 		}
 	}
 }
