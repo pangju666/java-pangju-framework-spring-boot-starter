@@ -3,15 +3,16 @@ package io.github.pangju666.framework.autoconfigure.web.authenticate.interceptor
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.Claim;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import io.github.pangju666.commons.lang.pool.ConstantPool;
 import io.github.pangju666.framework.autoconfigure.web.authenticate.annotation.Authenticated;
 import io.github.pangju666.framework.autoconfigure.web.authenticate.properties.AuthenticatedProperties;
-import io.github.pangju666.framework.core.exception.web.AuthenticationException;
-import io.github.pangju666.framework.core.exception.web.authentication.AuthenticationExpireException;
-import io.github.pangju666.framework.core.exception.web.authentication.NoRoleException;
+import io.github.pangju666.framework.web.exception.AuthenticationException;
+import io.github.pangju666.framework.web.exception.authentication.AuthenticationExpireException;
+import io.github.pangju666.framework.web.exception.authentication.NoRoleException;
 import io.github.pangju666.framework.web.interceptor.BaseRequestInterceptor;
 import io.github.pangju666.framework.web.utils.ResponseUtils;
 import jakarta.servlet.http.HttpServletRequest;
@@ -63,18 +64,19 @@ public class AuthenticatedInterceptor extends BaseRequestInterceptor {
 			}
 			token = StringUtils.substringAfter(token, ConstantPool.TOKEN_PREFIX);
 
-			DecodedJWT decode = JWT.decode(token);
-			Claim usernameClaim = decode.getClaims().get("username");
-			if (Objects.isNull(usernameClaim)) {
-				ResponseUtils.writeExceptionToResponse(new AuthenticationException("无效的token"), response);
-				return false;
-			}
-			AuthenticatedProperties.User user = userMap.get(usernameClaim.asString());
-			if (Objects.isNull(user)) {
-				ResponseUtils.writeExceptionToResponse(new AuthenticationException("无效的token"), response);
-				return false;
-			}
 			try {
+				DecodedJWT decode = JWT.decode(token);
+				Claim usernameClaim = decode.getClaims().get("username");
+				if (Objects.isNull(usernameClaim)) {
+					ResponseUtils.writeExceptionToResponse(new AuthenticationException("无效的token"), response);
+					return false;
+				}
+				AuthenticatedProperties.User user = userMap.get(usernameClaim.asString());
+				if (Objects.isNull(user)) {
+					ResponseUtils.writeExceptionToResponse(new AuthenticationException("无效的token"), response);
+					return false;
+				}
+
 				Date requestTime = new Date();
 				Algorithm algorithm = Algorithm.HMAC256(user.getPassword());
 				JWTVerifier jwt = JWT.require(algorithm).build();
@@ -84,38 +86,41 @@ public class AuthenticatedInterceptor extends BaseRequestInterceptor {
 					ResponseUtils.writeExceptionToResponse(new AuthenticationExpireException("token已过期"), response, HttpStatus.UNAUTHORIZED.value());
 					return false;
 				}
+
+				if (annotation.roles().length > 0) {
+					Claim rolesClaim = decode.getClaim("roles");
+					if (rolesClaim.isNull()) {
+						ResponseUtils.writeExceptionToResponse(new NoRoleException("用户没有对应的角色"), response, HttpStatus.FORBIDDEN.value());
+						return false;
+					}
+					List<String> userRoles = rolesClaim.asList(String.class);
+					if (userRoles.isEmpty()) {
+						ResponseUtils.writeExceptionToResponse(new NoRoleException("用户没有对应的角色"), response, HttpStatus.FORBIDDEN.value());
+						return false;
+					}
+
+					if (annotation.matchAnyRole()) {
+						boolean hasRole = Arrays.stream(annotation.roles()).anyMatch(userRoles::contains);
+						if (!hasRole) {
+							ResponseUtils.writeExceptionToResponse(new NoRoleException("用户没有对应的角色"), response, HttpStatus.FORBIDDEN.value());
+							return false;
+						}
+					} else {
+						List<String> exceptRoles = new ArrayList<>(Arrays.asList(annotation.roles()));
+						exceptRoles.removeAll(userRoles);
+						if (!exceptRoles.isEmpty()) {
+							ResponseUtils.writeExceptionToResponse(new NoRoleException("用户没有对应的角色"), response, HttpStatus.FORBIDDEN.value());
+							return false;
+						}
+					}
+				}
+			} catch (JWTDecodeException e) {
+				ResponseUtils.writeExceptionToResponse(new AuthenticationException("token格式不正确"), response);
+				return false;
 			} catch (IllegalArgumentException | JWTVerificationException e) {
 				logger.error("身份认证失败", e);
 				ResponseUtils.writeExceptionToResponse(new AuthenticationException("无效的token"), response);
 				return false;
-			}
-
-			if (annotation.roles().length > 0) {
-				Claim rolesClaim = decode.getClaim("roles");
-				if (rolesClaim.isNull()) {
-					ResponseUtils.writeExceptionToResponse(new NoRoleException("用户没有对应的角色"), response, HttpStatus.FORBIDDEN.value());
-					return false;
-				}
-				List<String> userRoles = rolesClaim.asList(String.class);
-				if (userRoles.isEmpty()) {
-					ResponseUtils.writeExceptionToResponse(new NoRoleException("用户没有对应的角色"), response, HttpStatus.FORBIDDEN.value());
-					return false;
-				}
-
-				if (annotation.anyMatchRole()) {
-					boolean hasRole = Arrays.stream(annotation.roles()).anyMatch(userRoles::contains);
-					if (!hasRole) {
-						ResponseUtils.writeExceptionToResponse(new NoRoleException("用户没有对应的角色"), response, HttpStatus.FORBIDDEN.value());
-						return false;
-					}
-				} else {
-					List<String> exceptRoles = new ArrayList<>(Arrays.asList(annotation.roles()));
-					exceptRoles.removeAll(userRoles);
-					if (!exceptRoles.isEmpty()) {
-						ResponseUtils.writeExceptionToResponse(new NoRoleException("用户没有对应的角色"), response, HttpStatus.FORBIDDEN.value());
-						return false;
-					}
-				}
 			}
 		}
 		return true;

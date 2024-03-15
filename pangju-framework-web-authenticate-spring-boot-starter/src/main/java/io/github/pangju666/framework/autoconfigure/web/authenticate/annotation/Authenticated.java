@@ -8,7 +8,7 @@ import java.lang.annotation.*;
 public @interface Authenticated {
 	String[] roles() default {};
 
-	boolean anyMatchRole() default true;
+	boolean matchAnyRole() default true;
 
 	boolean anonymous() default false;
 }

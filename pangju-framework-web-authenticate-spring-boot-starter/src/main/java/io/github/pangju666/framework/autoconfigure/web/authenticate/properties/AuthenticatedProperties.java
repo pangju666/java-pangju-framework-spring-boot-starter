@@ -1,6 +1,6 @@
 package io.github.pangju666.framework.autoconfigure.web.authenticate.properties;
 
-import io.github.pangju666.framework.autoconfigure.web.authenticate.enums.Algorithm;
+import io.github.pangju666.framework.autoconfigure.web.authenticate.enums.PasswordAlgorithm;
 import io.github.pangju666.framework.core.lang.pool.ConstantPool;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
@@ -9,29 +9,29 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-@ConfigurationProperties(prefix = "chang-tech.web.authenticate")
+@ConfigurationProperties(prefix = "pangju.web.authenticate")
 public class AuthenticatedProperties {
 	private Request request = new Request();
-	private Algorithm algorithm = Algorithm.RSA;
-	private Aes aes = new Aes();
+	private PasswordAlgorithm passwordAlgorithm = PasswordAlgorithm.RSA;
+	private Aes256 aes256 = new Aes256();
 	private Rsa rsa = new Rsa();
 	private Duration duration = Duration.ofDays(7);
-	private List<User> users = Collections.singletonList(new User("root", "gTz_2021", Collections.singleton(ConstantPool.ADMIN_ROLE)));
+	private List<User> users = Collections.singletonList(new User("root", "91291358", Collections.singleton(ConstantPool.ADMIN_ROLE)));
 
-	public Algorithm getAlgorithm() {
-		return algorithm;
+	public PasswordAlgorithm getPasswordAlgorithm() {
+		return passwordAlgorithm;
 	}
 
-	public void setAlgorithm(Algorithm algorithm) {
-		this.algorithm = algorithm;
+	public void setPasswordAlgorithm(PasswordAlgorithm passwordAlgorithm) {
+		this.passwordAlgorithm = passwordAlgorithm;
 	}
 
-	public Aes getAes() {
-		return aes;
+	public Aes256 getAes256() {
+		return aes256;
 	}
 
-	public void setAes(Aes aes) {
-		this.aes = aes;
+	public void setAes256(Aes256 aes256) {
+		this.aes256 = aes256;
 	}
 
 	public Rsa getRsa() {
@@ -123,9 +123,8 @@ public class AuthenticatedProperties {
 		}
 	}
 
-	public static class Aes {
+	public static class Aes256 {
 		private String key = "iCAk/h8jg36GU1B3";
-		private String transformation = ConstantPool.DEFAULT_AES_TRANSFORMATION;
 
 		public String getKey() {
 			return key;
@@ -133,14 +132,6 @@ public class AuthenticatedProperties {
 
 		public void setKey(String key) {
 			this.key = key;
-		}
-
-		public String getTransformation() {
-			return transformation;
-		}
-
-		public void setTransformation(String transformation) {
-			this.transformation = transformation;
 		}
 	}
 

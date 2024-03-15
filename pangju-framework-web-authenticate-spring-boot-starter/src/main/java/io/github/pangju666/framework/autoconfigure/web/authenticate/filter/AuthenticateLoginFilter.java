@@ -2,8 +2,8 @@ package io.github.pangju666.framework.autoconfigure.web.authenticate.filter;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
-import io.github.pangju666.commons.codec.utils.AesUtils;
-import io.github.pangju666.commons.codec.utils.RsaUtils;
+import io.github.pangju666.commons.codec.encryption.text.RSATextEncryptor;
+import io.github.pangju666.framework.autoconfigure.web.authenticate.enums.PasswordAlgorithm;
 import io.github.pangju666.framework.autoconfigure.web.authenticate.model.AuthenticatedUser;
 import io.github.pangju666.framework.autoconfigure.web.authenticate.properties.AuthenticatedProperties;
 import io.github.pangju666.framework.core.exception.base.ServiceException;
@@ -18,45 +18,39 @@ import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.StringUtils;
+import org.jasypt.exceptions.EncryptionOperationNotPossibleException;
+import org.jasypt.util.text.AES256TextEncryptor;
 import org.springframework.http.HttpStatus;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
-import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
-import java.security.*;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.KeySpec;
-import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class AuthenticateLoginFilter extends BaseRequestFilter {
 	private final AuthenticatedProperties properties;
-	private final Key key;
 	private final Map<String, AuthenticatedProperties.User> userMap;
+	private AES256TextEncryptor aes256TextEncryptor;
+	private RSATextEncryptor rsaTextEncryptor;
 
-	public AuthenticateLoginFilter(AuthenticatedProperties properties, Set<String> excludePathPattern) throws NoSuchAlgorithmException, InvalidKeySpecException {
+	public AuthenticateLoginFilter(AuthenticatedProperties properties, Set<String> excludePathPattern) {
 		super(excludePathPattern);
 		this.properties = properties;
 		this.userMap = properties.getUsers()
 			.stream()
 			.collect(Collectors.toMap(AuthenticatedProperties.User::getUsername, user -> user));
-		key = switch (properties.getAlgorithm()) {
-			case AES -> new SecretKeySpec(properties.getAes().getKey().getBytes(), AesUtils.ALGORITHM);
-			case RSA -> {
-				KeySpec keySpec = new PKCS8EncodedKeySpec(Base64.decodeBase64(properties.getRsa().getPrivateKey()));
-				yield RsaUtils.getKeyFactory().generatePrivate(keySpec);
-			}
-			default -> null;
-		};
+		if (properties.getPasswordAlgorithm() == PasswordAlgorithm.AES256) {
+			this.aes256TextEncryptor = new AES256TextEncryptor();
+			this.aes256TextEncryptor.setPassword(properties.getAes256().getKey());
+		} else {
+			this.rsaTextEncryptor = new RSATextEncryptor();
+			this.rsaTextEncryptor.setPublicKey(Base64.decodeBase64(properties.getRsa().getPublicKey().getBytes()));
+			this.rsaTextEncryptor.setPrivateKey(Base64.decodeBase64(properties.getRsa().getPrivateKey().getBytes()));
+		}
 	}
 
 	@Override
 	protected void handle(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) {
 		if (!StringUtils.equalsIgnoreCase(request.getMethod(), properties.getRequest().getLoginMethod())) {
-			ResponseUtils.writeResponse(Result.failByMessage("预期的请求方法类型：" + properties.getRequest().getLoginMethod()), response, HttpStatus.METHOD_NOT_ALLOWED);
+			ResponseUtils.writeResultToResponse(Result.failByMessage("预期的请求方法类型：" + properties.getRequest().getLoginMethod()), response, HttpStatus.METHOD_NOT_ALLOWED);
 			return;
 		}
 		String username = request.getParameter(properties.getRequest().getUsernameParameter());
@@ -74,12 +68,11 @@ public class AuthenticateLoginFilter extends BaseRequestFilter {
 				ResponseUtils.writeExceptionToResponse(new ValidationException("密码不可为空"), response);
 				return;
 			}
-			password = switch (properties.getAlgorithm()) {
+			password = switch (properties.getPasswordAlgorithm()) {
 				case HEX -> new String(Hex.decodeHex(password));
 				case BASE64 -> new String(Base64.decodeBase64(password));
-				case AES ->
-					AesUtils.decryptToString(Base64.decodeBase64(password), (SecretKey) key, properties.getAes().getTransformation());
-				case RSA -> RsaUtils.decryptToString(Base64.decodeBase64(password), (PrivateKey) key);
+				case AES256 -> aes256TextEncryptor.decrypt(password);
+				case RSA -> rsaTextEncryptor.decrypt(password);
 			};
 			AuthenticatedProperties.User user = userMap.get(username);
 			if (!user.getPassword().equals(password)) {
@@ -98,9 +91,7 @@ public class AuthenticateLoginFilter extends BaseRequestFilter {
 				.sign(Algorithm.HMAC256(password));
 			AuthenticatedUser authenticatedUser = new AuthenticatedUser(username, user.getRoles(), token);
 			ResponseUtils.writeBeanToResponse(authenticatedUser, response);
-		} catch (IllegalBlockSizeException | NoSuchPaddingException | BadPaddingException |
-				 NoSuchAlgorithmException | InvalidKeyException | InvalidKeySpecException |
-				 InvalidAlgorithmParameterException e) {
+		} catch (EncryptionOperationNotPossibleException e) {
 			logger.error("密码解密失败", e);
 			ResponseUtils.writeExceptionToResponse(new ServiceException("密码解密失败"), response);
 		} catch (DecoderException e) {
