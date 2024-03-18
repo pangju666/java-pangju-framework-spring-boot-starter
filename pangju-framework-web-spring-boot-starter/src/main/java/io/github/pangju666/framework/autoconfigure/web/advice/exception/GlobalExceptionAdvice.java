@@ -93,6 +93,12 @@ public class GlobalExceptionAdvice {
 	}
 
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	@ExceptionHandler(value = MissingRequestValueException.class)
+	public Result<Void> handleMissingRequestValueException(MissingRequestValueException e) {
+		return Result.failByMessage(e.getMessage());
+	}
+
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	@ExceptionHandler(value = MissingServletRequestPartException.class)
 	public Result<Void> handleMissingServletRequestPartException(MissingServletRequestPartException e) {
 		return Result.failByMessage("缺少请求文件：" + e.getRequestPartName());
