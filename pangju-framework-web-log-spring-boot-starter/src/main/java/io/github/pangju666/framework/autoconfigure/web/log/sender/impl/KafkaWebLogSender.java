@@ -10,7 +10,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.util.StringUtils;
 
 public class KafkaWebLogSender implements WebLogSender {
-	public static Logger log = LoggerFactory.getLogger(KafkaWebLogSender.class);
+	private static final Logger log = LoggerFactory.getLogger(KafkaWebLogSender.class);
 
 	private final KafkaTemplate<String, Object> kafkaTemplate;
 	private final WebLogProperties properties;
