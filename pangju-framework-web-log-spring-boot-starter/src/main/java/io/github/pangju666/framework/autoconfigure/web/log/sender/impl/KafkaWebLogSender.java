@@ -3,11 +3,15 @@ package io.github.pangju666.framework.autoconfigure.web.log.sender.impl;
 import io.github.pangju666.framework.autoconfigure.web.log.model.WebLog;
 import io.github.pangju666.framework.autoconfigure.web.log.properties.WebLogProperties;
 import io.github.pangju666.framework.autoconfigure.web.log.sender.WebLogSender;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.util.StringUtils;
 
 public class KafkaWebLogSender implements WebLogSender {
+	public static Logger log = LoggerFactory.getLogger(KafkaWebLogSender.class);
+
 	private final KafkaTemplate<String, Object> kafkaTemplate;
 	private final WebLogProperties properties;
 
@@ -22,6 +26,10 @@ public class KafkaWebLogSender implements WebLogSender {
 
 	@Override
 	public void send(WebLog webLog) {
-		kafkaTemplate.send(properties.getKafka().getTopic(), webLog);
+		try {
+			kafkaTemplate.send(properties.getKafka().getTopic(), webLog);
+		} catch (RuntimeException e) {
+			log.error("接口请求信息发送至消息队列失败", e);
+		}
 	}
 }
