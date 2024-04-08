@@ -7,6 +7,8 @@ import org.springframework.beans.factory.BeanFactory;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
 
+import java.util.Objects;
+
 public class WebLogKafkaListener {
 	private final WebLogReceiver receiver;
 
@@ -17,7 +19,9 @@ public class WebLogKafkaListener {
 	@KafkaListener(topics = "${pangju.web.log.kafka.topic}")
 	public void listenRequestLog(ConsumerRecord<String, WebLog> record, Acknowledgment ack) {
 		WebLog webLog = record.value();
-		receiver.receive(webLog);
+		if (Objects.nonNull(webLog)) {
+			receiver.receive(webLog);
+		}
 		ack.acknowledge();
 	}
 }
