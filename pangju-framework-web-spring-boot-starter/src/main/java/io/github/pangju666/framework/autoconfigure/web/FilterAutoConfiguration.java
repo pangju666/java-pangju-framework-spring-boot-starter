@@ -5,6 +5,7 @@ import io.github.pangju666.framework.web.filter.CorsFilter;
 import io.github.pangju666.framework.web.provider.ExcludePathPatternProvider;
 import jakarta.servlet.Servlet;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.autoconfigure.web.servlet.ConditionalOnMissingFilterBean;
@@ -20,6 +21,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@AutoConfiguration
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @ConditionalOnClass({Servlet.class, DispatcherServlet.class})
 public class FilterAutoConfiguration {

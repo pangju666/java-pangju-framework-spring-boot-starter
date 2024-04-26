@@ -41,12 +41,16 @@
 			<artifactId>pangju-commons-codec</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>net.jodah</groupId>
-			<artifactId>expiringmap</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>com.jayway.jsonpath</groupId>
 			<artifactId>json-path</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.github.resilience4j</groupId>
+			<artifactId>resilience4j-ratelimiter</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>net.jodah</groupId>
+			<artifactId>expiringmap</artifactId>
 		</dependency>
 
 		<dependency>
@@ -72,6 +76,11 @@
 		<dependency>
 			<groupId>org.springframework.data</groupId>
 			<artifactId>spring-data-redis</artifactId>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>org.redisson</groupId>
+			<artifactId>redisson</artifactId>
 			<optional>true</optional>
 		</dependency>
 		<dependency>

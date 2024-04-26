@@ -5,16 +5,23 @@ import java.util.concurrent.TimeUnit;
 
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE, ElementType.METHOD})
-public @interface RequestRepeat {
-	String message() default "请勿重复提交请求";
-
+@Target({ElementType.METHOD})
+public @interface Repeat {
 	String[] headers() default {};
+
+	boolean allHeaders() default false;
 
 	String[] params() default {};
 
+	boolean allParams() default false;
+
 	String[] bodyJsonPaths() default {};
 
-	int duration() default 5;
+	boolean allBody() default false;
+
+	int interval() default 1;
+
 	TimeUnit timeUnit() default TimeUnit.SECONDS;
+
+	String message() default "请勿重复请求";
 }

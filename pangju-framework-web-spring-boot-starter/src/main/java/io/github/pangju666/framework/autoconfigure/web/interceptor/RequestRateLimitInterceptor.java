@@ -1,0 +1,40 @@
+package io.github.pangju666.framework.autoconfigure.web.interceptor;
+
+import io.github.pangju666.framework.autoconfigure.web.annotation.validation.RateLimit;
+import io.github.pangju666.framework.autoconfigure.web.exception.RequestLimitException;
+import io.github.pangju666.framework.autoconfigure.web.limiter.RequestRateLimiter;
+import io.github.pangju666.framework.web.interceptor.BaseRequestInterceptor;
+import io.github.pangju666.framework.web.utils.ResponseUtils;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.lang.NonNull;
+import org.springframework.web.method.HandlerMethod;
+
+import java.util.Objects;
+
+public class RequestRateLimitInterceptor extends BaseRequestInterceptor {
+	private final RequestRateLimiter requestRateLimiter;
+
+	public RequestRateLimitInterceptor(RequestRateLimiter requestLimitHandlers) {
+		this.requestRateLimiter = requestLimitHandlers;
+	}
+
+	@Override
+	public boolean preHandle(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull Object handler) {
+		if (handler instanceof HandlerMethod handlerMethod) {
+			RateLimit annotation = handlerMethod.getMethodAnnotation(RateLimit.class);
+			if (Objects.isNull(annotation)) {
+				Class<?> targetClass = handlerMethod.getBeanType();
+				annotation = targetClass.getAnnotation(RateLimit.class);
+			}
+			if (Objects.isNull(annotation)) {
+				return true;
+			}
+			if (!requestRateLimiter.tryAcquire(annotation, request)) {
+				ResponseUtils.writeExceptionToResponse(new RequestLimitException(annotation), response);
+				return false;
+			}
+		}
+		return true;
+	}
+}

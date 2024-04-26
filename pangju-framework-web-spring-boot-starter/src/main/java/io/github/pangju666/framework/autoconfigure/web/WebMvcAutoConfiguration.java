@@ -1,23 +1,19 @@
 package io.github.pangju666.framework.autoconfigure.web;
 
-import io.github.pangju666.framework.autoconfigure.web.interceptor.RequestLimitInterceptor;
+import io.github.pangju666.framework.autoconfigure.web.interceptor.RequestRateLimitInterceptor;
 import io.github.pangju666.framework.autoconfigure.web.interceptor.RequestRepeatInterceptor;
-import io.github.pangju666.framework.autoconfigure.web.properties.RequestLimitProperties;
-import io.github.pangju666.framework.autoconfigure.web.properties.RequestRepeatProperties;
+import io.github.pangju666.framework.autoconfigure.web.limiter.RequestRateLimiter;
+import io.github.pangju666.framework.autoconfigure.web.repeater.RequestRepeater;
 import io.github.pangju666.framework.autoconfigure.web.resolver.EncryptRequestParamArgumentResolver;
 import io.github.pangju666.framework.web.interceptor.BaseRequestInterceptor;
 import io.github.pangju666.framework.web.provider.ExcludePathPatternProvider;
 import io.github.pangju666.framework.web.resolver.EnumRequestParamArgumentResolver;
 import jakarta.servlet.Servlet;
 import org.apache.commons.collections4.ListUtils;
-import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.BeanFactory;
-import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -27,24 +23,16 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-@AutoConfiguration(after = {
-	org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration.class
-})
+@AutoConfiguration(after = org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration.class)
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @ConditionalOnClass({Servlet.class, DispatcherServlet.class, WebMvcConfigurer.class})
-@EnableConfigurationProperties({RequestLimitProperties.class, RequestRepeatProperties.class})
-public class WebMvcAutoConfiguration implements WebMvcConfigurer, BeanFactoryAware {
-	private final RequestLimitProperties requestLimitProperties;
-	private final RequestRepeatProperties requestRepeatProperties;
+public class WebMvcAutoConfiguration implements WebMvcConfigurer {
 	private final List<BaseRequestInterceptor> interceptors;
+	private RequestRateLimiter requestRateLimiter;
+	private RequestRepeater requestRepeater;
 	private List<String> excludePathPatterns = Collections.emptyList();
-	private BeanFactory beanFactory;
 
-	public WebMvcAutoConfiguration(RequestLimitProperties requestLimitProperties,
-								   RequestRepeatProperties requestRepeatProperties,
-								   List<BaseRequestInterceptor> interceptors) {
-		this.requestRepeatProperties = requestRepeatProperties;
-		this.requestLimitProperties = requestLimitProperties;
+	public WebMvcAutoConfiguration(List<BaseRequestInterceptor> interceptors) {
 		this.interceptors = interceptors;
 	}
 
@@ -57,9 +45,14 @@ public class WebMvcAutoConfiguration implements WebMvcConfigurer, BeanFactoryAwa
 			.toList();
 	}
 
-	@Override
-	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
-		this.beanFactory = beanFactory;
+	@Autowired
+	public void setRequestRateLimiter(RequestRateLimiter requestRateLimiter) {
+		this.requestRateLimiter = requestRateLimiter;
+	}
+
+	@Autowired
+	public void setRequestRepeater(RequestRepeater requestRepeater) {
+		this.requestRepeater = requestRepeater;
 	}
 
 	@Override
@@ -70,10 +63,11 @@ public class WebMvcAutoConfiguration implements WebMvcConfigurer, BeanFactoryAwa
 
 	@Override
 	public void addInterceptors(InterceptorRegistry registry) {
-		registry.addInterceptor(new RequestRepeatInterceptor(requestRepeatProperties, beanFactory))
+		registry.addInterceptor(new RequestRepeatInterceptor(requestRepeater))
 			.addPathPatterns("/**")
 			.excludePathPatterns(excludePathPatterns);
-		registry.addInterceptor(new RequestLimitInterceptor(requestLimitProperties, beanFactory))
+
+		registry.addInterceptor(new RequestRateLimitInterceptor(requestRateLimiter))
 			.addPathPatterns("/**")
 			.excludePathPatterns(excludePathPatterns);
 

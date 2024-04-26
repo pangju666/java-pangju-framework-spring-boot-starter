@@ -30,7 +30,7 @@ public class RequestRepeatProperties {
 
 	public static class Redis {
 		private String templateBeanName;
-		private String keyPrefix = "repeat-submit";
+		private String keyPrefix = "request-repeat";
 
 		public String getTemplateBeanName() {
 			return templateBeanName;
