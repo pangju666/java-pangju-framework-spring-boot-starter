@@ -2,6 +2,7 @@ package io.github.pangju666.framework.autoconfigure.web.log;
 
 import io.github.pangju666.framework.autoconfigure.web.log.listener.WebLogKafkaListener;
 import io.github.pangju666.framework.autoconfigure.web.log.properties.WebLogProperties;
+import io.github.pangju666.framework.autoconfigure.web.log.revceiver.WebLogReceiver;
 import io.github.pangju666.framework.autoconfigure.web.log.sender.WebLogSender;
 import io.github.pangju666.framework.autoconfigure.web.log.sender.impl.KafkaWebLogSender;
 import jakarta.servlet.Servlet;
@@ -17,7 +18,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @ConditionalOnClass({Servlet.class, DispatcherServlet.class, WebMvcConfigurer.class, KafkaTemplate.class})
 @ConditionalOnProperty(prefix = "pangju.web.log", name = "enabled", havingValue = "true", matchIfMissing = true)
-public class KafkaAutoConfiguration {
+public class KafkaSenderAutoConfiguration {
 	@ConditionalOnProperty(prefix = "pangju.web.log", name = "kafka.topic")
 	@ConditionalOnMissingBean(WebLogSender.class)
 	@ConditionalOnBean(KafkaTemplate.class)
@@ -29,7 +30,7 @@ public class KafkaAutoConfiguration {
 	@ConditionalOnProperty(prefix = "pangju.web.log", name = "kafka.topic")
 	@ConditionalOnBean(KafkaWebLogSender.class)
 	@Bean
-	public WebLogKafkaListener webLogKafkaListener(BeanFactory beanFactory) {
-		return new WebLogKafkaListener(beanFactory);
+	public WebLogKafkaListener webLogKafkaListener(WebLogReceiver webLogReceiver) {
+		return new WebLogKafkaListener(webLogReceiver);
 	}
 }
