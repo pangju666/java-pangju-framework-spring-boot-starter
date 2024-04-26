@@ -4,7 +4,7 @@ import io.github.pangju666.framework.autoconfigure.web.log.filter.WebLogFilter;
 import io.github.pangju666.framework.autoconfigure.web.log.handler.WebLogHandler;
 import io.github.pangju666.framework.autoconfigure.web.log.properties.WebLogProperties;
 import io.github.pangju666.framework.autoconfigure.web.log.sender.WebLogSender;
-import io.github.pangju666.framework.autoconfigure.web.provider.ExcludePathPatternProvider;
+import io.github.pangju666.framework.web.provider.ExcludePathPatternProvider;
 import jakarta.servlet.Servlet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfiguration;

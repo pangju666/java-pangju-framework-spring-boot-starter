@@ -4,9 +4,9 @@ import io.github.pangju666.framework.autoconfigure.web.interceptor.RequestLimitI
 import io.github.pangju666.framework.autoconfigure.web.interceptor.RequestRepeatInterceptor;
 import io.github.pangju666.framework.autoconfigure.web.properties.RequestLimitProperties;
 import io.github.pangju666.framework.autoconfigure.web.properties.RequestRepeatProperties;
-import io.github.pangju666.framework.autoconfigure.web.provider.ExcludePathPatternProvider;
 import io.github.pangju666.framework.autoconfigure.web.resolver.EncryptRequestParamArgumentResolver;
 import io.github.pangju666.framework.web.interceptor.BaseRequestInterceptor;
+import io.github.pangju666.framework.web.provider.ExcludePathPatternProvider;
 import io.github.pangju666.framework.web.resolver.EnumRequestParamArgumentResolver;
 import jakarta.servlet.Servlet;
 import org.apache.commons.collections4.ListUtils;

@@ -4,7 +4,7 @@ import io.github.pangju666.framework.autoconfigure.web.authenticate.filter.Authe
 import io.github.pangju666.framework.autoconfigure.web.authenticate.filter.AuthenticateLoginFilter;
 import io.github.pangju666.framework.autoconfigure.web.authenticate.interceptor.AuthenticatedInterceptor;
 import io.github.pangju666.framework.autoconfigure.web.authenticate.properties.AuthenticatedProperties;
-import io.github.pangju666.framework.autoconfigure.web.provider.ExcludePathPatternProvider;
+import io.github.pangju666.framework.web.provider.ExcludePathPatternProvider;
 import jakarta.servlet.Servlet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;

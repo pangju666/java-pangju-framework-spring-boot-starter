@@ -1,4 +1,4 @@
-package io.github.pangju666.framework.autoconfigure.doc.utils.utils;
+package io.github.pangju666.framework.autoconfigure.springdoc.utils.utils;
 
 import org.apache.commons.collections4.SetUtils;
 import org.springdoc.core.properties.SpringDocConfigProperties;

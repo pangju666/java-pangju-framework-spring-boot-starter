@@ -1,7 +1,7 @@
-package io.github.pangju666.framework.autoconfigure.doc.utils;
+package io.github.pangju666.framework.autoconfigure.springdoc.utils;
 
-import io.github.pangju666.framework.autoconfigure.doc.utils.utils.SpringDocUtils;
-import io.github.pangju666.framework.autoconfigure.web.provider.ExcludePathPatternProvider;
+import io.github.pangju666.framework.autoconfigure.springdoc.utils.utils.SpringDocUtils;
+import io.github.pangju666.framework.web.provider.ExcludePathPatternProvider;
 import org.springdoc.core.properties.SpringDocConfigProperties;
 import org.springdoc.core.properties.SwaggerUiConfigProperties;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
