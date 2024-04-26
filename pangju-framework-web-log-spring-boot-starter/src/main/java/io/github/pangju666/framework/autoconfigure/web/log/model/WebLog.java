@@ -8,8 +8,10 @@ public class WebLog {
 	private String method;
 	private String date;
 	private Long costMillis;
+	private String operation;
 	private Request request;
 	private Response response;
+	private Map<String, Object> expandData;
 
 	public String getIp() {
 		return ip;
@@ -131,6 +133,22 @@ public class WebLog {
 		public void setBody(Object body) {
 			this.body = body;
 		}
+	}
+
+	public Map<String, Object> getExpandData() {
+		return expandData;
+	}
+
+	public void setExpandData(Map<String, Object> expandData) {
+		this.expandData = expandData;
+	}
+
+	public String getOperation() {
+		return operation;
+	}
+
+	public void setOperation(String operation) {
+		this.operation = operation;
 	}
 
 	public static class Response {

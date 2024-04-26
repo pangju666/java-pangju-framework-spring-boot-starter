@@ -5,6 +5,8 @@ import com.google.gson.reflect.TypeToken;
 import io.github.pangju666.commons.lang.utils.DateFormatUtils;
 import io.github.pangju666.commons.lang.utils.JsonUtils;
 import io.github.pangju666.framework.autoconfigure.web.log.annotation.WebLogIgnore;
+import io.github.pangju666.framework.autoconfigure.web.log.annotation.WebLogOperation;
+import io.github.pangju666.framework.autoconfigure.web.log.handler.WebLogHandler;
 import io.github.pangju666.framework.autoconfigure.web.log.model.WebLog;
 import io.github.pangju666.framework.autoconfigure.web.log.properties.WebLogProperties;
 import io.github.pangju666.framework.autoconfigure.web.log.sender.WebLogSender;
@@ -28,41 +30,44 @@ import org.springframework.web.util.ContentCachingResponseWrapper;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.util.Date;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class WebLogFilter extends BaseRequestFilter {
 	private final WebLogSender sender;
 	private final WebLogProperties properties;
 	private final RequestMappingHandlerMapping requestMappingHandlerMapping;
+	private final List<WebLogHandler> webLogHandlers;
 
 	public WebLogFilter(WebLogProperties properties,
 						WebLogSender sender,
 						Set<String> excludePathPatterns,
+						List<WebLogHandler> webLogHandlers,
 						RequestMappingHandlerMapping requestMappingHandlerMapping) {
 		super(excludePathPatterns);
 		this.properties = properties;
 		this.sender = sender;
 		this.requestMappingHandlerMapping = requestMappingHandlerMapping;
+		this.webLogHandlers = webLogHandlers;
 	}
 
 	@Override
 	protected void handle(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 		Date requestDate = new Date();
+
+		WebLogOperation operation = null;
+		Class<?> targetClass = null;
+		Method targetMethod = null;
 		try {
 			HandlerExecutionChain handlerMappingHandler = requestMappingHandlerMapping.getHandler(request);
-			if (Objects.nonNull(handlerMappingHandler) &&
-				(handlerMappingHandler.getHandler() instanceof HandlerMethod handlerMethod)) {
-				Class<?> targetClass = handlerMethod.getBeanType();
-				Method targetMethod = handlerMethod.getMethod();
-				if (Objects.nonNull(targetMethod.getAnnotation(WebLogIgnore.class)) ||
-					Objects.nonNull(targetClass.getAnnotation(WebLogIgnore.class))) {
+			if (Objects.nonNull(handlerMappingHandler) && (handlerMappingHandler.getHandler() instanceof HandlerMethod handlerMethod)) {
+				targetClass = handlerMethod.getBeanType();
+				targetMethod = handlerMethod.getMethod();
+				if (Objects.nonNull(targetMethod.getAnnotation(WebLogIgnore.class)) || Objects.nonNull(targetClass.getAnnotation(WebLogIgnore.class))) {
 					filterChain.doFilter(request, response);
 					return;
 				}
+				operation = targetMethod.getAnnotation(WebLogOperation.class);
 			}
 		} catch (Exception e) {
 			filterChain.doFilter(request, response);
@@ -77,6 +82,9 @@ public class WebLogFilter extends BaseRequestFilter {
 			stopWatch.stop();
 
 			WebLog webLog = new WebLog();
+			if (Objects.nonNull(operation)) {
+				webLog.setOperation(operation.value());
+			}
 			webLog.setIp(RequestUtils.getIpAddress(requestWrapper));
 			webLog.setMethod(requestWrapper.getMethod());
 			webLog.setDate(DateFormatUtils.formatDatetime(requestDate));
@@ -150,6 +158,14 @@ public class WebLogFilter extends BaseRequestFilter {
 				}
 			}
 			webLog.setResponse(responseLog);
+
+			try {
+				for (WebLogHandler webLogHandler : webLogHandlers) {
+					webLogHandler.handle(webLog, requestWrapper, responseWrapper, targetClass, targetMethod);
+				}
+			} catch (Exception e) {
+				logger.error("自定义网络日志收集处理器错误", e);
+			}
 
 			sender.send(webLog);
 		}

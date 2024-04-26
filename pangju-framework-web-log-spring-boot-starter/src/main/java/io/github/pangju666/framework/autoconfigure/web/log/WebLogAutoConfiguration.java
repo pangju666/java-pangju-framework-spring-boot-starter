@@ -1,6 +1,7 @@
 package io.github.pangju666.framework.autoconfigure.web.log;
 
 import io.github.pangju666.framework.autoconfigure.web.log.filter.WebLogFilter;
+import io.github.pangju666.framework.autoconfigure.web.log.handler.WebLogHandler;
 import io.github.pangju666.framework.autoconfigure.web.log.properties.WebLogProperties;
 import io.github.pangju666.framework.autoconfigure.web.log.sender.WebLogSender;
 import io.github.pangju666.framework.autoconfigure.web.provider.ExcludePathPatternProvider;
@@ -20,6 +21,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -45,8 +47,9 @@ public class WebLogAutoConfiguration {
 	@Bean
 	public FilterRegistrationBean<WebLogFilter> webLogFilterRegistrationBean(WebLogProperties properties,
 																			 WebLogSender webLogSender,
+																			 List<WebLogHandler> webLogHandlers,
 																			 RequestMappingHandlerMapping requestMappingHandlerMapping) {
-		WebLogFilter webLogFilter = new WebLogFilter(properties, webLogSender, excludePathPatterns, requestMappingHandlerMapping);
+		WebLogFilter webLogFilter = new WebLogFilter(properties, webLogSender, excludePathPatterns, webLogHandlers, requestMappingHandlerMapping);
 		FilterRegistrationBean<WebLogFilter> filterRegistrationBean = new FilterRegistrationBean<>(webLogFilter);
 		filterRegistrationBean.addUrlPatterns("/*");
 		filterRegistrationBean.setOrder(Ordered.HIGHEST_PRECEDENCE + 3);
