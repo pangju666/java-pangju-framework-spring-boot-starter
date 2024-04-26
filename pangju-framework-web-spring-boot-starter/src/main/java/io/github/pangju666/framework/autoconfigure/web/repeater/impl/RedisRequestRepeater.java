@@ -20,7 +20,7 @@ public class RedisRequestRepeater extends RequestRepeater {
 		if (StringUtils.isNotBlank(properties.getRedis().getTemplateBeanName())) {
 			this.redisTemplate = beanFactory.getBean(properties.getRedis().getTemplateBeanName(), RedisTemplate.class);
 		} else {
-			this.redisTemplate = beanFactory.getBean(RedisTemplate.class);
+			this.redisTemplate = beanFactory.getBean("redisTemplate", RedisTemplate.class);
 		}
 	}
 
