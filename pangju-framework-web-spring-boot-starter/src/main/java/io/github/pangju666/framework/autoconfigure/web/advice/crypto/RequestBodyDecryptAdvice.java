@@ -5,6 +5,7 @@ import io.github.pangju666.framework.autoconfigure.context.StaticSpringContext;
 import io.github.pangju666.framework.autoconfigure.web.annotation.crypto.DecryptRequestBody;
 import io.github.pangju666.framework.autoconfigure.web.annotation.crypto.DecryptRequestBodyField;
 import io.github.pangju666.framework.autoconfigure.web.utils.CryptoUtils;
+import io.github.pangju666.framework.core.exception.base.ServerException;
 import io.github.pangju666.framework.core.exception.base.ServiceException;
 import jakarta.servlet.Servlet;
 import org.apache.commons.codec.DecoderException;
@@ -13,8 +14,6 @@ import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jasypt.exceptions.EncryptionOperationNotPossibleException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.core.MethodParameter;
@@ -37,8 +36,6 @@ import java.util.*;
 @ConditionalOnClass({Servlet.class, DispatcherServlet.class})
 @RestControllerAdvice
 public class RequestBodyDecryptAdvice implements RequestBodyAdvice {
-	private static final Logger logger = LoggerFactory.getLogger(RequestBodyDecryptAdvice.class);
-
 	@Override
 	public boolean supports(MethodParameter methodParameter, Type targetType,
 							Class<? extends HttpMessageConverter<?>> converterType) {
@@ -65,14 +62,11 @@ public class RequestBodyDecryptAdvice implements RequestBodyAdvice {
 			byte[] plainText = CryptoUtils.decrypt(requestBodyStr, key, annotation.algorithm(), annotation.encoding());
 			return new MappingJacksonInputMessage(new ByteArrayInputStream(plainText), inputMessage.getHeaders());
 		} catch (IOException e) {
-			logger.error("请求体读取失败", e);
-			throw new ServiceException("请求体读取失败");
+			throw new ServerException("请求体读取失败", e);
 		} catch (EncryptionOperationNotPossibleException e) {
-			logger.error("请求数据解密失败", e);
-			throw new ServiceException("请求数据解密失败");
+			throw new ServiceException("无效的请求数据", "请求数据对象解密失败", e);
 		} catch (DecoderException e) {
-			logger.error("十六进制解码失败", e);
-			throw new ServiceException("请求数据十六进制解码失败");
+			throw new ServiceException("无效的请求数据", "请求数据对象十六进制解码失败", e);
 		}
 	}
 
@@ -98,8 +92,7 @@ public class RequestBodyDecryptAdvice implements RequestBodyAdvice {
 
 				String key = StaticSpringContext.getProperty(annotation.key());
 				if (StringUtils.isBlank(key)) {
-					logger.error("属性：{} 值为空", annotation.key());
-					throw new ServiceException("秘钥读取失败");
+					throw new ServerException("属性：" + annotation.key() + "值为空");
 				}
 
 				if (String.class.isAssignableFrom(field.getType())) {
@@ -155,11 +148,9 @@ public class RequestBodyDecryptAdvice implements RequestBodyAdvice {
 					}
 				}
 			} catch (EncryptionOperationNotPossibleException e) {
-				logger.error("请求数据解密失败", e);
-				throw new ServiceException("请求数据解密失败");
+				throw new ServiceException("无效的请求数据", "请求数据对象字段解密失败", e);
 			} catch (DecoderException e) {
-				logger.error("十六进制解码失败", e);
-				throw new ServiceException("请求数据十六进制解码失败");
+				throw new ServiceException("无效的请求数据", "请求数据对象字段十六进制解码失败", e);
 			}
 		}
 		return body;

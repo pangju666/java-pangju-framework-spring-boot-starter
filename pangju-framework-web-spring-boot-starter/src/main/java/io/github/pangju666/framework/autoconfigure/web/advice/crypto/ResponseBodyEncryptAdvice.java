@@ -6,7 +6,7 @@ import io.github.pangju666.framework.autoconfigure.context.StaticSpringContext;
 import io.github.pangju666.framework.autoconfigure.web.annotation.crypto.EncryptResponseBody;
 import io.github.pangju666.framework.autoconfigure.web.annotation.crypto.EncryptResponseBodyField;
 import io.github.pangju666.framework.autoconfigure.web.utils.CryptoUtils;
-import io.github.pangju666.framework.core.exception.base.ServiceException;
+import io.github.pangju666.framework.core.exception.base.ServerException;
 import io.github.pangju666.framework.web.model.Result;
 import jakarta.servlet.Servlet;
 import org.apache.commons.collections4.CollectionUtils;
@@ -63,8 +63,7 @@ public class ResponseBodyEncryptAdvice implements ResponseBodyAdvice<Object> {
 		if (Objects.nonNull(annotation)) {
 			String key = StaticSpringContext.getProperty(annotation.key());
 			if (StringUtils.isBlank(key)) {
-				logger.error("属性：{} 值为空", annotation.key());
-				throw new ServiceException("秘钥读取失败");
+				throw new ServerException("属性：" + annotation.key() + "值为空");
 			}
 			return encryptBody(body, annotation, key);
 		}
@@ -99,8 +98,7 @@ public class ResponseBodyEncryptAdvice implements ResponseBodyAdvice<Object> {
 			String content = JsonUtils.toString(body);
 			return CryptoUtils.encrypt(content.getBytes(), key, annotation.algorithm(), annotation.encoding());
 		} catch (EncryptionOperationNotPossibleException e) {
-			logger.error("响应数据加密失败", e);
-			throw new ServiceException("响应数据加密失败");
+			throw new ServerException("响应数据对象加密失败", e);
 		}
 	}
 
@@ -133,8 +131,7 @@ public class ResponseBodyEncryptAdvice implements ResponseBodyAdvice<Object> {
 
 				String key = StaticSpringContext.getProperty(annotation.key());
 				if (StringUtils.isBlank(key)) {
-					logger.error("属性：{} 值为空", annotation.key());
-					throw new ServiceException("秘钥读取失败");
+					throw new ServerException("属性：" + annotation.key() + "值为空");
 				}
 
 				if (String.class.isAssignableFrom(field.getType())) {
@@ -190,8 +187,7 @@ public class ResponseBodyEncryptAdvice implements ResponseBodyAdvice<Object> {
 					}
 				}
 			} catch (EncryptionOperationNotPossibleException e) {
-				logger.error("响应数据加密失败", e);
-				throw new ServiceException("响应数据加密失败");
+				throw new ServerException("响应数据对象字段加密失败", e);
 			}
 		}
 	}

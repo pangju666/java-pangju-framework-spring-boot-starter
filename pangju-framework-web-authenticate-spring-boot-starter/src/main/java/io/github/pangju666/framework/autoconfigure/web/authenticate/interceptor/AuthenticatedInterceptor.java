@@ -10,18 +10,15 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import io.github.pangju666.commons.lang.pool.ConstantPool;
 import io.github.pangju666.framework.autoconfigure.web.authenticate.annotation.Authenticated;
 import io.github.pangju666.framework.autoconfigure.web.authenticate.properties.AuthenticatedProperties;
-import io.github.pangju666.framework.web.exception.AuthenticationException;
-import io.github.pangju666.framework.web.exception.authentication.AuthenticationExpireException;
-import io.github.pangju666.framework.web.exception.authentication.NoRoleException;
+import io.github.pangju666.framework.core.exception.authentication.AuthenticationException;
+import io.github.pangju666.framework.core.exception.authentication.AuthenticationExpireException;
+import io.github.pangju666.framework.core.exception.authentication.NoRoleException;
 import io.github.pangju666.framework.web.interceptor.BaseRequestInterceptor;
 import io.github.pangju666.framework.web.utils.ResponseUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.lang.NonNull;
 import org.springframework.web.method.HandlerMethod;
 
@@ -30,7 +27,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class AuthenticatedInterceptor extends BaseRequestInterceptor {
-	private static final Logger logger = LoggerFactory.getLogger(AuthenticatedInterceptor.class);
 	private final Map<String, AuthenticatedProperties.User> userMap;
 
 	public AuthenticatedInterceptor(AuthenticatedProperties properties) {
@@ -83,43 +79,42 @@ public class AuthenticatedInterceptor extends BaseRequestInterceptor {
 				jwt.verify(token);
 				Date expireDate = decode.getExpiresAt();
 				if (requestTime.compareTo(expireDate) > 0) {
-					ResponseUtils.writeExceptionToResponse(new AuthenticationExpireException("token已过期"), response, HttpStatus.UNAUTHORIZED.value());
+					ResponseUtils.writeExceptionToResponse(new AuthenticationExpireException("token已过期"), response);
 					return false;
 				}
 
 				if (annotation.roles().length > 0) {
 					Claim rolesClaim = decode.getClaim("roles");
 					if (rolesClaim.isNull()) {
-						ResponseUtils.writeExceptionToResponse(new NoRoleException("用户没有对应的角色"), response, HttpStatus.FORBIDDEN.value());
+						ResponseUtils.writeExceptionToResponse(new NoRoleException("用户没有对应的角色"), response);
 						return false;
 					}
 					List<String> userRoles = rolesClaim.asList(String.class);
 					if (userRoles.isEmpty()) {
-						ResponseUtils.writeExceptionToResponse(new NoRoleException("用户没有对应的角色"), response, HttpStatus.FORBIDDEN.value());
+						ResponseUtils.writeExceptionToResponse(new NoRoleException("用户没有对应的角色"), response);
 						return false;
 					}
 
 					if (annotation.matchAnyRole()) {
 						boolean hasRole = Arrays.stream(annotation.roles()).anyMatch(userRoles::contains);
 						if (!hasRole) {
-							ResponseUtils.writeExceptionToResponse(new NoRoleException("用户没有对应的角色"), response, HttpStatus.FORBIDDEN.value());
+							ResponseUtils.writeExceptionToResponse(new NoRoleException("用户没有对应的角色"), response);
 							return false;
 						}
 					} else {
 						List<String> exceptRoles = new ArrayList<>(Arrays.asList(annotation.roles()));
 						exceptRoles.removeAll(userRoles);
 						if (!exceptRoles.isEmpty()) {
-							ResponseUtils.writeExceptionToResponse(new NoRoleException("用户没有对应的角色"), response, HttpStatus.FORBIDDEN.value());
+							ResponseUtils.writeExceptionToResponse(new NoRoleException("用户没有对应的角色"), response);
 							return false;
 						}
 					}
 				}
 			} catch (JWTDecodeException e) {
-				ResponseUtils.writeExceptionToResponse(new AuthenticationException("token格式不正确"), response);
+				ResponseUtils.writeExceptionToResponse(new AuthenticationException("token格式不正确", "jwt-token解码失败", e), response);
 				return false;
 			} catch (IllegalArgumentException | JWTVerificationException e) {
-				logger.error("身份认证失败", e);
-				ResponseUtils.writeExceptionToResponse(new AuthenticationException("无效的token"), response);
+				ResponseUtils.writeExceptionToResponse(new AuthenticationException("无效的token", "jwt-token认证失败", e), response);
 				return false;
 			}
 		}

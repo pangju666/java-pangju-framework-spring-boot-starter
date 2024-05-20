@@ -7,7 +7,7 @@ import io.github.pangju666.framework.autoconfigure.web.authenticate.enums.Passwo
 import io.github.pangju666.framework.autoconfigure.web.authenticate.model.AuthenticatedUser;
 import io.github.pangju666.framework.autoconfigure.web.authenticate.properties.AuthenticatedProperties;
 import io.github.pangju666.framework.core.exception.base.ServiceException;
-import io.github.pangju666.framework.core.exception.validation.ValidationException;
+import io.github.pangju666.framework.core.exception.base.ValidationException;
 import io.github.pangju666.framework.web.filter.BaseRequestFilter;
 import io.github.pangju666.framework.web.model.Result;
 import io.github.pangju666.framework.web.utils.ResponseUtils;
@@ -92,11 +92,9 @@ public class AuthenticateLoginFilter extends BaseRequestFilter {
 			AuthenticatedUser authenticatedUser = new AuthenticatedUser(username, user.getRoles(), token);
 			ResponseUtils.writeBeanToResponse(authenticatedUser, response);
 		} catch (EncryptionOperationNotPossibleException e) {
-			logger.error("密码解密失败", e);
-			ResponseUtils.writeExceptionToResponse(new ServiceException("密码解密失败"), response);
+			ResponseUtils.writeExceptionToResponse(new ServiceException("无效的密码", "密码解密失败", e), response);
 		} catch (DecoderException e) {
-			logger.error("十六进制解码失败", e);
-			ResponseUtils.writeExceptionToResponse(new ServiceException("请求数据十六进制解码失败"), response);
+			ResponseUtils.writeExceptionToResponse(new ServiceException("无效的密码", "密码解码失败", e), response);
 		}
 	}
 }

@@ -10,6 +10,7 @@ import io.github.pangju666.framework.autoconfigure.web.log.handler.WebLogHandler
 import io.github.pangju666.framework.autoconfigure.web.log.model.WebLog;
 import io.github.pangju666.framework.autoconfigure.web.log.properties.WebLogProperties;
 import io.github.pangju666.framework.autoconfigure.web.log.sender.WebLogSender;
+import io.github.pangju666.framework.core.exception.base.BaseRuntimeException;
 import io.github.pangju666.framework.web.filter.BaseRequestFilter;
 import io.github.pangju666.framework.web.model.Result;
 import io.github.pangju666.framework.web.utils.RequestUtils;
@@ -20,6 +21,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.Part;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.util.StopWatch;
 import org.springframework.web.method.HandlerMethod;
@@ -34,6 +37,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class WebLogFilter extends BaseRequestFilter {
+	private static final Logger logger = LoggerFactory.getLogger(WebLogFilter.class);
+
 	private final WebLogSender sender;
 	private final WebLogProperties properties;
 	private final RequestMappingHandlerMapping requestMappingHandlerMapping;
@@ -164,9 +169,12 @@ public class WebLogFilter extends BaseRequestFilter {
 					webLogHandler.handle(webLog, requestWrapper, responseWrapper, targetClass, targetMethod);
 				}
 			} catch (Exception e) {
-				logger.error("自定义网络日志收集处理器错误", e);
+				if (e instanceof BaseRuntimeException baseRuntimeException) {
+					baseRuntimeException.log(logger);
+				} else {
+					logger.error("自定义网络日志收集处理器错误", e);
+				}
 			}
-
 			sender.send(webLog);
 		}
 	}
