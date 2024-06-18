@@ -1,4 +1,4 @@
-package io.github.pangju666.frameowrk.autoconfigure.data.mybatisplus.properties;
+package io.github.pangju666.framework.autoconfigure.data.mybatisplus.properties;
 
 import com.baomidou.mybatisplus.annotation.DbType;
 import com.baomidou.mybatisplus.core.toolkit.Constants;
