@@ -8,7 +8,7 @@ import java.lang.annotation.*;
 public @interface RedisCacheEvict {
     String[] caches() default {};
 
-    String key();
+    String key() default "";
 
     String condition() default "";
 
