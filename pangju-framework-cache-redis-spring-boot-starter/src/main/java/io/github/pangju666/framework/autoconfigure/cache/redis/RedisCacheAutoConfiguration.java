@@ -30,7 +30,7 @@ public class RedisCacheAutoConfiguration {
         template.setKeySerializer(RedisSerializer.string());
         template.setValueSerializer(redisCacheProperties.getValueSerializer().getSerializer());
         template.setHashKeySerializer(RedisSerializer.string());
-        template.setHashValueSerializer(redisCacheProperties.getHashValueSerializer().getSerializer());
+        template.setHashValueSerializer(redisCacheProperties.getValueSerializer().getSerializer());
         return template;
     }
 

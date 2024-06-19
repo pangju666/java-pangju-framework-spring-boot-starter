@@ -6,10 +6,9 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "pangju.cache.redis")
 public class RedisCacheProperties {
     private boolean cacheNullValues = true;
-    private String keyPrefix;
-    private boolean useKeyPrefix = true;
+    private String cachePrefix;
+    private boolean useCachePrefix = true;
     private RedisSerializerType valueSerializer = RedisSerializerType.JSON;
-    private RedisSerializerType hashValueSerializer = RedisSerializerType.JSON;
 
     public boolean isCacheNullValues() {
         return cacheNullValues;
@@ -19,20 +18,20 @@ public class RedisCacheProperties {
         this.cacheNullValues = cacheNullValues;
     }
 
-    public String getKeyPrefix() {
-        return keyPrefix;
+    public String getCachePrefix() {
+        return cachePrefix;
     }
 
-    public void setKeyPrefix(String keyPrefix) {
-        this.keyPrefix = keyPrefix;
+    public void setCachePrefix(String cachePrefix) {
+        this.cachePrefix = cachePrefix;
     }
 
-    public boolean isUseKeyPrefix() {
-        return useKeyPrefix;
+    public boolean isUseCachePrefix() {
+        return useCachePrefix;
     }
 
-    public void setUseKeyPrefix(boolean useKeyPrefix) {
-        this.useKeyPrefix = useKeyPrefix;
+    public void setUseCachePrefix(boolean useCachePrefix) {
+        this.useCachePrefix = useCachePrefix;
     }
 
     public RedisSerializerType getValueSerializer() {
@@ -41,13 +40,5 @@ public class RedisCacheProperties {
 
     public void setValueSerializer(RedisSerializerType valueSerializer) {
         this.valueSerializer = valueSerializer;
-    }
-
-    public RedisSerializerType getHashValueSerializer() {
-        return hashValueSerializer;
-    }
-
-    public void setHashValueSerializer(RedisSerializerType hashValueSerializer) {
-        this.hashValueSerializer = hashValueSerializer;
     }
 }
