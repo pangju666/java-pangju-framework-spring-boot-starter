@@ -10,6 +10,8 @@ public @interface RedisCacheEvict {
 
     String key() default "";
 
+    String keyField() default "";
+
     String condition() default "";
 
     boolean allEntries() default false;

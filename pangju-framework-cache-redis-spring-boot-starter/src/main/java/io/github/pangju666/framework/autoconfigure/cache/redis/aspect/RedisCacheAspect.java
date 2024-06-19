@@ -31,7 +31,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Aspect
 public class RedisCacheAspect {
@@ -183,10 +182,10 @@ public class RedisCacheAspect {
         context.setVariable("result", returnValue);
 
         RedisCaching annotation = method.getAnnotation(RedisCaching.class);
-        for (RedisCacheEvict evictAnnotation : annotation.evict()) {
+        for (RedisCacheEvict evictAnnotation : annotation.evicts()) {
             evict(context, evictAnnotation);
         }
-        for (RedisCachePut putAnnotation : annotation.put()) {
+        for (RedisCachePut putAnnotation : annotation.puts()) {
             put(context, putAnnotation);
         }
     }
@@ -292,13 +291,16 @@ public class RedisCacheAspect {
 
             Expression valueExpression = parser.parseExpression(annotation.value());
             Object value = valueExpression.getValue(context, Object.class);
-            if (value instanceof Collection<?> collection) {
-                cacheManager.putAll(cacheName, StringUtils.defaultIfBlank(annotation.key(), null), CollectionUtils.emptyIfNull(collection));
-            } else if (StringUtils.isNotBlank(annotation.key())) {
-                Expression keyExpression = parser.parseExpression(annotation.key());
-                String key = keyExpression.getValue(context, String.class);
-                if (StringUtils.isNotBlank(annotation.key())) {
-                    cacheManager.put(cacheName, key, value);
+            if (Objects.nonNull(value)) {
+                if (value instanceof Collection<?> collection) {
+                    cacheManager.putAll(cacheName, StringUtils.defaultIfBlank(annotation.key(), null), CollectionUtils.emptyIfNull(collection));
+                } else {
+                    Expression keyExpression = parser.parseExpression(annotation.key());
+                    Object key = keyExpression.getValue(context, Object.class);
+                    if (Objects.nonNull(key)) {
+                        String keyStr = StringUtils.defaultIfBlank(key.toString(), value.toString());
+                        cacheManager.put(cacheName, keyStr, value);
+                    }
                 }
             }
         }
@@ -319,21 +321,21 @@ public class RedisCacheAspect {
 
             if (annotation.allEntries()) {
                 cacheManager.clearAll(cacheNames);
-            } else if (StringUtils.isNotBlank(annotation.key())) {
+            } else {
                 Expression keyExpression = parser.parseExpression(annotation.key());
                 Object key = keyExpression.getValue(context, Object.class);
-                if (key instanceof Collection<?> collection) {
-                    if (CollectionUtils.isNotEmpty(collection)) {
+                if (Objects.nonNull(key)) {
+                    if (key instanceof Collection<?> collection) {
                         for (String cacheName : cacheNames) {
-                            Stream<String> stream = collection.stream()
-                                    .filter(Objects::nonNull)
-                                    .map(Object::toString);
-                            cacheManager.evictAll(cacheName, stream);
+                            cacheManager.evictAll(cacheName, StringUtils.defaultIfBlank(annotation.keyField(), null), collection);
                         }
-                    }
-                } else if (Objects.nonNull(key)) {
-                    for (String cacheName : cacheNames) {
-                        cacheManager.evict(cacheName, key.toString());
+                    } else {
+                        String keyStr = key.toString();
+                        if (StringUtils.isNotBlank(keyStr)) {
+                            for (String cacheName : cacheNames) {
+                                cacheManager.evict(cacheName, keyStr);
+                            }
+                        }
                     }
                 }
             }

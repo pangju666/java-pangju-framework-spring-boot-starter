@@ -1,18 +1,18 @@
 package io.github.pangju666.framework.autoconfigure.cache.redis;
 
 import io.github.pangju666.commons.lang.utils.ReflectionUtils;
-import io.github.pangju666.commons.lang.utils.StringUtils;
 import io.github.pangju666.framework.autoconfigure.cache.redis.properties.RedisCacheProperties;
 import io.github.pangju666.framework.data.redis.utils.RedisUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.lang.Nullable;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class RedisCacheManager {
     private final RedisTemplate<String, Object> redisTemplate;
@@ -22,7 +22,7 @@ public class RedisCacheManager {
     public RedisCacheManager(RedisTemplate<String, Object> redisTemplate, RedisCacheProperties properties) {
         this.redisTemplate = redisTemplate;
         this.cacheNullValues = properties.isCacheNullValues();
-        this.keyPrefix = properties.isUseKeyPrefix() ? properties.getKeyPrefix() : "";
+        this.keyPrefix = properties.isUseKeyPrefix() ? properties.getKeyPrefix() : StringUtils.EMPTY;
     }
 
     public boolean existCache(String cacheName) {
@@ -63,13 +63,14 @@ public class RedisCacheManager {
         if (StringUtils.isBlank(keyFieldName)) {
             map = CollectionUtils.emptyIfNull(values)
                     .stream()
-                    .filter(value -> Objects.nonNull(value) || cacheNullValues)
+                    .filter(value -> ObjectUtils.isNotEmpty(value) || cacheNullValues)
                     .collect(Collectors.toMap(Object::toString, item -> item));
         } else {
             map = CollectionUtils.emptyIfNull(values)
                     .stream()
+                    .filter(Objects::nonNull)
                     .map(item -> Pair.of(ReflectionUtils.getFieldValue(item, keyFieldName), item))
-                    .filter(pair -> Objects.nonNull(pair.getKey()) && (Objects.nonNull(pair.getValue()) || cacheNullValues))
+                    .filter(pair -> ObjectUtils.isNotEmpty(pair.getKey()) && (Objects.nonNull(pair.getValue()) || cacheNullValues))
                     .collect(Collectors.toMap(pair -> pair.getKey().toString(), Pair::getValue));
         }
         if (MapUtils.isNotEmpty(map)) {
@@ -81,19 +82,19 @@ public class RedisCacheManager {
         redisTemplate.opsForHash().delete(getCacheName(cacheName), key);
     }
 
-    public void evictAll(String cacheName, Stream<String> stream) {
-        Set<Object> hashKeys = stream
-                .filter(StringUtils::isNotBlank)
-                .collect(Collectors.toSet());
-        if (CollectionUtils.isNotEmpty(hashKeys)) {
-            redisTemplate.opsForHash().delete(getCacheName(cacheName), hashKeys);
+    public void evictAll(String cacheName, @Nullable String keyFieldName, Collection<?> keys) {
+        Set<Object> hashKeys;
+        if (StringUtils.isBlank(keyFieldName)) {
+            hashKeys = keys.stream()
+                    .filter(ObjectUtils::isNotEmpty)
+                    .map(Object::toString)
+                    .collect(Collectors.toSet());
+        } else {
+            hashKeys = keys.stream()
+                    .filter(ObjectUtils::isNotEmpty)
+                    .map(item -> ReflectionUtils.getFieldValue(item, keyFieldName).toString())
+                    .collect(Collectors.toSet());
         }
-    }
-
-    public void evictAll(String cacheName, Collection<String> keys) {
-        Set<Object> hashKeys = keys.stream()
-                .filter(StringUtils::isNotBlank)
-                .collect(Collectors.toSet());
         if (CollectionUtils.isNotEmpty(hashKeys)) {
             redisTemplate.opsForHash().delete(getCacheName(cacheName), hashKeys);
         }
