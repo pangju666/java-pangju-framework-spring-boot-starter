@@ -16,13 +16,13 @@ import java.util.stream.Collectors;
 
 public class RedisCacheManager {
     private final RedisTemplate<String, Object> redisTemplate;
-    private final String keyPrefix;
+    private final String cacheNamePrefix;
     private final boolean cacheNullValues;
 
     public RedisCacheManager(RedisTemplate<String, Object> redisTemplate, RedisCacheProperties properties) {
         this.redisTemplate = redisTemplate;
         this.cacheNullValues = properties.isCacheNullValues();
-        this.keyPrefix = properties.isUseKeyPrefix() ? properties.getKeyPrefix() : StringUtils.EMPTY;
+        this.cacheNamePrefix = properties.isUseCachePrefix() ? properties.getCachePrefix() : StringUtils.EMPTY;
     }
 
     public boolean existCache(String cacheName) {
@@ -126,8 +126,8 @@ public class RedisCacheManager {
     }
 
     private String getCacheName(String cacheName) {
-        if (StringUtils.isNotBlank(keyPrefix)) {
-            return RedisUtils.generateKey(keyPrefix, cacheName);
+        if (StringUtils.isNotBlank(cacheNamePrefix)) {
+            return RedisUtils.generateKey(cacheNamePrefix, cacheName);
         }
         return cacheName;
     }
