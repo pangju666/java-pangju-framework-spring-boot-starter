@@ -25,6 +25,10 @@ public class RedisCacheManager {
         this.cacheNamePrefix = properties.isUseCachePrefix() ? properties.getCachePrefix() : StringUtils.EMPTY;
     }
 
+    public RedisTemplate<String, Object> getRedisTemplate() {
+        return redisTemplate;
+    }
+
     public boolean existCache(String cacheName) {
         return Boolean.TRUE.equals(redisTemplate.hasKey(getCacheName(cacheName)));
     }
