@@ -131,7 +131,7 @@ public class RedisCacheManager {
 
     private String getCacheName(String cacheName) {
         if (StringUtils.isNotBlank(cacheNamePrefix)) {
-            return RedisUtils.generateKey(cacheNamePrefix, cacheName);
+            return RedisUtils.computeKey(cacheNamePrefix, cacheName);
         }
         return cacheName;
     }
