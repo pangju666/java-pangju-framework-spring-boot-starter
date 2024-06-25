@@ -33,6 +33,7 @@ import org.springframework.web.util.ContentCachingResponseWrapper;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -134,20 +135,18 @@ public class WebLogFilter extends BaseRequestFilter {
 			responseLog.setCharacterEncoding(responseWrapper.getCharacterEncoding());
 			if (properties.getResponse().isBody()) {
 				if (properties.getResponse().isBodyData()) {
-					if (!StringUtils.equalsAnyIgnoreCase(responseWrapper.getContentType(),
-						MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_UTF8_VALUE)) {
+					if (!StringUtils.equalsAnyIgnoreCase(responseWrapper.getContentType(), MediaType.APPLICATION_JSON_VALUE)) {
 						responseLog.setBody(Base64.encodeBase64String(responseWrapper.getContentAsByteArray()));
 					} else {
-						String responseBodyStr = new String(responseWrapper.getContentAsByteArray());
+						String responseBodyStr = new String(responseWrapper.getContentAsByteArray(), StandardCharsets.UTF_8);
 						if (StringUtils.isNotBlank(responseBodyStr)) {
 							responseLog.setBody(JsonUtils.fromString(responseBodyStr, new TypeToken<Object>() {
 							}));
 						}
 					}
 				} else {
-					if (StringUtils.equalsAnyIgnoreCase(responseWrapper.getContentType(),
-						MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_UTF8_VALUE)) {
-						String responseBodyStr = new String(responseWrapper.getContentAsByteArray());
+					if (StringUtils.equalsAnyIgnoreCase(responseWrapper.getContentType(), MediaType.APPLICATION_JSON_VALUE)) {
+						String responseBodyStr = new String(responseWrapper.getContentAsByteArray(), StandardCharsets.UTF_8);
 						if (StringUtils.isNotBlank(responseBodyStr)) {
 							JsonObject responseBody = JsonUtils.parseString(responseBodyStr).getAsJsonObject();
 							if (responseBody.has("code") && responseBody.has("message")) {

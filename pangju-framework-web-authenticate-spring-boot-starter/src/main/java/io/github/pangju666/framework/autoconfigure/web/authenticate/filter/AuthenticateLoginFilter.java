@@ -22,6 +22,7 @@ import org.jasypt.exceptions.EncryptionOperationNotPossibleException;
 import org.jasypt.util.text.AES256TextEncryptor;
 import org.springframework.http.HttpStatus;
 
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -69,8 +70,8 @@ public class AuthenticateLoginFilter extends BaseRequestFilter {
 				return;
 			}
 			password = switch (properties.getPasswordAlgorithm()) {
-				case HEX -> new String(Hex.decodeHex(password));
-				case BASE64 -> new String(Base64.decodeBase64(password));
+				case HEX -> new String(Hex.decodeHex(password), StandardCharsets.UTF_8);
+				case BASE64 -> new String(Base64.decodeBase64(password), StandardCharsets.UTF_8);
 				case AES256 -> aes256TextEncryptor.decrypt(password);
 				case RSA -> rsaTextEncryptor.decrypt(password);
 			};

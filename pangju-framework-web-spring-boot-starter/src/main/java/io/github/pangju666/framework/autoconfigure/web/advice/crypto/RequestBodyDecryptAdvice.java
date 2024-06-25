@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
@@ -55,7 +56,7 @@ public class RequestBodyDecryptAdvice implements RequestBodyAdvice {
 
 		String key = StaticSpringContext.getProperty(annotation.key());
 		try (InputStream inputStream = inputMessage.getBody()) {
-			String requestBodyStr = new String(inputStream.readAllBytes());
+			String requestBodyStr = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
 			if (StringUtils.isBlank(requestBodyStr)) {
 				return inputMessage;
 			}
