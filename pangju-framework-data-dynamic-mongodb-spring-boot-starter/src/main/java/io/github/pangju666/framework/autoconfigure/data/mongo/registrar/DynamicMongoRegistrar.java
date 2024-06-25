@@ -35,6 +35,7 @@ import org.springframework.util.CollectionUtils;
 import java.util.Collections;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 
 public class DynamicMongoRegistrar implements EnvironmentAware, ImportBeanDefinitionRegistrar {
 	private static final Logger log = LoggerFactory.getLogger(DynamicMongoRegistrar.class);
@@ -167,7 +168,7 @@ public class DynamicMongoRegistrar implements EnvironmentAware, ImportBeanDefini
 																				MongoProperties properties,
 																				MongoConnectionDetails connectionDetails) {
 		String database = properties.getDatabase();
-		if (database == null) {
+        if (Objects.isNull(database)) {
 			database = connectionDetails.getConnectionString().getDatabase();
 		}
 		return new SimpleMongoClientDatabaseFactory(mongoClient, database);
