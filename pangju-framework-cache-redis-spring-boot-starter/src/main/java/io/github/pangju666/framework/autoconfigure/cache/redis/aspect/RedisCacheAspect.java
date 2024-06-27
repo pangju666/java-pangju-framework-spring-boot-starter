@@ -70,7 +70,10 @@ public class RedisCacheAspect {
                     return returnValue;
                 }
 
-                List<Object> result = cacheManager.getAll(cacheName);
+                List<Object> result = cacheManager.getAll(cacheName)
+                        .stream()
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.toList());
                 if (CollectionUtils.isNotEmpty(result)) {
                     result.sort(getResultComparator(context, annotation.keyField(), annotation.sortField(), annotation.reverseOrder()));
                 }
