@@ -99,7 +99,7 @@ public class RedisCacheAspect {
                 Class<?> keyClass = collection.iterator()
                         .next()
                         .getClass();
-                if (ClassUtils.isPrimitiveOrWrapper(keyClass)) {
+                if (ClassUtils.isPrimitiveOrWrapper(keyClass) || keyClass.isAssignableFrom(String.class)) {
                     hashKeys = collection
                             .stream()
                             .map(Object::toString)
@@ -129,7 +129,7 @@ public class RedisCacheAspect {
                 if (StringUtils.isBlank(hashKey)) {
                     return point.proceed();
                 }
-                if (!ClassUtils.isPrimitiveOrWrapper(key.getClass())) {
+                if (!ClassUtils.isPrimitiveOrWrapper(key.getClass()) && !key.getClass().isAssignableFrom(String.class)) {
                     hashKey = getFieldValue(key, annotation.keyField()).toString();
                 }
                 if (cacheManager.exist(cacheName, hashKey)) {
