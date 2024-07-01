@@ -22,7 +22,6 @@ import jakarta.servlet.http.Part;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.util.StopWatch;
@@ -135,9 +134,7 @@ public class WebLogFilter extends BaseRequestFilter {
 			responseLog.setContentType(responseWrapper.getContentType());
 			responseLog.setCharacterEncoding(responseWrapper.getCharacterEncoding());
 
-            if (response.getStatus() == HttpStatus.FOUND.value()) {
-                responseLog.setRedirectUrl(response.getHeader(HttpHeaders.LOCATION));
-            } else if (properties.getResponse().isBody()) {
+            if (response.getStatus() != HttpStatus.FOUND.value() && properties.getResponse().isBody()) {
                 if (properties.getResponse().isBodyData()) {
                     if (StringUtils.equalsAnyIgnoreCase(responseWrapper.getContentType(), MediaType.APPLICATION_JSON_VALUE)) {
                         String responseBodyStr = new String(responseWrapper.getContentAsByteArray(), StandardCharsets.UTF_8);
