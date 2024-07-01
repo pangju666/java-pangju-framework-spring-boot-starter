@@ -19,10 +19,11 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.Part;
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.util.StopWatch;
 import org.springframework.web.method.HandlerMethod;
@@ -133,34 +134,35 @@ public class WebLogFilter extends BaseRequestFilter {
 			}
 			responseLog.setContentType(responseWrapper.getContentType());
 			responseLog.setCharacterEncoding(responseWrapper.getCharacterEncoding());
-			if (properties.getResponse().isBody()) {
-				if (properties.getResponse().isBodyData()) {
-					if (!StringUtils.equalsAnyIgnoreCase(responseWrapper.getContentType(), MediaType.APPLICATION_JSON_VALUE)) {
-						responseLog.setBody(Base64.encodeBase64String(responseWrapper.getContentAsByteArray()));
-					} else {
-						String responseBodyStr = new String(responseWrapper.getContentAsByteArray(), StandardCharsets.UTF_8);
-						if (StringUtils.isNotBlank(responseBodyStr)) {
-							responseLog.setBody(JsonUtils.fromString(responseBodyStr, new TypeToken<Object>() {
-							}));
-						}
-					}
-				} else {
-					if (StringUtils.equalsAnyIgnoreCase(responseWrapper.getContentType(), MediaType.APPLICATION_JSON_VALUE)) {
-						String responseBodyStr = new String(responseWrapper.getContentAsByteArray(), StandardCharsets.UTF_8);
-						if (StringUtils.isNotBlank(responseBodyStr)) {
-							JsonObject responseBody = JsonUtils.parseString(responseBodyStr).getAsJsonObject();
-							if (responseBody.has("code") && responseBody.has("message")) {
-								Result<?> result = new Result<>(
-									responseBody.getAsJsonPrimitive("message").getAsString(),
-									responseBody.getAsJsonPrimitive("code").getAsInt(),
-									null
-								);
-								responseLog.setBody(result);
-							}
-						}
-					}
-				}
-			}
+
+            if (response.getStatus() == HttpStatus.FOUND.value()) {
+                responseLog.setRedirectUrl(response.getHeader(HttpHeaders.LOCATION));
+            } else if (properties.getResponse().isBody()) {
+                if (properties.getResponse().isBodyData()) {
+                    if (StringUtils.equalsAnyIgnoreCase(responseWrapper.getContentType(), MediaType.APPLICATION_JSON_VALUE)) {
+                        String responseBodyStr = new String(responseWrapper.getContentAsByteArray(), StandardCharsets.UTF_8);
+                        if (StringUtils.isNotBlank(responseBodyStr)) {
+                            responseLog.setBody(JsonUtils.fromString(responseBodyStr, new TypeToken<Object>() {
+                            }));
+                        }
+                    }
+                } else {
+                    if (StringUtils.equalsAnyIgnoreCase(responseWrapper.getContentType(), MediaType.APPLICATION_JSON_VALUE)) {
+                        String responseBodyStr = new String(responseWrapper.getContentAsByteArray(), StandardCharsets.UTF_8);
+                        if (StringUtils.isNotBlank(responseBodyStr)) {
+                            JsonObject responseBody = JsonUtils.parseString(responseBodyStr).getAsJsonObject();
+                            if (responseBody.has("code") && responseBody.has("message")) {
+                                Result<?> result = new Result<>(
+                                        responseBody.getAsJsonPrimitive("message").getAsString(),
+                                        responseBody.getAsJsonPrimitive("code").getAsInt(),
+                                        null
+                                );
+                                responseLog.setBody(result);
+                            }
+                        }
+                    }
+                }
+            }
 			webLog.setResponse(responseLog);
 
 			try {

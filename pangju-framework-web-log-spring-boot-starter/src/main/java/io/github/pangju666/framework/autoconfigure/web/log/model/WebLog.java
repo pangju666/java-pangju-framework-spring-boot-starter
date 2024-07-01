@@ -156,9 +156,18 @@ public class WebLog {
 		private String contentType;
 		private String characterEncoding;
 		private Map<String, Object> headers;
+        private String redirectUrl;
 		private Object body;
 
-		public String getCharacterEncoding() {
+        public String getRedirectUrl() {
+            return redirectUrl;
+        }
+
+        public void setRedirectUrl(String redirectUrl) {
+            this.redirectUrl = redirectUrl;
+        }
+
+        public String getCharacterEncoding() {
 			return characterEncoding;
 		}
 
