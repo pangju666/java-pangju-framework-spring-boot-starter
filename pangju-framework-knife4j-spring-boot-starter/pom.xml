@@ -27,7 +27,8 @@
 			<groupId>io.github.pangju666</groupId>
 			<artifactId>pangju-framework-web-spring-boot-starter</artifactId>
 		</dependency>
-		<dependency>
+
+        <dependency>
 			<groupId>com.github.xiaoymin</groupId>
 			<artifactId>knife4j-openapi3-jakarta-spring-boot-starter</artifactId>
 		</dependency>
