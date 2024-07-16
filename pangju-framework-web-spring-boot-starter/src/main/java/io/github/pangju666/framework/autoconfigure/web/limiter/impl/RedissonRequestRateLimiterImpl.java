@@ -4,8 +4,8 @@ import io.github.pangju666.framework.autoconfigure.web.annotation.validation.Rat
 import io.github.pangju666.framework.autoconfigure.web.limiter.RequestRateLimiter;
 import io.github.pangju666.framework.autoconfigure.web.properties.RequestRateLimitProperties;
 import io.github.pangju666.framework.core.lang.pool.ConstantPool;
-import io.micrometer.common.util.StringUtils;
 import jakarta.servlet.http.HttpServletRequest;
+import org.apache.commons.lang3.StringUtils;
 import org.redisson.api.RRateLimiter;
 import org.redisson.api.RateIntervalUnit;
 import org.redisson.api.RateType;
