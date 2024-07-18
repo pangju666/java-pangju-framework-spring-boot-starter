@@ -30,7 +30,6 @@
 
 	<properties>
 		<skipTests>true</skipTests>
-		<dependencies.version>1.0.0</dependencies.version>
 		<framework.version>1.0.0-SNAPSHOT</framework.version>
         <lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
 		<spock-spring-boot-starter.version>1.0.0-SNAPSHOT</spock-spring-boot-starter.version>
@@ -156,11 +155,6 @@
                             <groupId>org.mapstruct</groupId>
                             <artifactId>mapstruct-processor</artifactId>
                             <version>${mapstruct.version}</version>
-                        </path>
-                        <path>
-                            <groupId>io.github.linpeilie</groupId>
-                            <artifactId>mapstruct-plus-processor</artifactId>
-                            <version>${mapstruct-plus.version}</version>
                         </path>
                         <path>
                             <groupId>org.projectlombok</groupId>
