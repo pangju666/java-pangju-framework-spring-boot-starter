@@ -122,7 +122,7 @@ public class RedisCacheManager {
 		}
 		if (CollectionUtils.isNotEmpty(hashKeys)) {
 			for (List<?> part : ListUtils.partition(new ArrayList<>(hashKeys), batchSize)) {
-				redisTemplate.opsForHash().delete(getCacheName(cacheName), part);
+				redisTemplate.opsForHash().delete(getCacheName(cacheName), part.toArray(Object[]::new));
 			}
 		}
 	}
