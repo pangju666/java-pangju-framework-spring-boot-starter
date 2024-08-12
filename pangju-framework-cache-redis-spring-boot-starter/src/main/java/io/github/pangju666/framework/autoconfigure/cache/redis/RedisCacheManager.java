@@ -56,7 +56,7 @@ public class RedisCacheManager {
 		if (CollectionUtils.isEmpty(hashKeys)) {
 			return Collections.emptyList();
 		}
-		return ListUtils.partition(new ArrayList<>(keys), batchSize)
+		return ListUtils.partition(new ArrayList<>(hashKeys), batchSize)
 			.stream()
 			.map(part -> redisTemplate.opsForHash().multiGet(getCacheName(cacheName), hashKeys))
 			.flatMap(List::stream)
@@ -121,7 +121,7 @@ public class RedisCacheManager {
 				.collect(Collectors.toSet());
 		}
 		if (CollectionUtils.isNotEmpty(hashKeys)) {
-			for (List<?> part : ListUtils.partition(new ArrayList<>(keys), batchSize)) {
+			for (List<?> part : ListUtils.partition(new ArrayList<>(hashKeys), batchSize)) {
 				redisTemplate.opsForHash().delete(getCacheName(cacheName), part);
 			}
 		}
