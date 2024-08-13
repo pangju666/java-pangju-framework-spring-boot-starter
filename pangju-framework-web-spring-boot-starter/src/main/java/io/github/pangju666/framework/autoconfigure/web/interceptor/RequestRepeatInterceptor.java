@@ -27,13 +27,17 @@ public class RequestRepeatInterceptor extends BaseRequestInterceptor {
 			if (Objects.isNull(annotation)) {
 				return true;
 			}
+
+			boolean result;
 			try {
-				if (!requestRepeater.tryAcquire(annotation, request)) {
-					ResponseUtils.writeExceptionToResponse(new RequestRepeatException(annotation), response);
-					return false;
-				}
+				result = requestRepeater.tryAcquire(annotation, request);
 			} catch (Exception e) {
 				ResponseUtils.writeExceptionToResponse(new ServerException(e), response);
+				return false;
+			}
+			if (!result) {
+				ResponseUtils.writeExceptionToResponse(new RequestRepeatException(annotation), response);
+				return false;
 			}
 		}
 		return true;
