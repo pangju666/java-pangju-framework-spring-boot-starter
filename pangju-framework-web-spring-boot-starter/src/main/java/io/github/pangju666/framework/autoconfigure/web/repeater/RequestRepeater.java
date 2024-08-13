@@ -96,7 +96,7 @@ public abstract class RequestRepeater {
 			try {
 				return RequestUtils.getRequestBodyMap(request);
 			} catch (IOException e) {
-				ExceptionUtils.rethrow(e);
+				ExceptionUtils.asRuntimeException(e);
 			}
 		}
 		if (annotation.bodyJsonPaths().length == 0) {

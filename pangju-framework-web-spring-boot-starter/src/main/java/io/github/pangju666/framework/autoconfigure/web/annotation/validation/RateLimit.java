@@ -1,5 +1,7 @@
 package io.github.pangju666.framework.autoconfigure.web.annotation.validation;
 
+import io.github.pangju666.framework.autoconfigure.web.enums.RateLimitMethod;
+
 import java.lang.annotation.*;
 import java.util.concurrent.TimeUnit;
 
@@ -16,6 +18,8 @@ public @interface RateLimit {
 	int rate();
 
 	boolean global() default false;
+
+	RateLimitMethod method() default RateLimitMethod.REQUEST;
 
 	String message() default "请求次数已达上限，请稍候再试";
 }

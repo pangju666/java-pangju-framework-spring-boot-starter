@@ -3,6 +3,7 @@ package io.github.pangju666.framework.autoconfigure.web.interceptor;
 import io.github.pangju666.framework.autoconfigure.web.annotation.validation.Repeat;
 import io.github.pangju666.framework.autoconfigure.web.exception.RequestRepeatException;
 import io.github.pangju666.framework.autoconfigure.web.repeater.RequestRepeater;
+import io.github.pangju666.framework.core.exception.base.ServerException;
 import io.github.pangju666.framework.web.interceptor.BaseRequestInterceptor;
 import io.github.pangju666.framework.web.utils.ResponseUtils;
 import jakarta.servlet.http.HttpServletRequest;
@@ -26,9 +27,13 @@ public class RequestRepeatInterceptor extends BaseRequestInterceptor {
 			if (Objects.isNull(annotation)) {
 				return true;
 			}
-			if (!requestRepeater.tryAcquire(annotation, request)) {
-				ResponseUtils.writeExceptionToResponse(new RequestRepeatException(annotation), response);
-				return false;
+			try {
+				if (!requestRepeater.tryAcquire(annotation, request)) {
+					ResponseUtils.writeExceptionToResponse(new RequestRepeatException(annotation), response);
+					return false;
+				}
+			} catch (Exception e) {
+				ResponseUtils.writeExceptionToResponse(new ServerException(e), response);
 			}
 		}
 		return true;

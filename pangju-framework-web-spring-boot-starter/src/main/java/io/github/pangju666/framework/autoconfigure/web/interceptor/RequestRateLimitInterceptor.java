@@ -1,8 +1,10 @@
 package io.github.pangju666.framework.autoconfigure.web.interceptor;
 
 import io.github.pangju666.framework.autoconfigure.web.annotation.validation.RateLimit;
+import io.github.pangju666.framework.autoconfigure.web.enums.RateLimitMethod;
 import io.github.pangju666.framework.autoconfigure.web.exception.RequestLimitException;
 import io.github.pangju666.framework.autoconfigure.web.limiter.RequestRateLimiter;
+import io.github.pangju666.framework.core.exception.base.ServerException;
 import io.github.pangju666.framework.web.interceptor.BaseRequestInterceptor;
 import io.github.pangju666.framework.web.utils.ResponseUtils;
 import jakarta.servlet.http.HttpServletRequest;
@@ -30,9 +32,16 @@ public class RequestRateLimitInterceptor extends BaseRequestInterceptor {
 			if (Objects.isNull(annotation)) {
 				return true;
 			}
-			if (!requestRateLimiter.tryAcquire(annotation, request)) {
-				ResponseUtils.writeExceptionToResponse(new RequestLimitException(annotation), response);
-				return false;
+			if (annotation.method() != RateLimitMethod.REQUEST) {
+				return true;
+			}
+			try {
+				if (!requestRateLimiter.tryAcquire(annotation.key(), annotation, request)) {
+					ResponseUtils.writeExceptionToResponse(new RequestLimitException(annotation), response);
+					return false;
+				}
+			} catch (Exception e) {
+				ResponseUtils.writeExceptionToResponse(new ServerException(e), response);
 			}
 		}
 		return true;

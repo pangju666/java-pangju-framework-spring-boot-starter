@@ -4,6 +4,7 @@ import io.github.pangju666.framework.autoconfigure.web.annotation.validation.Rat
 import io.github.pangju666.framework.autoconfigure.web.limiter.RequestRateLimiter;
 import io.github.pangju666.framework.autoconfigure.web.properties.RequestRateLimitProperties;
 import io.github.pangju666.framework.core.lang.pool.ConstantPool;
+import io.github.pangju666.framework.data.redis.utils.RedisUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.redisson.api.RRateLimiter;
@@ -33,19 +34,22 @@ public class RedissonRequestRateLimiterImpl implements RequestRateLimiter {
 	}
 
 	@Override
-	public boolean tryAcquire(RateLimit annotation, HttpServletRequest request) {
-		String key = generateKey(annotation, request, ConstantPool.REDIS_PATH_DELIMITER);
-		if (StringUtils.isNotBlank(properties.getRedisson().getKeyPrefix())) {
-			key = properties.getRedisson().getKeyPrefix() + ConstantPool.REDIS_PATH_DELIMITER + key;
+	public boolean tryAcquire(String key, RateLimit annotation, HttpServletRequest request) {
+		String rateLimitKey = key;
+		if (StringUtils.isBlank(rateLimitKey)) {
+			rateLimitKey = generateKey(annotation, request, ConstantPool.REDIS_PATH_DELIMITER);
+			if (StringUtils.isNotBlank(properties.getRedisson().getKeyPrefix())) {
+				rateLimitKey = RedisUtils.computeKey(properties.getRedisson().getKeyPrefix(), rateLimitKey);
+			}
 		}
-		RRateLimiter rateLimiter = redissonClient.getRateLimiter(key);
+		RRateLimiter rateLimiter = redissonClient.getRateLimiter(rateLimitKey);
 		if (!rateLimiter.isExists()) {
 			if (!initRateLimiter(rateLimiter, annotation)) {
-				log.error("redisson速率限制器初始化失败，key：{}", key);
+				log.error("redisson速率限制器初始化失败，key：{}", rateLimitKey);
 			}
 			long expireMillis = annotation.timeUnit().toMillis(annotation.interval());
 			Duration expireDuration = properties.getRedisson().getExpire().plusMillis(expireMillis);
-			redissonClient.getBucket(key).expire(expireDuration);
+			redissonClient.getBucket(rateLimitKey).expire(expireDuration);
 		}
 		return rateLimiter.tryAcquire(1);
 	}
