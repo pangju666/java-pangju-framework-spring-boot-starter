@@ -1,6 +1,7 @@
 package io.github.pangju666.framework.autoconfigure.jackson;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.github.pangju666.framework.core.jackson.databind.deserializer.EnumJsonDeserializer;
 import io.github.pangju666.framework.core.jackson.databind.deserializer.TimestampJsonDeserializer;
 import io.github.pangju666.framework.core.jackson.databind.serializer.DateJsonSerializer;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -20,6 +21,7 @@ public class JacksonAutoConfiguration {
 		return builder
 			.serializerByType(Date.class, new DateJsonSerializer())
 			.deserializerByType(Date.class, new TimestampJsonDeserializer())
+			.deserializerByType(Enum.class, new EnumJsonDeserializer())
 			.createXmlMapper(false)
 			.build();
 	}
