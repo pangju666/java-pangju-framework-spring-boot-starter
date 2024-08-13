@@ -16,7 +16,7 @@ public class AuthenticatedProperties {
 	private Aes256 aes256 = new Aes256();
 	private Rsa rsa = new Rsa();
 	private Duration duration = Duration.ofDays(7);
-	private List<User> users = Collections.singletonList(new User("root", "91291358", Collections.singleton(ConstantPool.ADMIN_ROLE)));
+	private List<User> users = Collections.singletonList(new User("admin", "123456", Collections.singleton(ConstantPool.ADMIN_ROLE)));
 
 	public PasswordAlgorithm getPasswordAlgorithm() {
 		return passwordAlgorithm;
