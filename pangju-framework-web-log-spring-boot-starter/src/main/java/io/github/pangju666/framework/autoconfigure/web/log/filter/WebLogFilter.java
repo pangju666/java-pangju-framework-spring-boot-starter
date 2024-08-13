@@ -136,7 +136,8 @@ public class WebLogFilter extends BaseRequestFilter {
 
             if (response.getStatus() != HttpStatus.FOUND.value() && properties.getResponse().isBody()) {
                 if (properties.getResponse().isBodyData()) {
-                    if (StringUtils.equalsAnyIgnoreCase(responseWrapper.getContentType(), MediaType.APPLICATION_JSON_VALUE)) {
+					if (MediaType.APPLICATION_JSON_VALUE.equals(responseWrapper.getContentType()) ||
+						MediaType.APPLICATION_JSON_UTF8_VALUE.equals(responseWrapper.getContentType())) {
                         String responseBodyStr = new String(responseWrapper.getContentAsByteArray(), StandardCharsets.UTF_8);
                         if (StringUtils.isNotBlank(responseBodyStr)) {
                             responseLog.setBody(JsonUtils.fromString(responseBodyStr, new TypeToken<Object>() {
@@ -144,7 +145,8 @@ public class WebLogFilter extends BaseRequestFilter {
                         }
                     }
                 } else {
-                    if (StringUtils.equalsAnyIgnoreCase(responseWrapper.getContentType(), MediaType.APPLICATION_JSON_VALUE)) {
+					if (MediaType.APPLICATION_JSON_VALUE.equals(responseWrapper.getContentType()) ||
+						MediaType.APPLICATION_JSON_UTF8_VALUE.equals(responseWrapper.getContentType())) {
                         String responseBodyStr = new String(responseWrapper.getContentAsByteArray(), StandardCharsets.UTF_8);
                         if (StringUtils.isNotBlank(responseBodyStr)) {
                             JsonObject responseBody = JsonUtils.parseString(responseBodyStr).getAsJsonObject();
