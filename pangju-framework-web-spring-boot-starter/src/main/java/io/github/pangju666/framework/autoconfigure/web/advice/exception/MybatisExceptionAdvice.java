@@ -32,9 +32,9 @@ public class MybatisExceptionAdvice {
 
 	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 	@ExceptionHandler(value = CannotGetJdbcConnectionException.class)
-	public Result<Void> handleMybatisPlusException(CannotGetJdbcConnectionException e) {
-		log.error("mysql连接超时", e);
-		return Result.fail(ConstantPool.DATA_ERROR_RESPONSE_CODE, "mysql连接超时");
+	public Result<Void> handleCannotGetJdbcConnectionException(CannotGetJdbcConnectionException e) {
+		log.error("JDBC连接超时", e);
+		return Result.fail(ConstantPool.DATA_ERROR_RESPONSE_CODE, "数据库连接超时");
 	}
 
 	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)

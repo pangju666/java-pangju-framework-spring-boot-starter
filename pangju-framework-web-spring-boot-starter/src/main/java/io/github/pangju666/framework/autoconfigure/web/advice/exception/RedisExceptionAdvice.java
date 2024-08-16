@@ -27,7 +27,7 @@ public class RedisExceptionAdvice {
 	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 	@ExceptionHandler(value = RedisConnectionFailureException.class)
 	public Result<Void> handleRedisConnectionFailureException(RedisConnectionFailureException e) {
-		log.error("redis连接超时异常", e);
+		log.error("Redis连接超时异常", e);
 		return Result.fail(ConstantPool.DATA_ERROR_RESPONSE_CODE, "Redis连接超时");
 	}
 
