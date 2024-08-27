@@ -1,9 +1,8 @@
 package io.github.pangju666.framework.autoconfigure.web.aspect;
 
-import io.github.pangju666.framework.autoconfigure.web.annotation.validation.RateLimit;
-import io.github.pangju666.framework.autoconfigure.web.enums.RateLimitMethod;
-import io.github.pangju666.framework.autoconfigure.web.exception.RequestLimitException;
-import io.github.pangju666.framework.autoconfigure.web.limiter.RequestRateLimiter;
+import io.github.pangju666.framework.autoconfigure.web.annotation.validation.Repeat;
+import io.github.pangju666.framework.autoconfigure.web.exception.RequestRepeatException;
+import io.github.pangju666.framework.autoconfigure.web.repeater.RequestRepeater;
 import io.github.pangju666.framework.core.exception.base.ServerException;
 import io.github.pangju666.framework.core.utils.SpELUtils;
 import io.github.pangju666.framework.web.utils.RequestUtils;
@@ -20,36 +19,27 @@ import org.springframework.expression.Expression;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 
 import java.lang.reflect.Method;
-import java.util.Objects;
 
 @Order(Ordered.HIGHEST_PRECEDENCE + 1)
 @Aspect
-public class RequestRateLimitAspect {
+public class RequestRepeatAspect {
 	private final SpelExpressionParser parser;
 	private final ParameterNameDiscoverer discoverer;
-	private final RequestRateLimiter requestRateLimiter;
+	private final RequestRepeater requestRepeater;
 
-	public RequestRateLimitAspect(RequestRateLimiter requestRateLimiter) {
+	public RequestRepeatAspect(RequestRepeater requestRepeater) {
 		this.parser = new SpelExpressionParser();
 		this.discoverer = new DefaultParameterNameDiscoverer();
-		this.requestRateLimiter = requestRateLimiter;
+		this.requestRepeater = requestRepeater;
 	}
 
 	@Before("(@within(org.springframework.web.bind.annotation.RestController) || " +
 		"@within(org.springframework.stereotype.Controller)) && " +
-		"(@annotation(io.github.pangju666.framework.autoconfigure.web.annotation.validation.RateLimit) || " +
-		"@within(io.github.pangju666.framework.autoconfigure.web.annotation.validation.RateLimit))")
+		"@annotation(io.github.pangju666.framework.autoconfigure.web.annotation.validation.Repeat)")
 	public void doBefore(JoinPoint point) {
 		MethodSignature methodSignature = (MethodSignature) point.getSignature();
 		Method method = methodSignature.getMethod();
-		RateLimit annotation = method.getAnnotation(RateLimit.class);
-		if (Objects.isNull(annotation)) {
-			Class<?> targetClass = method.getDeclaringClass();
-			annotation = targetClass.getAnnotation(RateLimit.class);
-		}
-		if (annotation.method() != RateLimitMethod.AOP) {
-			return;
-		}
+		Repeat annotation = method.getAnnotation(Repeat.class);
 
 		EvaluationContext context = SpELUtils.initEvaluationContext(method, point.getArgs(), discoverer);
 		Expression expression = parser.parseExpression(annotation.key());
@@ -57,12 +47,12 @@ public class RequestRateLimitAspect {
 
 		boolean result;
 		try {
-			result = requestRateLimiter.tryAcquire(key, annotation, RequestUtils.getCurrentRequest());
+			result = requestRepeater.tryAcquire(key, annotation, RequestUtils.getCurrentRequest());
 		} catch (Exception e) {
 			throw new ServerException(e);
 		}
 		if (!result) {
-			throw new RequestLimitException(annotation);
+			throw new RequestRepeatException(annotation);
 		}
 	}
 }

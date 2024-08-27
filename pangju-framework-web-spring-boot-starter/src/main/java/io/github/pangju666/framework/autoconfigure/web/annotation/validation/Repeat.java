@@ -7,17 +7,9 @@ import java.util.concurrent.TimeUnit;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD})
 public @interface Repeat {
-	String[] headers() default {};
+	String key();
 
-	boolean allHeaders() default false;
-
-	String[] params() default {};
-
-	boolean allParams() default false;
-
-	String[] bodyJsonPaths() default {};
-
-	boolean allBody() default false;
+	boolean global() default false;
 
 	int interval() default 1;
 

@@ -29,15 +29,15 @@ public class RequestRepeatProperties {
 	}
 
 	public static class Redis {
-		private String templateBeanName;
+		private String beanName;
 		private String keyPrefix = "request-repeat";
 
-		public String getTemplateBeanName() {
-			return templateBeanName;
+		public String getBeanName() {
+			return beanName;
 		}
 
-		public void setTemplateBeanName(String templateBeanName) {
-			this.templateBeanName = templateBeanName;
+		public void setBeanName(String beanName) {
+			this.beanName = beanName;
 		}
 
 		public String getKeyPrefix() {

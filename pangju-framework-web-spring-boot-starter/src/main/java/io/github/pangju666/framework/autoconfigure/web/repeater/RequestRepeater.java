@@ -1,21 +1,8 @@
 package io.github.pangju666.framework.autoconfigure.web.repeater;
 
-import com.jayway.jsonpath.DocumentContext;
-import com.jayway.jsonpath.JsonPath;
-import io.github.pangju666.commons.lang.utils.JsonUtils;
 import io.github.pangju666.framework.autoconfigure.web.annotation.validation.Repeat;
 import io.github.pangju666.framework.web.utils.RequestUtils;
 import jakarta.servlet.http.HttpServletRequest;
-import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.apache.commons.lang3.tuple.Pair;
-import org.springframework.web.util.ContentCachingRequestWrapper;
-
-import java.io.IOException;
-import java.util.*;
-import java.util.stream.Collectors;
 
 public abstract class RequestRepeater {
 	protected final String delimiter;
@@ -24,25 +11,25 @@ public abstract class RequestRepeater {
 		this.delimiter = delimiter;
 	}
 
-	abstract public boolean tryAcquire(Repeat repeat, HttpServletRequest request);
+	abstract public boolean tryAcquire(String key, Repeat repeat, HttpServletRequest request);
 
-	protected String generateKey(Repeat annotation, HttpServletRequest request) {
-		StringBuilder stringBuilder = new StringBuilder()
-			.append(request.getMethod())
-			.append(delimiter)
+	protected String generateKey(String key, Repeat annotation, HttpServletRequest request) {
+		StringBuilder keyBuilder = new StringBuilder()
 			.append(RequestUtils.getRequestPath(request))
 			.append(delimiter)
-			.append(RequestUtils.getIpAddress(request));
-		String digest = computeRequestContentDigest(annotation, request);
-		if (StringUtils.isNotBlank(digest)) {
-			stringBuilder
+			.append(request.getMethod());
+		if (!annotation.global()) {
+			keyBuilder
 				.append(delimiter)
-				.append(digest);
+				.append(RequestUtils.getIpAddress(request));
 		}
-		return stringBuilder.toString();
+		keyBuilder
+			.append(delimiter)
+			.append(key);
+		return keyBuilder.toString();
 	}
 
-	protected String computeRequestContentDigest(Repeat annotation, HttpServletRequest request) {
+	/*protected String computeRequestContentDigest(Repeat annotation, HttpServletRequest request) {
 		Map<String, Object> header = getHeaderMap(annotation, request);
 		Map<String, Object> param = getParamMap(annotation, request);
 		Map<String, Object> body = getBodyMap(annotation, request);
@@ -117,5 +104,5 @@ public abstract class RequestRepeater {
 				.collect(Collectors.toMap(Pair::getKey, Pair::getValue));
 		}
 		return Collections.emptyMap();
-	}
+	}*/
 }

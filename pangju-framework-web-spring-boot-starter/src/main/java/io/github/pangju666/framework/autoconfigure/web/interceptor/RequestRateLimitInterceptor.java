@@ -6,7 +6,6 @@ import io.github.pangju666.framework.autoconfigure.web.exception.RequestLimitExc
 import io.github.pangju666.framework.autoconfigure.web.limiter.RequestRateLimiter;
 import io.github.pangju666.framework.core.exception.base.ServerException;
 import io.github.pangju666.framework.web.interceptor.BaseRequestInterceptor;
-import io.github.pangju666.framework.web.utils.RequestUtils;
 import io.github.pangju666.framework.web.utils.ResponseUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -39,7 +38,7 @@ public class RequestRateLimitInterceptor extends BaseRequestInterceptor {
 
 			boolean result;
 			try {
-				result = requestRateLimiter.tryAcquire(annotation.key(), annotation, RequestUtils.getCurrentRequest());
+				result = requestRateLimiter.tryAcquire(annotation.key(), annotation, request);
 			} catch (Exception e) {
 				ResponseUtils.writeExceptionToResponse(new ServerException(e), response);
 				return false;

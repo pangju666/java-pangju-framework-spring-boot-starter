@@ -42,6 +42,9 @@ public class RedissonRequestRateLimiterImpl implements RequestRateLimiter {
 				rateLimitKey = RedisUtils.computeKey(properties.getRedisson().getKeyPrefix(), rateLimitKey);
 			}
 		}
+		if (StringUtils.isNotBlank(properties.getRedisson().getKeyPrefix())) {
+			rateLimitKey = RedisUtils.computeKey(properties.getRedisson().getKeyPrefix(), rateLimitKey);
+		}
 		RRateLimiter rateLimiter = redissonClient.getRateLimiter(rateLimitKey);
 		if (!rateLimiter.isExists()) {
 			if (!initRateLimiter(rateLimiter, annotation)) {

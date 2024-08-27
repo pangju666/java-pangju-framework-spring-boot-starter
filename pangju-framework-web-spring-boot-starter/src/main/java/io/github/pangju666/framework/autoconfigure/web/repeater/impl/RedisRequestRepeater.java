@@ -18,23 +18,23 @@ public class RedisRequestRepeater extends RequestRepeater {
 	public RedisRequestRepeater(RequestRepeatProperties properties, BeanFactory beanFactory) {
 		super(ConstantPool.REDIS_PATH_DELIMITER);
 		this.properties = properties;
-		if (StringUtils.isNotBlank(properties.getRedis().getTemplateBeanName())) {
-			this.redisTemplate = beanFactory.getBean(properties.getRedis().getTemplateBeanName(), RedisTemplate.class);
+		if (StringUtils.isNotBlank(properties.getRedis().getBeanName())) {
+			this.redisTemplate = beanFactory.getBean(properties.getRedis().getBeanName(), RedisTemplate.class);
 		} else {
 			this.redisTemplate = beanFactory.getBean("redisTemplate", RedisTemplate.class);
 		}
 	}
 
 	@Override
-	public boolean tryAcquire(Repeat repeat, HttpServletRequest request) {
-		String key = generateKey(repeat, request);
+	public boolean tryAcquire(String key, Repeat repeat, HttpServletRequest request) {
+		String repeatKey = generateKey(key, repeat, request);
 		if (StringUtils.isNotBlank(properties.getRedis().getKeyPrefix())) {
-			key = RedisUtils.computeKey(properties.getRedis().getKeyPrefix(), key);
+			repeatKey = RedisUtils.computeKey(properties.getRedis().getKeyPrefix(), repeatKey);
 		}
-		if (Boolean.TRUE.equals(redisTemplate.hasKey(key))) {
+		if (Boolean.TRUE.equals(redisTemplate.hasKey(repeatKey))) {
 			return false;
 		}
-		redisTemplate.opsForValue().set(key, Boolean.TRUE, repeat.interval(), repeat.timeUnit());
+		redisTemplate.opsForValue().set(repeatKey, Boolean.TRUE, repeat.interval(), repeat.timeUnit());
 		return true;
 	}
 }

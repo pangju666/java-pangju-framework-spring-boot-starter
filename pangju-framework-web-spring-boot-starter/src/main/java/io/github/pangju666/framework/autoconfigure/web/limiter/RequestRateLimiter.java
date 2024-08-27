@@ -14,8 +14,9 @@ public interface RequestRateLimiter {
 			.append(delimiter)
 			.append(request.getMethod());
 		if (!annotation.global()) {
-			keyBuilder.append(delimiter);
-			keyBuilder.append(RequestUtils.getIpAddress(request));
+			keyBuilder
+				.append(delimiter)
+				.append(RequestUtils.getIpAddress(request));
 		}
 		return keyBuilder.toString();
 	}

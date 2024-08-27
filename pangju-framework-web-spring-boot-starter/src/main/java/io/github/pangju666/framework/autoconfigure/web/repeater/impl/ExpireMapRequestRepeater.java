@@ -16,12 +16,12 @@ public class ExpireMapRequestRepeater extends RequestRepeater {
 	}
 
 	@Override
-	public boolean tryAcquire(Repeat repeat, HttpServletRequest request) {
-		String key = generateKey(repeat, request);
-		if (expiringMap.containsKey(key)) {
+	public boolean tryAcquire(String key, Repeat repeat, HttpServletRequest request) {
+		String repeatKey = generateKey(key, repeat, request);
+		if (expiringMap.containsKey(repeatKey)) {
 			return false;
 		}
-		expiringMap.put(key, Boolean.TRUE, repeat.interval(), repeat.timeUnit());
+		expiringMap.put(repeatKey, Boolean.TRUE, repeat.interval(), repeat.timeUnit());
 		return true;
 	}
 }
