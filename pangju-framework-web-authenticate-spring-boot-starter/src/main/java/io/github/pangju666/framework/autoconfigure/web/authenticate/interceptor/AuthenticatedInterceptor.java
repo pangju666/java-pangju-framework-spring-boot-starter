@@ -7,7 +7,7 @@ import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.Claim;
 import com.auth0.jwt.interfaces.DecodedJWT;
-import io.github.pangju666.commons.lang.pool.ConstantPool;
+import io.github.pangju666.commons.lang.pool.Constants;
 import io.github.pangju666.framework.autoconfigure.web.authenticate.annotation.Authenticated;
 import io.github.pangju666.framework.autoconfigure.web.authenticate.properties.AuthenticatedProperties;
 import io.github.pangju666.framework.core.exception.authentication.AuthenticationException;
@@ -54,11 +54,11 @@ public class AuthenticatedInterceptor extends BaseRequestInterceptor {
 				ResponseUtils.writeExceptionToResponse(new AuthenticationException("token不可为空"), response);
 				return false;
 			}
-			if (!token.startsWith(ConstantPool.TOKEN_PREFIX)) {
+			if (!token.startsWith(Constants.TOKEN_PREFIX)) {
 				ResponseUtils.writeExceptionToResponse(new AuthenticationException("token格式不正确"), response);
 				return false;
 			}
-			token = StringUtils.substringAfter(token, ConstantPool.TOKEN_PREFIX);
+			token = StringUtils.substringAfter(token, Constants.TOKEN_PREFIX);
 
 			try {
 				DecodedJWT decode = JWT.decode(token);

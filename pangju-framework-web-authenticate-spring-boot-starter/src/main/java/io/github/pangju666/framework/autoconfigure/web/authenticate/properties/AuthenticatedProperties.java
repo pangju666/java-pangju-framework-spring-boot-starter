@@ -1,7 +1,7 @@
 package io.github.pangju666.framework.autoconfigure.web.authenticate.properties;
 
 import io.github.pangju666.framework.autoconfigure.web.authenticate.enums.PasswordAlgorithm;
-import io.github.pangju666.framework.core.lang.pool.ConstantPool;
+import io.github.pangju666.framework.core.lang.pool.Constants;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.time.Duration;
@@ -16,7 +16,7 @@ public class AuthenticatedProperties {
 	private Aes256 aes256 = new Aes256();
 	private Rsa rsa = new Rsa();
 	private Duration duration = Duration.ofDays(7);
-	private List<User> users = Collections.singletonList(new User("admin", "123456", Collections.singleton(ConstantPool.ADMIN_ROLE)));
+	private List<User> users = Collections.singletonList(new User("admin", "123456", Collections.singleton(Constants.ADMIN_ROLE)));
 
 	public PasswordAlgorithm getPasswordAlgorithm() {
 		return passwordAlgorithm;

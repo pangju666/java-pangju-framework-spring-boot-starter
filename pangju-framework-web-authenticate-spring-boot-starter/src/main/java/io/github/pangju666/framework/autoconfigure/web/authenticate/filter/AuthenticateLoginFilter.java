@@ -3,6 +3,7 @@ package io.github.pangju666.framework.autoconfigure.web.authenticate.filter;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import io.github.pangju666.commons.codec.encryption.text.RSATextEncryptor;
+import io.github.pangju666.commons.codec.key.RSAKey;
 import io.github.pangju666.framework.autoconfigure.web.authenticate.enums.PasswordAlgorithm;
 import io.github.pangju666.framework.autoconfigure.web.authenticate.model.AuthenticatedUser;
 import io.github.pangju666.framework.autoconfigure.web.authenticate.properties.AuthenticatedProperties;
@@ -42,9 +43,8 @@ public class AuthenticateLoginFilter extends BaseRequestFilter {
 			this.aes256TextEncryptor = new AES256TextEncryptor();
 			this.aes256TextEncryptor.setPassword(properties.getAes256().getKey());
 		} else {
-			this.rsaTextEncryptor = new RSATextEncryptor();
-			this.rsaTextEncryptor.setPublicKey(Base64.decodeBase64(properties.getRsa().getPublicKey().getBytes()));
-			this.rsaTextEncryptor.setPrivateKey(Base64.decodeBase64(properties.getRsa().getPrivateKey().getBytes()));
+			RSAKey rsaKey = RSAKey.fromBase64(properties.getRsa().getPublicKey(), properties.getRsa().getPrivateKey());
+			this.rsaTextEncryptor = new RSATextEncryptor(rsaKey);
 		}
 	}
 
