@@ -1,7 +1,7 @@
 package io.github.pangju666.framework.autoconfigure.web.advice.exception;
 
 import io.github.pangju666.framework.core.exception.base.BaseRuntimeException;
-import io.github.pangju666.framework.core.lang.pool.ConstantPool;
+import io.github.pangju666.framework.core.lang.pool.Constants;
 import io.github.pangju666.framework.web.model.Result;
 import io.github.pangju666.framework.web.utils.ResponseUtils;
 import jakarta.servlet.Servlet;
@@ -168,9 +168,9 @@ public class GlobalExceptionAdvice {
 		List<ObjectError> objectErrors = bindingResult.getAllErrors();
 		if (!objectErrors.isEmpty()) {
 			FieldError fieldError = (FieldError) objectErrors.iterator().next();
-			return Result.fail(ConstantPool.VALIDATION_ERROR_RESPONSE_CODE, StringUtils.defaultString(fieldError.getDefaultMessage()));
+			return Result.fail(Constants.VALIDATION_ERROR_RESPONSE_CODE, StringUtils.defaultString(fieldError.getDefaultMessage()));
 		}
-		return Result.fail(ConstantPool.VALIDATION_ERROR_RESPONSE_CODE, "请求参数验证不合法");
+		return Result.fail(Constants.VALIDATION_ERROR_RESPONSE_CODE, "请求参数验证不合法");
 	}
 
 	@ResponseStatus(HttpStatus.OK)
@@ -179,9 +179,9 @@ public class GlobalExceptionAdvice {
 		Set<ConstraintViolation<?>> constraints = e.getConstraintViolations();
 		if (!constraints.isEmpty()) {
 			ConstraintViolation<?> constraint = constraints.iterator().next();
-			return Result.fail(ConstantPool.VALIDATION_ERROR_RESPONSE_CODE, StringUtils.defaultString(constraint.getMessage()));
+			return Result.fail(Constants.VALIDATION_ERROR_RESPONSE_CODE, StringUtils.defaultString(constraint.getMessage()));
 		}
-		return Result.fail(ConstantPool.VALIDATION_ERROR_RESPONSE_CODE, "请求参数验证不合法");
+		return Result.fail(Constants.VALIDATION_ERROR_RESPONSE_CODE, "请求参数验证不合法");
 	}
 
 	@ResponseStatus(HttpStatus.NOT_FOUND)
@@ -207,20 +207,20 @@ public class GlobalExceptionAdvice {
 	@ExceptionHandler(value = IOException.class)
 	public Result<Void> handleIOException(IOException e) {
 		log.error("IO异常", e);
-		return Result.fail(ConstantPool.SERVER_ERROR_RESPONSE_CODE, "服务器内部错误");
+		return Result.fail(Constants.SERVER_ERROR_RESPONSE_CODE, "服务器内部错误");
 	}
 
 	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 	@ExceptionHandler(value = RuntimeException.class)
 	public Result<Void> handleRuntimeException(RuntimeException e) {
 		log.error("运行时异常", e);
-		return Result.fail(ConstantPool.SERVER_ERROR_RESPONSE_CODE, "服务器内部错误");
+		return Result.fail(Constants.SERVER_ERROR_RESPONSE_CODE, "服务器内部错误");
 	}
 
 	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 	@ExceptionHandler(value = Exception.class)
 	public Result<Void> handleException(Exception e) {
 		log.error("系统级异常", e);
-		return Result.fail(ConstantPool.SERVER_ERROR_RESPONSE_CODE, "服务器内部错误");
+		return Result.fail(Constants.SERVER_ERROR_RESPONSE_CODE, "服务器内部错误");
 	}
 }

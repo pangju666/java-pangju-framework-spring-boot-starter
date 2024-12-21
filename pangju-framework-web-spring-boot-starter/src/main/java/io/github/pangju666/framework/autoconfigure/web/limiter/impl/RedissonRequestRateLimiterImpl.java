@@ -3,7 +3,7 @@ package io.github.pangju666.framework.autoconfigure.web.limiter.impl;
 import io.github.pangju666.framework.autoconfigure.web.annotation.validation.RateLimit;
 import io.github.pangju666.framework.autoconfigure.web.limiter.RequestRateLimiter;
 import io.github.pangju666.framework.autoconfigure.web.properties.RequestRateLimitProperties;
-import io.github.pangju666.framework.core.lang.pool.ConstantPool;
+import io.github.pangju666.framework.core.lang.pool.Constants;
 import io.github.pangju666.framework.data.redis.utils.RedisUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
@@ -16,6 +16,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanFactory;
 
 import java.time.Duration;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalUnit;
 import java.util.concurrent.TimeUnit;
 
 public class RedissonRequestRateLimiterImpl implements RequestRateLimiter {
@@ -37,7 +39,7 @@ public class RedissonRequestRateLimiterImpl implements RequestRateLimiter {
 	public boolean tryAcquire(String key, RateLimit annotation, HttpServletRequest request) {
 		String rateLimitKey = key;
 		if (StringUtils.isBlank(rateLimitKey)) {
-			rateLimitKey = generateKey(annotation, request, ConstantPool.REDIS_PATH_DELIMITER);
+			rateLimitKey = generateKey(annotation, request, Constants.REDIS_PATH_DELIMITER);
 			if (StringUtils.isNotBlank(properties.getRedisson().getKeyPrefix())) {
 				rateLimitKey = RedisUtils.computeKey(properties.getRedisson().getKeyPrefix(), rateLimitKey);
 			}
@@ -60,19 +62,19 @@ public class RedissonRequestRateLimiterImpl implements RequestRateLimiter {
 	private boolean initRateLimiter(RRateLimiter rateLimiter, RateLimit rateLimit) {
 		return switch (rateLimit.timeUnit()) {
 			case DAYS ->
-				rateLimiter.trySetRate(RateType.OVERALL, rateLimit.rate(), rateLimit.interval(), RateIntervalUnit.DAYS);
+				rateLimiter.trySetRate(RateType.OVERALL, rateLimit.rate(), Duration.ofDays(rateLimit.interval()));
 			case HOURS ->
-				rateLimiter.trySetRate(RateType.OVERALL, rateLimit.rate(), rateLimit.interval(), RateIntervalUnit.HOURS);
+				rateLimiter.trySetRate(RateType.OVERALL, rateLimit.rate(), Duration.ofHours(rateLimit.interval()));
 			case MINUTES ->
-				rateLimiter.trySetRate(RateType.OVERALL, rateLimit.rate(), rateLimit.interval(), RateIntervalUnit.MINUTES);
+				rateLimiter.trySetRate(RateType.OVERALL, rateLimit.rate(), Duration.ofMinutes(rateLimit.interval()));
 			case SECONDS ->
-				rateLimiter.trySetRate(RateType.OVERALL, rateLimit.rate(), rateLimit.interval(), RateIntervalUnit.SECONDS);
+				rateLimiter.trySetRate(RateType.OVERALL, rateLimit.rate(), Duration.ofSeconds(rateLimit.interval()));
 			case MILLISECONDS ->
-				rateLimiter.trySetRate(RateType.OVERALL, rateLimit.rate(), rateLimit.interval(), RateIntervalUnit.MILLISECONDS);
+				rateLimiter.trySetRate(RateType.OVERALL, rateLimit.rate(), Duration.ofMillis(rateLimit.interval()));
 			case MICROSECONDS ->
-				rateLimiter.trySetRate(RateType.OVERALL, rateLimit.rate(), TimeUnit.MICROSECONDS.toMillis(rateLimit.interval()), RateIntervalUnit.MILLISECONDS);
+				rateLimiter.trySetRate(RateType.OVERALL, rateLimit.rate(), Duration.of(rateLimit.interval(), ChronoUnit.NANOS));
 			case NANOSECONDS ->
-				rateLimiter.trySetRate(RateType.OVERALL, rateLimit.rate(), TimeUnit.NANOSECONDS.toMillis(rateLimit.interval()), RateIntervalUnit.MILLISECONDS);
+				rateLimiter.trySetRate(RateType.OVERALL, rateLimit.rate(), Duration.ofNanos(rateLimit.interval()));
 		};
 	}
 }

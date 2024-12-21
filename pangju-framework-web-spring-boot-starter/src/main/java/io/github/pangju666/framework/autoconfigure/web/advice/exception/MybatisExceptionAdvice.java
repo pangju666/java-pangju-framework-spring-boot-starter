@@ -1,7 +1,7 @@
 package io.github.pangju666.framework.autoconfigure.web.advice.exception;
 
 import com.baomidou.mybatisplus.core.exceptions.MybatisPlusException;
-import io.github.pangju666.framework.core.lang.pool.ConstantPool;
+import io.github.pangju666.framework.core.lang.pool.Constants;
 import io.github.pangju666.framework.web.model.Result;
 import jakarta.servlet.Servlet;
 import org.apache.ibatis.exceptions.PersistenceException;
@@ -34,21 +34,21 @@ public class MybatisExceptionAdvice {
 	@ExceptionHandler(value = CannotGetJdbcConnectionException.class)
 	public Result<Void> handleCannotGetJdbcConnectionException(CannotGetJdbcConnectionException e) {
 		log.error("JDBC连接超时", e);
-		return Result.fail(ConstantPool.DATA_ERROR_RESPONSE_CODE, "数据库连接超时");
+		return Result.fail(Constants.DATA_ERROR_RESPONSE_CODE, "数据库连接超时");
 	}
 
 	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 	@ExceptionHandler(value = MybatisPlusException.class)
 	public Result<Void> handleMybatisPlusException(MybatisPlusException e) {
 		log.error("mybatis-plus抛出异常", e);
-		return Result.fail(ConstantPool.DATA_ERROR_RESPONSE_CODE, "服务器内部错误");
+		return Result.fail(Constants.DATA_ERROR_RESPONSE_CODE, "服务器内部错误");
 	}
 
 	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 	@ExceptionHandler(value = PersistenceException.class)
 	public Result<Void> handlePersistenceException(PersistenceException e) {
 		log.error("mybatis抛出异常", e);
-		return Result.fail(ConstantPool.DATA_ERROR_RESPONSE_CODE, "服务器内部错误");
+		return Result.fail(Constants.DATA_ERROR_RESPONSE_CODE, "服务器内部错误");
 	}
 
 	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -61,9 +61,9 @@ public class MybatisExceptionAdvice {
 				.map(Throwable::getClass)
 				.orElse(null);
 			if (Objects.nonNull(clz) && CannotGetJdbcConnectionException.class.isAssignableFrom(clz)) {
-				return Result.fail(ConstantPool.DATA_ERROR_RESPONSE_CODE, "数据库连接超时");
+				return Result.fail(Constants.DATA_ERROR_RESPONSE_CODE, "数据库连接超时");
 			}
 		}
-		return Result.fail(ConstantPool.DATA_ERROR_RESPONSE_CODE, "服务器内部错误");
+		return Result.fail(Constants.DATA_ERROR_RESPONSE_CODE, "服务器内部错误");
 	}
 }

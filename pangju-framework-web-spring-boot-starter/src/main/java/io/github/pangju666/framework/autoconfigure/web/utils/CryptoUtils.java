@@ -1,6 +1,7 @@
 package io.github.pangju666.framework.autoconfigure.web.utils;
 
 import io.github.pangju666.commons.codec.encryption.binary.RSABinaryEncryptor;
+import io.github.pangju666.commons.codec.key.RSAKey;
 import io.github.pangju666.framework.autoconfigure.web.enums.Algorithm;
 import io.github.pangju666.framework.autoconfigure.web.enums.Encoding;
 import org.apache.commons.codec.DecoderException;
@@ -47,8 +48,9 @@ public class CryptoUtils {
 			case BASE64 -> Base64.decodeBase64(rawContent);
 			case HEX -> Hex.decodeHex(rawContent);
 			case RSA -> {
-				RSABinaryEncryptor encryptor = new RSABinaryEncryptor();
-				encryptor.setPrivateKey(Base64.decodeBase64(key));
+				RSAKey rsaKey = new RSAKey();
+				rsaKey.setPrivateKeyFromBase64(key);
+				RSABinaryEncryptor encryptor = new RSABinaryEncryptor(rsaKey);
 				yield encryptor.decrypt(decode(rawContent, encoding));
 			}
 			case AES256 -> {
@@ -64,8 +66,9 @@ public class CryptoUtils {
 			case BASE64 -> Base64.encodeBase64(rawContent);
 			case HEX -> Hex.encodeHexString(rawContent).getBytes();
 			case RSA -> {
-				RSABinaryEncryptor encryptor = new RSABinaryEncryptor();
-				encryptor.setPublicKey(Base64.decodeBase64(key));
+				RSAKey rsaKey = new RSAKey();
+				rsaKey.setPublicKeyFromBase64(key);
+				RSABinaryEncryptor encryptor = new RSABinaryEncryptor(rsaKey);
 				yield encryptor.encrypt(rawContent);
 			}
 			case AES256 -> {

@@ -18,7 +18,8 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 public class EncryptRequestParamArgumentResolver implements HandlerMethodArgumentResolver {
 	@Override
 	public boolean supportsParameter(MethodParameter parameter) {
-		return parameter.hasParameterAnnotation(EncryptRequestParam.class) && parameter.getParameterType().isAssignableFrom(String.class);
+		return parameter.hasParameterAnnotation(EncryptRequestParam.class) &&
+			parameter.getParameterType().isAssignableFrom(String.class);
 	}
 
 	@Override

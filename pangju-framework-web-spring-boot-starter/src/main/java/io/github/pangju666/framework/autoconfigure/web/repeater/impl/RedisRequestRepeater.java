@@ -3,7 +3,7 @@ package io.github.pangju666.framework.autoconfigure.web.repeater.impl;
 import io.github.pangju666.framework.autoconfigure.web.annotation.validation.Repeat;
 import io.github.pangju666.framework.autoconfigure.web.properties.RequestRepeatProperties;
 import io.github.pangju666.framework.autoconfigure.web.repeater.RequestRepeater;
-import io.github.pangju666.framework.core.lang.pool.ConstantPool;
+import io.github.pangju666.framework.core.lang.pool.Constants;
 import io.github.pangju666.framework.data.redis.utils.RedisUtils;
 import io.micrometer.common.util.StringUtils;
 import jakarta.servlet.http.HttpServletRequest;
@@ -16,7 +16,7 @@ public class RedisRequestRepeater extends RequestRepeater {
 
 	@SuppressWarnings("unchecked")
 	public RedisRequestRepeater(RequestRepeatProperties properties, BeanFactory beanFactory) {
-		super(ConstantPool.REDIS_PATH_DELIMITER);
+		super(Constants.REDIS_PATH_DELIMITER);
 		this.properties = properties;
 		if (StringUtils.isNotBlank(properties.getRedis().getBeanName())) {
 			this.redisTemplate = beanFactory.getBean(properties.getRedis().getBeanName(), RedisTemplate.class);
