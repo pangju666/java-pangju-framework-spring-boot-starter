@@ -1,7 +1,7 @@
 package io.github.pangju666.framework.autoconfigure.web.log.filter;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.reflect.TypeToken;
 import io.github.pangju666.commons.lang.utils.DateFormatUtils;
 import io.github.pangju666.commons.lang.utils.JsonUtils;
 import io.github.pangju666.framework.autoconfigure.web.log.annotation.WebLogIgnore;
@@ -134,34 +134,24 @@ public class WebLogFilter extends BaseRequestFilter {
 			responseLog.setContentType(responseWrapper.getContentType());
 			responseLog.setCharacterEncoding(responseWrapper.getCharacterEncoding());
 
-            if (response.getStatus() != HttpStatus.FOUND.value() && properties.getResponse().isBody()) {
-                if (properties.getResponse().isBodyData()) {
-					if (MediaType.APPLICATION_JSON_VALUE.equals(responseWrapper.getContentType()) ||
-						MediaType.APPLICATION_JSON_UTF8_VALUE.equals(responseWrapper.getContentType())) {
-                        String responseBodyStr = new String(responseWrapper.getContentAsByteArray(), StandardCharsets.UTF_8);
-                        if (StringUtils.isNotBlank(responseBodyStr)) {
-                            responseLog.setBody(JsonUtils.fromString(responseBodyStr, new TypeToken<Object>() {
-                            }));
-                        }
-                    }
-                } else {
-					if (MediaType.APPLICATION_JSON_VALUE.equals(responseWrapper.getContentType()) ||
-						MediaType.APPLICATION_JSON_UTF8_VALUE.equals(responseWrapper.getContentType())) {
-                        String responseBodyStr = new String(responseWrapper.getContentAsByteArray(), StandardCharsets.UTF_8);
-                        if (StringUtils.isNotBlank(responseBodyStr)) {
-                            JsonObject responseBody = JsonUtils.parseString(responseBodyStr).getAsJsonObject();
-                            if (responseBody.has("code") && responseBody.has("message")) {
-                                Result<?> result = new Result<>(
-                                        responseBody.getAsJsonPrimitive("message").getAsString(),
-                                        responseBody.getAsJsonPrimitive("code").getAsInt(),
-                                        null
-                                );
-                                responseLog.setBody(result);
-                            }
-                        }
-                    }
-                }
-            }
+			if (MediaType.APPLICATION_JSON_VALUE.equals(responseWrapper.getContentType()) ||
+				MediaType.APPLICATION_JSON_UTF8_VALUE.equals(responseWrapper.getContentType())) {
+				if (response.getStatus() != HttpStatus.FOUND.value() && properties.getResponse().isBody()) {
+					String responseBodyStr = new String(responseWrapper.getContentAsByteArray(), StandardCharsets.UTF_8);
+					if (StringUtils.isNotBlank(responseBodyStr)) {
+						JsonObject responseBody = JsonUtils.parseString(responseBodyStr).getAsJsonObject();
+						if (responseBody.has("code") && responseBody.has("message")) {
+							JsonElement data = responseBody.get("data");
+							Result<String> result = new Result<>(
+								responseBody.getAsJsonPrimitive("message").getAsString(),
+								responseBody.getAsJsonPrimitive("code").getAsInt(),
+								properties.getResponse().isBodyData() && Objects.nonNull(data) ? data.toString() : null
+							);
+							responseLog.setBody(result);
+						}
+					}
+				}
+			}
 			webLog.setResponse(responseLog);
 
 			try {
