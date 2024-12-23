@@ -1,7 +1,5 @@
 package io.github.pangju666.framework.autoconfigure.web.advice.wrapper;
 
-import com.google.gson.reflect.TypeToken;
-import io.github.pangju666.commons.lang.utils.JsonUtils;
 import io.github.pangju666.framework.autoconfigure.web.annotation.wrapper.ResponseBodyWrapper;
 import io.github.pangju666.framework.autoconfigure.web.annotation.wrapper.ResponseBodyWrapperIgnore;
 import io.github.pangju666.framework.web.model.Result;
@@ -47,13 +45,11 @@ public class ResponseBodyWrapperAdvice implements ResponseBodyAdvice<Object> {
 		}
 		if (StringHttpMessageConverter.class.isAssignableFrom(selectedConverterType) && body instanceof String bodyStr) {
 			response.getHeaders().setContentType(MediaType.APPLICATION_JSON);
-			return JsonUtils.toString(Result.ok(bodyStr), new TypeToken<Result<String>>() {
-			});
+			return Result.ok(bodyStr).toString();
 		}
 		if (ByteArrayHttpMessageConverter.class.isAssignableFrom(selectedConverterType) && body instanceof byte[] bodyBytes) {
 			response.getHeaders().setContentType(MediaType.APPLICATION_JSON);
-			return JsonUtils.toString(Result.ok(bodyBytes), new TypeToken<Result<byte[]>>() {
-			}).getBytes();
+			return Result.ok(bodyBytes).toString().getBytes();
 		}
 		if (Objects.isNull(body)) {
 			return Result.ok();

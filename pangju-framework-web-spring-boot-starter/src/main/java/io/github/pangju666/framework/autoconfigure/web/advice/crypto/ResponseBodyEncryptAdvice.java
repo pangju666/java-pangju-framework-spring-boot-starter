@@ -15,8 +15,6 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jasypt.exceptions.EncryptionOperationNotPossibleException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.core.MethodParameter;
@@ -39,8 +37,6 @@ import java.util.*;
 @ConditionalOnClass({Servlet.class, DispatcherServlet.class})
 @RestControllerAdvice
 public class ResponseBodyEncryptAdvice implements ResponseBodyAdvice<Object> {
-	private static final Logger logger = LoggerFactory.getLogger(ResponseBodyEncryptAdvice.class);
-
 	@Override
 	public boolean supports(MethodParameter returnType, Class<? extends HttpMessageConverter<?>> converterType) {
 		return true;
