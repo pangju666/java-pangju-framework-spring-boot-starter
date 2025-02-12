@@ -9,7 +9,7 @@
 		<relativePath/>
 	</parent>
     <artifactId>pangju-framework-spring-boot-starter-parent</artifactId>
-	<version>1.0.0-SNAPSHOT</version>
+	<version>1.0.0</version>
 	<packaging>pom</packaging>
 
 	<name>pangju-framework-spring-boot-starter-parent</name>
@@ -29,9 +29,9 @@
 
 	<properties>
 		<skipTests>true</skipTests>
-		<framework.version>1.0.0-SNAPSHOT</framework.version>
+		<framework.version>1.0.0</framework.version>
 		<lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
-		<spock-spring-boot-starter.version>1.0.0-SNAPSHOT</spock-spring-boot-starter.version>
+		<spock-spring-boot-starter.version>1.0.0</spock-spring-boot-starter.version>
 	</properties>
 
 	<licenses>
@@ -69,42 +69,42 @@
 			<dependency>
 				<groupId>io.github.pangju666</groupId>
 				<artifactId>pangju-framework-spring-boot-starter</artifactId>
-				<version>1.0.0-SNAPSHOT</version>
+				<version>1.0.0</version>
 			</dependency>
 			<dependency>
 				<groupId>io.github.pangju666</groupId>
 				<artifactId>pangju-framework-web-spring-boot-starter</artifactId>
-				<version>1.0.0-SNAPSHOT</version>
+				<version>1.0.0</version>
 			</dependency>
 			<dependency>
 				<groupId>io.github.pangju666</groupId>
 				<artifactId>pangju-framework-data-dynamic-redis-spring-boot-starter</artifactId>
-				<version>1.0.0-SNAPSHOT</version>
+				<version>1.0.0</version>
 			</dependency>
 			<dependency>
 				<groupId>io.github.pangju666</groupId>
 				<artifactId>pangju-framework-data-dynamic-mongodb-spring-boot-starter</artifactId>
-				<version>1.0.0-SNAPSHOT</version>
+				<version>1.0.0</version>
 			</dependency>
 			<dependency>
 				<groupId>io.github.pangju666</groupId>
 				<artifactId>pangju-framework-data-mybatis-plus-spring-boot-starter</artifactId>
-				<version>1.0.0-SNAPSHOT</version>
+				<version>1.0.0</version>
 			</dependency>
             <dependency>
                 <groupId>io.github.pangju666</groupId>
                 <artifactId>pangju-framework-cache-redis-spring-boot-starter</artifactId>
-                <version>1.0.0-SNAPSHOT</version>
+				<version>1.0.0</version>
             </dependency>
 			<dependency>
 				<groupId>io.github.pangju666</groupId>
 				<artifactId>pangju-framework-web-authenticate-spring-boot-starter</artifactId>
-				<version>1.0.0-SNAPSHOT</version>
+				<version>1.0.0</version>
 			</dependency>
 			<dependency>
 				<groupId>io.github.pangju666</groupId>
 				<artifactId>pangju-framework-web-log-spring-boot-starter</artifactId>
-				<version>1.0.0-SNAPSHOT</version>
+				<version>1.0.0</version>
 			</dependency>
 
 			<dependency>
@@ -172,10 +172,14 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>versions-maven-plugin</artifactId>
+				<inherited>false</inherited>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-gpg-plugin</artifactId>
+				<!--<configuration>
+					<skip>true</skip>
+				</configuration>-->
 			</plugin>
 		</plugins>
 	</build>
