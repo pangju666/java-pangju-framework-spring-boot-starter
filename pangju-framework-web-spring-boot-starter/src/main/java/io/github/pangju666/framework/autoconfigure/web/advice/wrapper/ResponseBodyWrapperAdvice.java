@@ -13,6 +13,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.converter.ByteArrayHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.StringHttpMessageConverter;
+import org.springframework.http.converter.json.AbstractJackson2HttpMessageConverter;
+import org.springframework.http.converter.json.AbstractJsonHttpMessageConverter;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.lang.Nullable;
@@ -40,19 +42,22 @@ public class ResponseBodyWrapperAdvice implements ResponseBodyAdvice<Object> {
 	public Object beforeBodyWrite(@Nullable Object body, MethodParameter returnType, MediaType selectedContentType,
 								  Class<? extends HttpMessageConverter<?>> selectedConverterType,
 								  ServerHttpRequest request, ServerHttpResponse response) {
+		if (!selectedConverterType.isAssignableFrom(AbstractJackson2HttpMessageConverter.class) &&
+			!selectedConverterType.isAssignableFrom(AbstractJsonHttpMessageConverter.class) &&
+			!selectedConverterType.isAssignableFrom(ByteArrayHttpMessageConverter.class) &&
+			!selectedConverterType.isAssignableFrom(StringHttpMessageConverter.class)) {
+			return body;
+		}
 		if (body instanceof Result<?>) {
 			return body;
 		}
-		if (StringHttpMessageConverter.class.isAssignableFrom(selectedConverterType) && body instanceof String bodyStr) {
+		if (StringHttpMessageConverter.class.isAssignableFrom(selectedConverterType)) {
 			response.getHeaders().setContentType(MediaType.APPLICATION_JSON);
-			return Result.ok(bodyStr).toString();
+			return Result.ok(body).toString();
 		}
-		if (ByteArrayHttpMessageConverter.class.isAssignableFrom(selectedConverterType) && body instanceof byte[] bodyBytes) {
+		if (ByteArrayHttpMessageConverter.class.isAssignableFrom(selectedConverterType)) {
 			response.getHeaders().setContentType(MediaType.APPLICATION_JSON);
-			return Result.ok(bodyBytes).toString().getBytes();
-		}
-		if (Objects.isNull(body)) {
-			return Result.ok();
+			return Result.ok(body).toString().getBytes();
 		}
 		return Result.ok(body);
 	}
