@@ -1,8 +1,11 @@
 package io.github.pangju666.framework.autoconfigure.web;
 
 import io.github.pangju666.framework.autoconfigure.web.interceptor.RequestRateLimitInterceptor;
+import io.github.pangju666.framework.autoconfigure.web.interceptor.RequestSignatureInterceptor;
 import io.github.pangju666.framework.autoconfigure.web.limiter.RequestRateLimiter;
+import io.github.pangju666.framework.autoconfigure.web.properties.RequestSignatureProperties;
 import io.github.pangju666.framework.autoconfigure.web.resolver.EncryptRequestParamArgumentResolver;
+import io.github.pangju666.framework.autoconfigure.web.store.SignatureSecretKeyStore;
 import io.github.pangju666.framework.web.interceptor.BaseRequestInterceptor;
 import io.github.pangju666.framework.web.provider.ExcludePathPatternProvider;
 import io.github.pangju666.framework.web.resolver.EnumRequestParamArgumentResolver;
@@ -27,10 +30,13 @@ import java.util.Map;
 public class WebMvcAutoConfiguration implements WebMvcConfigurer {
 	private final List<BaseRequestInterceptor> interceptors;
 	private RequestRateLimiter requestRateLimiter;
+	private final RequestSignatureProperties signatureProperties;
+	private SignatureSecretKeyStore secretKeyStore;
 	private List<String> excludePathPatterns = Collections.emptyList();
 
-	public WebMvcAutoConfiguration(List<BaseRequestInterceptor> interceptors) {
+	public WebMvcAutoConfiguration(List<BaseRequestInterceptor> interceptors, RequestSignatureProperties signatureProperties) {
 		this.interceptors = interceptors;
+		this.signatureProperties = signatureProperties;
 	}
 
 	@Autowired(required = false)
@@ -47,6 +53,11 @@ public class WebMvcAutoConfiguration implements WebMvcConfigurer {
 		this.requestRateLimiter = requestRateLimiter;
 	}
 
+	@Autowired
+	public void setSecretKeyStore(SignatureSecretKeyStore secretKeyStore) {
+		this.secretKeyStore = secretKeyStore;
+	}
+
 	@Override
 	public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
 		resolvers.add(new EnumRequestParamArgumentResolver());
@@ -55,6 +66,9 @@ public class WebMvcAutoConfiguration implements WebMvcConfigurer {
 
 	@Override
 	public void addInterceptors(InterceptorRegistry registry) {
+		registry.addInterceptor(new RequestSignatureInterceptor(signatureProperties, secretKeyStore))
+			.addPathPatterns("/**")
+			.excludePathPatterns(excludePathPatterns);
 		registry.addInterceptor(new RequestRateLimitInterceptor(requestRateLimiter))
 			.addPathPatterns("/**")
 			.excludePathPatterns(excludePathPatterns);

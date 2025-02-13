@@ -15,17 +15,14 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.web.servlet.DispatcherServlet;
 
-@AutoConfiguration(before = WebMvcAutoConfiguration.class)
+@AutoConfiguration(after = AopAutoConfiguration.class)
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @ConditionalOnClass({Servlet.class, DispatcherServlet.class})
 @EnableConfigurationProperties(RequestRepeatProperties.class)
 @Import({ExpireMapRequestRepeaterConfiguration.class, RedisRequestRepeaterConfiguration.class})
 public class RequestRepeaterAutoConfiguration {
-	@AutoConfiguration(after = AopAutoConfiguration.class)
-	public static class RequestRepeatAopAutoConfiguration {
-		@Bean
-		public RequestRepeatAspect requestRepeatAspect(RequestRepeater requestRepeater) {
-			return new RequestRepeatAspect(requestRepeater);
-		}
+	@Bean
+	public RequestRepeatAspect requestRepeatAspect(RequestRepeater requestRepeater) {
+		return new RequestRepeatAspect(requestRepeater);
 	}
 }
