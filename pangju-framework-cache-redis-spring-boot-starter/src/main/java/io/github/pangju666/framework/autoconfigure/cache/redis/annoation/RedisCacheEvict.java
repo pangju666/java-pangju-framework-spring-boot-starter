@@ -6,13 +6,13 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface RedisCacheEvict {
-    String[] caches() default {};
+	String[] caches() default {};
 
-    String key() default "";
+	String key() default "";
 
-    String keyField() default "";
+	String keyField() default "";
 
-    String condition() default "";
+	String condition() default "";
 
-    boolean allEntries() default false;
+	boolean allEntries() default false;
 }

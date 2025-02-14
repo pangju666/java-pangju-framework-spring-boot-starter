@@ -69,6 +69,22 @@ public class WebLog {
 		this.response = response;
 	}
 
+	public Map<String, Object> getExpandData() {
+		return expandData;
+	}
+
+	public void setExpandData(Map<String, Object> expandData) {
+		this.expandData = expandData;
+	}
+
+	public String getOperation() {
+		return operation;
+	}
+
+	public void setOperation(String operation) {
+		this.operation = operation;
+	}
+
 	public static class Request {
 		private Map<String, Object> headers;
 		private Map<String, Object> queryParams;
@@ -135,22 +151,6 @@ public class WebLog {
 		}
 	}
 
-	public Map<String, Object> getExpandData() {
-		return expandData;
-	}
-
-	public void setExpandData(Map<String, Object> expandData) {
-		this.expandData = expandData;
-	}
-
-	public String getOperation() {
-		return operation;
-	}
-
-	public void setOperation(String operation) {
-		this.operation = operation;
-	}
-
 	public static class Response {
 		private Integer status;
 		private String contentType;
@@ -158,7 +158,7 @@ public class WebLog {
 		private Map<String, Object> headers;
 		private Object body;
 
-        public String getCharacterEncoding() {
+		public String getCharacterEncoding() {
 			return characterEncoding;
 		}
 

@@ -168,7 +168,7 @@ public class DynamicMongoRegistrar implements EnvironmentAware, ImportBeanDefini
 																				MongoProperties properties,
 																				MongoConnectionDetails connectionDetails) {
 		String database = properties.getDatabase();
-        if (Objects.isNull(database)) {
+		if (Objects.isNull(database)) {
 			database = connectionDetails.getConnectionString().getDatabase();
 		}
 		return new SimpleMongoClientDatabaseFactory(mongoClient, database);

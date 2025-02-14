@@ -8,7 +8,6 @@ import io.github.pangju666.framework.data.redis.utils.RedisUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.redisson.api.RRateLimiter;
-import org.redisson.api.RateIntervalUnit;
 import org.redisson.api.RateType;
 import org.redisson.api.RedissonClient;
 import org.slf4j.Logger;
@@ -17,8 +16,6 @@ import org.springframework.beans.factory.BeanFactory;
 
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalUnit;
-import java.util.concurrent.TimeUnit;
 
 public class RedissonRequestRateLimiterImpl implements RequestRateLimiter {
 	private static final Logger log = LoggerFactory.getLogger(RedissonRequestRateLimiterImpl.class);

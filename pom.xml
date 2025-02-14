@@ -8,7 +8,7 @@
 		<version>1.0.0</version>
 		<relativePath/>
 	</parent>
-    <artifactId>pangju-framework-spring-boot-starter-parent</artifactId>
+	<artifactId>pangju-framework-spring-boot-starter-parent</artifactId>
 	<version>1.0.0</version>
 	<packaging>pom</packaging>
 
@@ -21,7 +21,7 @@
 		<module>pangju-framework-data-dynamic-redis-spring-boot-starter</module>
 		<module>pangju-framework-data-dynamic-mongodb-spring-boot-starter</module>
 		<module>pangju-framework-data-mybatis-plus-spring-boot-starter</module>
-        <module>pangju-framework-cache-redis-spring-boot-starter</module>
+		<module>pangju-framework-cache-redis-spring-boot-starter</module>
 		<module>pangju-framework-web-spring-boot-starter</module>
 		<module>pangju-framework-web-authenticate-spring-boot-starter</module>
 		<module>pangju-framework-web-log-spring-boot-starter</module>
@@ -91,11 +91,11 @@
 				<artifactId>pangju-framework-data-mybatis-plus-spring-boot-starter</artifactId>
 				<version>1.0.0</version>
 			</dependency>
-            <dependency>
-                <groupId>io.github.pangju666</groupId>
-                <artifactId>pangju-framework-cache-redis-spring-boot-starter</artifactId>
+			<dependency>
+				<groupId>io.github.pangju666</groupId>
+				<artifactId>pangju-framework-cache-redis-spring-boot-starter</artifactId>
 				<version>1.0.0</version>
-            </dependency>
+			</dependency>
 			<dependency>
 				<groupId>io.github.pangju666</groupId>
 				<artifactId>pangju-framework-web-authenticate-spring-boot-starter</artifactId>

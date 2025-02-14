@@ -12,8 +12,12 @@ public @interface EncryptRequestParam {
 	String key();
 
 	Algorithm algorithm() default Algorithm.AES256;
+
 	Encoding encoding() default Encoding.BASE64;
+
 	String name() default "";
+
 	boolean required() default true;
+
 	String defaultValue() default "";
 }

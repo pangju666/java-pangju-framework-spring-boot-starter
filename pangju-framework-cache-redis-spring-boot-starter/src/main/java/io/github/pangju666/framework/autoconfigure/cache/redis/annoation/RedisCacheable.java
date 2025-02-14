@@ -6,19 +6,19 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface RedisCacheable {
-    String cache();
+	String cache();
 
-    String key() default "";
+	String key() default "";
 
-    String keyField() default "";
+	String keyField() default "";
 
-    String sortField() default "";
+	String sortField() default "";
 
-    String reverseOrder() default "";
+	String reverseOrder() default "";
 
-    boolean allEntries() default false;
+	boolean allEntries() default false;
 
-    String condition() default "";
+	String condition() default "";
 
-    String unless() default "";
+	String unless() default "";
 }

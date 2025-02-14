@@ -19,24 +19,24 @@ import org.springframework.data.redis.serializer.RedisSerializer;
 @ConditionalOnClass(RedisOperations.class)
 @EnableConfigurationProperties(RedisCacheProperties.class)
 public class RedisCacheAutoConfiguration {
-    @Bean
-    @ConditionalOnMissingBean
-    @ConditionalOnSingleCandidate(RedisConnectionFactory.class)
-    public RedisCacheManager redisCacheManager(RedisConnectionFactory redisConnectionFactory,
-                                               RedisCacheProperties redisCacheProperties) {
-        RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
-        redisTemplate.setConnectionFactory(redisConnectionFactory);
-        redisTemplate.setKeySerializer(RedisSerializer.string());
-        redisTemplate.setValueSerializer(redisCacheProperties.getValueSerializer().getSerializer());
-        redisTemplate.setHashKeySerializer(RedisSerializer.string());
-        redisTemplate.setHashValueSerializer(redisCacheProperties.getValueSerializer().getSerializer());
-        redisTemplate.afterPropertiesSet();
-        return new RedisCacheManager(redisTemplate, redisCacheProperties);
-    }
+	@Bean
+	@ConditionalOnMissingBean
+	@ConditionalOnSingleCandidate(RedisConnectionFactory.class)
+	public RedisCacheManager redisCacheManager(RedisConnectionFactory redisConnectionFactory,
+											   RedisCacheProperties redisCacheProperties) {
+		RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
+		redisTemplate.setConnectionFactory(redisConnectionFactory);
+		redisTemplate.setKeySerializer(RedisSerializer.string());
+		redisTemplate.setValueSerializer(redisCacheProperties.getValueSerializer().getSerializer());
+		redisTemplate.setHashKeySerializer(RedisSerializer.string());
+		redisTemplate.setHashValueSerializer(redisCacheProperties.getValueSerializer().getSerializer());
+		redisTemplate.afterPropertiesSet();
+		return new RedisCacheManager(redisTemplate, redisCacheProperties);
+	}
 
-    @Bean
-    @ConditionalOnBean(RedisCacheManager.class)
-    public RedisCacheAspect redisCacheAspect(RedisCacheManager redisCacheManager) {
-        return new RedisCacheAspect(redisCacheManager);
-    }
+	@Bean
+	@ConditionalOnBean(RedisCacheManager.class)
+	public RedisCacheAspect redisCacheAspect(RedisCacheManager redisCacheManager) {
+		return new RedisCacheAspect(redisCacheManager);
+	}
 }

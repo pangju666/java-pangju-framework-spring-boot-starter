@@ -6,11 +6,11 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface RedisCachePut {
-    String cache();
+	String cache();
 
-    String key() default "";
+	String key() default "";
 
-    String value();
+	String value();
 
-    String condition() default "";
+	String condition() default "";
 }

@@ -6,7 +6,7 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface RedisCaching {
-    RedisCachePut[] puts() default {};
+	RedisCachePut[] puts() default {};
 
-    RedisCacheEvict[] evicts() default {};
+	RedisCacheEvict[] evicts() default {};
 }
