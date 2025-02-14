@@ -4,19 +4,19 @@ import io.github.pangju666.framework.autoconfigure.web.annotation.validation.Rep
 import io.github.pangju666.framework.autoconfigure.web.properties.RequestRepeatProperties;
 import io.github.pangju666.framework.autoconfigure.web.repeater.RequestRepeater;
 import io.github.pangju666.framework.core.lang.pool.Constants;
-import io.github.pangju666.framework.data.redis.utils.RedisUtils;
-import io.micrometer.common.util.StringUtils;
 import jakarta.servlet.http.HttpServletRequest;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 
-public class RedisRequestRepeater extends RequestRepeater {
+import java.util.Arrays;
+
+public class RedisRequestRepeater implements RequestRepeater {
 	private final RequestRepeatProperties properties;
 	private final RedisTemplate<String, Object> redisTemplate;
 
 	@SuppressWarnings("unchecked")
 	public RedisRequestRepeater(RequestRepeatProperties properties, BeanFactory beanFactory) {
-		super(Constants.REDIS_PATH_DELIMITER);
 		this.properties = properties;
 		if (StringUtils.isNotBlank(properties.getRedis().getBeanName())) {
 			this.redisTemplate = beanFactory.getBean(properties.getRedis().getBeanName(), RedisTemplate.class);
@@ -27,9 +27,10 @@ public class RedisRequestRepeater extends RequestRepeater {
 
 	@Override
 	public boolean tryAcquire(String key, Repeat repeat, HttpServletRequest request) {
-		String repeatKey = generateKey(key, repeat, request);
+		String repeatKey = generateKey(key, Constants.REDIS_PATH_DELIMITER, repeat, request);
 		if (StringUtils.isNotBlank(properties.getRedis().getKeyPrefix())) {
-			repeatKey = RedisUtils.computeKey(properties.getRedis().getKeyPrefix(), repeatKey);
+			repeatKey = StringUtils.join(Arrays.asList(properties.getRedis().getKeyPrefix(), repeatKey),
+				Constants.REDIS_PATH_DELIMITER);
 		}
 		if (Boolean.TRUE.equals(redisTemplate.hasKey(repeatKey))) {
 			return false;

@@ -41,12 +41,11 @@ public class RequestRepeatAspect {
 		Method method = methodSignature.getMethod();
 		Repeat annotation = method.getAnnotation(Repeat.class);
 
-		EvaluationContext context = SpELUtils.initEvaluationContext(method, point.getArgs(), discoverer);
-		Expression expression = parser.parseExpression(annotation.key());
-		String key = expression.getValue(context, String.class);
-
 		boolean result;
 		try {
+			EvaluationContext context = SpELUtils.initEvaluationContext(method, point.getArgs(), discoverer);
+			Expression expression = parser.parseExpression(annotation.key());
+			String key = expression.getValue(context, String.class);
 			result = requestRepeater.tryAcquire(key, annotation, RequestUtils.getCurrentRequest());
 		} catch (Exception e) {
 			throw new ServerException(e);
