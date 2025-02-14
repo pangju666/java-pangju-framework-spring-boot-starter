@@ -2,6 +2,7 @@ package io.github.pangju666.framework.autoconfigure.web.interceptor;
 
 import io.github.pangju666.commons.lang.utils.DateUtils;
 import io.github.pangju666.framework.autoconfigure.web.annotation.validation.Signature;
+import io.github.pangju666.framework.autoconfigure.web.enums.SignatureAlgorithm;
 import io.github.pangju666.framework.autoconfigure.web.properties.RequestSignatureProperties;
 import io.github.pangju666.framework.autoconfigure.web.store.SignatureSecretKeyStore;
 import io.github.pangju666.framework.core.exception.base.ValidationException;
@@ -42,6 +43,7 @@ public class RequestSignatureInterceptor extends BaseRequestInterceptor {
 					return true;
 				}
 			}
+
 			return switch (annotation.type()) {
 				case HEADER -> validateSignatureByHeaders(request, response, annotation);
 				case PARAMS -> validateSignatureByParams(request, response, annotation);
@@ -60,8 +62,8 @@ public class RequestSignatureInterceptor extends BaseRequestInterceptor {
 	}
 
 	private boolean validateSignatureByParams(HttpServletRequest request, HttpServletResponse response,
-											  Signature apiSignature) throws MissingServletRequestParameterException {
-		String appId = StringUtils.defaultIfBlank(apiSignature.appId(), request.getParameter(properties.getAppIdParamName()));
+											  Signature annotation) throws MissingServletRequestParameterException {
+		String appId = StringUtils.defaultIfBlank(annotation.appId(), request.getParameter(properties.getAppIdParamName()));
 		if (StringUtils.isBlank(appId)) {
 			throw new MissingServletRequestParameterException(properties.getAppIdParamName(), "string");
 		}
@@ -71,10 +73,16 @@ public class RequestSignatureInterceptor extends BaseRequestInterceptor {
 		}
 
 		String secretKey = secretKeyStore.loadSecretKey(appId);
-		String requestUrl = getRequestUrl(request);
-		String actualSignature = DigestUtils.sha1Hex(StringUtils.joinWith("&", appId, secretKey, requestUrl));
+		if (StringUtils.isBlank(secretKey)) {
+			ResponseUtils.writeExceptionToResponse(new ValidationException("应用标识符不存在"), response, HttpStatus.BAD_REQUEST);
+			return false;
+		}
 
-		if (!actualSignature.equals(signature)) {
+		String requestUrl = getRequestUrl(request);
+		String signStr = StringUtils.joinWith("&", appId, secretKey, requestUrl);
+		String expectSignature = computeSignature(signStr, annotation.algorithm());
+
+		if (!StringUtils.equals(expectSignature, signature)) {
 			ResponseUtils.writeExceptionToResponse(new ValidationException("签名错误"), response, HttpStatus.BAD_REQUEST);
 			return false;
 		}
@@ -82,9 +90,9 @@ public class RequestSignatureInterceptor extends BaseRequestInterceptor {
 	}
 
 	private boolean validateSignatureByHeaders(HttpServletRequest request, HttpServletResponse response,
-											   Signature apiSignature) throws MissingRequestValueException {
+											   Signature annotation) throws MissingRequestValueException {
 		try {
-			String appId = StringUtils.defaultIfBlank(apiSignature.appId(), request.getHeader(properties.getAppIdHeaderName()));
+			String appId = StringUtils.defaultIfBlank(annotation.appId(), request.getHeader(properties.getAppIdHeaderName()));
 			if (StringUtils.isBlank(appId)) {
 				throw new MissingRequestValueException("缺少请求头：" + properties.getAppIdHeaderName());
 			}
@@ -99,16 +107,22 @@ public class RequestSignatureInterceptor extends BaseRequestInterceptor {
 
 			Long requestTimestamp = Long.parseLong(timestamp);
 			Long nowTimestamp = DateUtils.nowDate().getTime();
-			if (nowTimestamp - requestTimestamp > apiSignature.timeUnit().toMillis(apiSignature.timeout())) {
+			if (nowTimestamp - requestTimestamp > annotation.timeUnit().toMillis(annotation.timeout())) {
 				ResponseUtils.writeExceptionToResponse(new ValidationException("签名已过期"), response, HttpStatus.BAD_REQUEST);
 				return false;
 			}
 
 			String secretKey = secretKeyStore.loadSecretKey(appId);
-			String requestUrl = URLEncoder.encode(request.getRequestURL().toString(), StandardCharsets.UTF_8);
-			String actualSignature = DigestUtils.sha1Hex(StringUtils.joinWith("&", appId, secretKey, requestUrl, timestamp));
+			if (StringUtils.isBlank(secretKey)) {
+				ResponseUtils.writeExceptionToResponse(new ValidationException("应用标识符不存在"), response, HttpStatus.BAD_REQUEST);
+				return false;
+			}
 
-			if (!actualSignature.equals(signature)) {
+			String requestUrl = URLEncoder.encode(request.getRequestURL().toString(), StandardCharsets.UTF_8);
+			String signStr = StringUtils.joinWith("&", appId, secretKey, requestUrl, timestamp);
+			String expectSignature = computeSignature(signStr, annotation.algorithm());
+
+			if (!StringUtils.equals(expectSignature, signature)) {
 				ResponseUtils.writeExceptionToResponse(new ValidationException("签名错误"), response, HttpStatus.BAD_REQUEST);
 				return false;
 			}
@@ -132,5 +146,14 @@ public class RequestSignatureInterceptor extends BaseRequestInterceptor {
 			return URLEncoder.encode(requestUrl, StandardCharsets.UTF_8);
 		}
 		return URLEncoder.encode(requestUrl + "?" + StringUtils.join(queryParams, "&"), StandardCharsets.UTF_8);
+	}
+
+	private String computeSignature(String str, SignatureAlgorithm algorithm) {
+		return switch (algorithm) {
+			case MD5 -> DigestUtils.md5Hex(str);
+			case SHA1 -> DigestUtils.sha1Hex(str);
+			case SHA256 -> DigestUtils.sha256Hex(str);
+			case SHA512 -> DigestUtils.sha512Hex(str);
+		};
 	}
 }

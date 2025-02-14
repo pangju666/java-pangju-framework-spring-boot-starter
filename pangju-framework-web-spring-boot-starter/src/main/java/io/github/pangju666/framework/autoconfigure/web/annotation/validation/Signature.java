@@ -1,5 +1,6 @@
 package io.github.pangju666.framework.autoconfigure.web.annotation.validation;
 
+import io.github.pangju666.framework.autoconfigure.web.enums.SignatureAlgorithm;
 import io.github.pangju666.framework.autoconfigure.web.enums.SignatureType;
 
 import java.lang.annotation.*;
@@ -12,6 +13,8 @@ public @interface Signature {
 	String appId() default "";
 
 	SignatureType type() default SignatureType.ANY;
+
+	SignatureAlgorithm algorithm() default SignatureAlgorithm.SHA1;
 
 	long timeout() default 1;
 

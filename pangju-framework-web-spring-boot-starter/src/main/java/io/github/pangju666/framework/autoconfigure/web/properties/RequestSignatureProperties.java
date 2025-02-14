@@ -2,13 +2,24 @@ package io.github.pangju666.framework.autoconfigure.web.properties;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import java.util.Map;
+
 @ConfigurationProperties(prefix = "pangju.web.request.signature")
 public class RequestSignatureProperties {
 	private String signatureHeaderName = "Api-Signature";
 	private String appIdHeaderName = "Api-App-Id";
 	private String timestampHeaderName = "Api-Timestamp";
-	private String signatureParamName = "apiSignature";
-	private String appIdParamName = "apiAppId";
+	private String signatureParamName = "ApiSignature";
+	private String appIdParamName = "ApiAppId";
+	private Map<String, String> secretKeys;
+
+	public Map<String, String> getSecretKeys() {
+		return secretKeys;
+	}
+
+	public void setSecretKeys(Map<String, String> secretKeys) {
+		this.secretKeys = secretKeys;
+	}
 
 	public String getSignatureHeaderName() {
 		return signatureHeaderName;

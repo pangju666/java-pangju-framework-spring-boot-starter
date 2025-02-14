@@ -29,8 +29,9 @@ import java.util.Map;
 @ConditionalOnClass({Servlet.class, DispatcherServlet.class, WebMvcConfigurer.class})
 public class WebMvcAutoConfiguration implements WebMvcConfigurer {
 	private final List<BaseRequestInterceptor> interceptors;
-	private RequestRateLimiter requestRateLimiter;
 	private final RequestSignatureProperties signatureProperties;
+
+	private RequestRateLimiter requestRateLimiter;
 	private SignatureSecretKeyStore secretKeyStore;
 	private List<String> excludePathPatterns = Collections.emptyList();
 
