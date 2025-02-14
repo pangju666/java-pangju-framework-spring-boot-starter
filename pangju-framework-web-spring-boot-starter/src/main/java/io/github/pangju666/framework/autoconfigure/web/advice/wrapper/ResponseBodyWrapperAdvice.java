@@ -1,5 +1,7 @@
 package io.github.pangju666.framework.autoconfigure.web.advice.wrapper;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.google.gson.JsonElement;
 import io.github.pangju666.framework.autoconfigure.web.annotation.wrapper.ResponseBodyWrapper;
 import io.github.pangju666.framework.autoconfigure.web.annotation.wrapper.ResponseBodyWrapperIgnore;
 import io.github.pangju666.framework.web.model.Result;
@@ -42,20 +44,22 @@ public class ResponseBodyWrapperAdvice implements ResponseBodyAdvice<Object> {
 	public Object beforeBodyWrite(@Nullable Object body, MethodParameter returnType, MediaType selectedContentType,
 								  Class<? extends HttpMessageConverter<?>> selectedConverterType,
 								  ServerHttpRequest request, ServerHttpResponse response) {
-		if (!selectedConverterType.isAssignableFrom(AbstractJackson2HttpMessageConverter.class) &&
-			!selectedConverterType.isAssignableFrom(AbstractJsonHttpMessageConverter.class) &&
-			!selectedConverterType.isAssignableFrom(ByteArrayHttpMessageConverter.class) &&
-			!selectedConverterType.isAssignableFrom(StringHttpMessageConverter.class)) {
+		if (!AbstractJackson2HttpMessageConverter.class.isAssignableFrom(selectedConverterType) &&
+			!AbstractJsonHttpMessageConverter.class.isAssignableFrom(selectedConverterType) &&
+			!ByteArrayHttpMessageConverter.class.isAssignableFrom(selectedConverterType) &&
+			!StringHttpMessageConverter.class.isAssignableFrom(selectedConverterType)) {
 			return body;
 		}
 		if (body instanceof Result<?>) {
-			return body;
-		}
-		if (StringHttpMessageConverter.class.isAssignableFrom(selectedConverterType)) {
+			return body.toString().getBytes();
+		} else if (body instanceof JsonElement element) {
+			return Result.ok(element.toString());
+		} else if (body instanceof JsonNode node) {
+			return Result.ok(node.toString());
+		} else if (StringHttpMessageConverter.class.isAssignableFrom(selectedConverterType)) {
 			response.getHeaders().setContentType(MediaType.APPLICATION_JSON);
 			return Result.ok(body).toString();
-		}
-		if (ByteArrayHttpMessageConverter.class.isAssignableFrom(selectedConverterType)) {
+		} else if (ByteArrayHttpMessageConverter.class.isAssignableFrom(selectedConverterType)) {
 			response.getHeaders().setContentType(MediaType.APPLICATION_JSON);
 			return Result.ok(body).toString().getBytes();
 		}
