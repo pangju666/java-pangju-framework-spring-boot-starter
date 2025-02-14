@@ -6,10 +6,10 @@ import org.apache.commons.collections4.MapUtils;
 
 import java.util.Map;
 
-public class MapSignatureSecretKeyStore implements SignatureSecretKeyStore {
+public class DefaultSignatureSecretKeyStore implements SignatureSecretKeyStore {
 	Map<String, String> secretKeyMap;
 
-	public MapSignatureSecretKeyStore(RequestSignatureProperties properties) {
+	public DefaultSignatureSecretKeyStore(RequestSignatureProperties properties) {
 		this.secretKeyMap = MapUtils.emptyIfNull(properties.getSecretKeys());
 	}
 

@@ -2,7 +2,7 @@ package io.github.pangju666.framework.autoconfigure.web;
 
 import io.github.pangju666.framework.autoconfigure.web.properties.RequestSignatureProperties;
 import io.github.pangju666.framework.autoconfigure.web.store.SignatureSecretKeyStore;
-import io.github.pangju666.framework.autoconfigure.web.store.impl.MapSignatureSecretKeyStore;
+import io.github.pangju666.framework.autoconfigure.web.store.impl.DefaultSignatureSecretKeyStore;
 import jakarta.servlet.Servlet;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -20,6 +20,6 @@ public class RequestSignatureAutoConfiguration {
 	@ConditionalOnMissingBean
 	@Bean
 	public SignatureSecretKeyStore signatureSecretKeyStore(RequestSignatureProperties properties) {
-		return new MapSignatureSecretKeyStore(properties);
+		return new DefaultSignatureSecretKeyStore(properties);
 	}
 }

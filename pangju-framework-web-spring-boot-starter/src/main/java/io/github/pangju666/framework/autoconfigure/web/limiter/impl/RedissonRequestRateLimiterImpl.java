@@ -3,23 +3,20 @@ package io.github.pangju666.framework.autoconfigure.web.limiter.impl;
 import io.github.pangju666.framework.autoconfigure.web.annotation.validation.RateLimit;
 import io.github.pangju666.framework.autoconfigure.web.limiter.RequestRateLimiter;
 import io.github.pangju666.framework.autoconfigure.web.properties.RequestRateLimitProperties;
+import io.github.pangju666.framework.core.exception.base.ServerException;
 import io.github.pangju666.framework.core.lang.pool.Constants;
-import io.github.pangju666.framework.data.redis.utils.RedisUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.redisson.api.RRateLimiter;
 import org.redisson.api.RateType;
 import org.redisson.api.RedissonClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanFactory;
 
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
+import java.util.Arrays;
 
 public class RedissonRequestRateLimiterImpl implements RequestRateLimiter {
-	private static final Logger log = LoggerFactory.getLogger(RedissonRequestRateLimiterImpl.class);
-
 	private final RequestRateLimitProperties properties;
 	private final RedissonClient redissonClient;
 
@@ -37,17 +34,15 @@ public class RedissonRequestRateLimiterImpl implements RequestRateLimiter {
 		String rateLimitKey = key;
 		if (StringUtils.isBlank(rateLimitKey)) {
 			rateLimitKey = generateKey(annotation, request, Constants.REDIS_PATH_DELIMITER);
-			if (StringUtils.isNotBlank(properties.getRedisson().getKeyPrefix())) {
-				rateLimitKey = RedisUtils.computeKey(properties.getRedisson().getKeyPrefix(), rateLimitKey);
-			}
 		}
 		if (StringUtils.isNotBlank(properties.getRedisson().getKeyPrefix())) {
-			rateLimitKey = RedisUtils.computeKey(properties.getRedisson().getKeyPrefix(), rateLimitKey);
+			rateLimitKey = StringUtils.join(Arrays.asList(properties.getRedisson().getKeyPrefix(), rateLimitKey),
+				Constants.REDIS_PATH_DELIMITER);
 		}
 		RRateLimiter rateLimiter = redissonClient.getRateLimiter(rateLimitKey);
 		if (!rateLimiter.isExists()) {
 			if (!initRateLimiter(rateLimiter, annotation)) {
-				log.error("redisson速率限制器初始化失败，key：{}", rateLimitKey);
+				throw new ServerException("redisson速率限制器初始化失败，key：%s".formatted(rateLimitKey));
 			}
 			long expireMillis = annotation.timeUnit().toMillis(annotation.interval());
 			Duration expireDuration = properties.getRedisson().getExpire().plusMillis(expireMillis);
