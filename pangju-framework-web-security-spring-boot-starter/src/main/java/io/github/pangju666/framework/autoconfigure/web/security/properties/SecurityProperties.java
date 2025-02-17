@@ -1,14 +1,12 @@
 package io.github.pangju666.framework.autoconfigure.web.security.properties;
 
 import io.github.pangju666.framework.autoconfigure.web.security.enums.PasswordAlgorithm;
-import io.github.pangju666.framework.core.lang.pool.Constants;
 import io.github.pangju666.framework.web.filter.BaseRequestFilter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 @ConfigurationProperties(prefix = "pangju.web.security")
 public class SecurityProperties {
@@ -16,6 +14,15 @@ public class SecurityProperties {
 	private Configurer csrf = new Configurer();
 	private Configurer formLogin = new Configurer();
 	private Configurer authorizeHttpRequests = new Configurer(false);
+	private List<User> users = Collections.emptyList();
+
+	public List<User> getUsers() {
+		return users;
+	}
+
+	public void setUsers(List<User> users) {
+		this.users = users;
+	}
 
 	public Configurer getAuthorizeHttpRequests() {
 		return authorizeHttpRequests;
@@ -77,6 +84,63 @@ public class SecurityProperties {
 		}
 	}
 
+	public static class User {
+		private String username;
+		private String password;
+		private List<String> roles = Collections.emptyList();
+		private boolean disabled = false;
+		private boolean accountLocked = false;
+		private boolean accountExpired = false;
+
+		public boolean isAccountLocked() {
+			return accountLocked;
+		}
+
+		public void setAccountLocked(boolean accountLocked) {
+			this.accountLocked = accountLocked;
+		}
+
+		public boolean isAccountExpired() {
+			return accountExpired;
+		}
+
+		public void setAccountExpired(boolean accountExpired) {
+			this.accountExpired = accountExpired;
+		}
+
+		public boolean isDisabled() {
+			return disabled;
+		}
+
+		public void setDisabled(boolean disabled) {
+			this.disabled = disabled;
+		}
+
+		public String getUsername() {
+			return username;
+		}
+
+		public void setUsername(String username) {
+			this.username = username;
+		}
+
+		public String getPassword() {
+			return password;
+		}
+
+		public void setPassword(String password) {
+			this.password = password;
+		}
+
+		public List<String> getRoles() {
+			return roles;
+		}
+
+		public void setRoles(List<String> roles) {
+			this.roles = roles;
+		}
+	}
+
 	private TokenProperties token = new TokenProperties();
 
 	private Request request = new Request();
@@ -84,7 +148,6 @@ public class SecurityProperties {
 	private Aes256 aes256 = new Aes256();
 	private Rsa rsa = new Rsa();
 	private Duration duration = Duration.ofDays(7);
-	private List<User> users = Collections.singletonList(new User("admin", "123456", Collections.singleton(Constants.ADMIN_ROLE)));
 
 	public TokenProperties getToken() {
 		return token;
@@ -132,14 +195,6 @@ public class SecurityProperties {
 
 	public void setDuration(Duration duration) {
 		this.duration = duration;
-	}
-
-	public List<User> getUsers() {
-		return users;
-	}
-
-	public void setUsers(List<User> users) {
-		this.users = users;
 	}
 
 	public static class Request {
@@ -247,45 +302,6 @@ public class SecurityProperties {
 
 		public void setPublicKey(String publicKey) {
 			this.publicKey = publicKey;
-		}
-	}
-
-	public static class User {
-		private String username;
-		private String password;
-		private Set<String> roles = Collections.emptySet();
-
-		public User() {
-		}
-
-		public User(String username, String password, Set<String> roles) {
-			this.username = username;
-			this.password = password;
-			this.roles = roles;
-		}
-
-		public String getUsername() {
-			return username;
-		}
-
-		public void setUsername(String username) {
-			this.username = username;
-		}
-
-		public String getPassword() {
-			return password;
-		}
-
-		public void setPassword(String password) {
-			this.password = password;
-		}
-
-		public Set<String> getRoles() {
-			return roles;
-		}
-
-		public void setRoles(Set<String> roles) {
-			this.roles = roles;
 		}
 	}
 }
