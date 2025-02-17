@@ -30,14 +30,19 @@ import java.util.Map;
 public class WebMvcAutoConfiguration implements WebMvcConfigurer {
 	private final List<BaseRequestInterceptor> interceptors;
 	private final RequestSignatureProperties signatureProperties;
+	private final RequestRateLimiter requestRateLimiter;
+	private final SignatureSecretKeyStore secretKeyStore;
 
-	private RequestRateLimiter requestRateLimiter;
-	private SignatureSecretKeyStore secretKeyStore;
 	private List<String> excludePathPatterns = Collections.emptyList();
 
-	public WebMvcAutoConfiguration(List<BaseRequestInterceptor> interceptors, RequestSignatureProperties signatureProperties) {
+	public WebMvcAutoConfiguration(List<BaseRequestInterceptor> interceptors,
+								   RequestSignatureProperties signatureProperties,
+								   SignatureSecretKeyStore secretKeyStore,
+								   RequestRateLimiter requestRateLimiter) {
 		this.interceptors = interceptors;
 		this.signatureProperties = signatureProperties;
+		this.secretKeyStore = secretKeyStore;
+		this.requestRateLimiter = requestRateLimiter;
 	}
 
 	@Autowired(required = false)
@@ -47,16 +52,6 @@ public class WebMvcAutoConfiguration implements WebMvcConfigurer {
 			.map(ExcludePathPatternProvider::getExcludePaths)
 			.flatMap(List::stream)
 			.toList();
-	}
-
-	@Autowired
-	public void setRequestRateLimiter(RequestRateLimiter requestRateLimiter) {
-		this.requestRateLimiter = requestRateLimiter;
-	}
-
-	@Autowired
-	public void setSecretKeyStore(SignatureSecretKeyStore secretKeyStore) {
-		this.secretKeyStore = secretKeyStore;
 	}
 
 	@Override
