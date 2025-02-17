@@ -1,7 +1,6 @@
 package io.github.pangju666.framework.autoconfigure.web.security.store;
 
-import io.github.pangju666.framework.autoconfigure.web.security.model.AuthenticatedUser;
-import io.github.pangju666.framework.autoconfigure.web.security.model.token.AccessToken;
+import io.github.pangju666.framework.autoconfigure.web.security.model.AccessToken;
 import io.github.pangju666.framework.core.lang.pool.Constants;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;

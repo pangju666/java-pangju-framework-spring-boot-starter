@@ -1,4 +1,4 @@
-package io.github.pangju666.framework.autoconfigure.web.security.model.token;
+package io.github.pangju666.framework.autoconfigure.web.security.model;
 
 import java.io.Serializable;
 import java.util.Date;

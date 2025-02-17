@@ -2,6 +2,7 @@ package io.github.pangju666.framework.autoconfigure.web.security.properties;
 
 import io.github.pangju666.framework.autoconfigure.web.security.enums.PasswordAlgorithm;
 import io.github.pangju666.framework.core.lang.pool.Constants;
+import io.github.pangju666.framework.web.filter.BaseRequestFilter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.time.Duration;
@@ -11,6 +12,71 @@ import java.util.Set;
 
 @ConfigurationProperties(prefix = "pangju.web.security")
 public class SecurityProperties {
+	private Configurer httpBasic = new Configurer();
+	private Configurer csrf = new Configurer();
+	private Configurer formLogin = new Configurer();
+	private Configurer authorizeHttpRequests = new Configurer(false);
+
+	public Configurer getAuthorizeHttpRequests() {
+		return authorizeHttpRequests;
+	}
+
+	public void setAuthorizeHttpRequests(Configurer authorize) {
+		this.authorizeHttpRequests = authorize;
+	}
+
+	public Configurer getHttpBasic() {
+		return httpBasic;
+	}
+
+	public void setHttpBasic(Configurer httpBasic) {
+		this.httpBasic = httpBasic;
+	}
+
+	public Configurer getCsrf() {
+		return csrf;
+	}
+
+	public void setCsrf(Configurer csrf) {
+		this.csrf = csrf;
+	}
+
+	public Configurer getFormLogin() {
+		return formLogin;
+	}
+
+	public void setFormLogin(Configurer formLogin) {
+		this.formLogin = formLogin;
+	}
+
+	public static class Configurer {
+		private boolean disabled = true;
+		private Class<? extends BaseRequestFilter> filter;
+
+		public Configurer() {
+		}
+
+		public Configurer(boolean disabled) {
+			this.disabled = disabled;
+		}
+
+		public boolean isDisabled() {
+			return disabled;
+		}
+
+		public void setDisabled(boolean disabled) {
+			this.disabled = disabled;
+		}
+
+		public Class<? extends BaseRequestFilter> getFilter() {
+			return filter;
+		}
+
+		public void setFilter(Class<? extends BaseRequestFilter> filter) {
+			this.filter = filter;
+		}
+	}
+
 	private TokenProperties token = new TokenProperties();
 
 	private Request request = new Request();

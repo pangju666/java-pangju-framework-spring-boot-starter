@@ -1,6 +1,5 @@
 package io.github.pangju666.framework.autoconfigure.web.security.utils;
 
-import io.github.pangju666.framework.autoconfigure.web.security.model.AuthenticatedUser;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 

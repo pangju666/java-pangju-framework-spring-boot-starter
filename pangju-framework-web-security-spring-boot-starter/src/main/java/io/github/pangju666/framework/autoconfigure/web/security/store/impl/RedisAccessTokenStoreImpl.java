@@ -1,9 +1,8 @@
 package io.github.pangju666.framework.autoconfigure.web.security.store.impl;
 
 import io.github.pangju666.commons.lang.utils.RegExUtils;
-import io.github.pangju666.framework.autoconfigure.web.security.model.AuthenticatedUser;
-import io.github.pangju666.framework.autoconfigure.web.security.model.token.AccessToken;
-import io.github.pangju666.framework.autoconfigure.web.security.model.token.Token;
+import io.github.pangju666.framework.autoconfigure.web.security.model.AccessToken;
+import io.github.pangju666.framework.autoconfigure.web.security.model.Token;
 import io.github.pangju666.framework.autoconfigure.web.security.properties.TokenProperties;
 import io.github.pangju666.framework.autoconfigure.web.security.store.AccessTokenStore;
 import io.github.pangju666.framework.core.exception.authentication.AuthenticationException;
