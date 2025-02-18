@@ -51,7 +51,6 @@ public class GlobalExceptionAdvice {
 
 	@ExceptionHandler(value = BaseRuntimeException.class)
 	public void handleBaseRuntimeException(BaseRuntimeException e, HttpServletResponse response) {
-		log.error("项目内部异常", e);
 		ResponseUtils.writeExceptionToResponse(e, response, e.getHttpStatus());
 	}
 
