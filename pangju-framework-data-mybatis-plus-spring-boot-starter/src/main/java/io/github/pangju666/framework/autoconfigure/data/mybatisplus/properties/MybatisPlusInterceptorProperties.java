@@ -27,17 +27,9 @@ public class MybatisPlusInterceptorProperties {
 	 */
 	private OptimisticLocker optimisticLocker = new OptimisticLocker();
 	/**
-	 * SQL性能规范插件，默认关闭
-	 */
-	private IllegalSql illegalSql = new IllegalSql();
-	/**
 	 * 防止全表更新与删除插件，默认关闭
 	 */
 	private BlockAttack blockAttack = new BlockAttack();
-	/**
-	 * 数据变动记录插件，默认关闭
-	 */
-	private DataChangeRecorder dataChangeRecorder = new DataChangeRecorder();
 	/**
 	 * 数据权限插件插件，默认关闭
 	 */
@@ -49,14 +41,6 @@ public class MybatisPlusInterceptorProperties {
 
 	public void setDataPermission(DataPermission dataPermission) {
 		this.dataPermission = dataPermission;
-	}
-
-	public DataChangeRecorder getDataChangeRecorder() {
-		return dataChangeRecorder;
-	}
-
-	public void setDataChangeRecorder(DataChangeRecorder dataChangeRecorder) {
-		this.dataChangeRecorder = dataChangeRecorder;
 	}
 
 	public Pagination getPagination() {
@@ -89,14 +73,6 @@ public class MybatisPlusInterceptorProperties {
 
 	public void setOptimisticLocker(OptimisticLocker optimisticLocker) {
 		this.optimisticLocker = optimisticLocker;
-	}
-
-	public IllegalSql getIllegalSql() {
-		return illegalSql;
-	}
-
-	public void setIllegalSql(IllegalSql illegalSql) {
-		this.illegalSql = illegalSql;
 	}
 
 	public BlockAttack getBlockAttack() {
@@ -200,31 +176,7 @@ public class MybatisPlusInterceptorProperties {
 		}
 	}
 
-	public static class IllegalSql {
-		private boolean enabled = false;
-
-		public boolean isEnabled() {
-			return enabled;
-		}
-
-		public void setEnabled(boolean enabled) {
-			this.enabled = enabled;
-		}
-	}
-
 	public static class BlockAttack {
-		private boolean enabled = false;
-
-		public boolean isEnabled() {
-			return enabled;
-		}
-
-		public void setEnabled(boolean enabled) {
-			this.enabled = enabled;
-		}
-	}
-
-	public static class DataChangeRecorder {
 		private boolean enabled = false;
 
 		public boolean isEnabled() {

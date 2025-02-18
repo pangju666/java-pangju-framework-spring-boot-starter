@@ -103,14 +103,8 @@ public class MybatisPlusAutoConfiguration implements BeanFactoryAware {
 		if (properties.getOptimisticLocker().isEnabled()) {
 			interceptor.addInnerInterceptor(new OptimisticLockerInnerInterceptor(properties.getOptimisticLocker().isWrapperMode()));
 		}
-		if (properties.getIllegalSql().isEnabled()) {
-			interceptor.addInnerInterceptor(new IllegalSQLInnerInterceptor());
-		}
 		if (properties.getBlockAttack().isEnabled()) {
 			interceptor.addInnerInterceptor(new BlockAttackInnerInterceptor());
-		}
-		if (properties.getDataChangeRecorder().isEnabled()) {
-			interceptor.addInnerInterceptor(new DataChangeRecorderInnerInterceptor());
 		}
 		return interceptor;
 	}
