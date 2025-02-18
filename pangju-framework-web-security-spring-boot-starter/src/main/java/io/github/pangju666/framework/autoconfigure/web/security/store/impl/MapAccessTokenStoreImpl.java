@@ -1,9 +1,9 @@
 package io.github.pangju666.framework.autoconfigure.web.security.store.impl;
 
-import io.github.pangju666.commons.lang.utils.RegExUtils;
 import io.github.pangju666.framework.autoconfigure.web.security.model.AccessToken;
+import io.github.pangju666.framework.autoconfigure.web.security.model.AuthenticatedUser;
 import io.github.pangju666.framework.autoconfigure.web.security.model.Token;
-import io.github.pangju666.framework.autoconfigure.web.security.properties.TokenProperties;
+import io.github.pangju666.framework.autoconfigure.web.security.properties.SecurityProperties;
 import io.github.pangju666.framework.autoconfigure.web.security.store.AccessTokenStore;
 import io.github.pangju666.framework.core.exception.authentication.AuthenticationException;
 import io.github.pangju666.framework.core.exception.authentication.AuthenticationExpireException;
@@ -21,35 +21,31 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Pattern;
 
 public class MapAccessTokenStoreImpl implements AccessTokenStore {
 	private final ExpiringMap<String, AuthenticatedUser> accessTokenUserExpiringMap;
 	private final ExpiringMap<String, AuthenticatedUser> refreshTokenUserExpiringMap;
 	private final Map<String, Set<AccessToken>> userAccessTokenMap;
 	private final Set<String> tokenSet;
-	private final TokenProperties properties;
-	private final Pattern tokenPattern;
+	private final SecurityProperties properties;
 
-	public MapAccessTokenStoreImpl(TokenProperties properties) {
+	public MapAccessTokenStoreImpl(SecurityProperties properties) {
 		this.accessTokenUserExpiringMap = ExpiringMap.builder()
 			.variableExpiration()
-			.expiration(properties.getAccessToken().getAccessTokenExpire().toMillis(), TimeUnit.MILLISECONDS)
+			.expiration(properties.getToken().getAccessTokenExpire().toMillis(), TimeUnit.MILLISECONDS)
 			.build();
 		this.refreshTokenUserExpiringMap = ExpiringMap.builder()
 			.variableExpiration()
-			.expiration(properties.getAccessToken().getRefreshTokenExpire().toMillis(), TimeUnit.MILLISECONDS)
+			.expiration(properties.getToken().getRefreshTokenExpire().toMillis(), TimeUnit.MILLISECONDS)
 			.build();
 		this.userAccessTokenMap = new ConcurrentHashMap<>();
 		this.tokenSet = ConcurrentHashMap.newKeySet();
 		this.properties = properties;
-		this.tokenPattern = Pattern.compile("Bearer [a-zA-Z0-9]{%d}".formatted(
-			properties.getAccessToken().getTokenLength()));
 	}
 
 	@Override
-	public <U extends AuthenticatedUser> AccessToken generateToken(U authenticatedUser) {
-		if (!properties.getAccessToken().isConcurrent()) {
+	public AccessToken generateToken(AuthenticatedUser authenticatedUser) {
+		if (!properties.getToken().isConcurrent()) {
 			removeToken(authenticatedUser.getId());
 		}
 		return createTokenByUser(authenticatedUser);
@@ -60,10 +56,9 @@ public class MapAccessTokenStoreImpl implements AccessTokenStore {
 		return userAccessTokenMap.get(userId.toString());
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
-	public <U extends AuthenticatedUser> U getAuthenticatedUser(String accessToken) {
-		return (U) accessTokenUserExpiringMap.get(accessToken);
+	public AuthenticatedUser getAuthenticatedUser(String accessToken) {
+		return accessTokenUserExpiringMap.get(accessToken);
 	}
 
 	@Override
@@ -82,9 +77,6 @@ public class MapAccessTokenStoreImpl implements AccessTokenStore {
 
 	@Override
 	public AccessToken refreshToken(String refreshToken) {
-		if (!RegExUtils.matches(tokenPattern, refreshToken)) {
-			throw new AuthenticationExpireException("无效的token");
-		}
 		refreshToken = StringUtils.substringAfter(refreshToken, Constants.TOKEN_PREFIX);
 
 		AuthenticatedUser authenticatedUser = refreshTokenUserExpiringMap.get(refreshToken);
@@ -108,11 +100,11 @@ public class MapAccessTokenStoreImpl implements AccessTokenStore {
 		return generateToken(authenticatedUser);
 	}
 
-	private <U extends AuthenticatedUser> AccessToken createTokenByUser(U authenticatedUser) {
-		if (properties.getAccessToken().isConcurrent() && properties.getAccessToken().getMaxLoginCount() > -1) {
+	private AccessToken createTokenByUser(AuthenticatedUser authenticatedUser) {
+		if (properties.getToken().isConcurrent() && properties.getToken().getMaxLoginCount() > -1) {
 			Set<AccessToken> userAccessTokens = SetUtils.emptyIfNull(userAccessTokenMap.get(
 				authenticatedUser.getId().toString()));
-			if (userAccessTokens.size() >= properties.getAccessToken().getMaxLoginCount()) {
+			if (userAccessTokens.size() >= properties.getToken().getMaxLoginCount()) {
 				throw new AuthenticationException("已达到最大登录数量");
 			}
 		}
@@ -132,7 +124,7 @@ public class MapAccessTokenStoreImpl implements AccessTokenStore {
 	private AccessToken createTokenByUserId(Serializable userId) {
 		String refreshTokenStr;
 		do {
-			refreshTokenStr = RandomStringUtils.secureStrong().nextAlphanumeric(properties.getAccessToken().getTokenLength());
+			refreshTokenStr = RandomStringUtils.secureStrong().nextAlphanumeric(properties.getToken().getTokenLength());
 		} while (tokenSet.contains(refreshTokenStr));
 		tokenSet.add(refreshTokenStr);
 
@@ -140,8 +132,8 @@ public class MapAccessTokenStoreImpl implements AccessTokenStore {
 
 		Calendar refreshTokenCalendar = Calendar.getInstance();
 		refreshTokenCalendar.add(Calendar.MILLISECOND,
-			(int) properties.getAccessToken().getRefreshTokenExpire().toMillis());
-		refreshToken.setExpireTime(refreshTokenCalendar.getTime());
+			(int) properties.getToken().getRefreshTokenExpire().toMillis());
+		refreshToken.setExpireTime(refreshTokenCalendar.getTime().getTime());
 
 		return createTokenByRefreshToken(refreshToken);
 	}
@@ -149,7 +141,7 @@ public class MapAccessTokenStoreImpl implements AccessTokenStore {
 	private AccessToken createTokenByRefreshToken(Token refreshToken) {
 		String accessTokenStr;
 		do {
-			accessTokenStr = RandomStringUtils.secureStrong().nextAlphanumeric(properties.getAccessToken().getTokenLength());
+			accessTokenStr = RandomStringUtils.secureStrong().nextAlphanumeric(properties.getToken().getTokenLength());
 		} while (tokenSet.contains(accessTokenStr));
 		tokenSet.add(accessTokenStr);
 
@@ -157,8 +149,8 @@ public class MapAccessTokenStoreImpl implements AccessTokenStore {
 
 		Calendar accessTokenCalendar = Calendar.getInstance();
 		accessTokenCalendar.add(Calendar.MILLISECOND,
-			(int) properties.getAccessToken().getAccessTokenExpire().toMillis());
-		accessToken.setExpireTime(accessTokenCalendar.getTime());
+			(int) properties.getToken().getAccessTokenExpire().toMillis());
+		accessToken.setExpireTime(accessTokenCalendar.getTime().getTime());
 
 		return accessToken;
 	}

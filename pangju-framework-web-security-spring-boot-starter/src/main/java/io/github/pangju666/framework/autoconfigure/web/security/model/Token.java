@@ -1,12 +1,11 @@
 package io.github.pangju666.framework.autoconfigure.web.security.model;
 
 import java.io.Serializable;
-import java.util.Date;
 
 public class Token implements Serializable {
 	private final String token;
 	private final Serializable userId;
-	private Date expireTime;
+	private Long expireTime;
 
 	public Token(String token, Serializable userId) {
 		this.token = token;
@@ -17,11 +16,11 @@ public class Token implements Serializable {
 		return token;
 	}
 
-	public Date getExpireTime() {
+	public Long getExpireTime() {
 		return expireTime;
 	}
 
-	public void setExpireTime(Date expireTime) {
+	public void setExpireTime(Long expireTime) {
 		this.expireTime = expireTime;
 	}
 

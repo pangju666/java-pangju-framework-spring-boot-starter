@@ -1,7 +1,6 @@
 package io.github.pangju666.framework.autoconfigure.web.security.enums;
 
-public enum TokenType {
+public enum TokenStoreType {
 	REDIS,
-	MAP,
-	JWT
+	MAP
 }

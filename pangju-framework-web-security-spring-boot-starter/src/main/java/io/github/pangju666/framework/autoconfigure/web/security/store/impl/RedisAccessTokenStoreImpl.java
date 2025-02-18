@@ -1,9 +1,9 @@
 package io.github.pangju666.framework.autoconfigure.web.security.store.impl;
 
-import io.github.pangju666.commons.lang.utils.RegExUtils;
 import io.github.pangju666.framework.autoconfigure.web.security.model.AccessToken;
+import io.github.pangju666.framework.autoconfigure.web.security.model.AuthenticatedUser;
 import io.github.pangju666.framework.autoconfigure.web.security.model.Token;
-import io.github.pangju666.framework.autoconfigure.web.security.properties.TokenProperties;
+import io.github.pangju666.framework.autoconfigure.web.security.properties.SecurityProperties;
 import io.github.pangju666.framework.autoconfigure.web.security.store.AccessTokenStore;
 import io.github.pangju666.framework.core.exception.authentication.AuthenticationException;
 import io.github.pangju666.framework.core.exception.authentication.AuthenticationExpireException;
@@ -15,30 +15,32 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.springframework.beans.factory.BeanFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 
 import java.io.Serializable;
 import java.util.*;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class RedisAccessTokenStoreImpl implements AccessTokenStore {
 	private static final Integer REDIS_DELETE_RETRY_TIMES = 3;
 
 	private final RedisTemplate<String, Object> redisTemplate;
-	private final TokenProperties properties;
-	private final Pattern tokenPattern;
+	private final SecurityProperties properties;
 
-	public RedisAccessTokenStoreImpl(RedisTemplate<String, Object> redisTemplate, TokenProperties properties) {
-		this.redisTemplate = redisTemplate;
+	@SuppressWarnings("unchecked")
+	public RedisAccessTokenStoreImpl(BeanFactory beanFactory, SecurityProperties properties) {
+		if (StringUtils.isNotBlank(properties.getToken().getRedis().getBeanName())) {
+			this.redisTemplate = beanFactory.getBean(properties.getToken().getRedis().getBeanName(), RedisTemplate.class);
+		} else {
+			this.redisTemplate = beanFactory.getBean("redisTemplate", RedisTemplate.class);
+		}
 		this.properties = properties;
-		this.tokenPattern = Pattern.compile("Bearer [a-zA-Z0-9]{%d}".formatted(
-			properties.getAccessToken().getTokenLength()));
 	}
 
 	@Override
-	public <U extends AuthenticatedUser> AccessToken generateToken(U authenticatedUser) {
-		if (!properties.getAccessToken().isConcurrent()) {
+	public AccessToken generateToken(AuthenticatedUser authenticatedUser) {
+		if (!properties.getToken().isConcurrent()) {
 			removeToken(authenticatedUser.getId());
 		}
 		return createTokenByUser(authenticatedUser);
@@ -47,26 +49,25 @@ public class RedisAccessTokenStoreImpl implements AccessTokenStore {
 	@Override
 	public Set<AccessToken> getAccessTokens(Serializable userId) {
 		String userAccessTokenKey = RedisUtils.computeKey(
-			properties.getAccessToken().getRedis().getUserAccessTokenSetKeyPrefix(), userId.toString());
+			properties.getToken().getRedis().getUserAccessTokenSetKeyPrefix(), userId.toString());
 		return SetUtils.emptyIfNull(redisTemplate.opsForSet().members(userAccessTokenKey))
 			.stream()
 			.map(object -> (AccessToken) object)
 			.collect(Collectors.toSet());
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
-	public <U extends AuthenticatedUser> U getAuthenticatedUser(String accessToken) {
+	public AuthenticatedUser getAuthenticatedUser(String accessToken) {
 		String accessTokenUserKey = RedisUtils.computeKey(
-			properties.getAccessToken().getRedis().getAccessTokenUserKeyPrefix(), accessToken);
-		return (U) redisTemplate.opsForValue().get(accessTokenUserKey);
+			properties.getToken().getRedis().getAccessTokenUserKeyPrefix(), accessToken);
+		return (AuthenticatedUser) redisTemplate.opsForValue().get(accessTokenUserKey);
 	}
 
 	@Override
 	public void removeToken(Serializable userId) {
 		Pair<Set<String>, Set<String>> keysTokensPair = getKeysAndTokens(userId);
 		deleteRedisKeys(keysTokensPair.getLeft());
-		redisTemplate.opsForSet().remove(properties.getAccessToken().getRedis().getTokenSetKey(),
+		redisTemplate.opsForSet().remove(properties.getToken().getRedis().getTokenSetKey(),
 			keysTokensPair.getRight().toArray(Object[]::new));
 	}
 
@@ -86,22 +87,19 @@ public class RedisAccessTokenStoreImpl implements AccessTokenStore {
 		}
 
 		deleteRedisKeys(keys);
-		redisTemplate.opsForSet().remove(properties.getAccessToken().getRedis().getTokenSetKey(),
+		redisTemplate.opsForSet().remove(properties.getToken().getRedis().getTokenSetKey(),
 			tokens.toArray(Object[]::new));
 	}
 
 	@Override
 	public AccessToken refreshToken(String refreshToken) {
-		if (!RegExUtils.matches(tokenPattern, refreshToken)) {
-			throw new AuthenticationExpireException("无效的token");
-		}
 		refreshToken = StringUtils.substringAfter(refreshToken, Constants.TOKEN_PREFIX);
 
 		Set<String> deleteKeys = new HashSet<>(2);
 		AccessToken oldAccessToken = null;
 
 		String refreshTokenUserKey = RedisUtils.computeKey(
-			properties.getAccessToken().getRedis().getRefreshTokenUserKeyPrefix(), refreshToken);
+			properties.getToken().getRedis().getRefreshTokenUserKeyPrefix(), refreshToken);
 		deleteKeys.add(refreshTokenUserKey);
 
 		AuthenticatedUser authenticatedUser = (AuthenticatedUser) redisTemplate.opsForValue().get(refreshTokenUserKey);
@@ -110,7 +108,7 @@ public class RedisAccessTokenStoreImpl implements AccessTokenStore {
 		}
 
 		String userAccessTokenKey = RedisUtils.computeKey(
-			properties.getAccessToken().getRedis().getUserAccessTokenSetKeyPrefix(),
+			properties.getToken().getRedis().getUserAccessTokenSetKeyPrefix(),
 			authenticatedUser.getId().toString());
 		Set<Object> accessTokens = SetUtils.emptyIfNull(redisTemplate.opsForSet().members(userAccessTokenKey));
 		for (Object accessToken : accessTokens) {
@@ -122,11 +120,11 @@ public class RedisAccessTokenStoreImpl implements AccessTokenStore {
 
 		if (Objects.nonNull(oldAccessToken)) {
 			String accessTokenUserKey = RedisUtils.computeKey(
-				properties.getAccessToken().getRedis().getAccessTokenUserKeyPrefix(), oldAccessToken.getToken());
+				properties.getToken().getRedis().getAccessTokenUserKeyPrefix(), oldAccessToken.getToken());
 			deleteKeys.add(accessTokenUserKey);
 
 			redisTemplate.opsForSet().remove(userAccessTokenKey, oldAccessToken);
-			redisTemplate.opsForSet().remove(properties.getAccessToken().getRedis().getTokenSetKey(),
+			redisTemplate.opsForSet().remove(properties.getToken().getRedis().getTokenSetKey(),
 				oldAccessToken.getToken(), oldAccessToken.getRefreshToken().getToken());
 		}
 		redisTemplate.delete(deleteKeys);
@@ -136,21 +134,21 @@ public class RedisAccessTokenStoreImpl implements AccessTokenStore {
 
 	private void storeAccessToken(AccessToken accessToken, AuthenticatedUser authenticatedUser) {
 		String accessTokenUserKey = RedisUtils.computeKey(
-			properties.getAccessToken().getRedis().getAccessTokenUserKeyPrefix(), accessToken.getToken());
+			properties.getToken().getRedis().getAccessTokenUserKeyPrefix(), accessToken.getToken());
 		redisTemplate.opsForValue().set(accessTokenUserKey, authenticatedUser,
-			properties.getAccessToken().getAccessTokenExpire());
+			properties.getToken().getAccessTokenExpire());
 
 		String userAccessTokenKey = RedisUtils.computeKey(
-			properties.getAccessToken().getRedis().getUserAccessTokenSetKeyPrefix(),
+			properties.getToken().getRedis().getUserAccessTokenSetKeyPrefix(),
 			authenticatedUser.getId().toString());
 		redisTemplate.opsForSet().add(userAccessTokenKey, accessToken);
 	}
 
 	private void storeRefreshToken(Token refreshToken, AuthenticatedUser authenticatedUser) {
 		String refreshTokenUserKey = RedisUtils.computeKey(
-			properties.getAccessToken().getRedis().getRefreshTokenUserKeyPrefix(), refreshToken.getToken());
+			properties.getToken().getRedis().getRefreshTokenUserKeyPrefix(), refreshToken.getToken());
 		redisTemplate.opsForValue().set(refreshTokenUserKey, authenticatedUser,
-			properties.getAccessToken().getRefreshTokenExpire());
+			properties.getToken().getRefreshTokenExpire());
 	}
 
 	private Pair<Set<String>, Set<String>> getKeysAndTokens(Serializable userId) {
@@ -158,18 +156,18 @@ public class RedisAccessTokenStoreImpl implements AccessTokenStore {
 		Set<String> tokens = new HashSet<>();
 
 		String userAccessTokenKey = RedisUtils.computeKey(
-			properties.getAccessToken().getRedis().getUserAccessTokenSetKeyPrefix(), userId.toString());
+			properties.getToken().getRedis().getUserAccessTokenSetKeyPrefix(), userId.toString());
 		keys.add(userAccessTokenKey);
 
 		for (Object accessToken : SetUtils.emptyIfNull(redisTemplate.opsForSet().members(userAccessTokenKey))) {
 			String accessTokenUserKey = RedisUtils.computeKey(
-				properties.getAccessToken().getRedis().getAccessTokenUserKeyPrefix(),
+				properties.getToken().getRedis().getAccessTokenUserKeyPrefix(),
 				((AccessToken) accessToken).getToken());
 			keys.add(accessTokenUserKey);
 			tokens.add(((AccessToken) accessToken).getToken());
 
 			String refreshTokenUserKey = RedisUtils.computeKey(
-				properties.getAccessToken().getRedis().getRefreshTokenUserKeyPrefix(),
+				properties.getToken().getRedis().getRefreshTokenUserKeyPrefix(),
 				((AccessToken) accessToken).getRefreshToken().getToken());
 			keys.add(refreshTokenUserKey);
 			tokens.add(((AccessToken) accessToken).getRefreshToken().getToken());
@@ -195,12 +193,12 @@ public class RedisAccessTokenStoreImpl implements AccessTokenStore {
 	}
 
 	private <U extends AuthenticatedUser> AccessToken createTokenByUser(U authenticatedUser) {
-		if (properties.getAccessToken().isConcurrent() && properties.getAccessToken().getMaxLoginCount() > -1) {
+		if (properties.getToken().isConcurrent() && properties.getToken().getMaxLoginCount() > -1) {
 			String userAccessTokenKey = RedisUtils.computeKey(
-				properties.getAccessToken().getRedis().getUserAccessTokenSetKeyPrefix(),
+				properties.getToken().getRedis().getUserAccessTokenSetKeyPrefix(),
 				authenticatedUser.getId().toString());
 			Set<Object> accessTokens = SetUtils.emptyIfNull(redisTemplate.opsForSet().members(userAccessTokenKey));
-			if (accessTokens.size() >= properties.getAccessToken().getMaxLoginCount()) {
+			if (accessTokens.size() >= properties.getToken().getMaxLoginCount()) {
 				throw new AuthenticationException("已达到最大登录数量");
 			}
 		}
@@ -214,17 +212,17 @@ public class RedisAccessTokenStoreImpl implements AccessTokenStore {
 	private AccessToken createTokenByUserId(Serializable userId) {
 		String refreshTokenStr;
 		do {
-			refreshTokenStr = RandomStringUtils.secureStrong().nextAlphanumeric(properties.getAccessToken().getTokenLength());
+			refreshTokenStr = RandomStringUtils.secureStrong().nextAlphanumeric(properties.getToken().getTokenLength());
 		} while (Boolean.TRUE.equals(redisTemplate.opsForSet().isMember(
-			properties.getAccessToken().getRedis().getTokenSetKey(), refreshTokenStr)));
-		redisTemplate.opsForSet().add(properties.getAccessToken().getRedis().getTokenSetKey(), refreshTokenStr);
+			properties.getToken().getRedis().getTokenSetKey(), refreshTokenStr)));
+		redisTemplate.opsForSet().add(properties.getToken().getRedis().getTokenSetKey(), refreshTokenStr);
 
 		Token refreshToken = new Token(refreshTokenStr, userId);
 
 		Calendar refreshTokenCalendar = Calendar.getInstance();
 		refreshTokenCalendar.add(Calendar.MILLISECOND,
-			(int) properties.getAccessToken().getRefreshTokenExpire().toMillis());
-		refreshToken.setExpireTime(refreshTokenCalendar.getTime());
+			(int) properties.getToken().getRefreshTokenExpire().toMillis());
+		refreshToken.setExpireTime(refreshTokenCalendar.getTime().getTime());
 
 		return createTokenByRefreshToken(refreshToken);
 	}
@@ -232,17 +230,17 @@ public class RedisAccessTokenStoreImpl implements AccessTokenStore {
 	private AccessToken createTokenByRefreshToken(Token refreshToken) {
 		String accessTokenStr;
 		do {
-			accessTokenStr = RandomStringUtils.secureStrong().nextAlphanumeric(properties.getAccessToken().getTokenLength());
+			accessTokenStr = RandomStringUtils.secureStrong().nextAlphanumeric(properties.getToken().getTokenLength());
 		} while (Boolean.TRUE.equals(redisTemplate.opsForSet().isMember(
-			properties.getAccessToken().getRedis().getTokenSetKey(), accessTokenStr)));
-		redisTemplate.opsForSet().add(properties.getAccessToken().getRedis().getTokenSetKey(), accessTokenStr);
+			properties.getToken().getRedis().getTokenSetKey(), accessTokenStr)));
+		redisTemplate.opsForSet().add(properties.getToken().getRedis().getTokenSetKey(), accessTokenStr);
 
 		AccessToken accessToken = new AccessToken(accessTokenStr, refreshToken);
 
 		Calendar accessTokenCalendar = Calendar.getInstance();
 		accessTokenCalendar.add(Calendar.MILLISECOND,
-			(int) properties.getAccessToken().getAccessTokenExpire().toMillis());
-		accessToken.setExpireTime(accessTokenCalendar.getTime());
+			(int) properties.getToken().getAccessTokenExpire().toMillis());
+		accessToken.setExpireTime(accessTokenCalendar.getTime().getTime());
 
 		return accessToken;
 	}

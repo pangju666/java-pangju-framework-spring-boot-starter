@@ -1,126 +1,63 @@
 package io.github.pangju666.framework.autoconfigure.web.security;
 
-import io.github.pangju666.framework.autoconfigure.web.security.config.customizer.AuthorizeHttpRequestsConfigurerCustomizer;
-import io.github.pangju666.framework.autoconfigure.web.security.config.customizer.CsrfConfigurerCustomizer;
-import io.github.pangju666.framework.autoconfigure.web.security.config.customizer.FormLoginConfigurerCustomizer;
-import io.github.pangju666.framework.autoconfigure.web.security.config.customizer.HttpBasicConfigurerCustomizer;
+import io.github.pangju666.framework.autoconfigure.web.security.authentication.Authenticator;
+import io.github.pangju666.framework.autoconfigure.web.security.authentication.impl.UsernamePasswordAuthenticator;
+import io.github.pangju666.framework.autoconfigure.web.security.configuration.MapAccessTokenStoreConfiguration;
+import io.github.pangju666.framework.autoconfigure.web.security.configuration.RedisAccessTokenStoreConfiguration;
+import io.github.pangju666.framework.autoconfigure.web.security.filter.AuthenticateLoginFilter;
+import io.github.pangju666.framework.autoconfigure.web.security.interceptor.AuthenticatedInterceptor;
 import io.github.pangju666.framework.autoconfigure.web.security.properties.SecurityProperties;
-import io.github.pangju666.framework.web.filter.BaseRequestFilter;
-import jakarta.servlet.Filter;
+import io.github.pangju666.framework.autoconfigure.web.security.store.AccessTokenStore;
+import io.github.pangju666.framework.autoconfigure.web.security.store.AuthenticatedUserStore;
+import io.github.pangju666.framework.autoconfigure.web.security.store.impl.PropertiesAuthenticatedUserStoreImpl;
+import io.github.pangju666.framework.web.provider.ExcludePathPatternProvider;
 import jakarta.servlet.Servlet;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.BeanFactory;
-import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
-import org.springframework.security.config.Customizer;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.context.annotation.Import;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
-import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.access.intercept.AuthorizationFilter;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
-import org.springframework.security.web.csrf.CsrfFilter;
 import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
+@AutoConfiguration
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @ConditionalOnClass({Servlet.class, DispatcherServlet.class, WebMvcConfigurer.class})
+@Import({MapAccessTokenStoreConfiguration.class, RedisAccessTokenStoreConfiguration.class})
 @EnableConfigurationProperties(SecurityProperties.class)
 public class SecurityAutoConfiguration {
-	@ConditionalOnMissingBean(SecurityFilterChain.class)
-	@Bean
-	public SecurityFilterChain securityFilterChain(HttpSecurity http, BeanFactory beanFactory,
-												   SecurityProperties properties) throws Exception {
-		if (properties.getHttpBasic().isDisabled()) {
-			http.httpBasic(AbstractHttpConfigurer::disable);
-		} else {
-			try {
-				http.httpBasic(beanFactory.getBean(HttpBasicConfigurerCustomizer.class));
-			} catch (NoSuchBeanDefinitionException ignored) {
-				http.httpBasic(Customizer.withDefaults());
-			}
-			if (Objects.nonNull(properties.getHttpBasic().getFilter())) {
-				addFilterAt(http, beanFactory, properties.getHttpBasic().getFilter(),
-					BasicAuthenticationFilter.class);
-			}
-		}
+	private Set<String> excludePathPatterns = Collections.emptySet();
 
-		if (properties.getCsrf().isDisabled()) {
-			http.csrf(AbstractHttpConfigurer::disable);
-		} else {
-			try {
-				http.csrf(beanFactory.getBean(CsrfConfigurerCustomizer.class));
-			} catch (NoSuchBeanDefinitionException ignored) {
-				http.csrf(Customizer.withDefaults());
-			}
-			if (Objects.nonNull(properties.getCsrf().getFilter())) {
-				addFilterAt(http, beanFactory, properties.getCsrf().getFilter(), CsrfFilter.class);
-			}
-		}
-
-		if (properties.getFormLogin().isDisabled()) {
-			http.formLogin(AbstractHttpConfigurer::disable);
-		} else {
-			try {
-				http.formLogin(beanFactory.getBean(FormLoginConfigurerCustomizer.class));
-			} catch (NoSuchBeanDefinitionException ignored) {
-				http.formLogin(Customizer.withDefaults());
-			}
-			if (Objects.nonNull(properties.getFormLogin().getFilter())) {
-				addFilterAt(http, beanFactory, properties.getFormLogin().getFilter(),
-					UsernamePasswordAuthenticationFilter.class);
-			}
-		}
-
-		if (properties.getAuthorizeHttpRequests().isDisabled()) {
-			http.authorizeHttpRequests(
-				registry -> registry
-					.anyRequest()
-					.permitAll());
-		} else {
-			try {
-				http.authorizeHttpRequests(beanFactory.getBean(
-					AuthorizeHttpRequestsConfigurerCustomizer.class));
-			} catch (NoSuchBeanDefinitionException ignored) {
-				http.authorizeHttpRequests(Customizer.withDefaults());
-			}
-			if (Objects.nonNull(properties.getAuthorizeHttpRequests().getFilter())) {
-				addFilterAt(http, beanFactory, properties.getAuthorizeHttpRequests().getFilter(),
-					AuthorizationFilter.class);
-			}
-		}
-
-		return http.build();
+	@Autowired(required = false)
+	public void setExcludePathPatterns(Map<String, ExcludePathPatternProvider> excludePathPatternProviderMap) {
+		this.excludePathPatterns = excludePathPatternProviderMap.values()
+			.stream()
+			.map(ExcludePathPatternProvider::getExcludePaths)
+			.flatMap(List::stream)
+			.collect(Collectors.toSet());
 	}
 
-	@ConditionalOnMissingBean(UserDetailsService.class)
 	@Bean
-	public UserDetailsService userDetailsService(PasswordEncoder passwordEncoder, SecurityProperties properties) {
-		List<UserDetails> users = properties.getUsers()
-			.stream()
-			.map(user -> User.builder()
-				.username(user.getUsername())
-				.password(passwordEncoder.encode(user.getPassword()))
-				.roles(StringUtils.join(user.getRoles(), ","))
-				.disabled(user.isDisabled())
-				.accountLocked(user.isAccountLocked())
-				.accountExpired(user.isAccountExpired())
-				.build())
-			.toList();
-		return new InMemoryUserDetailsManager(users);
+	public FilterRegistrationBean<AuthenticateLoginFilter> authenticateLoginFilterRegistrationBean(
+		AccessTokenStore accessTokenStore, List<Authenticator> authenticators) {
+		FilterRegistrationBean<AuthenticateLoginFilter> filterRegistrationBean = new FilterRegistrationBean<>(
+			new AuthenticateLoginFilter(accessTokenStore, excludePathPatterns, authenticators));
+		for (Authenticator handler : authenticators) {
+			filterRegistrationBean.addUrlPatterns(handler.getRequestUrl());
+		}
+		return filterRegistrationBean;
 	}
 
 	@ConditionalOnMissingBean(PasswordEncoder.class)
@@ -129,11 +66,21 @@ public class SecurityAutoConfiguration {
 		return new BCryptPasswordEncoder();
 	}
 
-	private void addFilterAt(HttpSecurity http, BeanFactory beanFactory,
-							 Class<? extends BaseRequestFilter> newFilterClass, Class<? extends Filter> oldFilterClass) {
-		try {
-			http.addFilterAt(beanFactory.getBean(newFilterClass), oldFilterClass);
-		} catch (NoSuchBeanDefinitionException ignored) {
-		}
+	@Bean
+	Authenticator usernamePasswordAuthenticator(PasswordEncoder encoder,
+												SecurityProperties properties,
+												AuthenticatedUserStore authenticatedUserStore) {
+		return new UsernamePasswordAuthenticator(properties, encoder, authenticatedUserStore);
+	}
+
+	@ConditionalOnMissingBean(AuthenticatedUserStore.class)
+	@Bean
+	AuthenticatedUserStore propertiesAuthenticatedUserStore(SecurityProperties properties) {
+		return new PropertiesAuthenticatedUserStoreImpl(properties);
+	}
+
+	@Bean
+	public AuthenticatedInterceptor authenticatedInterceptor(AccessTokenStore accessTokenStore, SecurityProperties properties) {
+		return new AuthenticatedInterceptor(accessTokenStore, properties);
 	}
 }
