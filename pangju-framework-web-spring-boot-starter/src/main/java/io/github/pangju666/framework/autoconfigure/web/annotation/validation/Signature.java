@@ -19,6 +19,4 @@ public @interface Signature {
 	long timeout() default 1;
 
 	TimeUnit timeUnit() default TimeUnit.MINUTES;
-
-	boolean nonce() default false;
 }
