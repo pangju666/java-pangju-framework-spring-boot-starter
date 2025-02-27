@@ -10,7 +10,7 @@ import java.util.concurrent.TimeUnit;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE, ElementType.METHOD})
 public @interface Signature {
-	String appId() default "";
+	String[] appId() default {};
 
 	SignatureType type() default SignatureType.ANY;
 
@@ -19,4 +19,6 @@ public @interface Signature {
 	long timeout() default 1;
 
 	TimeUnit timeUnit() default TimeUnit.MINUTES;
+
+	boolean nonce() default false;
 }

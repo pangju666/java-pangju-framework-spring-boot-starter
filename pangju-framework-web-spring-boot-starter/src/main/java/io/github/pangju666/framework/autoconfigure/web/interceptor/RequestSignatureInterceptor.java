@@ -11,6 +11,7 @@ import io.github.pangju666.framework.web.utils.ResponseUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MissingRequestValueException;
@@ -63,10 +64,15 @@ public class RequestSignatureInterceptor extends BaseRequestInterceptor {
 
 	private boolean validateSignatureByParams(HttpServletRequest request, HttpServletResponse response,
 											  Signature annotation) throws MissingServletRequestParameterException {
-		String appId = StringUtils.defaultIfBlank(annotation.appId(), request.getParameter(properties.getAppIdParamName()));
+		String appId = request.getParameter(properties.getAppIdParamName());
 		if (StringUtils.isBlank(appId)) {
 			throw new MissingServletRequestParameterException(properties.getAppIdParamName(), "string");
 		}
+		if (ArrayUtils.isNotEmpty(annotation.appId()) && !ArrayUtils.contains(annotation.appId(), appId)) {
+			ResponseUtils.writeExceptionToResponse(new ValidationException("不是指定的appId"), response, HttpStatus.BAD_REQUEST);
+			return false;
+		}
+
 		String signature = request.getParameter(properties.getSignatureParamName());
 		if (StringUtils.isBlank(signature)) {
 			throw new MissingServletRequestParameterException(properties.getSignatureParamName(), "string");
@@ -92,19 +98,24 @@ public class RequestSignatureInterceptor extends BaseRequestInterceptor {
 	private boolean validateSignatureByHeaders(HttpServletRequest request, HttpServletResponse response,
 											   Signature annotation) throws MissingRequestValueException {
 		try {
-			String appId = StringUtils.defaultIfBlank(annotation.appId(), request.getHeader(properties.getAppIdHeaderName()));
+			String appId = request.getHeader(properties.getAppIdHeaderName());
 			if (StringUtils.isBlank(appId)) {
 				throw new MissingRequestValueException("缺少请求头：" + properties.getAppIdHeaderName());
 			}
+			if (ArrayUtils.isNotEmpty(annotation.appId()) && !ArrayUtils.contains(annotation.appId(), appId)) {
+				ResponseUtils.writeExceptionToResponse(new ValidationException("不是指定的appId"), response, HttpStatus.BAD_REQUEST);
+				return false;
+			}
+
 			String signature = request.getHeader(properties.getSignatureParamName());
 			if (StringUtils.isBlank(signature)) {
 				throw new MissingRequestValueException("缺少请求头：" + properties.getSignatureParamName());
 			}
+
 			String timestamp = request.getHeader(properties.getTimestampHeaderName());
 			if (StringUtils.isBlank(timestamp)) {
 				throw new MissingRequestValueException("缺少请求头：" + properties.getTimestampHeaderName());
 			}
-
 			Long requestTimestamp = Long.parseLong(timestamp);
 			Long nowTimestamp = DateUtils.nowDate().getTime();
 			if (nowTimestamp - requestTimestamp > annotation.timeUnit().toMillis(annotation.timeout())) {
