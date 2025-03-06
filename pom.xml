@@ -17,7 +17,7 @@
 	<url>https://github.com/pangju666/java-pangju-framework-spring-boot-starter</url>
 
 	<modules>
-		<module>pangju-framework-spring-boot-starter</module>
+		<module>pangju-framework-core-spring-boot-starter</module>
 		<module>pangju-framework-data-dynamic-redis-spring-boot-starter</module>
 		<module>pangju-framework-data-dynamic-mongodb-spring-boot-starter</module>
 		<module>pangju-framework-data-mybatis-plus-spring-boot-starter</module>
@@ -67,7 +67,7 @@
 
 			<dependency>
 				<groupId>io.github.pangju666</groupId>
-				<artifactId>pangju-framework-spring-boot-starter</artifactId>
+				<artifactId>pangju-framework-core-spring-boot-starter</artifactId>
 				<version>1.0.0</version>
 			</dependency>
 			<dependency>

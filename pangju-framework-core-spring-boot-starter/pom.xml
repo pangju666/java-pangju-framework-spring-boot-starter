@@ -8,10 +8,10 @@
 		<artifactId>pangju-framework-spring-boot-starter-parent</artifactId>
 		<version>1.0.0</version>
 	</parent>
-	<artifactId>pangju-framework-spring-boot-starter</artifactId>
+	<artifactId>pangju-framework-core-spring-boot-starter</artifactId>
 	<version>1.0.0</version>
 
-	<name>pangju-framework-spring-boot-starter</name>
+	<name>pangju-framework-core-spring-boot-starter</name>
 	<description>java 后端框架 Spring Boot Starter</description>
 	<url>https://github.com/pangju666/java-pangju-framework-spring-boot-starter</url>
 

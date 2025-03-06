@@ -1,4 +1,4 @@
-package io.github.pangju666.framework.autoconfigure.validation;
+package io.github.pangju666.framework.autoconfigure.core.validation;
 
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;

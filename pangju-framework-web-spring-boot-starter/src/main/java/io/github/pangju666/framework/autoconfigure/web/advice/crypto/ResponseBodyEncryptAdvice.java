@@ -2,7 +2,7 @@ package io.github.pangju666.framework.autoconfigure.web.advice.crypto;
 
 import io.github.pangju666.commons.lang.utils.JsonUtils;
 import io.github.pangju666.commons.lang.utils.ReflectionUtils;
-import io.github.pangju666.framework.autoconfigure.context.StaticSpringContext;
+import io.github.pangju666.framework.autoconfigure.core.context.StaticSpringContext;
 import io.github.pangju666.framework.autoconfigure.web.annotation.crypto.EncryptResponseBody;
 import io.github.pangju666.framework.autoconfigure.web.annotation.crypto.EncryptResponseBodyField;
 import io.github.pangju666.framework.autoconfigure.web.utils.CryptoUtils;
