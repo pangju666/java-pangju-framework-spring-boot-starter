@@ -9,11 +9,11 @@
 		<relativePath/>
 	</parent>
 	<artifactId>pangju-framework-spring-boot-starter-parent</artifactId>
-	<version>1.0.0</version>
+	<version>1.0.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<name>pangju-framework-spring-boot-starter-parent</name>
-	<description>java 后端框架 Spring Boot Starter 父级依赖</description>
+	<description>胖橘框架 Spring Boot Starter 父级依赖</description>
 	<url>https://github.com/pangju666/java-pangju-framework-spring-boot-starter</url>
 
 	<modules>
@@ -28,7 +28,7 @@
 
 	<properties>
 		<skipTests>true</skipTests>
-		<framework.version>1.0.0</framework.version>
+		<framework.version>1.0.0-SNAPSHOT</framework.version>
 		<lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
 		<spock-spring-boot-starter.version>1.0.0</spock-spring-boot-starter.version>
 	</properties>
@@ -42,9 +42,10 @@
 
 	<developers>
 		<developer>
-			<id>pangju</id>
+			<id>pangju666</id>
 			<name>胖橘</name>
-			<email>2281525307@qq.com</email>
+			<email>nullptr255@outlook.com</email>
+			<url>https://github.com/pangju666</url>
 		</developer>
 	</developers>
 
@@ -68,37 +69,37 @@
 			<dependency>
 				<groupId>io.github.pangju666</groupId>
 				<artifactId>pangju-framework-core-spring-boot-starter</artifactId>
-				<version>1.0.0</version>
+				<version>1.0.0-SNAPSHOT</version>
 			</dependency>
 			<dependency>
 				<groupId>io.github.pangju666</groupId>
 				<artifactId>pangju-framework-web-spring-boot-starter</artifactId>
-				<version>1.0.0</version>
+				<version>1.0.0-SNAPSHOT</version>
 			</dependency>
 			<dependency>
 				<groupId>io.github.pangju666</groupId>
 				<artifactId>pangju-framework-data-dynamic-redis-spring-boot-starter</artifactId>
-				<version>1.0.0</version>
+				<version>1.0.0-SNAPSHOT</version>
 			</dependency>
 			<dependency>
 				<groupId>io.github.pangju666</groupId>
 				<artifactId>pangju-framework-data-dynamic-mongodb-spring-boot-starter</artifactId>
-				<version>1.0.0</version>
+				<version>1.0.0-SNAPSHOT</version>
 			</dependency>
 			<dependency>
 				<groupId>io.github.pangju666</groupId>
 				<artifactId>pangju-framework-data-mybatis-plus-spring-boot-starter</artifactId>
-				<version>1.0.0</version>
+				<version>1.0.0-SNAPSHOT</version>
 			</dependency>
 			<dependency>
 				<groupId>io.github.pangju666</groupId>
 				<artifactId>pangju-framework-cache-redis-spring-boot-starter</artifactId>
-				<version>1.0.0</version>
+				<version>1.0.0-SNAPSHOT</version>
 			</dependency>
 			<dependency>
 				<groupId>io.github.pangju666</groupId>
 				<artifactId>pangju-framework-web-log-spring-boot-starter</artifactId>
-				<version>1.0.0</version>
+				<version>1.0.0-SNAPSHOT</version>
 			</dependency>
 
 			<dependency>
@@ -171,22 +172,20 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-gpg-plugin</artifactId>
-				<configuration>
+				<!--<configuration>
 					<skip>true</skip>
-				</configuration>
+				</configuration>-->
 			</plugin>
 		</plugins>
 	</build>
 
 	<distributionManagement>
 		<snapshotRepository>
-			<id>sonatype-nexus-snapshots</id>
-			<name>Sonatype Nexus Snapshots</name>
+			<id>sonatype-nexus</id>
 			<url>https://s01.oss.sonatype.org/content/repositories/snapshots/</url>
 		</snapshotRepository>
 		<repository>
-			<id>sonatype-nexus-staging</id>
-			<name>Nexus Release Repository</name>
+			<id>sonatype-nexus</id>
 			<url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
 		</repository>
 	</distributionManagement>

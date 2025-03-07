@@ -1,7 +1,7 @@
 package io.github.pangju666.framework.autoconfigure.web.resolver;
 
+import io.github.pangju666.framework.autoconfigure.web.annotation.bind.EnumRequestParam;
 import io.github.pangju666.framework.core.exception.base.ValidationException;
-import io.github.pangju666.framework.web.annotation.EnumRequestParam;
 import org.apache.commons.lang3.EnumUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.MethodParameter;

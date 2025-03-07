@@ -5,10 +5,10 @@ import io.github.pangju666.framework.autoconfigure.web.interceptor.RequestSignat
 import io.github.pangju666.framework.autoconfigure.web.limiter.RequestRateLimiter;
 import io.github.pangju666.framework.autoconfigure.web.properties.RequestSignatureProperties;
 import io.github.pangju666.framework.autoconfigure.web.resolver.EncryptRequestParamArgumentResolver;
+import io.github.pangju666.framework.autoconfigure.web.resolver.EnumRequestParamArgumentResolver;
 import io.github.pangju666.framework.autoconfigure.web.store.SignatureSecretKeyStore;
 import io.github.pangju666.framework.web.interceptor.BaseRequestInterceptor;
 import io.github.pangju666.framework.web.provider.ExcludePathPatternProvider;
-import io.github.pangju666.framework.web.resolver.EnumRequestParamArgumentResolver;
 import jakarta.servlet.Servlet;
 import org.apache.commons.collections4.ListUtils;
 import org.springframework.beans.factory.annotation.Autowired;
