@@ -6,8 +6,8 @@ import io.github.pangju666.framework.autoconfigure.core.context.StaticSpringCont
 import io.github.pangju666.framework.autoconfigure.web.annotation.crypto.EncryptResponseBody;
 import io.github.pangju666.framework.autoconfigure.web.annotation.crypto.EncryptResponseBodyField;
 import io.github.pangju666.framework.autoconfigure.web.utils.CryptoUtils;
-import io.github.pangju666.framework.core.exception.base.ServerException;
-import io.github.pangju666.framework.web.model.Result;
+import io.github.pangju666.framework.web.exception.base.ServerException;
+import io.github.pangju666.framework.web.model.vo.Result;
 import jakarta.servlet.Servlet;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -30,6 +30,7 @@ import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 
 import java.lang.reflect.Field;
+import java.security.spec.InvalidKeySpecException;
 import java.util.*;
 
 @Order(Ordered.HIGHEST_PRECEDENCE)
@@ -95,6 +96,8 @@ public class ResponseBodyEncryptAdvice implements ResponseBodyAdvice<Object> {
 			return CryptoUtils.encrypt(content.getBytes(), key, annotation.algorithm(), annotation.encoding());
 		} catch (EncryptionOperationNotPossibleException e) {
 			throw new ServerException("响应数据对象加密失败", e);
+		} catch (InvalidKeySpecException e) {
+			throw new RuntimeException(e);
 		}
 	}
 
@@ -182,7 +185,7 @@ public class ResponseBodyEncryptAdvice implements ResponseBodyAdvice<Object> {
 						}
 					}
 				}
-			} catch (EncryptionOperationNotPossibleException e) {
+			} catch (EncryptionOperationNotPossibleException | InvalidKeySpecException e) {
 				throw new ServerException("响应数据对象字段加密失败", e);
 			}
 		}

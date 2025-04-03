@@ -2,9 +2,9 @@ package io.github.pangju666.framework.autoconfigure.core.jackson;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.pangju666.framework.autoconfigure.core.properties.JacksonProperties;
-import io.github.pangju666.framework.core.jackson.databind.deserializer.EnumJsonDeserializer;
-import io.github.pangju666.framework.core.jackson.databind.deserializer.TimestampJsonDeserializer;
-import io.github.pangju666.framework.core.jackson.databind.serializer.DateJsonSerializer;
+import io.github.pangju666.framework.http.jackson.databind.deserializer.DateJsonDeserializer;
+import io.github.pangju666.framework.http.jackson.databind.deserializer.EnumJsonDeserializer;
+import io.github.pangju666.framework.http.jackson.databind.serializer.DateJsonSerializer;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -25,7 +25,7 @@ public class JacksonAutoConfiguration {
 			builder.serializerByType(Date.class, new DateJsonSerializer());
 		}
 		if (properties.isTimestampToDateSerializer()) {
-			builder.deserializerByType(Date.class, new TimestampJsonDeserializer());
+			builder.deserializerByType(Date.class, new DateJsonDeserializer());
 		}
 		if (properties.isStringToEnumDeserializer()) {
 			builder.deserializerByType(Enum.class, new EnumJsonDeserializer());

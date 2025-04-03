@@ -5,8 +5,8 @@ import io.github.pangju666.framework.autoconfigure.core.context.StaticSpringCont
 import io.github.pangju666.framework.autoconfigure.web.annotation.crypto.DecryptRequestBody;
 import io.github.pangju666.framework.autoconfigure.web.annotation.crypto.DecryptRequestBodyField;
 import io.github.pangju666.framework.autoconfigure.web.utils.CryptoUtils;
-import io.github.pangju666.framework.core.exception.base.ServerException;
-import io.github.pangju666.framework.core.exception.base.ServiceException;
+import io.github.pangju666.framework.web.exception.base.ServerException;
+import io.github.pangju666.framework.web.exception.base.ServiceException;
 import jakarta.servlet.Servlet;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.collections4.CollectionUtils;
@@ -31,6 +31,7 @@ import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
+import java.security.spec.InvalidKeySpecException;
 import java.util.*;
 
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
@@ -68,6 +69,8 @@ public class RequestBodyDecryptAdvice implements RequestBodyAdvice {
 			throw new ServiceException("无效的请求数据", "请求数据对象解密失败", e);
 		} catch (DecoderException e) {
 			throw new ServiceException("无效的请求数据", "请求数据对象十六进制解码失败", e);
+		} catch (InvalidKeySpecException e) {
+			throw new RuntimeException(e);
 		}
 	}
 
@@ -152,6 +155,8 @@ public class RequestBodyDecryptAdvice implements RequestBodyAdvice {
 				throw new ServiceException("无效的请求数据", "请求数据对象字段解密失败", e);
 			} catch (DecoderException e) {
 				throw new ServiceException("无效的请求数据", "请求数据对象字段十六进制解码失败", e);
+			} catch (InvalidKeySpecException e) {
+				throw new RuntimeException(e);
 			}
 		}
 		return body;

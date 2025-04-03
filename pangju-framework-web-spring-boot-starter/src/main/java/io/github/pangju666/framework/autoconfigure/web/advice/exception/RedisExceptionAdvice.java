@@ -1,7 +1,7 @@
 package io.github.pangju666.framework.autoconfigure.web.advice.exception;
 
-import io.github.pangju666.framework.core.lang.pool.Constants;
-import io.github.pangju666.framework.web.model.Result;
+import io.github.pangju666.framework.web.lang.pool.WebConstants;
+import io.github.pangju666.framework.web.model.vo.Result;
 import jakarta.servlet.Servlet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,13 +28,13 @@ public class RedisExceptionAdvice {
 	@ExceptionHandler(value = RedisConnectionFailureException.class)
 	public Result<Void> handleRedisConnectionFailureException(RedisConnectionFailureException e) {
 		log.error("Redis连接超时异常", e);
-		return Result.fail(Constants.DATA_ERROR_RESPONSE_CODE, "Redis连接超时");
+		return Result.fail(WebConstants.DATA_ERROR_CODE, "Redis连接超时");
 	}
 
 	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 	@ExceptionHandler(value = DataAccessException.class)
 	public Result<Void> handleDataAccessException(DataAccessException e) {
 		log.error("数据访问异常", e);
-		return Result.fail(Constants.DATA_ERROR_RESPONSE_CODE, "服务器内部错误");
+		return Result.fail(WebConstants.DATA_ERROR_CODE, "服务器内部错误");
 	}
 }

@@ -10,9 +10,9 @@ import io.github.pangju666.framework.autoconfigure.web.log.handler.WebLogHandler
 import io.github.pangju666.framework.autoconfigure.web.log.model.WebLog;
 import io.github.pangju666.framework.autoconfigure.web.log.properties.WebLogProperties;
 import io.github.pangju666.framework.autoconfigure.web.log.sender.WebLogSender;
-import io.github.pangju666.framework.core.exception.base.BaseRuntimeException;
+import io.github.pangju666.framework.web.exception.base.BaseRuntimeException;
 import io.github.pangju666.framework.web.filter.BaseRequestFilter;
-import io.github.pangju666.framework.web.model.Result;
+import io.github.pangju666.framework.web.model.vo.Result;
 import io.github.pangju666.framework.web.utils.RequestUtils;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

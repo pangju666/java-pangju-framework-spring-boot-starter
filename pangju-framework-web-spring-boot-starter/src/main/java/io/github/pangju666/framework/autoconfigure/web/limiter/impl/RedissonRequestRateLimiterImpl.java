@@ -3,8 +3,8 @@ package io.github.pangju666.framework.autoconfigure.web.limiter.impl;
 import io.github.pangju666.framework.autoconfigure.web.annotation.validation.RateLimit;
 import io.github.pangju666.framework.autoconfigure.web.limiter.RequestRateLimiter;
 import io.github.pangju666.framework.autoconfigure.web.properties.RequestRateLimitProperties;
-import io.github.pangju666.framework.core.exception.base.ServerException;
-import io.github.pangju666.framework.core.lang.pool.Constants;
+import io.github.pangju666.framework.data.redis.lang.pool.RedisConstants;
+import io.github.pangju666.framework.web.exception.base.ServerException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.redisson.api.RRateLimiter;
@@ -33,11 +33,11 @@ public class RedissonRequestRateLimiterImpl implements RequestRateLimiter {
 	public boolean tryAcquire(String key, RateLimit annotation, HttpServletRequest request) {
 		String rateLimitKey = key;
 		if (StringUtils.isBlank(rateLimitKey)) {
-			rateLimitKey = generateKey(annotation, request, Constants.REDIS_PATH_DELIMITER);
+			rateLimitKey = generateKey(annotation, request, RedisConstants.REDIS_PATH_DELIMITER);
 		}
 		if (StringUtils.isNotBlank(properties.getRedisson().getKeyPrefix())) {
 			rateLimitKey = StringUtils.join(Arrays.asList(properties.getRedisson().getKeyPrefix(), rateLimitKey),
-				Constants.REDIS_PATH_DELIMITER);
+				RedisConstants.REDIS_PATH_DELIMITER);
 		}
 		RRateLimiter rateLimiter = redissonClient.getRateLimiter(rateLimitKey);
 		if (!rateLimiter.isExists()) {

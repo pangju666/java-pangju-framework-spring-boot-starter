@@ -38,7 +38,7 @@
 
 		<dependency>
 			<groupId>io.github.pangju666</groupId>
-			<artifactId>pangju-framework-core-spring-boot-starter</artifactId>
+			<artifactId>pangju-framework-spring-boot-starter</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>io.github.pangju666</groupId>
@@ -46,7 +46,11 @@
 		</dependency>
 		<dependency>
 			<groupId>io.github.pangju666</groupId>
-			<artifactId>pangju-commons-codec</artifactId>
+			<artifactId>pangju-commons-crypto</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-collections4</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>io.github.pangju666</groupId>

@@ -5,7 +5,7 @@ import io.github.pangju666.framework.autoconfigure.web.annotation.validation.Sig
 import io.github.pangju666.framework.autoconfigure.web.enums.SignatureAlgorithm;
 import io.github.pangju666.framework.autoconfigure.web.properties.RequestSignatureProperties;
 import io.github.pangju666.framework.autoconfigure.web.store.SignatureSecretKeyStore;
-import io.github.pangju666.framework.core.exception.base.ValidationException;
+import io.github.pangju666.framework.web.exception.base.ValidationException;
 import io.github.pangju666.framework.web.interceptor.BaseRequestInterceptor;
 import io.github.pangju666.framework.web.utils.ResponseUtils;
 import jakarta.servlet.http.HttpServletRequest;

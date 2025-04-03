@@ -3,7 +3,7 @@ package io.github.pangju666.framework.autoconfigure.web.repeater.impl;
 import io.github.pangju666.framework.autoconfigure.web.annotation.validation.Repeat;
 import io.github.pangju666.framework.autoconfigure.web.properties.RequestRepeatProperties;
 import io.github.pangju666.framework.autoconfigure.web.repeater.RequestRepeater;
-import io.github.pangju666.framework.core.lang.pool.Constants;
+import io.github.pangju666.framework.data.redis.lang.pool.RedisConstants;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.BeanFactory;
@@ -27,10 +27,10 @@ public class RedisRequestRepeater implements RequestRepeater {
 
 	@Override
 	public boolean tryAcquire(String key, Repeat repeat, HttpServletRequest request) {
-		String repeatKey = generateKey(key, Constants.REDIS_PATH_DELIMITER, repeat, request);
+		String repeatKey = generateKey(key, RedisConstants.REDIS_PATH_DELIMITER, repeat, request);
 		if (StringUtils.isNotBlank(properties.getRedis().getKeyPrefix())) {
 			repeatKey = StringUtils.join(Arrays.asList(properties.getRedis().getKeyPrefix(), repeatKey),
-				Constants.REDIS_PATH_DELIMITER);
+				RedisConstants.REDIS_PATH_DELIMITER);
 		}
 		if (Boolean.TRUE.equals(redisTemplate.hasKey(repeatKey))) {
 			return false;

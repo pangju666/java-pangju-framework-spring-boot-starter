@@ -4,7 +4,7 @@ import io.github.pangju666.framework.autoconfigure.web.annotation.validation.Rat
 import io.github.pangju666.framework.autoconfigure.web.enums.RateLimitMethod;
 import io.github.pangju666.framework.autoconfigure.web.exception.RequestLimitException;
 import io.github.pangju666.framework.autoconfigure.web.limiter.RequestRateLimiter;
-import io.github.pangju666.framework.core.exception.base.ServerException;
+import io.github.pangju666.framework.web.exception.base.ServerException;
 import io.github.pangju666.framework.web.interceptor.BaseRequestInterceptor;
 import io.github.pangju666.framework.web.utils.ResponseUtils;
 import jakarta.servlet.http.HttpServletRequest;

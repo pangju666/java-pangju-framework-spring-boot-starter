@@ -6,7 +6,7 @@ import io.github.pangju666.framework.autoconfigure.cache.redis.annoation.RedisCa
 import io.github.pangju666.framework.autoconfigure.cache.redis.annoation.RedisCachePut;
 import io.github.pangju666.framework.autoconfigure.cache.redis.annoation.RedisCacheable;
 import io.github.pangju666.framework.autoconfigure.cache.redis.annoation.RedisCaching;
-import io.github.pangju666.framework.core.utils.SpELUtils;
+import io.github.pangju666.framework.spring.utils.SpELUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.ClassUtils;

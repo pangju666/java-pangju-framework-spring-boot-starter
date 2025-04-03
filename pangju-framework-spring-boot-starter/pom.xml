@@ -8,8 +8,7 @@
 		<artifactId>pangju-framework-spring-boot-starter-parent</artifactId>
 		<version>1.0.0-SNAPSHOT</version>
 	</parent>
-	<artifactId>pangju-framework-core-spring-boot-starter</artifactId>
-	<name>pangju-framework-core-spring-boot-starter</name>
+	<artifactId>pangju-framework-spring-boot-starter</artifactId>
 	<description>java 后端框架 Spring Boot Starter</description>
 	<url>https://github.com/pangju666/java-pangju-framework-spring-boot-starter</url>
 
@@ -36,7 +35,15 @@
 
 		<dependency>
 			<groupId>io.github.pangju666</groupId>
-			<artifactId>pangju-framework-core</artifactId>
+			<artifactId>pangju-framework-web</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.github.pangju666</groupId>
+			<artifactId>pangju-framework-spring</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
 		</dependency>
 	</dependencies>
 
