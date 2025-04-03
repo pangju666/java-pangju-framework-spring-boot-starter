@@ -1,6 +1,7 @@
 package io.github.pangju666.framework.autoconfigure.web.advice.exception;
 
 import io.github.pangju666.framework.web.exception.base.BaseRuntimeException;
+import io.github.pangju666.framework.web.exception.data.DataAccessException;
 import io.github.pangju666.framework.web.lang.pool.WebConstants;
 import io.github.pangju666.framework.web.model.vo.Result;
 import io.github.pangju666.framework.web.utils.ResponseUtils;
@@ -41,6 +42,7 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
@@ -200,6 +202,13 @@ public class GlobalExceptionAdvice {
 	public Result<Void> handleAsyncRequestTimeoutException(AsyncRequestTimeoutException e) {
 		log.error("异步请求超时", e);
 		return Result.failByMessage("异步请求超时");
+	}
+
+	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+	@ExceptionHandler(value = DataAccessException.class)
+	public Result<Void> handleDataAccessException(DataAccessException e) {
+		log.error("数据访问异常", e);
+		return Result.fail(WebConstants.DATA_ERROR_CODE, "数据访问错误");
 	}
 
 	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)

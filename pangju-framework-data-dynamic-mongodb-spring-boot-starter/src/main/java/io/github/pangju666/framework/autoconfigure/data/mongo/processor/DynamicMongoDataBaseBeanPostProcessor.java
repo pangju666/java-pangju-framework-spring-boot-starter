@@ -25,7 +25,7 @@ public class DynamicMongoDataBaseBeanPostProcessor implements BeanPostProcessor,
 			DynamicMongoDataBase annotation = bean.getClass().getAnnotation(DynamicMongoDataBase.class);
 			if (Objects.nonNull(annotation)) {
 				MongoTemplate mongoTemplate = DynamicMongoUtils.getMongoTemplate(annotation.value(), beanFactory);
-				baseRepository.init(mongoTemplate);
+				baseRepository.setMongoOperations(mongoTemplate);
 			}
 		}
 		return bean;

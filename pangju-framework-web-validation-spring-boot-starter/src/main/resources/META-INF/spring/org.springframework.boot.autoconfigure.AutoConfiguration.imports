@@ -1,0 +1,5 @@
+io.github.pangju666.framework.autoconfigure.web.crypto.WebMvcAutoConfiguration
+io.github.pangju666.framework.autoconfigure.web.crypto.AopAutoConfiguration
+io.github.pangju666.framework.autoconfigure.web.crypto.RequestRateLimiterAutoConfiguration
+io.github.pangju666.framework.autoconfigure.web.crypto.RequestRepeaterAutoConfiguration
+io.github.pangju666.framework.autoconfigure.web.crypto.RequestSignatureAutoConfiguration

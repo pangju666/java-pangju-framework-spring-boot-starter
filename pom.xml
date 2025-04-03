@@ -18,12 +18,15 @@
 
 	<modules>
 		<module>pangju-framework-spring-boot-starter</module>
+		<module>pangju-framework-validation-spring-boot-starter</module>
 		<module>pangju-framework-data-dynamic-redis-spring-boot-starter</module>
 		<module>pangju-framework-data-dynamic-mongodb-spring-boot-starter</module>
 		<module>pangju-framework-data-mybatis-plus-spring-boot-starter</module>
 		<module>pangju-framework-cache-redis-spring-boot-starter</module>
 		<module>pangju-framework-web-spring-boot-starter</module>
 		<module>pangju-framework-web-log-spring-boot-starter</module>
+		<module>pangju-framework-web-crypto-spring-boot-starter</module>
+		<module>pangju-framework-web-validation-spring-boot-starter</module>
 	</modules>
 
 	<properties>
@@ -72,6 +75,11 @@
 			</dependency>
 			<dependency>
 				<groupId>io.github.pangju666</groupId>
+				<artifactId>pangju-framework-validation-spring-boot-starter</artifactId>
+				<version>1.0.0-SNAPSHOT</version>
+			</dependency>
+			<dependency>
+				<groupId>io.github.pangju666</groupId>
 				<artifactId>pangju-framework-web-spring-boot-starter</artifactId>
 				<version>1.0.0-SNAPSHOT</version>
 			</dependency>
@@ -98,6 +106,16 @@
 			<dependency>
 				<groupId>io.github.pangju666</groupId>
 				<artifactId>pangju-framework-web-log-spring-boot-starter</artifactId>
+				<version>1.0.0-SNAPSHOT</version>
+			</dependency>
+			<dependency>
+				<groupId>io.github.pangju666</groupId>
+				<artifactId>pangju-framework-web-crypto-spring-boot-starter</artifactId>
+				<version>1.0.0-SNAPSHOT</version>
+			</dependency>
+			<dependency>
+				<groupId>io.github.pangju666</groupId>
+				<artifactId>pangju-framework-web-validation-spring-boot-starter</artifactId>
 				<version>1.0.0-SNAPSHOT</version>
 			</dependency>
 
