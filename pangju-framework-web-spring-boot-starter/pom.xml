@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>io.github.pangju666</groupId>
 		<artifactId>pangju-framework-spring-boot-starter-parent</artifactId>
-		<version>1.0.0-SNAPSHOT</version>
+		<version>1.0.0</version>
 	</parent>
 	<artifactId>pangju-framework-web-spring-boot-starter</artifactId>
 	<name>pangju-framework-web-spring-boot-starter</name>
@@ -57,9 +57,7 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<configuration>
-					<source>${java.version}</source>
-					<target>${java.version}</target>
-					<encoding>${compiler.encoding}</encoding>
+					<parameters>true</parameters>
 					<annotationProcessorPaths>
 						<path>
 							<groupId>org.springframework.boot</groupId>

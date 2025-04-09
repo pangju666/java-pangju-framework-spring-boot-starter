@@ -1,5 +1,6 @@
 package io.github.pangju666.framework.autoconfigure.data.mybatisplus;
 
+import com.baomidou.mybatisplus.extension.injector.methods.LogicDeleteBatchByIds;
 import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.handler.DataPermissionHandler;
 import com.baomidou.mybatisplus.extension.plugins.handler.TableNameHandler;
@@ -7,7 +8,7 @@ import com.baomidou.mybatisplus.extension.plugins.handler.TenantLineHandler;
 import com.baomidou.mybatisplus.extension.plugins.inner.*;
 import com.baomidou.mybatisplus.extension.plugins.pagination.dialects.IDialect;
 import io.github.pangju666.framework.autoconfigure.data.mybatisplus.properties.MybatisPlusInterceptorProperties;
-import io.github.pangju666.framework.data.mybatisplus.injector.DeleteInjector;
+import io.github.pangju666.framework.data.mybatisplus.injector.TableLogicFillSqlInjector;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionFactoryBean;
 import org.springframework.beans.BeansException;
@@ -109,9 +110,9 @@ public class MybatisPlusAutoConfiguration implements BeanFactoryAware {
 		return interceptor;
 	}
 
-	@ConditionalOnMissingBean(DeleteInjector.class)
+	@ConditionalOnMissingBean(TableLogicFillSqlInjector.class)
 	@Bean
-	public DeleteInjector deleteInjector() {
-		return new DeleteInjector();
+	public TableLogicFillSqlInjector deleteInjector() {
+		return new TableLogicFillSqlInjector();
 	}
 }
