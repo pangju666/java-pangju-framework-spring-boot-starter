@@ -1,6 +1,6 @@
 package io.github.pangju666.framework.autoconfigure.web.crypto.resolver;
 
-import io.github.pangju666.framework.autoconfigure.core.context.StaticSpringContext;
+import io.github.pangju666.framework.autoconfigure.spring.context.StaticSpringContext;
 import io.github.pangju666.framework.autoconfigure.web.crypto.annotation.EncryptRequestParam;
 import io.github.pangju666.framework.autoconfigure.web.crypto.utils.CryptoUtils;
 import io.github.pangju666.framework.web.exception.base.ServerException;

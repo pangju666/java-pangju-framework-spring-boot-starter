@@ -1,4 +1,4 @@
-package io.github.pangju666.framework.autoconfigure.core.context;
+package io.github.pangju666.framework.autoconfigure.spring.context;
 
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.boot.context.event.ApplicationReadyEvent;

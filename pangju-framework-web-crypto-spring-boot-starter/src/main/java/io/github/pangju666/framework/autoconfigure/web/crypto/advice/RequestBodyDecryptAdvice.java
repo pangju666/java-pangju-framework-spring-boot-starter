@@ -1,7 +1,7 @@
 package io.github.pangju666.framework.autoconfigure.web.crypto.advice;
 
 import io.github.pangju666.commons.lang.utils.ReflectionUtils;
-import io.github.pangju666.framework.autoconfigure.core.context.StaticSpringContext;
+import io.github.pangju666.framework.autoconfigure.spring.context.StaticSpringContext;
 import io.github.pangju666.framework.autoconfigure.web.crypto.annotation.DecryptRequestBody;
 import io.github.pangju666.framework.autoconfigure.web.crypto.annotation.DecryptRequestBodyField;
 import io.github.pangju666.framework.autoconfigure.web.crypto.utils.CryptoUtils;
