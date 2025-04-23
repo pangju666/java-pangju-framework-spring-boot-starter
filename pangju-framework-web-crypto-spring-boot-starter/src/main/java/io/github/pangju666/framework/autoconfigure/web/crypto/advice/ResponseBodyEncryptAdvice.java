@@ -7,7 +7,7 @@ import io.github.pangju666.framework.autoconfigure.web.crypto.annotation.Encrypt
 import io.github.pangju666.framework.autoconfigure.web.crypto.annotation.EncryptResponseBodyField;
 import io.github.pangju666.framework.autoconfigure.web.crypto.utils.CryptoUtils;
 import io.github.pangju666.framework.web.exception.base.ServerException;
-import io.github.pangju666.framework.web.model.vo.Result;
+import io.github.pangju666.framework.web.model.common.Result;
 import jakarta.servlet.Servlet;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -76,19 +76,19 @@ public class ResponseBodyEncryptAdvice implements ResponseBodyAdvice<Object> {
 				return CryptoUtils.encryptToString(StringUtils.defaultString(content).getBytes(), key, annotation.algorithm(), annotation.encoding());
 			}
 			if (body instanceof Result<?> data) {
-				if (Objects.isNull(data.data())) {
+				if (Objects.isNull(data.getData())) {
 					return data;
 				}
-				if (data.data().getClass().isAssignableFrom(String.class)) {
-					String bodyData = StringUtils.defaultString((String) data.data());
+				if (data.getData().getClass().isAssignableFrom(String.class)) {
+					String bodyData = StringUtils.defaultString((String) data.getData());
 					String result = CryptoUtils.encryptToString(bodyData.getBytes(), key, annotation.algorithm(), annotation.encoding());
 					return Result.ok(result);
-				} else if (data.data().getClass().isAssignableFrom(byte[].class)) {
-					byte[] bodyData = ArrayUtils.nullToEmpty((byte[]) data.data());
+				} else if (data.getData().getClass().isAssignableFrom(byte[].class)) {
+					byte[] bodyData = ArrayUtils.nullToEmpty((byte[]) data.getData());
 					byte[] result = CryptoUtils.encrypt(bodyData, key, annotation.algorithm(), annotation.encoding());
 					return Result.ok(result);
 				}
-				String content = JsonUtils.toString(data.data());
+				String content = JsonUtils.toString(data.getData());
 				String result = CryptoUtils.encryptToString(content.getBytes(), key, annotation.algorithm(), annotation.encoding());
 				return Result.ok(result);
 			}
@@ -105,10 +105,10 @@ public class ResponseBodyEncryptAdvice implements ResponseBodyAdvice<Object> {
 	private void encryptFields(Object body) {
 		Field[] fields;
 		if (body instanceof Result<?> result) {
-			if (Objects.isNull(result.data())) {
+			if (Objects.isNull(result.getData())) {
 				return;
 			}
-			fields = result.data().getClass().getDeclaredFields();
+			fields = result.getData().getClass().getDeclaredFields();
 		} else {
 			fields = body.getClass().getDeclaredFields();
 		}

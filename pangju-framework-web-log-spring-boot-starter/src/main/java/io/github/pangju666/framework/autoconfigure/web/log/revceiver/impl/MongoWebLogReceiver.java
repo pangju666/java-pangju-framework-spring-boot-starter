@@ -5,7 +5,7 @@ import io.github.pangju666.framework.autoconfigure.web.log.model.WebLog;
 import io.github.pangju666.framework.autoconfigure.web.log.model.WebLogDocument;
 import io.github.pangju666.framework.autoconfigure.web.log.properties.WebLogProperties;
 import io.github.pangju666.framework.autoconfigure.web.log.revceiver.WebLogReceiver;
-import io.github.pangju666.framework.spring.utils.BeanUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.util.StringUtils;

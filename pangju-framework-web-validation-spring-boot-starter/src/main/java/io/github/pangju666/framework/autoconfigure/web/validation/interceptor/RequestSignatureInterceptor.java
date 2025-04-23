@@ -6,14 +6,13 @@ import io.github.pangju666.framework.autoconfigure.web.validation.enums.Signatur
 import io.github.pangju666.framework.autoconfigure.web.validation.properties.RequestSignatureProperties;
 import io.github.pangju666.framework.autoconfigure.web.validation.store.SignatureSecretKeyStore;
 import io.github.pangju666.framework.web.exception.base.ValidationException;
-import io.github.pangju666.framework.web.interceptor.BaseRequestInterceptor;
+import io.github.pangju666.framework.web.interceptor.BaseHttpHandlerInterceptor;
 import io.github.pangju666.framework.web.utils.ResponseUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MissingRequestValueException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.method.HandlerMethod;
@@ -24,11 +23,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class RequestSignatureInterceptor extends BaseRequestInterceptor {
+public class RequestSignatureInterceptor extends BaseHttpHandlerInterceptor {
 	private final RequestSignatureProperties properties;
 	private final SignatureSecretKeyStore secretKeyStore;
 
 	public RequestSignatureInterceptor(RequestSignatureProperties properties, SignatureSecretKeyStore secretKeyStore) {
+		super(null, null);
 		this.properties = properties;
 		this.secretKeyStore = secretKeyStore;
 	}
@@ -69,7 +69,7 @@ public class RequestSignatureInterceptor extends BaseRequestInterceptor {
 			throw new MissingServletRequestParameterException(properties.getAppIdParamName(), "string");
 		}
 		if (ArrayUtils.isNotEmpty(annotation.appId()) && !ArrayUtils.contains(annotation.appId(), appId)) {
-			ResponseUtils.writeExceptionToResponse(new ValidationException("不是指定的appId"), response, HttpStatus.BAD_REQUEST);
+			ResponseUtils.writeHttpExceptionToResponse(new ValidationException("不是指定的appId"), response);
 			return false;
 		}
 
@@ -80,7 +80,7 @@ public class RequestSignatureInterceptor extends BaseRequestInterceptor {
 
 		String secretKey = secretKeyStore.loadSecretKey(appId);
 		if (StringUtils.isBlank(secretKey)) {
-			ResponseUtils.writeExceptionToResponse(new ValidationException("应用标识符不存在"), response, HttpStatus.BAD_REQUEST);
+			ResponseUtils.writeHttpExceptionToResponse(new ValidationException("应用标识符不存在"), response);
 			return false;
 		}
 
@@ -89,7 +89,7 @@ public class RequestSignatureInterceptor extends BaseRequestInterceptor {
 		String expectSignature = computeSignature(signStr, annotation.algorithm());
 
 		if (!StringUtils.equals(expectSignature, signature)) {
-			ResponseUtils.writeExceptionToResponse(new ValidationException("签名错误"), response, HttpStatus.BAD_REQUEST);
+			ResponseUtils.writeHttpExceptionToResponse(new ValidationException("签名错误"), response);
 			return false;
 		}
 		return true;
@@ -103,7 +103,7 @@ public class RequestSignatureInterceptor extends BaseRequestInterceptor {
 				throw new MissingRequestValueException("缺少请求头：" + properties.getAppIdHeaderName());
 			}
 			if (ArrayUtils.isNotEmpty(annotation.appId()) && !ArrayUtils.contains(annotation.appId(), appId)) {
-				ResponseUtils.writeExceptionToResponse(new ValidationException("不是指定的appId"), response, HttpStatus.BAD_REQUEST);
+				ResponseUtils.writeHttpExceptionToResponse(new ValidationException("不是指定的appId"), response);
 				return false;
 			}
 
@@ -119,13 +119,13 @@ public class RequestSignatureInterceptor extends BaseRequestInterceptor {
 			Long requestTimestamp = Long.parseLong(timestamp);
 			Long nowTimestamp = DateUtils.nowDate().getTime();
 			if (nowTimestamp - requestTimestamp > annotation.timeUnit().toMillis(annotation.timeout())) {
-				ResponseUtils.writeExceptionToResponse(new ValidationException("签名已过期"), response, HttpStatus.BAD_REQUEST);
+				ResponseUtils.writeHttpExceptionToResponse(new ValidationException("签名已过期"), response);
 				return false;
 			}
 
 			String secretKey = secretKeyStore.loadSecretKey(appId);
 			if (StringUtils.isBlank(secretKey)) {
-				ResponseUtils.writeExceptionToResponse(new ValidationException("应用标识符不存在"), response, HttpStatus.BAD_REQUEST);
+				ResponseUtils.writeHttpExceptionToResponse(new ValidationException("应用标识符不存在"), response);
 				return false;
 			}
 
@@ -134,12 +134,12 @@ public class RequestSignatureInterceptor extends BaseRequestInterceptor {
 			String expectSignature = computeSignature(signStr, annotation.algorithm());
 
 			if (!StringUtils.equals(expectSignature, signature)) {
-				ResponseUtils.writeExceptionToResponse(new ValidationException("签名错误"), response, HttpStatus.BAD_REQUEST);
+				ResponseUtils.writeHttpExceptionToResponse(new ValidationException("签名错误"), response);
 				return false;
 			}
 			return true;
 		} catch (NumberFormatException e) {
-			ResponseUtils.writeExceptionToResponse(new ValidationException("无效的时间戳"), response, HttpStatus.BAD_REQUEST);
+			ResponseUtils.writeHttpExceptionToResponse(new ValidationException("无效的时间戳"), response);
 			return false;
 		}
 	}

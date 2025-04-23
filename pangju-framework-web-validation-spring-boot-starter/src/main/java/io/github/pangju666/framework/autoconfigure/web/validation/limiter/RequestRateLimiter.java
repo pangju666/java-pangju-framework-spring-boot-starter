@@ -10,7 +10,7 @@ public interface RequestRateLimiter {
 
 	default String generateKey(RateLimit annotation, HttpServletRequest request, String delimiter) {
 		StringBuilder keyBuilder = new StringBuilder()
-			.append(RequestUtils.getRequestPath(request))
+			.append(request.getRequestURI())
 			.append(delimiter)
 			.append(request.getMethod());
 		if (!annotation.global()) {

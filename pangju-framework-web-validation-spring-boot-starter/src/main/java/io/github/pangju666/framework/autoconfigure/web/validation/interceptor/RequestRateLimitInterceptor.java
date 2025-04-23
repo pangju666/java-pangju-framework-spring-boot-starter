@@ -5,7 +5,7 @@ import io.github.pangju666.framework.autoconfigure.web.validation.enums.RateLimi
 import io.github.pangju666.framework.autoconfigure.web.validation.exception.RequestLimitException;
 import io.github.pangju666.framework.autoconfigure.web.validation.limiter.RequestRateLimiter;
 import io.github.pangju666.framework.web.exception.base.ServerException;
-import io.github.pangju666.framework.web.interceptor.BaseRequestInterceptor;
+import io.github.pangju666.framework.web.interceptor.BaseHttpHandlerInterceptor;
 import io.github.pangju666.framework.web.utils.ResponseUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -14,10 +14,11 @@ import org.springframework.web.method.HandlerMethod;
 
 import java.util.Objects;
 
-public class RequestRateLimitInterceptor extends BaseRequestInterceptor {
+public class RequestRateLimitInterceptor extends BaseHttpHandlerInterceptor {
 	private final RequestRateLimiter requestRateLimiter;
 
 	public RequestRateLimitInterceptor(RequestRateLimiter requestLimitHandlers) {
+		super(null, null);
 		this.requestRateLimiter = requestLimitHandlers;
 	}
 
@@ -40,11 +41,11 @@ public class RequestRateLimitInterceptor extends BaseRequestInterceptor {
 			try {
 				result = requestRateLimiter.tryAcquire(annotation.key(), annotation, request);
 			} catch (Exception e) {
-				ResponseUtils.writeExceptionToResponse(new ServerException(e), response);
+				ResponseUtils.writeHttpExceptionToResponse(new ServerException(e), response);
 				return false;
 			}
 			if (!result) {
-				ResponseUtils.writeExceptionToResponse(new RequestLimitException(annotation), response);
+				ResponseUtils.writeHttpExceptionToResponse(new RequestLimitException(annotation), response);
 				return false;
 			}
 		}

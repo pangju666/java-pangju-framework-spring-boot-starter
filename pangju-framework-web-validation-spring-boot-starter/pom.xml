@@ -35,10 +35,6 @@
 
 		<dependency>
 			<groupId>io.github.pangju666</groupId>
-			<artifactId>pangju-framework-spring</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>io.github.pangju666</groupId>
 			<artifactId>pangju-framework-web</artifactId>
 		</dependency>
 
@@ -78,6 +74,10 @@
 			<groupId>org.redisson</groupId>
 			<artifactId>redisson</artifactId>
 			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>io.github.pangju666</groupId>
+			<artifactId>pangju-framework-spring-boot-starter</artifactId>
 		</dependency>
 	</dependencies>
 

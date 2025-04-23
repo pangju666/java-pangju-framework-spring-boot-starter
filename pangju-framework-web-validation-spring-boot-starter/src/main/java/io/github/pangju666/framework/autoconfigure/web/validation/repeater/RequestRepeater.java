@@ -9,7 +9,7 @@ public interface RequestRepeater {
 
 	default String generateKey(String key, String delimiter, Repeat annotation, HttpServletRequest request) {
 		StringBuilder keyBuilder = new StringBuilder()
-			.append(RequestUtils.getRequestPath(request))
+			.append(request.getRequestURI())
 			.append(delimiter)
 			.append(request.getMethod());
 		if (!annotation.global()) {
