@@ -14,24 +14,19 @@
  *    limitations under the License.
  */
 
-package io.github.pangju666.framework.autoconfigure.http.jackson.deserializer;
+package io.github.pangju666.framework.autoconfigure.jackson.jackson.serializer;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.SerializerProvider;
 import io.github.pangju666.commons.lang.utils.DateUtils;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
-public class LocalDateTimeJsonDeserializer extends JsonDeserializer<LocalDateTime> {
+public class LocalDateJsonSerializer extends JsonSerializer<LocalDate> {
 	@Override
-	public LocalDateTime deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
-		try {
-			return DateUtils.toLocalDateTime(p.getLongValue());
-		} catch (JsonParseException e) {
-			return null;
-		}
+	public void serialize(LocalDate value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+		gen.writeNumber(DateUtils.toDate(value).getTime());
 	}
 }

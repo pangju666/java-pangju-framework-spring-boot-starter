@@ -1,10 +1,10 @@
-package io.github.pangju666.framework.autoconfigure.http;
+package io.github.pangju666.framework.autoconfigure.jackson;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.github.pangju666.framework.autoconfigure.http.jackson.deserializer.*;
-import io.github.pangju666.framework.autoconfigure.http.jackson.serializer.DateJsonSerializer;
-import io.github.pangju666.framework.autoconfigure.http.jackson.serializer.LocalDateJsonSerializer;
-import io.github.pangju666.framework.autoconfigure.http.jackson.serializer.LocalDateTimeJsonSerializer;
+import io.github.pangju666.framework.autoconfigure.jackson.jackson.deserializer.*;
+import io.github.pangju666.framework.autoconfigure.jackson.jackson.serializer.DateJsonSerializer;
+import io.github.pangju666.framework.autoconfigure.jackson.jackson.serializer.LocalDateJsonSerializer;
+import io.github.pangju666.framework.autoconfigure.jackson.jackson.serializer.LocalDateTimeJsonSerializer;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;

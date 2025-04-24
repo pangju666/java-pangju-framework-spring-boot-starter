@@ -14,24 +14,27 @@
  *    limitations under the License.
  */
 
-package io.github.pangju666.framework.autoconfigure.http.jackson.deserializer;
+package io.github.pangju666.framework.autoconfigure.jackson.jackson.deserializer;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
-import io.github.pangju666.commons.lang.utils.DateUtils;
 
 import java.io.IOException;
-import java.util.Date;
+import java.math.BigInteger;
 
-public class DateJsonDeserializer extends JsonDeserializer<Date> {
+public class BigIntegerJsonDeserializer extends JsonDeserializer<BigInteger> {
 	@Override
-	public Date deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
+	public BigInteger deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
 		try {
-			return DateUtils.toDate(p.getLongValue());
+			return BigInteger.valueOf(p.getLongValue());
 		} catch (JsonParseException e) {
-			return null;
+			try {
+				return new BigInteger(p.getText());
+			} catch (JsonParseException | NumberFormatException ex) {
+				return null;
+			}
 		}
 	}
 }

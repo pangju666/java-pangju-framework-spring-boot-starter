@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package io.github.pangju666.framework.autoconfigure.http.enums;
+package io.github.pangju666.framework.autoconfigure.jackson.enums;
 
 import io.github.pangju666.commons.lang.utils.DesensitizationUtils;
 import org.springframework.core.convert.converter.Converter;

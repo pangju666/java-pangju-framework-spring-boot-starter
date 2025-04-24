@@ -1,4 +1,4 @@
-package io.github.pangju666.framework.autoconfigure.http;
+package io.github.pangju666.framework.autoconfigure.web;
 
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;

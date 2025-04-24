@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package io.github.pangju666.framework.autoconfigure.http.jackson.deserializer;
+package io.github.pangju666.framework.autoconfigure.jackson.jackson.deserializer;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
@@ -22,19 +22,14 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 
-public class BigDecimalJsonDeserializer extends JsonDeserializer<BigDecimal> {
+public class ClassJsonDeserializer extends JsonDeserializer<Class> {
 	@Override
-	public BigDecimal deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
+	public Class deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
 		try {
-			return BigDecimal.valueOf(p.getLongValue());
-		} catch (JsonParseException e) {
-			try {
-				return new BigDecimal(p.getText());
-			} catch (JsonParseException | NumberFormatException ex) {
-				return null;
-			}
+			return Class.forName(p.getText());
+		} catch (ClassNotFoundException | JsonParseException e) {
+			return null;
 		}
 	}
 }

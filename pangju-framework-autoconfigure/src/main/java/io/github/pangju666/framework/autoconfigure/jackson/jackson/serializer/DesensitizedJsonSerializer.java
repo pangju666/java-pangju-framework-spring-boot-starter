@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package io.github.pangju666.framework.autoconfigure.http.jackson.serializer;
+package io.github.pangju666.framework.autoconfigure.jackson.jackson.serializer;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.BeanProperty;
@@ -24,8 +24,8 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.ContextualSerializer;
 import com.fasterxml.jackson.databind.ser.std.NullSerializer;
 import io.github.pangju666.commons.lang.utils.DesensitizationUtils;
-import io.github.pangju666.framework.autoconfigure.http.annotation.DesensitizeFormat;
-import io.github.pangju666.framework.autoconfigure.http.enums.DesensitizedType;
+import io.github.pangju666.framework.autoconfigure.jackson.annotation.DesensitizeFormat;
+import io.github.pangju666.framework.autoconfigure.jackson.enums.DesensitizedType;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.convert.converter.Converter;
 

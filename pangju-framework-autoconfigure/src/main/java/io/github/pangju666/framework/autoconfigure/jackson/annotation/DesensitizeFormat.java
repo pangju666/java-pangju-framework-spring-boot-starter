@@ -14,12 +14,12 @@
  *    limitations under the License.
  */
 
-package io.github.pangju666.framework.autoconfigure.http.annotation;
+package io.github.pangju666.framework.autoconfigure.jackson.annotation;
 
 import com.fasterxml.jackson.annotation.JacksonAnnotationsInside;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import io.github.pangju666.framework.autoconfigure.http.enums.DesensitizedType;
-import io.github.pangju666.framework.autoconfigure.http.jackson.serializer.DesensitizedJsonSerializer;
+import io.github.pangju666.framework.autoconfigure.jackson.enums.DesensitizedType;
+import io.github.pangju666.framework.autoconfigure.jackson.jackson.serializer.DesensitizedJsonSerializer;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
