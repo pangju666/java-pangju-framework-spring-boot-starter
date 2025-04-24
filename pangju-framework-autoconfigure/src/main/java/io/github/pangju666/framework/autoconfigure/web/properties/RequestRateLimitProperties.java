@@ -4,7 +4,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.time.Duration;
 
-@ConfigurationProperties(prefix = "pangju.web.request.rate-limit")
+@ConfigurationProperties(prefix = "pangju.web.rate-limit")
 public class RequestRateLimitProperties {
 	private Type type = Type.RESILIENCE4J;
 	private Redisson redisson = new Redisson();

@@ -2,7 +2,6 @@ package io.github.pangju666.framework.autoconfigure.web.advice.exception;
 
 import io.github.pangju666.framework.web.exception.base.BaseHttpException;
 import io.github.pangju666.framework.web.model.common.Result;
-import io.github.pangju666.framework.web.pool.WebConstants;
 import io.github.pangju666.framework.web.utils.ResponseUtils;
 import jakarta.servlet.Servlet;
 import jakarta.servlet.http.HttpServletResponse;
@@ -161,27 +160,27 @@ public class GlobalExceptionAdvice {
 		return Result.fail("响应体写入失败");
 	}
 
-	@ResponseStatus(HttpStatus.OK)
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	@ExceptionHandler(value = MethodArgumentNotValidException.class)
 	public Result<Void> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
 		BindingResult bindingResult = e.getBindingResult();
 		List<ObjectError> objectErrors = bindingResult.getAllErrors();
 		if (!objectErrors.isEmpty()) {
 			FieldError fieldError = (FieldError) objectErrors.iterator().next();
-			return Result.fail(WebConstants.BASE_ERROR_CODE, StringUtils.defaultString(fieldError.getDefaultMessage()));
+			return Result.fail(StringUtils.defaultString(fieldError.getDefaultMessage()));
 		}
-		return Result.fail(WebConstants.BASE_ERROR_CODE, "请求参数验证不合法");
+		return Result.fail("请求参数验证不合法");
 	}
 
-	@ResponseStatus(HttpStatus.OK)
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	@ExceptionHandler(value = ConstraintViolationException.class)
 	public Result<Void> handleConstraintViolationException(ConstraintViolationException e) {
 		Set<ConstraintViolation<?>> constraints = e.getConstraintViolations();
 		if (!constraints.isEmpty()) {
 			ConstraintViolation<?> constraint = constraints.iterator().next();
-			return Result.fail(WebConstants.BASE_ERROR_CODE, StringUtils.defaultString(constraint.getMessage()));
+			return Result.fail(StringUtils.defaultString(constraint.getMessage()));
 		}
-		return Result.fail(WebConstants.BASE_ERROR_CODE, "请求参数验证不合法");
+		return Result.fail("请求参数验证不合法");
 	}
 
 	@ResponseStatus(HttpStatus.NOT_FOUND)
@@ -207,27 +206,27 @@ public class GlobalExceptionAdvice {
 	@ExceptionHandler(value = DataAccessException.class)
 	public Result<Void> handleDataAccessException(DataAccessException e) {
 		log.error("数据访问异常", e);
-		return Result.fail(WebConstants.BASE_ERROR_CODE, "数据访问错误");
+		return Result.fail("数据访问错误");
 	}
 
 	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 	@ExceptionHandler(value = IOException.class)
 	public Result<Void> handleIOException(IOException e) {
 		log.error("IO异常", e);
-		return Result.fail(WebConstants.BASE_ERROR_CODE, "服务器内部错误");
+		return Result.fail("服务器内部错误");
 	}
 
 	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 	@ExceptionHandler(value = RuntimeException.class)
 	public Result<Void> handleRuntimeException(RuntimeException e) {
 		log.error("运行时异常", e);
-		return Result.fail(WebConstants.BASE_ERROR_CODE, "服务器内部错误");
+		return Result.fail("服务器内部错误");
 	}
 
 	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 	@ExceptionHandler(value = Exception.class)
 	public Result<Void> handleException(Exception e) {
 		log.error("系统级异常", e);
-		return Result.fail(WebConstants.BASE_ERROR_CODE, "服务器内部错误");
+		return Result.fail("服务器内部错误");
 	}
 }

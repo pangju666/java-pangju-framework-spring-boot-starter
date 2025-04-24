@@ -2,7 +2,7 @@ package io.github.pangju666.framework.autoconfigure.web.properties;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@ConfigurationProperties(prefix = "pangju.web.request.repeat")
+@ConfigurationProperties(prefix = "pangju.web.repeat")
 public class RequestRepeatProperties {
 	private Type type = Type.EXPIRE_MAP;
 	private Redis redis = new Redis();

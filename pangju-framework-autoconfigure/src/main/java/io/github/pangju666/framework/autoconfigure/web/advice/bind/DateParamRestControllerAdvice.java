@@ -24,7 +24,11 @@ public class DateParamRestControllerAdvice {
 		binder.registerCustomEditor(Date.class, new PropertyEditorSupport() {
 			@Override
 			public void setAsText(String text) throws IllegalArgumentException {
-				setValue(converter.convert(Long.valueOf(text)));
+				try {
+					setValue(converter.convert(Long.valueOf(text)));
+				} catch (NumberFormatException e) {
+					throw new IllegalArgumentException(e);
+				}
 			}
 		});
 	}

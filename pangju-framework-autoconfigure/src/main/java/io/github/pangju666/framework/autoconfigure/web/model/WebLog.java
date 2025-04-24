@@ -1,5 +1,9 @@
 package io.github.pangju666.framework.autoconfigure.web.model;
 
+import jakarta.servlet.http.Part;
+import org.springframework.http.HttpHeaders;
+import org.springframework.util.MultiValueMap;
+
 import java.util.Map;
 
 public class WebLog {
@@ -86,19 +90,19 @@ public class WebLog {
 	}
 
 	public static class Request {
-		private Map<String, Object> headers;
-		private Map<String, Object> queryParams;
+		private HttpHeaders headers;
+		private MultiValueMap<String, String> queryParams;
 		private String characterEncoding;
-		private Map<String, Object> formData;
+		private Map<String, Part> formData;
 		private int contentLength;
 		private String contentType;
 		private Object body;
 
-		public Map<String, Object> getFormData() {
+		public Map<String, Part> getFormData() {
 			return formData;
 		}
 
-		public void setFormData(Map<String, Object> formData) {
+		public void setFormData(Map<String, Part> formData) {
 			this.formData = formData;
 		}
 
@@ -126,19 +130,19 @@ public class WebLog {
 			this.characterEncoding = characterEncoding;
 		}
 
-		public Map<String, Object> getHeaders() {
+		public HttpHeaders getHeaders() {
 			return headers;
 		}
 
-		public void setHeaders(Map<String, Object> headers) {
+		public void setHeaders(HttpHeaders headers) {
 			this.headers = headers;
 		}
 
-		public Map<String, Object> getQueryParams() {
+		public MultiValueMap<String, String> getQueryParams() {
 			return queryParams;
 		}
 
-		public void setQueryParams(Map<String, Object> queryParams) {
+		public void setQueryParams(MultiValueMap<String, String> queryParams) {
 			this.queryParams = queryParams;
 		}
 
@@ -155,7 +159,7 @@ public class WebLog {
 		private Integer status;
 		private String contentType;
 		private String characterEncoding;
-		private Map<String, Object> headers;
+		private HttpHeaders headers;
 		private Object body;
 
 		public String getCharacterEncoding() {
@@ -182,11 +186,11 @@ public class WebLog {
 			this.status = status;
 		}
 
-		public Map<String, Object> getHeaders() {
+		public HttpHeaders getHeaders() {
 			return headers;
 		}
 
-		public void setHeaders(Map<String, Object> headers) {
+		public void setHeaders(HttpHeaders headers) {
 			this.headers = headers;
 		}
 

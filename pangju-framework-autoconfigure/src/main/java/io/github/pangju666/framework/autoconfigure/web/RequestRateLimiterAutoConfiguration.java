@@ -1,7 +1,7 @@
 package io.github.pangju666.framework.autoconfigure.web;
 
-import io.github.pangju666.framework.autoconfigure.web.configuration.limiter.RedissonRequestRateLimiterConfiguration;
-import io.github.pangju666.framework.autoconfigure.web.configuration.limiter.Resilience4jRequestRateLimiterConfiguration;
+import io.github.pangju666.framework.autoconfigure.web.configuration.RedissonRequestRateLimiterConfiguration;
+import io.github.pangju666.framework.autoconfigure.web.configuration.Resilience4jRequestRateLimiterConfiguration;
 import io.github.pangju666.framework.autoconfigure.web.properties.RequestRateLimitProperties;
 import jakarta.servlet.Servlet;
 import org.springframework.boot.autoconfigure.AutoConfiguration;

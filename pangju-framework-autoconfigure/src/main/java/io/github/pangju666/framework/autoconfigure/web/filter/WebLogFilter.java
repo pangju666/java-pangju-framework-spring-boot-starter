@@ -1,11 +1,11 @@
 package io.github.pangju666.framework.autoconfigure.web.filter;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+import com.google.gson.JsonSyntaxException;
+import com.google.gson.reflect.TypeToken;
 import io.github.pangju666.commons.lang.utils.DateFormatUtils;
 import io.github.pangju666.commons.lang.utils.JsonUtils;
-import io.github.pangju666.framework.autoconfigure.web.annotation.WebLogIgnore;
-import io.github.pangju666.framework.autoconfigure.web.annotation.WebLogOperation;
+import io.github.pangju666.framework.autoconfigure.web.annotation.log.WebLogIgnore;
+import io.github.pangju666.framework.autoconfigure.web.annotation.log.WebLogOperation;
 import io.github.pangju666.framework.autoconfigure.web.handler.WebLogHandler;
 import io.github.pangju666.framework.autoconfigure.web.model.WebLog;
 import io.github.pangju666.framework.autoconfigure.web.properties.WebLogProperties;
@@ -17,10 +17,12 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.Part;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.event.Level;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.util.StopWatch;
@@ -34,7 +36,6 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class WebLogFilter extends BaseHttpOncePerRequestFilter {
 	private static final Logger logger = LoggerFactory.getLogger(WebLogFilter.class);
@@ -100,8 +101,8 @@ public class WebLogFilter extends BaseHttpOncePerRequestFilter {
 			requestLog.setCharacterEncoding(requestWrapper.getCharacterEncoding());
 			requestLog.setContentLength(requestWrapper.getContentLength());
 			requestLog.setContentType(requestWrapper.getContentType());
-			//todo
-			/*if (properties.getRequest().isHeaders()) {
+
+			if (properties.getRequest().isHeaders()) {
 				requestLog.setHeaders(RequestUtils.getHttpHeaders(requestWrapper));
 			}
 			if (properties.getRequest().isQueryParams()) {
@@ -119,16 +120,16 @@ public class WebLogFilter extends BaseHttpOncePerRequestFilter {
 				}
 			} else if (properties.getRequest().isBody()) {
 				requestLog.setBody(RequestUtils.getJsonRequestBody(requestWrapper));
-			}*/
+			}
 			webLog.setRequest(requestLog);
 
 			WebLog.Response responseLog = new WebLog.Response();
 			responseLog.setStatus(responseWrapper.getStatus());
 			if (properties.getResponse().isHeaders()) {
-				Map<String, Object> headers = responseWrapper.getHeaderNames()
-					.stream()
-					.distinct()
-					.collect(Collectors.toMap(headerName -> headerName, responseWrapper::getHeaders));
+				HttpHeaders headers = new HttpHeaders();
+				for (String headerName : responseWrapper.getHeaderNames()) {
+					headers.add(headerName, responseWrapper.getHeader(headerName));
+				}
 				responseLog.setHeaders(headers);
 			}
 			responseLog.setContentType(responseWrapper.getContentType());
@@ -139,15 +140,13 @@ public class WebLogFilter extends BaseHttpOncePerRequestFilter {
 				if (response.getStatus() != HttpStatus.FOUND.value() && properties.getResponse().isBody()) {
 					String responseBodyStr = new String(responseWrapper.getContentAsByteArray(), StandardCharsets.UTF_8);
 					if (StringUtils.isNotBlank(responseBodyStr)) {
-						JsonObject responseBody = JsonUtils.parseString(responseBodyStr).getAsJsonObject();
-						if (responseBody.has("code") && responseBody.has("message")) {
-							JsonElement data = responseBody.get("data");
-							/*Result<String> result = new Result<>(
-								responseBody.getAsJsonPrimitive("code").getAsInt(),
-								responseBody.getAsJsonPrimitive("message").getAsString(),
-								properties.getResponse().isBodyData() && Objects.nonNull(data) ? data.toString() : null
-							);
-							responseLog.setBody(result);*/
+						try {
+							Map<String, Object> responseBody = JsonUtils.fromString(responseBodyStr,
+								new TypeToken<Map<String, Object>>() {
+								});
+							responseLog.setBody(responseBody);
+						} catch (JsonSyntaxException e) {
+							logger.error("响应结果解析失败", e);
 						}
 					}
 				}

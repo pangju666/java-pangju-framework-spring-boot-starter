@@ -2,8 +2,11 @@ package io.github.pangju666.framework.autoconfigure.web;
 
 import io.github.pangju666.framework.autoconfigure.web.interceptor.RequestRateLimitInterceptor;
 import io.github.pangju666.framework.autoconfigure.web.interceptor.RequestSignatureInterceptor;
+import io.github.pangju666.framework.autoconfigure.web.limiter.RequestRateLimiter;
+import io.github.pangju666.framework.autoconfigure.web.properties.RequestSignatureProperties;
 import io.github.pangju666.framework.autoconfigure.web.resolver.EncryptRequestParamArgumentResolver;
 import io.github.pangju666.framework.autoconfigure.web.resolver.EnumRequestParamArgumentResolver;
+import io.github.pangju666.framework.autoconfigure.web.store.SignatureSecretKeyStore;
 import io.github.pangju666.framework.web.interceptor.BaseHttpHandlerInterceptor;
 import jakarta.servlet.Servlet;
 import org.apache.commons.collections4.ListUtils;
@@ -23,11 +26,20 @@ import java.util.List;
 @ConditionalOnClass({Servlet.class, DispatcherServlet.class, WebMvcConfigurer.class})
 public class WebMvcAutoConfiguration implements WebMvcConfigurer {
 	private final List<BaseHttpHandlerInterceptor> interceptors;
+	private final RequestSignatureProperties signatureProperties;
+	private final RequestRateLimiter requestRateLimiter;
+	private final SignatureSecretKeyStore secretKeyStore;
 
 	private List<String> excludePathPatterns = Collections.emptyList();
 
-	public WebMvcAutoConfiguration(List<BaseHttpHandlerInterceptor> interceptors) {
+	public WebMvcAutoConfiguration(List<BaseHttpHandlerInterceptor> interceptors,
+								   RequestSignatureProperties signatureProperties,
+								   RequestRateLimiter requestRateLimiter,
+								   SignatureSecretKeyStore secretKeyStore) {
 		this.interceptors = interceptors;
+		this.signatureProperties = signatureProperties;
+		this.requestRateLimiter = requestRateLimiter;
+		this.secretKeyStore = secretKeyStore;
 	}
 
 	/*@Autowired(required = false)

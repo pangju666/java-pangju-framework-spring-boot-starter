@@ -1,4 +1,4 @@
-package io.github.pangju666.framework.autoconfigure.web.configuration.limiter;
+package io.github.pangju666.framework.autoconfigure.web.configuration;
 
 import io.github.pangju666.framework.autoconfigure.web.limiter.RequestRateLimiter;
 import io.github.pangju666.framework.autoconfigure.web.limiter.impl.RedissonRequestRateLimiterImpl;

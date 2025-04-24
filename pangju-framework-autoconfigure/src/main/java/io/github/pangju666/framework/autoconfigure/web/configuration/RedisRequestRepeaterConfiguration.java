@@ -1,4 +1,4 @@
-package io.github.pangju666.framework.autoconfigure.web.configuration.repeater;
+package io.github.pangju666.framework.autoconfigure.web.configuration;
 
 import io.github.pangju666.framework.autoconfigure.web.properties.RequestRepeatProperties;
 import io.github.pangju666.framework.autoconfigure.web.repeater.RequestRepeater;

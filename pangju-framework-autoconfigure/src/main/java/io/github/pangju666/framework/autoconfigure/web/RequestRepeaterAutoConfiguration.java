@@ -1,7 +1,7 @@
 package io.github.pangju666.framework.autoconfigure.web;
 
-import io.github.pangju666.framework.autoconfigure.web.configuration.repeater.ExpireMapRequestRepeaterConfiguration;
-import io.github.pangju666.framework.autoconfigure.web.configuration.repeater.RedisRequestRepeaterConfiguration;
+import io.github.pangju666.framework.autoconfigure.web.configuration.ExpireMapRequestRepeaterConfiguration;
+import io.github.pangju666.framework.autoconfigure.web.configuration.RedisRequestRepeaterConfiguration;
 import io.github.pangju666.framework.autoconfigure.web.properties.RequestRepeatProperties;
 import jakarta.servlet.Servlet;
 import org.springframework.boot.autoconfigure.AutoConfiguration;

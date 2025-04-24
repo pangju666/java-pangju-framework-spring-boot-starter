@@ -1,4 +1,4 @@
-package io.github.pangju666.framework.autoconfigure.web.annotation;
+package io.github.pangju666.framework.autoconfigure.web.annotation.log;
 
 import java.lang.annotation.*;
 

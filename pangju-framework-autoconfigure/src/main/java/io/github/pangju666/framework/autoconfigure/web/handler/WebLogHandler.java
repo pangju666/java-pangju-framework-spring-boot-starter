@@ -8,7 +8,6 @@ import org.springframework.lang.Nullable;
 import java.lang.reflect.Method;
 
 public interface WebLogHandler {
-	void handle(WebLog webLog,
-				HttpServletRequest request, HttpServletResponse response,
+	void handle(WebLog webLog, HttpServletRequest request, HttpServletResponse response,
 				@Nullable Class<?> targetClass, @Nullable Method targetMethod);
 }
