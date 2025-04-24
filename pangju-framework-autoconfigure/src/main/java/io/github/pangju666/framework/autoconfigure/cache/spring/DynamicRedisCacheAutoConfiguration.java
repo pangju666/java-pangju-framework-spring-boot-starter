@@ -1,6 +1,6 @@
-package io.github.pangju666.framework.autoconfigure.cache.spring.redis;
+package io.github.pangju666.framework.autoconfigure.cache.spring;
 
-import io.github.pangju666.framework.autoconfigure.cache.spring.redis.registrar.DynamicRedisCacheManagerRegistrar;
+import io.github.pangju666.framework.autoconfigure.cache.spring.registrar.DynamicRedisCacheManagerRegistrar;
 import io.github.pangju666.framework.autoconfigure.data.dynamic.redis.DynamicRedisAutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.cache.CacheAutoConfiguration;

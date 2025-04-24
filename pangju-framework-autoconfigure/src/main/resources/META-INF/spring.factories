@@ -1,5 +1,5 @@
 # Application Listeners
 org.springframework.context.ApplicationListener=\
 io.github.pangju666.framework.autoconfigure.spring.StaticSpringContext,\
-io.github.pangju666.framework.autoconfigure.cache.redis.listener.RedisCacheInitApplicationListener,\
-io.github.pangju666.framework.autoconfigure.cache.redis.listener.RedisCacheClearApplicationListener
+io.github.pangju666.framework.autoconfigure.cache.hash.listener.HashCacheInitApplicationListener,\
+io.github.pangju666.framework.autoconfigure.cache.hash.listener.HashCacheClearApplicationListener

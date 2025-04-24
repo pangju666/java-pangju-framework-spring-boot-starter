@@ -1,7 +1,8 @@
-package io.github.pangju666.framework.autoconfigure.cache.redis;
+package io.github.pangju666.framework.autoconfigure.cache.hash.redis;
 
 import io.github.pangju666.commons.lang.utils.ReflectionUtils;
-import io.github.pangju666.framework.autoconfigure.cache.redis.properties.RedisCacheProperties;
+import io.github.pangju666.framework.autoconfigure.cache.hash.HashCacheManager;
+import io.github.pangju666.framework.autoconfigure.cache.hash.HashCacheProperties;
 import io.github.pangju666.framework.data.redis.utils.RedisUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
@@ -15,17 +16,15 @@ import org.springframework.lang.Nullable;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class RedisCacheManager {
-	private final static int DEFAULT_BATCH_SIZE = 100000;
-
+public class RedisHashCacheManager implements HashCacheManager {
 	private final RedisTemplate<String, Object> redisTemplate;
 	private final String cacheNamePrefix;
 	private final boolean cacheNullValues;
 
-	public RedisCacheManager(RedisTemplate<String, Object> redisTemplate, RedisCacheProperties properties) {
+	public RedisHashCacheManager(RedisTemplate<String, Object> redisTemplate, HashCacheProperties properties) {
 		this.redisTemplate = redisTemplate;
-		this.cacheNullValues = properties.isCacheNullValues();
-		this.cacheNamePrefix = properties.isUseCachePrefix() ? properties.getCachePrefix() : StringUtils.EMPTY;
+		this.cacheNullValues = properties.getRedis().isCacheNullValues();
+		this.cacheNamePrefix = properties.getRedis().isUseKeyPrefix() ? properties.getRedis().getKeyPrefix() : StringUtils.EMPTY;
 	}
 
 	public RedisTemplate<String, Object> getRedisTemplate() {
@@ -42,10 +41,6 @@ public class RedisCacheManager {
 
 	public Object get(String cacheName, String key) {
 		return redisTemplate.opsForHash().get(getCacheName(cacheName), key);
-	}
-
-	public List<Object> multiGet(String cacheName, Collection<String> keys) {
-		return multiGet(cacheName, keys, DEFAULT_BATCH_SIZE);
 	}
 
 	public List<Object> multiGet(String cacheName, Collection<String> keys, int batchSize) {
@@ -73,10 +68,6 @@ public class RedisCacheManager {
 		}
 	}
 
-	public void putAll(String cacheName, @Nullable String keyFieldName, Collection<?> values) {
-		putAll(cacheName, keyFieldName, values, DEFAULT_BATCH_SIZE);
-	}
-
 	public void putAll(String cacheName, @Nullable String keyFieldName, Collection<?> values, int batchSize) {
 		Map<String, Object> map;
 		if (StringUtils.isBlank(keyFieldName)) {
@@ -101,10 +92,6 @@ public class RedisCacheManager {
 
 	public void evict(String cacheName, String key) {
 		redisTemplate.opsForHash().delete(getCacheName(cacheName), key);
-	}
-
-	public void evictAll(String cacheName, @Nullable String keyFieldName, Collection<?> keys) {
-		evictAll(cacheName, keyFieldName, keys, DEFAULT_BATCH_SIZE);
 	}
 
 	public void evictAll(String cacheName, @Nullable String keyFieldName, Collection<?> keys, int batchSize) {

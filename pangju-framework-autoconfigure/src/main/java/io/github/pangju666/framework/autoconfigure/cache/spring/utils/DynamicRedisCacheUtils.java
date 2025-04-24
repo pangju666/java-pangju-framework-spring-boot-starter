@@ -1,4 +1,4 @@
-package io.github.pangju666.framework.autoconfigure.cache.spring.redis.utils;
+package io.github.pangju666.framework.autoconfigure.cache.spring.utils;
 
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.cache.CacheManager;

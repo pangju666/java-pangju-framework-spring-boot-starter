@@ -1,6 +1,6 @@
-package io.github.pangju666.framework.autoconfigure.cache.spring.redis.registrar;
+package io.github.pangju666.framework.autoconfigure.cache.spring.registrar;
 
-import io.github.pangju666.framework.autoconfigure.cache.spring.redis.utils.DynamicRedisCacheUtils;
+import io.github.pangju666.framework.autoconfigure.cache.spring.utils.DynamicRedisCacheUtils;
 import io.github.pangju666.framework.autoconfigure.data.dynamic.redis.properties.DynamicRedisProperties;
 import io.github.pangju666.framework.autoconfigure.data.dynamic.redis.utils.DynamicRedisUtils;
 import org.slf4j.Logger;

@@ -1,11 +1,11 @@
-package io.github.pangju666.framework.autoconfigure.cache.redis.aspect;
+package io.github.pangju666.framework.autoconfigure.cache.hash.aspect;
 
 import io.github.pangju666.commons.lang.utils.ReflectionUtils;
-import io.github.pangju666.framework.autoconfigure.cache.redis.RedisCacheManager;
-import io.github.pangju666.framework.autoconfigure.cache.redis.annoation.RedisCacheEvict;
-import io.github.pangju666.framework.autoconfigure.cache.redis.annoation.RedisCachePut;
-import io.github.pangju666.framework.autoconfigure.cache.redis.annoation.RedisCacheable;
-import io.github.pangju666.framework.autoconfigure.cache.redis.annoation.RedisCaching;
+import io.github.pangju666.framework.autoconfigure.cache.hash.HashCacheManager;
+import io.github.pangju666.framework.autoconfigure.cache.hash.annoation.HashCacheEvict;
+import io.github.pangju666.framework.autoconfigure.cache.hash.annoation.HashCachePut;
+import io.github.pangju666.framework.autoconfigure.cache.hash.annoation.HashCacheable;
+import io.github.pangju666.framework.autoconfigure.cache.hash.annoation.HashCaching;
 import io.github.pangju666.framework.autoconfigure.spring.utils.SpELUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
@@ -33,24 +33,24 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Aspect
-public class RedisCacheAspect {
+public class HashCacheAspect {
 	private final SpelExpressionParser parser;
 	private final ParameterNameDiscoverer discoverer;
-	private final RedisCacheManager cacheManager;
+	private final HashCacheManager hashCacheManager;
 
-	public RedisCacheAspect(RedisCacheManager cacheManager) {
+	public HashCacheAspect(HashCacheManager hashCacheManager) {
 		this.parser = new SpelExpressionParser();
 		this.discoverer = new DefaultParameterNameDiscoverer();
-		this.cacheManager = cacheManager;
+		this.hashCacheManager = hashCacheManager;
 	}
 
-	@Around("@annotation(io.github.pangju666.framework.autoconfigure.cache.redis.annoation.RedisCacheable)")
-	public Object handleRedisCacheable(ProceedingJoinPoint point) throws Throwable {
+	@Around("@annotation(io.github.pangju666.framework.autoconfigure.cache.hash.annoation.HashCacheable)")
+	public Object handleHashCacheable(ProceedingJoinPoint point) throws Throwable {
 		MethodSignature methodSignature = (MethodSignature) point.getSignature();
 		Method method = methodSignature.getMethod();
 		EvaluationContext context = SpELUtils.initEvaluationContext(method, point.getArgs(), discoverer);
 
-		RedisCacheable annotation = method.getAnnotation(RedisCacheable.class);
+		HashCacheable annotation = method.getAnnotation(HashCacheable.class);
 
 		Boolean condition = true;
 		if (StringUtils.isNotBlank(annotation.condition())) {
@@ -64,13 +64,13 @@ public class RedisCacheAspect {
 			}
 
 			if (annotation.allEntries()) {
-				if (!cacheManager.existCache(cacheName)) {
+				if (!hashCacheManager.existCache(cacheName)) {
 					Object returnValue = point.proceed();
 					putResultToCache(returnValue, context, cacheName, annotation);
 					return returnValue;
 				}
 
-				List<Object> result = cacheManager.getAll(cacheName)
+				List<Object> result = hashCacheManager.getAll(cacheName)
 					.stream()
 					.filter(Objects::nonNull)
 					.collect(Collectors.toList());
@@ -89,7 +89,7 @@ public class RedisCacheAspect {
 				if (CollectionUtils.isEmpty(collection)) {
 					return Collections.emptyList();
 				}
-				if (!cacheManager.existCache(cacheName)) {
+				if (!hashCacheManager.existCache(cacheName)) {
 					Object returnValue = point.proceed();
 					putResultToCache(returnValue, context, cacheName, annotation);
 					return returnValue;
@@ -113,7 +113,7 @@ public class RedisCacheAspect {
 						.collect(Collectors.toSet());
 				}
 
-				List<Object> result = ListUtils.emptyIfNull(cacheManager.multiGet(cacheName, hashKeys))
+				List<Object> result = ListUtils.emptyIfNull(hashCacheManager.multiGet(cacheName, hashKeys))
 					.stream()
 					.filter(Objects::nonNull)
 					.sorted(getResultComparator(context, annotation.keyField(), annotation.sortField(), annotation.reverseOrder()))
@@ -132,8 +132,8 @@ public class RedisCacheAspect {
 				if (!ClassUtils.isPrimitiveOrWrapper(key.getClass()) && !key.getClass().isAssignableFrom(String.class)) {
 					hashKey = getFieldValue(key, annotation.keyField()).toString();
 				}
-				if (cacheManager.exist(cacheName, hashKey)) {
-					return cacheManager.get(cacheName, hashKey);
+				if (hashCacheManager.exist(cacheName, hashKey)) {
+					return hashCacheManager.get(cacheName, hashKey);
 				}
 
 				Object returnValue = point.proceed();
@@ -145,7 +145,7 @@ public class RedisCacheAspect {
 					unless = unlessExpression.getValue(context, Boolean.class);
 				}
 				if (!Boolean.TRUE.equals(unless)) {
-					cacheManager.put(cacheName, hashKey, returnValue);
+					hashCacheManager.put(cacheName, hashKey, returnValue);
 				}
 				return returnValue;
 			}
@@ -153,8 +153,8 @@ public class RedisCacheAspect {
 		return point.proceed();
 	}
 
-	@AfterReturning(pointcut = "@annotation(io.github.pangju666.framework.autoconfigure.cache.redis.annoation.RedisCachePut)", returning = "returnValue")
-	public void handleRedisCachePut(JoinPoint point, Object returnValue) {
+	@AfterReturning(pointcut = "@annotation(io.github.pangju666.framework.autoconfigure.cache.hash.annoation.HashCachePut)", returning = "returnValue")
+	public void handleHashCachePut(JoinPoint point, Object returnValue) {
 		MethodSignature methodSignature = (MethodSignature) point.getSignature();
 		Method method = methodSignature.getMethod();
 
@@ -162,12 +162,12 @@ public class RedisCacheAspect {
 		context.setVariable("result", returnValue);
 		context.setVariable("target", point.getTarget());
 
-		RedisCachePut annotation = method.getAnnotation(RedisCachePut.class);
+		HashCachePut annotation = method.getAnnotation(HashCachePut.class);
 		put(context, annotation);
 	}
 
-	@AfterReturning(pointcut = "@annotation(io.github.pangju666.framework.autoconfigure.cache.redis.annoation.RedisCacheEvict)", returning = "returnValue")
-	public void handleRedisCacheEvict(JoinPoint point, Object returnValue) {
+	@AfterReturning(pointcut = "@annotation(io.github.pangju666.framework.autoconfigure.cache.hash.annoation.HashCacheEvict)", returning = "returnValue")
+	public void handleHashCacheEvict(JoinPoint point, Object returnValue) {
 		MethodSignature methodSignature = (MethodSignature) point.getSignature();
 		Method method = methodSignature.getMethod();
 
@@ -175,12 +175,12 @@ public class RedisCacheAspect {
 		context.setVariable("result", returnValue);
 		context.setVariable("target", point.getTarget());
 
-		RedisCacheEvict annotation = method.getAnnotation(RedisCacheEvict.class);
+		HashCacheEvict annotation = method.getAnnotation(HashCacheEvict.class);
 		evict(context, annotation);
 	}
 
-	@AfterReturning(pointcut = "@annotation(io.github.pangju666.framework.autoconfigure.cache.redis.annoation.RedisCaching)", returning = "returnValue")
-	public void handleRedisCaching(JoinPoint point, Object returnValue) {
+	@AfterReturning(pointcut = "@annotation(io.github.pangju666.framework.autoconfigure.cache.hash.annoation.HashCaching)", returning = "returnValue")
+	public void handleHashCaching(JoinPoint point, Object returnValue) {
 		MethodSignature methodSignature = (MethodSignature) point.getSignature();
 		Method method = methodSignature.getMethod();
 
@@ -188,11 +188,11 @@ public class RedisCacheAspect {
 		context.setVariable("result", returnValue);
 		context.setVariable("target", point.getTarget());
 
-		RedisCaching annotation = method.getAnnotation(RedisCaching.class);
-		for (RedisCacheEvict evictAnnotation : annotation.evicts()) {
+		HashCaching annotation = method.getAnnotation(HashCaching.class);
+		for (HashCacheEvict evictAnnotation : annotation.evicts()) {
 			evict(context, evictAnnotation);
 		}
-		for (RedisCachePut putAnnotation : annotation.puts()) {
+		for (HashCachePut putAnnotation : annotation.puts()) {
 			put(context, putAnnotation);
 		}
 	}
@@ -264,7 +264,7 @@ public class RedisCacheAspect {
 		return Boolean.TRUE.equals(isReverseOrder) ? comparator.reversed() : comparator;
 	}
 
-	private void putResultToCache(Object result, EvaluationContext context, String cacheName, RedisCacheable annotation) {
+	private void putResultToCache(Object result, EvaluationContext context, String cacheName, HashCacheable annotation) {
 		if (result instanceof Collection<?> resultCollection) {
 			context.setVariable("result", resultCollection);
 
@@ -274,7 +274,7 @@ public class RedisCacheAspect {
 				unless = unlessExpression.getValue(context, Boolean.class);
 			}
 			if (!Boolean.TRUE.equals(unless)) {
-				cacheManager.putAll(cacheName, StringUtils.defaultIfBlank(annotation.keyField(), null), resultCollection);
+				hashCacheManager.putAll(cacheName, StringUtils.defaultIfBlank(annotation.keyField(), null), resultCollection);
 			}
 		}
 	}
@@ -283,7 +283,7 @@ public class RedisCacheAspect {
 		return StringUtils.isNotBlank(field) ? ReflectionUtils.getFieldValue(object, field) : object;
 	}
 
-	private void put(EvaluationContext context, RedisCachePut annotation) {
+	private void put(EvaluationContext context, HashCachePut annotation) {
 		Boolean condition = true;
 		if (StringUtils.isNotBlank(annotation.condition())) {
 			Expression conditionExpression = parser.parseExpression(annotation.condition());
@@ -300,20 +300,20 @@ public class RedisCacheAspect {
 			Object value = valueExpression.getValue(context, Object.class);
 			if (Objects.nonNull(value)) {
 				if (value instanceof Collection<?> collection) {
-					cacheManager.putAll(cacheName, StringUtils.defaultIfBlank(annotation.key(), null), CollectionUtils.emptyIfNull(collection));
+					hashCacheManager.putAll(cacheName, StringUtils.defaultIfBlank(annotation.key(), null), CollectionUtils.emptyIfNull(collection));
 				} else {
 					Expression keyExpression = parser.parseExpression(annotation.key());
 					Object key = keyExpression.getValue(context, Object.class);
 					if (Objects.nonNull(key)) {
 						String keyStr = StringUtils.defaultIfBlank(key.toString(), value.toString());
-						cacheManager.put(cacheName, keyStr, value);
+						hashCacheManager.put(cacheName, keyStr, value);
 					}
 				}
 			}
 		}
 	}
 
-	private void evict(EvaluationContext context, RedisCacheEvict annotation) {
+	private void evict(EvaluationContext context, HashCacheEvict annotation) {
 		Boolean condition = true;
 		if (StringUtils.isNotBlank(annotation.condition())) {
 			Expression conditionExpression = parser.parseExpression(annotation.condition());
@@ -327,20 +327,20 @@ public class RedisCacheAspect {
 			}
 
 			if (annotation.allEntries()) {
-				cacheManager.clearAll(cacheNames);
+				hashCacheManager.clearAll(cacheNames);
 			} else {
 				Expression keyExpression = parser.parseExpression(annotation.key());
 				Object key = keyExpression.getValue(context, Object.class);
 				if (Objects.nonNull(key)) {
 					if (key instanceof Collection<?> collection) {
 						for (String cacheName : cacheNames) {
-							cacheManager.evictAll(cacheName, StringUtils.defaultIfBlank(annotation.keyField(), null), collection);
+							hashCacheManager.evictAll(cacheName, StringUtils.defaultIfBlank(annotation.keyField(), null), collection);
 						}
 					} else {
 						String keyStr = key.toString();
 						if (StringUtils.isNotBlank(keyStr)) {
 							for (String cacheName : cacheNames) {
-								cacheManager.evict(cacheName, keyStr);
+								hashCacheManager.evict(cacheName, keyStr);
 							}
 						}
 					}
