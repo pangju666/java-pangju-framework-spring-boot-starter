@@ -1,0 +1,48 @@
+# 共有8个级别，按照从低到高为：ALL < TRACE < DEBUG < INFO < WARN < ERROR < FATAL < OFF
+Configuration:
+  status: DEBUG   # log4j2 自身内部信息输出，可不设置
+  monitorInterval: 600  # 自动检测自身的修改并重新配置本身的间隔时间，单位：秒，最小 5 秒
+  name: historic_building_service_log
+  Properties: # 定义全局变量引用
+    Property:
+      - { name: pattern, value: "%style{[时间：%d{HH:mm:ss,SSS}]}{red} %style{[等级：%highlight{%-5p}]}{green} %style{[线程：%-21t]}{blue} %style{[类：%l{1.}]}{yellow}%n%m%n%n" }
+      - { name: log_path, value: "D:/workspace/Roaming/logs" }
+      - { name: log_name, value: "historic_building_service.log" }
+  Appenders:
+    Console: # 节点用来定义输出到控制台的 Appender.
+      name: console
+      target: SYSTEM_OUT  # SYSTEM_OUT 或 SYSTEM_ERR, 一般只设置默认:SYSTEM_OUT.
+      PatternLayout:
+        Pattern: ${pattern}  # 输出的日志格式
+        disableAnsi: false
+        noConsoleNoAnsi: false
+    RollingFile: # 节点用来定义超过指定大小自动删除旧的创建新的的 Appender, 使用 DirectWriteRolloverStrategy 策略时,不需要配置 fileName
+      name: logFile
+      fileName: ${log_path}/${log_name}.log # 指定输出日志的目的文件带全路径的文件名.
+      filePattern: ${log_path}/${log_name}-%d-%i.log # 出发滚动日志时指定新建日志文件的名称格式
+      PatternLayout:
+        Pattern: ${pattern}  # 输出的日志格式
+      Policies: # 指定滚动日志的策略，就是什么时候进行新建日志文件输出日志.所有策略中,只要任意策略满足就会触发滚动
+        TimeBasedTriggeringPolicy: # 基于时间周期性触发滚动,一般按天滚动
+          interval: 1
+        SizeBasedTriggeringPolicy: # 基于文件大小触发滚动,可以控制单个日志文件的大小上限
+          size: 15MB
+        # 直接写滚动策略,该策略内部会维护一个一直自增的文件索引,每次滚动时直接创建新的带有索引后缀的文件进行日志追加,同步清理历史的文件.
+        # DirectWriteRolloverStrategy: #限制最多保留5个文件,索引自增
+        # maxFiles: 5
+      # 默认滚动策略,该策略内部维护一个最小索引和最大索引,每次滚动时,会删除历史文件,之后剩余文件全部进行一轮重命名,最后创建新的不带有索引后缀的文件进行日志追加
+      DefaultRolloverStrategy: #限制最多保留 9999 个文件,索引从1到9999
+        fileIndex: "max"
+        min: 1
+        max: 9999
+  Loggers:
+    Root:
+      additivity: true
+      level: ALL #全局日志打印级别
+      includeLocation: true
+      AppenderRef: #配置当前Logger引用的Appender.同时,AppenderRef也支持配置level和Filter,进行更细粒度的日志过滤
+        - { ref: console, level: INFO }
+        - { ref: logFile, level: INFO }
+    Logger:
+      - name: org.apache.kafka
+        level: ERROR

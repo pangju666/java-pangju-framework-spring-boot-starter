@@ -15,6 +15,7 @@
 	<url>https://github.com/pangju666/java-pangju-framework-spring-boot-starter</url>
 
 	<modules>
+		<module>pangju-framework-autoconfigure</module>
 		<module>pangju-framework-spring-boot-starter</module>
 		<module>pangju-framework-validation-spring-boot-starter</module>
 		<module>pangju-framework-data-dynamic-redis-spring-boot-starter</module>
@@ -25,7 +26,7 @@
 		<module>pangju-framework-web-log-spring-boot-starter</module>
 		<module>pangju-framework-web-crypto-spring-boot-starter</module>
 		<module>pangju-framework-web-validation-spring-boot-starter</module>
-		<module>pangju-framework-spock-test-spring-boot-starter</module>
+		<module>pangju-framework-test-spring-boot-starter</module>
 	</modules>
 
 	<properties>
@@ -65,6 +66,11 @@
 				<version>${framework.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
+			</dependency>
+			<dependency>
+				<groupId>io.github.pangju666</groupId>
+				<artifactId>pangju-framework-autoconfigure</artifactId>
+				<version>1.0.0</version>
 			</dependency>
 			<dependency>
 				<groupId>io.github.pangju666</groupId>
@@ -118,7 +124,7 @@
 			</dependency>
 			<dependency>
 				<groupId>io.github.pangju666</groupId>
-				<artifactId>pangju-framework-spock-test-spring-boot-starter</artifactId>
+				<artifactId>pangju-framework-test-spring-boot-starter</artifactId>
 				<version>1.0.0</version>
 				<scope>test</scope>
 			</dependency>

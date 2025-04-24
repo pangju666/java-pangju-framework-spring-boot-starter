@@ -1,3 +1,0 @@
-io.github.pangju666.framework.autoconfigure.web.crypto.advice.RequestBodyDecryptAdvice
-io.github.pangju666.framework.autoconfigure.web.crypto.advice.ResponseBodyEncryptAdvice
-io.github.pangju666.framework.autoconfigure.web.crypto.WebMvcAutoConfiguration

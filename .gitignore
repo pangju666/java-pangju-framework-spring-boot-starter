@@ -18,6 +18,7 @@ target/
 *.iws
 *.iml
 *.ipr
+qodana.yaml
 
 ### NetBeans ###
 /nbproject/private/
@@ -31,6 +32,5 @@ build/
 
 ### VS Code ###
 .vscode/
-.fastRequest
-.flattened-pom.xml
-qodana.yaml
+release.properties
+pom.xml.versionsBackup

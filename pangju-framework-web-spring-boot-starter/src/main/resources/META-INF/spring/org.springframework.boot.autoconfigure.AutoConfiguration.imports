@@ -1,7 +1,0 @@
-io.github.pangju666.framework.autoconfigure.web.advice.exception.GlobalExceptionAdvice
-io.github.pangju666.framework.autoconfigure.web.advice.bind.DateParamRestControllerAdvice
-io.github.pangju666.framework.autoconfigure.web.advice.wrapper.ResponseBodyWrapperAdvice
-io.github.pangju666.framework.autoconfigure.web.WebMvcAutoConfiguration
-io.github.pangju666.framework.autoconfigure.web.FilterAutoConfiguration
-io.github.pangju666.framework.autoconfigure.http.JacksonAutoConfiguration
-io.github.pangju666.framework.autoconfigure.http.RestClientAutoConfiguration

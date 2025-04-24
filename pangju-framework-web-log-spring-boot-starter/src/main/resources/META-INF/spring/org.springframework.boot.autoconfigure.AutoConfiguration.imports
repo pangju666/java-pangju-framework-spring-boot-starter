@@ -1,3 +1,0 @@
-io.github.pangju666.framework.autoconfigure.web.log.WebLogAutoConfiguration
-io.github.pangju666.framework.autoconfigure.web.log.KafkaSenderAutoConfiguration
-io.github.pangju666.framework.autoconfigure.web.log.MongoReceiverAutoConfiguration
