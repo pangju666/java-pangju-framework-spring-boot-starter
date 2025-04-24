@@ -23,6 +23,10 @@
 
 	<dependencies>
 		<dependency>
+			<groupId>io.github.pangju666</groupId>
+			<artifactId>pangju-framework-autoconfigure</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>

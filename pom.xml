@@ -27,6 +27,7 @@
 		<module>pangju-framework-web-crypto-spring-boot-starter</module>
 		<module>pangju-framework-web-validation-spring-boot-starter</module>
 		<module>pangju-framework-test-spring-boot-starter</module>
+		<module>pangju-framework-spring-boot-starter-all</module>
 	</modules>
 
 	<properties>

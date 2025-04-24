@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 xmlns="http://maven.apache.org/POM/4.0.0"
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>io.github.pangju666</groupId>
+		<artifactId>pangju-framework-spring-boot-starter-parent</artifactId>
+		<version>1.0.0</version>
+	</parent>
+	<artifactId>pangju-framework-spring-boot-starter-all</artifactId>
+	<description>java 后端框架 Spring Boot Starter</description>
+	<url>https://github.com/pangju666/java-pangju-framework-spring-boot-starter</url>
+
+	<licenses>
+		<license>
+			<name>Apache License, Version 2.0</name>
+			<url>https://www.apache.org/licenses/LICENSE-2.0</url>
+		</license>
+	</licenses>
+
+	<dependencies>
+		<dependency>
+			<groupId>io.github.pangju666</groupId>
+			<artifactId>pangju-framework-spring-boot-starter</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.github.pangju666</groupId>
+			<artifactId>pangju-framework-validation-spring-boot-starter</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.github.pangju666</groupId>
+			<artifactId>pangju-framework-data-dynamic-redis-spring-boot-starter</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.github.pangju666</groupId>
+			<artifactId>pangju-framework-data-dynamic-mongodb-spring-boot-starter</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.github.pangju666</groupId>
+			<artifactId>pangju-framework-data-mybatis-plus-spring-boot-starter</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.github.pangju666</groupId>
+			<artifactId>pangju-framework-cache-redis-spring-boot-starter</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.github.pangju666</groupId>
+			<artifactId>pangju-framework-web-spring-boot-starter</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.github.pangju666</groupId>
+			<artifactId>pangju-framework-web-log-spring-boot-starter</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.github.pangju666</groupId>
+			<artifactId>pangju-framework-web-crypto-spring-boot-starter</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.github.pangju666</groupId>
+			<artifactId>pangju-framework-web-validation-spring-boot-starter</artifactId>
+		</dependency>
+	</dependencies>
+</project>
