@@ -2,8 +2,8 @@ package io.github.pangju666.framework.autoconfigure.data.dynamic.mongo.registrar
 
 import com.mongodb.MongoClientSettings;
 import com.mongodb.client.MongoClient;
+import io.github.pangju666.framework.autoconfigure.data.dynamic.mongo.DynamicMongoProperties;
 import io.github.pangju666.framework.autoconfigure.data.dynamic.mongo.factory.GridFsMongoDatabaseFactory;
-import io.github.pangju666.framework.autoconfigure.data.dynamic.mongo.properties.DynamicMongoProperties;
 import io.github.pangju666.framework.autoconfigure.data.dynamic.mongo.utils.DynamicMongoUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

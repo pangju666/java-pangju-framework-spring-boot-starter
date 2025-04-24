@@ -1,6 +1,6 @@
 package io.github.pangju666.framework.autoconfigure.data.dynamic.mongo.processor;
 
-import io.github.pangju666.framework.autoconfigure.data.dynamic.mongo.annotation.DynamicMongoDataBase;
+import io.github.pangju666.framework.autoconfigure.data.dynamic.mongo.annotation.DynamicMongo;
 import io.github.pangju666.framework.autoconfigure.data.dynamic.mongo.utils.DynamicMongoUtils;
 import io.github.pangju666.framework.data.mongodb.repository.BaseRepository;
 import org.springframework.beans.BeansException;
@@ -11,7 +11,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 
 import java.util.Objects;
 
-public class DynamicMongoDataBaseBeanPostProcessor implements BeanPostProcessor, BeanFactoryAware {
+public class DynamicMongoBeanPostProcessor implements BeanPostProcessor, BeanFactoryAware {
 	private BeanFactory beanFactory;
 
 	@Override
@@ -22,7 +22,7 @@ public class DynamicMongoDataBaseBeanPostProcessor implements BeanPostProcessor,
 	@Override
 	public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
 		if (bean instanceof BaseRepository<?, ?> baseRepository) {
-			DynamicMongoDataBase annotation = bean.getClass().getAnnotation(DynamicMongoDataBase.class);
+			DynamicMongo annotation = bean.getClass().getAnnotation(DynamicMongo.class);
 			if (Objects.nonNull(annotation)) {
 				MongoTemplate mongoTemplate = DynamicMongoUtils.getMongoTemplate(annotation.value(), beanFactory);
 				baseRepository.setMongoOperations(mongoTemplate);

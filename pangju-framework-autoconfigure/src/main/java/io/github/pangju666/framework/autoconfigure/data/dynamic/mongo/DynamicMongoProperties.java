@@ -1,4 +1,4 @@
-package io.github.pangju666.framework.autoconfigure.data.dynamic.mongo.properties;
+package io.github.pangju666.framework.autoconfigure.data.dynamic.mongo;
 
 import org.springframework.boot.autoconfigure.mongo.MongoProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;

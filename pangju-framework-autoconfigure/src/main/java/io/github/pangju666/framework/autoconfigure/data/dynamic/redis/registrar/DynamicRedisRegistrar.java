@@ -40,10 +40,9 @@ import java.util.Objects;
 import java.util.function.Supplier;
 
 public class DynamicRedisRegistrar implements EnvironmentAware, BeanFactoryAware, ImportBeanDefinitionRegistrar {
-
 	private static final Logger log = LoggerFactory.getLogger(DynamicRedisRegistrar.class);
-	private static final boolean COMMONS_POOL2_AVAILABLE = ClassUtils.isPresent("org.apache.commons.pool2.ObjectPool",
-		DynamicRedisRegistrar.class.getClassLoader());
+	private static final boolean COMMONS_POOL2_AVAILABLE = ClassUtils.isPresent(
+		"org.apache.commons.pool2.ObjectPool", DynamicRedisRegistrar.class.getClassLoader());
 
 	private BeanFactory beanFactory;
 	private Binder binder;

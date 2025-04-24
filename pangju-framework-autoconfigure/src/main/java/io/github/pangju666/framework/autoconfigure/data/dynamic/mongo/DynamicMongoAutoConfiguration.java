@@ -1,8 +1,7 @@
 package io.github.pangju666.framework.autoconfigure.data.dynamic.mongo;
 
 import com.mongodb.client.MongoClient;
-import io.github.pangju666.framework.autoconfigure.data.dynamic.mongo.processor.DynamicMongoDataBaseBeanPostProcessor;
-import io.github.pangju666.framework.autoconfigure.data.dynamic.mongo.properties.DynamicMongoProperties;
+import io.github.pangju666.framework.autoconfigure.data.dynamic.mongo.processor.DynamicMongoBeanPostProcessor;
 import io.github.pangju666.framework.autoconfigure.data.dynamic.mongo.registrar.DynamicMongoRegistrar;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -19,7 +18,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 @Import({DynamicMongoRegistrar.class})
 public class DynamicMongoAutoConfiguration {
 	@Bean
-	public DynamicMongoDataBaseBeanPostProcessor dynamicMongoDataBaseBeanPostProcessor() {
-		return new DynamicMongoDataBaseBeanPostProcessor();
+	public DynamicMongoBeanPostProcessor dynamicMongoDataBaseBeanPostProcessor() {
+		return new DynamicMongoBeanPostProcessor();
 	}
 }
