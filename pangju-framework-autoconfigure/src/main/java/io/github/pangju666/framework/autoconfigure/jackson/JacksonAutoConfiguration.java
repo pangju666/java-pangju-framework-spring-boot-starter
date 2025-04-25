@@ -29,6 +29,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
 import java.time.LocalDate;
@@ -38,6 +39,7 @@ import java.time.LocalDateTime;
 @ConditionalOnClass({Jackson2ObjectMapperBuilder.class, ObjectMapper.class})
 @EnableConfigurationProperties(JacksonProperties.class)
 public class JacksonAutoConfiguration {
+	@Order
 	@Bean
 	public Jackson2ObjectMapperBuilderCustomizer jackson2ObjectMapperBuilderCustomizer() {
 		return jacksonObjectMapperBuilder -> jacksonObjectMapperBuilder
@@ -45,6 +47,7 @@ public class JacksonAutoConfiguration {
 			.deserializerByType(Enum.class, new EnumJsonDeserializer());
 	}
 
+	@Order
 	@ConditionalOnProperty(prefix = "pangju.framework.jackson", name = "local-date-support", havingValue = "true", matchIfMissing = true)
 	@Bean
 	public Jackson2ObjectMapperBuilderCustomizer localDateJackson2ObjectMapperBuilderCustomizer() {
@@ -53,6 +56,7 @@ public class JacksonAutoConfiguration {
 			.deserializerByType(LocalDate.class, new LocalDateJsonDeserializer());
 	}
 
+	@Order
 	@ConditionalOnProperty(prefix = "pangju.framework.jackson", name = "local-date-time-support", havingValue = "true", matchIfMissing = true)
 	@Bean
 	public Jackson2ObjectMapperBuilderCustomizer localDateTimeJackson2ObjectMapperBuilderCustomizer() {

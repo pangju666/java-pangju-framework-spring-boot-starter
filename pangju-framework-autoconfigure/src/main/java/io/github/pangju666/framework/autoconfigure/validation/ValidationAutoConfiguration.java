@@ -24,11 +24,13 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnResource;
 import org.springframework.boot.autoconfigure.validation.ValidationConfigurationCustomizer;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.annotation.Order;
 
 @AutoConfiguration(before = org.springframework.boot.autoconfigure.validation.ValidationAutoConfiguration.class)
 @ConditionalOnClass({ExecutableValidator.class, HibernateValidator.class})
 @ConditionalOnResource(resources = "classpath:META-INF/services/jakarta.validation.spi.ValidationProvider")
 public class ValidationAutoConfiguration {
+	@Order
 	@Bean
 	public ValidationConfigurationCustomizer hibernateValidationConfigurationCustomizer() {
 		return configuration -> {

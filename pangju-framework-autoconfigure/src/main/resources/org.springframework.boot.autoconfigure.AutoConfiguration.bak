@@ -3,7 +3,7 @@
 
 #io.github.pangju666.framework.autoconfigure.cache.hash.HashCacheAutoConfiguration
 #io.github.pangju666.framework.autoconfigure.cache.spring.DynamicRedisCacheAutoConfiguration
-#io.github.pangju666.framework.autoconfigure.data.mybatisplus.MybatisPlusAutoConfiguration
+
 #io.github.pangju666.framework.autoconfigure.data.dynamic.mongo.DynamicMongoAutoConfiguration
 #io.github.pangju666.framework.autoconfigure.data.dynamic.redis.ClientResourcesAutoConfiguration
 #io.github.pangju666.framework.autoconfigure.data.dynamic.redis.DynamicRedisAutoConfiguration

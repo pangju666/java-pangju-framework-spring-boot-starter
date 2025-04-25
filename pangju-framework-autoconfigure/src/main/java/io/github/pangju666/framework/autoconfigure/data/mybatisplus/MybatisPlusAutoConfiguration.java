@@ -19,13 +19,14 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnSingleCandidate;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.annotation.Order;
 
 import javax.sql.DataSource;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Objects;
 
 @AutoConfiguration(after = com.baomidou.mybatisplus.autoconfigure.MybatisPlusAutoConfiguration.class)
-@ConditionalOnClass({SqlSessionFactory.class, SqlSessionFactoryBean.class})
+@ConditionalOnClass({SqlSessionFactory.class, SqlSessionFactoryBean.class, MybatisPlusInterceptor.class})
 @ConditionalOnSingleCandidate(DataSource.class)
 @EnableConfigurationProperties(MybatisPlusInterceptorProperties.class)
 public class MybatisPlusAutoConfiguration implements BeanFactoryAware {
@@ -108,7 +109,7 @@ public class MybatisPlusAutoConfiguration implements BeanFactoryAware {
 		return interceptor;
 	}
 
-	@ConditionalOnMissingBean(TableLogicFillSqlInjector.class)
+	@Order
 	@Bean
 	public TableLogicFillSqlInjector deleteInjector() {
 		return new TableLogicFillSqlInjector();
