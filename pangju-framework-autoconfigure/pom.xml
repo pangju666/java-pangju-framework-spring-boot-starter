@@ -152,7 +152,6 @@
 	</dependencies>
 
 	<build>
-		<testSourceDirectory>src/test/groovy</testSourceDirectory>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>

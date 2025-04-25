@@ -14,24 +14,18 @@
  *    limitations under the License.
  */
 
-package io.github.pangju666.framework.autoconfigure.jackson.jackson.deserializer;
+package io.github.pangju666.framework.autoconfigure.jackson.serializer;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import io.github.pangju666.commons.lang.utils.DateUtils;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.SerializerProvider;
 
 import java.io.IOException;
 import java.util.Date;
 
-public class DateJsonDeserializer extends JsonDeserializer<Date> {
+public class DateJsonSerializer extends JsonSerializer<Date> {
 	@Override
-	public Date deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
-		try {
-			return DateUtils.toDate(p.getLongValue());
-		} catch (JsonParseException e) {
-			return null;
-		}
+	public void serialize(Date value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+		gen.writeNumber(value.getTime());
 	}
 }

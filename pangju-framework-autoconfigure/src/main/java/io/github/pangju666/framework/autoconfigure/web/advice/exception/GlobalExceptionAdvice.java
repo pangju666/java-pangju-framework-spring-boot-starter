@@ -3,7 +3,6 @@ package io.github.pangju666.framework.autoconfigure.web.advice.exception;
 import io.github.pangju666.framework.web.exception.base.BaseHttpException;
 import io.github.pangju666.framework.web.model.common.Result;
 import io.github.pangju666.framework.web.utils.ResponseUtils;
-import jakarta.servlet.Servlet;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
@@ -12,8 +11,6 @@ import org.apache.tomcat.util.http.fileupload.impl.SizeLimitExceededException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.ConversionNotSupportedException;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -28,13 +25,11 @@ import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.*;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.async.AsyncRequestTimeoutException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.multipart.MultipartException;
 import org.springframework.web.multipart.support.MissingServletRequestPartException;
-import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
@@ -43,9 +38,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-@ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
-@ConditionalOnClass({Servlet.class, DispatcherServlet.class})
-@RestControllerAdvice
+//@ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
+//@ConditionalOnClass({Servlet.class, DispatcherServlet.class})
+//@RestControllerAdvice
 public class GlobalExceptionAdvice {
 	private static final Logger log = LoggerFactory.getLogger(GlobalExceptionAdvice.class);
 

@@ -5,12 +5,7 @@ import com.google.gson.JsonElement;
 import io.github.pangju666.framework.autoconfigure.web.annotation.wrapper.ResponseBodyWrapper;
 import io.github.pangju666.framework.autoconfigure.web.annotation.wrapper.ResponseBodyWrapperIgnore;
 import io.github.pangju666.framework.web.model.common.Result;
-import jakarta.servlet.Servlet;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.core.MethodParameter;
-import org.springframework.core.Ordered;
-import org.springframework.core.annotation.Order;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.ByteArrayHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -20,16 +15,14 @@ import org.springframework.http.converter.json.AbstractJsonHttpMessageConverter;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.lang.Nullable;
-import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 
 import java.util.Objects;
 
-@Order(Ordered.HIGHEST_PRECEDENCE + 1)
-@ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
-@ConditionalOnClass({Servlet.class, DispatcherServlet.class})
-@RestControllerAdvice
+//@Order(Ordered.HIGHEST_PRECEDENCE + 1)
+//@ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
+//@ConditionalOnClass({Servlet.class, DispatcherServlet.class})
+//@RestControllerAdvice
 public class ResponseBodyWrapperAdvice implements ResponseBodyAdvice<Object> {
 	@Override
 	public boolean supports(MethodParameter returnType, Class<? extends HttpMessageConverter<?>> converterType) {

@@ -7,22 +7,17 @@ import io.github.pangju666.framework.autoconfigure.web.annotation.crypto.Decrypt
 import io.github.pangju666.framework.autoconfigure.web.utils.CryptoUtils;
 import io.github.pangju666.framework.web.exception.base.ServerException;
 import io.github.pangju666.framework.web.exception.base.ServiceException;
-import jakarta.servlet.Servlet;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jasypt.exceptions.EncryptionOperationNotPossibleException;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.HttpInputMessage;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJacksonInputMessage;
-import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.servlet.mvc.method.annotation.RequestBodyAdvice;
 
 import java.io.ByteArrayInputStream;
@@ -34,9 +29,9 @@ import java.nio.charset.StandardCharsets;
 import java.security.spec.InvalidKeySpecException;
 import java.util.*;
 
-@ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
-@ConditionalOnClass({Servlet.class, DispatcherServlet.class})
-@RestControllerAdvice
+//@ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
+//@ConditionalOnClass({Servlet.class, DispatcherServlet.class})
+//@RestControllerAdvice
 public class RequestBodyDecryptAdvice implements RequestBodyAdvice {
 	@Override
 	public boolean supports(MethodParameter methodParameter, Type targetType,

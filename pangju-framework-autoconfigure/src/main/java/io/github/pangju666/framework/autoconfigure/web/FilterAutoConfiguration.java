@@ -32,6 +32,7 @@ public class FilterAutoConfiguration {
 			.collect(Collectors.toSet());
 	}
 */
+	@ConditionalOnClass(CorsFilter.class)
 	@ConditionalOnMissingFilterBean
 	@Bean
 	public FilterRegistrationBean<CorsFilter> corsFilterRegistrationBean() {
@@ -49,6 +50,7 @@ public class FilterAutoConfiguration {
 		return filterRegistrationBean;
 	}
 
+	@ConditionalOnClass(ContentCachingWrapperFilter.class)
 	@Bean
 	public FilterRegistrationBean<ContentCachingWrapperFilter> contentCachingWrapperFilterRegistrationBean() {
 		ContentCachingWrapperFilter contentCachingWrapperFilter = new ContentCachingWrapperFilter(excludePathPatterns);

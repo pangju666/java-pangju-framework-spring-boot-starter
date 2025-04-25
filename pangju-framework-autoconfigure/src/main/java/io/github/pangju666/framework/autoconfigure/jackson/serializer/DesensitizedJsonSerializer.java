@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package io.github.pangju666.framework.autoconfigure.jackson.jackson.serializer;
+package io.github.pangju666.framework.autoconfigure.jackson.serializer;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.BeanProperty;

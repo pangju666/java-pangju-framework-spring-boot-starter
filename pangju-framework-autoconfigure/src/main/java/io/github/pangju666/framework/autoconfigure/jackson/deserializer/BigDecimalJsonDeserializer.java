@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package io.github.pangju666.framework.autoconfigure.jackson.jackson.deserializer;
+package io.github.pangju666.framework.autoconfigure.jackson.deserializer;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
