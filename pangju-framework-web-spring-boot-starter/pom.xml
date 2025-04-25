@@ -9,7 +9,6 @@
 		<version>1.0.0</version>
 	</parent>
 	<artifactId>pangju-framework-web-spring-boot-starter</artifactId>
-	<name>pangju-framework-web-spring-boot-starter</name>
 	<description>java Web Spring Boot Starter</description>
 	<url>https://github.com/pangju666/java-pangju-framework-spring-boot-starter</url>
 
@@ -26,22 +25,13 @@
 			<artifactId>pangju-framework-autoconfigure</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-web</artifactId>
-		</dependency>
-
-		<dependency>
 			<groupId>io.github.pangju666</groupId>
 			<artifactId>pangju-framework-web</artifactId>
 		</dependency>
 
 		<dependency>
-			<groupId>io.github.pangju666</groupId>
-			<artifactId>pangju-commons-lang</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-collections4</artifactId>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
 	</dependencies>
 </project>

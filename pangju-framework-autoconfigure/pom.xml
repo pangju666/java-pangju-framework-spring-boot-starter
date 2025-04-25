@@ -33,22 +33,35 @@
 			<artifactId>commons-collections4</artifactId>
 		</dependency>
 
-		<!-- 校验模块 -->
-		<dependency>
-			<groupId>jakarta.validation</groupId>
-			<artifactId>jakarta.validation-api</artifactId>
-			<optional>true</optional>
-		</dependency>
-		<dependency>
-			<groupId>org.hibernate.validator</groupId>
-			<artifactId>hibernate-validator</artifactId>
-			<optional>true</optional>
-		</dependency>
-
-		<!-- Data mybatis-plus 模块 -->
 		<dependency>
 			<groupId>io.github.pangju666</groupId>
 			<artifactId>pangju-framework-data-mybatis-plus</artifactId>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>io.github.pangju666</groupId>
+			<artifactId>pangju-framework-data-mongodb</artifactId>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>io.github.pangju666</groupId>
+			<artifactId>pangju-framework-data-redis</artifactId>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>io.github.pangju666</groupId>
+			<artifactId>pangju-framework-web</artifactId>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>io.github.pangju666</groupId>
+			<artifactId>pangju-commons-crypto</artifactId>
+			<optional>true</optional>
+		</dependency>
+
+		<dependency>
+			<groupId>com.baomidou</groupId>
+			<artifactId>mybatis-plus-spring-boot-autoconfigure</artifactId>
 			<optional>true</optional>
 		</dependency>
 		<dependency>
@@ -61,16 +74,15 @@
 			<artifactId>mybatis-spring</artifactId>
 			<optional>true</optional>
 		</dependency>
+
 		<dependency>
-			<groupId>com.baomidou</groupId>
-			<artifactId>mybatis-plus-spring-boot-autoconfigure</artifactId>
+			<groupId>jakarta.validation</groupId>
+			<artifactId>jakarta.validation-api</artifactId>
 			<optional>true</optional>
 		</dependency>
-
-		<!-- Dynamic MongoDB -->
 		<dependency>
-			<groupId>io.github.pangju666</groupId>
-			<artifactId>pangju-framework-data-mongodb</artifactId>
+			<groupId>org.hibernate.validator</groupId>
+			<artifactId>hibernate-validator</artifactId>
 			<optional>true</optional>
 		</dependency>
 		<dependency>
@@ -78,8 +90,6 @@
 			<artifactId>mongodb-driver-sync</artifactId>
 			<optional>true</optional>
 		</dependency>
-
-		<!-- Redis -->
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-pool2</artifactId>
@@ -96,18 +106,6 @@
 			<optional>true</optional>
 		</dependency>
 		<dependency>
-			<groupId>io.github.pangju666</groupId>
-			<artifactId>pangju-framework-data-redis</artifactId>
-			<optional>true</optional>
-		</dependency>
-
-		<!-- Web -->
-		<dependency>
-			<groupId>io.github.pangju666</groupId>
-			<artifactId>pangju-framework-web</artifactId>
-			<optional>true</optional>
-		</dependency>
-		<dependency>
 			<groupId>org.apache.tomcat.embed</groupId>
 			<artifactId>tomcat-embed-core</artifactId>
 			<optional>true</optional>
@@ -115,11 +113,6 @@
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
-			<optional>true</optional>
-		</dependency>
-		<dependency>
-			<groupId>io.github.pangju666</groupId>
-			<artifactId>pangju-commons-crypto</artifactId>
 			<optional>true</optional>
 		</dependency>
 		<dependency>
@@ -142,8 +135,6 @@
 			<artifactId>resilience4j-ratelimiter</artifactId>
 			<optional>true</optional>
 		</dependency>
-
-		<!-- Aop -->
 		<dependency>
 			<groupId>org.aspectj</groupId>
 			<artifactId>aspectjweaver</artifactId>

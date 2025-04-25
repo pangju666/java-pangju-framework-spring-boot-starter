@@ -16,18 +16,19 @@
 
 	<modules>
 		<module>pangju-framework-autoconfigure</module>
-		<module>pangju-framework-spring-boot-starter</module>
-		<module>pangju-framework-validation-spring-boot-starter</module>
-		<module>pangju-framework-data-dynamic-redis-spring-boot-starter</module>
-		<module>pangju-framework-data-dynamic-mongodb-spring-boot-starter</module>
-		<module>pangju-framework-data-mybatis-plus-spring-boot-starter</module>
 		<module>pangju-framework-cache-redis-spring-boot-starter</module>
-		<module>pangju-framework-web-spring-boot-starter</module>
-		<module>pangju-framework-web-log-spring-boot-starter</module>
-		<module>pangju-framework-web-crypto-spring-boot-starter</module>
-		<module>pangju-framework-web-validation-spring-boot-starter</module>
-		<module>pangju-framework-test-spring-boot-starter</module>
+		<module>pangju-framework-data-dynamic-mongodb-spring-boot-starter</module>
+		<module>pangju-framework-data-dynamic-redis-spring-boot-starter</module>
+		<module>pangju-framework-data-mybatis-plus-spring-boot-starter</module>
+		<module>pangju-framework-spock-test-spring-boot-starter</module>
+		<module>pangju-framework-spring-boot-starter</module>
 		<module>pangju-framework-spring-boot-starter-all</module>
+		<module>pangju-framework-test-spring-boot-starter</module>
+		<module>pangju-framework-validation-spring-boot-starter</module>
+		<module>pangju-framework-web-crypto-spring-boot-starter</module>
+		<module>pangju-framework-web-log-spring-boot-starter</module>
+		<module>pangju-framework-web-spring-boot-starter</module>
+		<module>pangju-framework-web-validation-spring-boot-starter</module>
 	</modules>
 
 	<properties>
@@ -128,6 +129,12 @@
 				<version>1.0.0</version>
 				<scope>test</scope>
 			</dependency>
+			<dependency>
+				<groupId>io.github.pangju666</groupId>
+				<artifactId>pangju-framework-spock-test-spring-boot-starter</artifactId>
+				<version>1.0.0</version>
+				<scope>test</scope>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
@@ -207,9 +214,9 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-gpg-plugin</artifactId>
 				<inherited>false</inherited>
-				<configuration>
+				<!--<configuration>
 					<skip>true</skip>
-				</configuration>
+				</configuration>-->
 			</plugin>
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>

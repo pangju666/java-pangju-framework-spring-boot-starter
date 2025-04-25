@@ -9,8 +9,6 @@
 		<version>1.0.0</version>
 	</parent>
 	<artifactId>pangju-framework-web-log-spring-boot-starter</artifactId>
-	<version>1.0.0-SNAPSHOT</version>
-	<name>pangju-framework-web-log-spring-boot-starter</name>
 	<description>java Web 请求日志 Spring Boot Starter</description>
 	<url>https://github.com/pangju666/java-pangju-framework-spring-boot-starter</url>
 

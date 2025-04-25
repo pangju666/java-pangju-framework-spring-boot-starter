@@ -17,42 +17,47 @@
 package io.github.pangju666.framework.autoconfigure.jackson;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.github.pangju666.framework.autoconfigure.jackson.deserializer.*;
-import io.github.pangju666.framework.autoconfigure.jackson.serializer.DateJsonSerializer;
+import io.github.pangju666.framework.autoconfigure.jackson.deserializer.ClassJsonDeserializer;
+import io.github.pangju666.framework.autoconfigure.jackson.deserializer.EnumJsonDeserializer;
+import io.github.pangju666.framework.autoconfigure.jackson.deserializer.LocalDateJsonDeserializer;
+import io.github.pangju666.framework.autoconfigure.jackson.deserializer.LocalDateTimeJsonDeserializer;
 import io.github.pangju666.framework.autoconfigure.jackson.serializer.LocalDateJsonSerializer;
 import io.github.pangju666.framework.autoconfigure.jackson.serializer.LocalDateTimeJsonSerializer;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Date;
 
 @AutoConfiguration(before = org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration.class)
 @ConditionalOnClass({Jackson2ObjectMapperBuilder.class, ObjectMapper.class})
+@EnableConfigurationProperties(JacksonProperties.class)
 public class JacksonAutoConfiguration {
-	@ConditionalOnBean(Jackson2ObjectMapperBuilder.class)
-	@ConditionalOnMissingBean(ObjectMapper.class)
 	@Bean
-	public ObjectMapper objectMapper(Jackson2ObjectMapperBuilder builder) {
-		return builder
-			.serializerByType(Date.class, new DateJsonSerializer())
-			.serializerByType(LocalDate.class, new LocalDateJsonSerializer())
-			.serializerByType(LocalDateTime.class, new LocalDateTimeJsonSerializer())
-			.deserializerByType(Date.class, new DateJsonDeserializer())
-			.deserializerByType(LocalDate.class, new LocalDateJsonDeserializer())
-			.deserializerByType(LocalDateTime.class, new LocalDateTimeJsonDeserializer())
+	public Jackson2ObjectMapperBuilderCustomizer jackson2ObjectMapperBuilderCustomizer() {
+		return jacksonObjectMapperBuilder -> jacksonObjectMapperBuilder
 			.deserializerByType(Class.class, new ClassJsonDeserializer())
-			.deserializerByType(Enum.class, new EnumJsonDeserializer())
-			.deserializerByType(BigDecimal.class, new BigDecimalJsonDeserializer())
-			.deserializerByType(BigInteger.class, new BigIntegerJsonDeserializer())
-			.createXmlMapper(false)
-			.build();
+			.deserializerByType(Enum.class, new EnumJsonDeserializer());
+	}
+
+	@ConditionalOnProperty(prefix = "pangju.framework.jackson", name = "local-date-support", havingValue = "true", matchIfMissing = true)
+	@Bean
+	public Jackson2ObjectMapperBuilderCustomizer localDateJackson2ObjectMapperBuilderCustomizer() {
+		return jacksonObjectMapperBuilder -> jacksonObjectMapperBuilder
+			.serializerByType(LocalDate.class, new LocalDateJsonSerializer())
+			.deserializerByType(LocalDate.class, new LocalDateJsonDeserializer());
+	}
+
+	@ConditionalOnProperty(prefix = "pangju.framework.jackson", name = "local-date-time-support", havingValue = "true", matchIfMissing = true)
+	@Bean
+	public Jackson2ObjectMapperBuilderCustomizer localDateTimeJackson2ObjectMapperBuilderCustomizer() {
+		return jacksonObjectMapperBuilder -> jacksonObjectMapperBuilder
+			.serializerByType(LocalDateTime.class, new LocalDateTimeJsonSerializer())
+			.deserializerByType(LocalDateTime.class, new LocalDateTimeJsonDeserializer());
 	}
 }

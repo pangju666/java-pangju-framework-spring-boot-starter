@@ -31,10 +31,10 @@ import org.springframework.context.annotation.Bean;
 public class ValidationAutoConfiguration {
 	@Bean
 	public ValidationConfigurationCustomizer hibernateValidationConfigurationCustomizer() {
-		return (configuration -> {
+		return configuration -> {
 			if (configuration instanceof HibernateValidatorConfiguration hibernateValidatorConfiguration) {
 				hibernateValidatorConfiguration.failFast(true);
 			}
-		});
+		};
 	}
 }
