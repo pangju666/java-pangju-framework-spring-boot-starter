@@ -1,5 +1,6 @@
 package io.github.pangju666.framework.autoconfigure.data.mybatisplus;
 
+import com.baomidou.mybatisplus.core.injector.ISqlInjector;
 import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.handler.DataPermissionHandler;
 import com.baomidou.mybatisplus.extension.plugins.handler.TableNameHandler;
@@ -37,7 +38,7 @@ public class MybatisPlusAutoConfiguration implements BeanFactoryAware {
 		this.beanFactory = beanFactory;
 	}
 
-	@ConditionalOnMissingBean(MybatisPlusInterceptor.class)
+	@ConditionalOnMissingBean
 	@Bean
 	public MybatisPlusInterceptor mybatisPlusInterceptor(MybatisPlusInterceptorProperties properties) {
 		MybatisPlusInterceptor interceptor = new MybatisPlusInterceptor();
@@ -110,8 +111,10 @@ public class MybatisPlusAutoConfiguration implements BeanFactoryAware {
 	}
 
 	@Order
+	@ConditionalOnClass(TableLogicFillSqlInjector.class)
+	@ConditionalOnMissingBean
 	@Bean
-	public TableLogicFillSqlInjector deleteInjector() {
+	public ISqlInjector tableLogicFillSqlInjector() {
 		return new TableLogicFillSqlInjector();
 	}
 }
