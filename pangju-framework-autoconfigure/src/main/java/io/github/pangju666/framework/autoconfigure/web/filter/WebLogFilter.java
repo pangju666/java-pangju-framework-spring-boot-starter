@@ -12,7 +12,7 @@ import io.github.pangju666.framework.autoconfigure.web.properties.WebLogProperti
 import io.github.pangju666.framework.autoconfigure.web.sender.WebLogSender;
 import io.github.pangju666.framework.web.exception.base.BaseHttpException;
 import io.github.pangju666.framework.web.filter.BaseHttpOncePerRequestFilter;
-import io.github.pangju666.framework.web.utils.RequestUtils;
+import io.github.pangju666.framework.web.utils.ServletRequestUtils;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -91,7 +91,7 @@ public class WebLogFilter extends BaseHttpOncePerRequestFilter {
 			if (Objects.nonNull(operation)) {
 				webLog.setOperation(operation.value());
 			}
-			webLog.setIp(RequestUtils.getIpAddress(requestWrapper));
+			webLog.setIp(ServletRequestUtils.getIpAddress(requestWrapper));
 			webLog.setMethod(requestWrapper.getMethod());
 			webLog.setDate(DateFormatUtils.formatDatetime(requestDate));
 			webLog.setUrl(requestWrapper.getRequestURI());
@@ -103,23 +103,23 @@ public class WebLogFilter extends BaseHttpOncePerRequestFilter {
 			requestLog.setContentType(requestWrapper.getContentType());
 
 			if (properties.getRequest().isHeaders()) {
-				requestLog.setHeaders(RequestUtils.getHttpHeaders(requestWrapper));
+				requestLog.setHeaders(ServletRequestUtils.getHttpHeaders(requestWrapper));
 			}
 			if (properties.getRequest().isQueryParams()) {
-				requestLog.setQueryParams(RequestUtils.getRequestParameters(requestWrapper));
+				requestLog.setQueryParams(ServletRequestUtils.getRequestParameters(requestWrapper));
 			}
 			if (properties.getRequest().isMultipart() &&
 				StringUtils.startsWithIgnoreCase(requestWrapper.getContentType(), MediaType.MULTIPART_FORM_DATA_VALUE)) {
 				requestLog.setContentType(MediaType.MULTIPART_FORM_DATA_VALUE);
 				try {
-					requestLog.setFormData(RequestUtils.getRequestParts(requestWrapper));
+					requestLog.setFormData(ServletRequestUtils.getRequestParts(requestWrapper));
 					requestWrapper.getParts().stream()
 						.map(Part::getName)
 						.forEach(fieldName -> requestLog.getQueryParams().remove(fieldName));
 				} catch (IllegalStateException ignored) {
 				}
 			} else if (properties.getRequest().isBody()) {
-				requestLog.setBody(RequestUtils.getJsonRequestBody(requestWrapper));
+				requestLog.setBody(ServletRequestUtils.getJsonRequestBody(requestWrapper));
 			}
 			webLog.setRequest(requestLog);
 

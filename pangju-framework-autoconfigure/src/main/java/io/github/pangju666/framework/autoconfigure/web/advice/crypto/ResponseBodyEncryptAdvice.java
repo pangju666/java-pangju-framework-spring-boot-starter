@@ -1,11 +1,11 @@
 package io.github.pangju666.framework.autoconfigure.web.advice.crypto;
 
 import io.github.pangju666.commons.lang.utils.JsonUtils;
-import io.github.pangju666.commons.lang.utils.ReflectionUtils;
 import io.github.pangju666.framework.autoconfigure.spring.StaticSpringContext;
 import io.github.pangju666.framework.autoconfigure.web.annotation.crypto.EncryptResponseBody;
 import io.github.pangju666.framework.autoconfigure.web.annotation.crypto.EncryptResponseBodyField;
 import io.github.pangju666.framework.autoconfigure.web.utils.CryptoUtils;
+import io.github.pangju666.framework.spring.utils.ReflectionUtils;
 import io.github.pangju666.framework.web.exception.base.ServerException;
 import io.github.pangju666.framework.web.model.common.Result;
 import org.apache.commons.collections4.CollectionUtils;

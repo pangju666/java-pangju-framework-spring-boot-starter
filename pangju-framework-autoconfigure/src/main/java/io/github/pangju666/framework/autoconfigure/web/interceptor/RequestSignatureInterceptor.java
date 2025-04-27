@@ -7,7 +7,7 @@ import io.github.pangju666.framework.autoconfigure.web.properties.RequestSignatu
 import io.github.pangju666.framework.autoconfigure.web.store.SignatureSecretKeyStore;
 import io.github.pangju666.framework.web.exception.base.ValidationException;
 import io.github.pangju666.framework.web.interceptor.BaseHttpHandlerInterceptor;
-import io.github.pangju666.framework.web.utils.ResponseUtils;
+import io.github.pangju666.framework.web.utils.ServletResponseUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -69,7 +69,7 @@ public class RequestSignatureInterceptor extends BaseHttpHandlerInterceptor {
 			throw new MissingServletRequestParameterException(properties.getAppIdParamName(), "string");
 		}
 		if (ArrayUtils.isNotEmpty(annotation.appId()) && !ArrayUtils.contains(annotation.appId(), appId)) {
-			ResponseUtils.writeHttpExceptionToResponse(new ValidationException("不是指定的appId"), response);
+			ServletResponseUtils.writeHttpExceptionToResponse(new ValidationException("不是指定的appId"), response);
 			return false;
 		}
 
@@ -80,7 +80,7 @@ public class RequestSignatureInterceptor extends BaseHttpHandlerInterceptor {
 
 		String secretKey = secretKeyStore.loadSecretKey(appId);
 		if (StringUtils.isBlank(secretKey)) {
-			ResponseUtils.writeHttpExceptionToResponse(new ValidationException("应用标识符不存在"), response);
+			ServletResponseUtils.writeHttpExceptionToResponse(new ValidationException("应用标识符不存在"), response);
 			return false;
 		}
 
@@ -89,7 +89,7 @@ public class RequestSignatureInterceptor extends BaseHttpHandlerInterceptor {
 		String expectSignature = computeSignature(signStr, annotation.algorithm());
 
 		if (!StringUtils.equals(expectSignature, signature)) {
-			ResponseUtils.writeHttpExceptionToResponse(new ValidationException("签名错误"), response);
+			ServletResponseUtils.writeHttpExceptionToResponse(new ValidationException("签名错误"), response);
 			return false;
 		}
 		return true;
@@ -103,7 +103,7 @@ public class RequestSignatureInterceptor extends BaseHttpHandlerInterceptor {
 				throw new MissingRequestValueException("缺少请求头：" + properties.getAppIdHeaderName());
 			}
 			if (ArrayUtils.isNotEmpty(annotation.appId()) && !ArrayUtils.contains(annotation.appId(), appId)) {
-				ResponseUtils.writeHttpExceptionToResponse(new ValidationException("不是指定的appId"), response);
+				ServletResponseUtils.writeHttpExceptionToResponse(new ValidationException("不是指定的appId"), response);
 				return false;
 			}
 
@@ -119,13 +119,13 @@ public class RequestSignatureInterceptor extends BaseHttpHandlerInterceptor {
 			Long requestTimestamp = Long.parseLong(timestamp);
 			Long nowTimestamp = DateUtils.nowDate().getTime();
 			if (nowTimestamp - requestTimestamp > annotation.timeUnit().toMillis(annotation.timeout())) {
-				ResponseUtils.writeHttpExceptionToResponse(new ValidationException("签名已过期"), response);
+				ServletResponseUtils.writeHttpExceptionToResponse(new ValidationException("签名已过期"), response);
 				return false;
 			}
 
 			String secretKey = secretKeyStore.loadSecretKey(appId);
 			if (StringUtils.isBlank(secretKey)) {
-				ResponseUtils.writeHttpExceptionToResponse(new ValidationException("应用标识符不存在"), response);
+				ServletResponseUtils.writeHttpExceptionToResponse(new ValidationException("应用标识符不存在"), response);
 				return false;
 			}
 
@@ -134,12 +134,12 @@ public class RequestSignatureInterceptor extends BaseHttpHandlerInterceptor {
 			String expectSignature = computeSignature(signStr, annotation.algorithm());
 
 			if (!StringUtils.equals(expectSignature, signature)) {
-				ResponseUtils.writeHttpExceptionToResponse(new ValidationException("签名错误"), response);
+				ServletResponseUtils.writeHttpExceptionToResponse(new ValidationException("签名错误"), response);
 				return false;
 			}
 			return true;
 		} catch (NumberFormatException e) {
-			ResponseUtils.writeHttpExceptionToResponse(new ValidationException("无效的时间戳"), response);
+			ServletResponseUtils.writeHttpExceptionToResponse(new ValidationException("无效的时间戳"), response);
 			return false;
 		}
 	}

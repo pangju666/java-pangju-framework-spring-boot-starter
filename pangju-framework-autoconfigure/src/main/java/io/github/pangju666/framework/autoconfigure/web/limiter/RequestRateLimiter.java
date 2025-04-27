@@ -1,7 +1,7 @@
 package io.github.pangju666.framework.autoconfigure.web.limiter;
 
 import io.github.pangju666.framework.autoconfigure.web.annotation.validation.RateLimit;
-import io.github.pangju666.framework.web.utils.RequestUtils;
+import io.github.pangju666.framework.web.utils.ServletRequestUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.lang.Nullable;
 
@@ -16,7 +16,7 @@ public interface RequestRateLimiter {
 		if (!annotation.global()) {
 			keyBuilder
 				.append(delimiter)
-				.append(RequestUtils.getIpAddress(request));
+				.append(ServletRequestUtils.getIpAddress(request));
 		}
 		return keyBuilder.toString();
 	}

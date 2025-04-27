@@ -10,16 +10,18 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.dialects.IDialect;
 import io.github.pangju666.framework.data.mybatisplus.injector.TableLogicFillSqlInjector;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionFactoryBean;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
-import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnSingleCandidate;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 
 import javax.sql.DataSource;
@@ -27,10 +29,12 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Objects;
 
 @AutoConfiguration(after = com.baomidou.mybatisplus.autoconfigure.MybatisPlusAutoConfiguration.class)
-@ConditionalOnClass({SqlSessionFactory.class, SqlSessionFactoryBean.class, MybatisPlusInterceptor.class})
+@ConditionalOnClass({SqlSessionFactory.class, SqlSessionFactoryBean.class})
 @ConditionalOnSingleCandidate(DataSource.class)
 @EnableConfigurationProperties(MybatisPlusInterceptorProperties.class)
 public class MybatisPlusAutoConfiguration implements BeanFactoryAware {
+	private final Logger LOGGER = LoggerFactory.getLogger(MybatisPlusAutoConfiguration.class);
+
 	private BeanFactory beanFactory;
 
 	@Override
@@ -42,79 +46,93 @@ public class MybatisPlusAutoConfiguration implements BeanFactoryAware {
 	@Bean
 	public MybatisPlusInterceptor mybatisPlusInterceptor(MybatisPlusInterceptorProperties properties) {
 		MybatisPlusInterceptor interceptor = new MybatisPlusInterceptor();
+
+		// 启用数据权限插件插件 https://baomidou.com/plugins/data-permission/
 		if (properties.getDataPermission().isEnabled()) {
+			Class<? extends DataPermissionHandler> handlerClass = properties.getDataPermission().getHandler();
 			try {
-				Class<? extends DataPermissionHandler> clazz = properties.getDataPermission().getHandler();
-				DataPermissionHandler dataPermissionHandler;
-				if (Objects.nonNull(clazz)) {
-					dataPermissionHandler = clazz.getDeclaredConstructor().newInstance();
-				} else {
-					dataPermissionHandler = beanFactory.getBean(DataPermissionHandler.class);
-				}
-				interceptor.addInnerInterceptor(new DataPermissionInterceptor(dataPermissionHandler));
-			} catch (NoSuchBeanDefinitionException | NoSuchMethodException |
-					 InvocationTargetException | InstantiationException | IllegalAccessException ignored) {
-				interceptor.addInnerInterceptor(new DataPermissionInterceptor());
+				DataPermissionHandler handler = getInstanceOrBean(handlerClass, DataPermissionHandler.class);
+				interceptor.addInnerInterceptor(new DataPermissionInterceptor(handler));
+			} catch (BeansException e) {
+				LOGGER.error("数据权限插件加载失败，未找到相关处理器", e);
 			}
 		}
+
+		// 启用多租户插件 https://baomidou.com/plugins/tenant/
 		if (properties.getTenantLine().isEnabled()) {
+			Class<? extends TenantLineHandler> handlerClass = properties.getTenantLine().getHandler();
 			try {
-				Class<? extends TenantLineHandler> clazz = properties.getTenantLine().getHandler();
-				TenantLineHandler tenantLineHandler;
-				if (Objects.nonNull(clazz)) {
-					tenantLineHandler = clazz.getDeclaredConstructor().newInstance();
-				} else {
-					tenantLineHandler = beanFactory.getBean(TenantLineHandler.class);
-				}
-				interceptor.addInnerInterceptor(new TenantLineInnerInterceptor(tenantLineHandler));
-			} catch (NoSuchBeanDefinitionException | NoSuchMethodException |
-					 InvocationTargetException | InstantiationException | IllegalAccessException ignored) {
-				interceptor.addInnerInterceptor(new TenantLineInnerInterceptor());
+				TenantLineHandler handler = getInstanceOrBean(handlerClass, TenantLineHandler.class);
+				interceptor.addInnerInterceptor(new TenantLineInnerInterceptor(handler));
+			} catch (BeansException e) {
+				LOGGER.error("多租户插件加载失败，未找到相关处理器", e);
 			}
 		}
+
+		// 启用动态表名插件 https://baomidou.com/plugins/dynamic-table-name/
 		if (properties.getDynamicTableName().isEnabled()) {
+			Class<? extends TableNameHandler> handlerClass = properties.getDynamicTableName().getHandler();
 			try {
-				Class<? extends TableNameHandler> clazz = properties.getDynamicTableName().getHandler();
-				TableNameHandler tableNameHandler;
-				if (Objects.nonNull(clazz)) {
-					tableNameHandler = clazz.getDeclaredConstructor().newInstance();
+				TableNameHandler handler = getInstanceOrBean(handlerClass, TableNameHandler.class);
+				if (properties.getDynamicTableName().isJsqlParser()) {
+					interceptor.addInnerInterceptor(new DynamicTableNameJsqlParserInnerInterceptor(handler));
 				} else {
-					tableNameHandler = beanFactory.getBean(TableNameHandler.class);
+					interceptor.addInnerInterceptor(new DynamicTableNameInnerInterceptor(handler));
 				}
-				interceptor.addInnerInterceptor(new DynamicTableNameInnerInterceptor(tableNameHandler));
-			} catch (NoSuchBeanDefinitionException | NoSuchMethodException |
-					 InvocationTargetException | InstantiationException | IllegalAccessException ignored) {
-				interceptor.addInnerInterceptor(new DynamicTableNameInnerInterceptor());
+			} catch (BeansException e) {
+				LOGGER.error("动态表名插件加载失败，未找到相关处理器", e);
 			}
 		}
+
+		// 启用分页插件 https://baomidou.com/plugins/pagination/
 		if (properties.getPagination().isEnabled()) {
-			try {
-				Class<? extends IDialect> clazz = properties.getPagination().getDialect();
-				if (Objects.nonNull(clazz)) {
-					IDialect dialect = clazz.getDeclaredConstructor().newInstance();
+			Class<? extends IDialect> dialectClass = properties.getPagination().getDialect();
+			if (Objects.nonNull(dialectClass)) {
+				try {
+					IDialect dialect = getInstanceOrBean(dialectClass, IDialect.class);
 					interceptor.addInnerInterceptor(new PaginationInnerInterceptor(dialect));
-				} else {
-					interceptor.addInnerInterceptor(new PaginationInnerInterceptor(properties.getPagination().getDbType()));
+				} catch (BeansException e) {
+					LOGGER.error("分页插件加载失败，未找到方言实现类", e);
 				}
-			} catch (NoSuchMethodException | InvocationTargetException | InstantiationException |
-					 IllegalAccessException ignored) {
+			} else {
 				interceptor.addInnerInterceptor(new PaginationInnerInterceptor(properties.getPagination().getDbType()));
 			}
 		}
+
+		// 启用乐观锁插件 https://baomidou.com/plugins/optimistic-locker/
 		if (properties.getOptimisticLocker().isEnabled()) {
 			interceptor.addInnerInterceptor(new OptimisticLockerInnerInterceptor(properties.getOptimisticLocker().isWrapperMode()));
 		}
+
+		// 启用防全表更新与删除插件 https://baomidou.com/plugins/block-attack/
 		if (properties.getBlockAttack().isEnabled()) {
 			interceptor.addInnerInterceptor(new BlockAttackInnerInterceptor());
 		}
+
 		return interceptor;
 	}
 
-	@Order
+	private <T> T getInstanceOrBean(Class<? extends T> clazz, Class<T> superClass) throws BeansException {
+		if (Objects.nonNull(clazz)) {
+			try {
+				return clazz.getDeclaredConstructor().newInstance();
+			} catch (InvocationTargetException | InstantiationException | IllegalAccessException |
+					 NoSuchMethodException ignored) {
+				return beanFactory.getBean(superClass);
+			}
+		} else {
+			return beanFactory.getBean(superClass);
+		}
+	}
+
+	@Configuration(proxyBeanMethods = false)
 	@ConditionalOnClass(TableLogicFillSqlInjector.class)
-	@ConditionalOnMissingBean
-	@Bean
-	public ISqlInjector tableLogicFillSqlInjector() {
-		return new TableLogicFillSqlInjector();
+	static class TableLogicFillSqlInjectorConfiguration {
+		@Order
+		@ConditionalOnMissingBean
+		@Bean
+		public ISqlInjector tableLogicFillSqlInjector() {
+			return new TableLogicFillSqlInjector();
+		}
 	}
 }

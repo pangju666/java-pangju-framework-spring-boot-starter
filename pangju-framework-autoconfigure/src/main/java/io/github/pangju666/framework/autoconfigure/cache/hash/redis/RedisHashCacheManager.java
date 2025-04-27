@@ -1,9 +1,9 @@
 package io.github.pangju666.framework.autoconfigure.cache.hash.redis;
 
-import io.github.pangju666.commons.lang.utils.ReflectionUtils;
 import io.github.pangju666.framework.autoconfigure.cache.hash.HashCacheManager;
 import io.github.pangju666.framework.autoconfigure.cache.hash.HashCacheProperties;
 import io.github.pangju666.framework.data.redis.utils.RedisUtils;
+import io.github.pangju666.framework.spring.utils.ReflectionUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.collections4.MapUtils;

@@ -30,8 +30,8 @@
 		</dependency>
 
 		<dependency>
-			<groupId>com.fasterxml.jackson.dataformat</groupId>
-			<artifactId>jackson-dataformat-yaml</artifactId>
+			<groupId>io.github.pangju666</groupId>
+			<artifactId>pangju-framework-spring</artifactId>
 		</dependency>
 	</dependencies>
 </project>

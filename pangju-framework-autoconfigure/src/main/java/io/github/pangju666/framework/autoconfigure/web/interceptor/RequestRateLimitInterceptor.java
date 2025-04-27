@@ -6,7 +6,7 @@ import io.github.pangju666.framework.autoconfigure.web.exception.RequestLimitExc
 import io.github.pangju666.framework.autoconfigure.web.limiter.RequestRateLimiter;
 import io.github.pangju666.framework.web.exception.base.ServerException;
 import io.github.pangju666.framework.web.interceptor.BaseHttpHandlerInterceptor;
-import io.github.pangju666.framework.web.utils.ResponseUtils;
+import io.github.pangju666.framework.web.utils.ServletResponseUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.lang.NonNull;
@@ -41,11 +41,11 @@ public class RequestRateLimitInterceptor extends BaseHttpHandlerInterceptor {
 			try {
 				result = requestRateLimiter.tryAcquire(annotation.key(), annotation, request);
 			} catch (Exception e) {
-				ResponseUtils.writeHttpExceptionToResponse(new ServerException(e), response);
+				ServletResponseUtils.writeHttpExceptionToResponse(new ServerException(e), response);
 				return false;
 			}
 			if (!result) {
-				ResponseUtils.writeHttpExceptionToResponse(new RequestLimitException(annotation), response);
+				ServletResponseUtils.writeHttpExceptionToResponse(new RequestLimitException(annotation), response);
 				return false;
 			}
 		}

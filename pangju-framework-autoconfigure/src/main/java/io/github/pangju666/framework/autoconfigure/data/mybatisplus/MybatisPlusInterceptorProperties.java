@@ -23,11 +23,11 @@ public class MybatisPlusInterceptorProperties {
 	 */
 	private DynamicTableName dynamicTableName = new DynamicTableName();
 	/**
-	 * 乐观锁插件，默认关闭
+	 * 乐观锁插件，默认开启
 	 */
 	private OptimisticLocker optimisticLocker = new OptimisticLocker();
 	/**
-	 * 防止全表更新与删除插件，默认关闭
+	 * 防止全表更新与删除插件，默认开启
 	 */
 	private BlockAttack blockAttack = new BlockAttack();
 	/**
@@ -136,6 +136,7 @@ public class MybatisPlusInterceptorProperties {
 
 	public static class DynamicTableName {
 		private boolean enabled = false;
+		private boolean jsqlParser = true;
 		private Class<? extends TableNameHandler> handler;
 
 		public boolean isEnabled() {
@@ -153,11 +154,19 @@ public class MybatisPlusInterceptorProperties {
 		public void setHandler(Class<? extends TableNameHandler> handler) {
 			this.handler = handler;
 		}
+
+		public boolean isJsqlParser() {
+			return jsqlParser;
+		}
+
+		public void setJsqlParser(boolean jsqlParser) {
+			this.jsqlParser = jsqlParser;
+		}
 	}
 
 	public static class OptimisticLocker {
-		private boolean enabled = false;
-		private boolean wrapperMode = false;
+		private boolean enabled = true;
+		private boolean wrapperMode = true;
 
 		public boolean isEnabled() {
 			return enabled;
@@ -177,7 +186,7 @@ public class MybatisPlusInterceptorProperties {
 	}
 
 	public static class BlockAttack {
-		private boolean enabled = false;
+		private boolean enabled = true;
 
 		public boolean isEnabled() {
 			return enabled;

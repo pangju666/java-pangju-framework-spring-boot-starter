@@ -21,18 +21,18 @@
 
 	<dependencies>
 		<dependency>
-            <groupId>io.github.pangju666</groupId>
-            <artifactId>pangju-framework-autoconfigure</artifactId>
-        </dependency>
+			<groupId>io.github.pangju666</groupId>
+			<artifactId>pangju-framework-spring-boot-starter</artifactId>
+		</dependency>
         <dependency>
 			<groupId>com.baomidou</groupId>
 			<artifactId>mybatis-plus-spring-boot3-starter</artifactId>
 		</dependency>
+
 		<dependency>
 			<groupId>com.baomidou</groupId>
 			<artifactId>mybatis-plus-jsqlparser</artifactId>
 		</dependency>
-
 		<dependency>
 			<groupId>io.github.pangju666</groupId>
 			<artifactId>pangju-framework-data-mybatis-plus</artifactId>

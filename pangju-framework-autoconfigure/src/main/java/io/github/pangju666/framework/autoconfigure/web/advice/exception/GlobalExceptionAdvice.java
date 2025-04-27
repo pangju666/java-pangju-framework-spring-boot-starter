@@ -2,7 +2,7 @@ package io.github.pangju666.framework.autoconfigure.web.advice.exception;
 
 import io.github.pangju666.framework.web.exception.base.BaseHttpException;
 import io.github.pangju666.framework.web.model.common.Result;
-import io.github.pangju666.framework.web.utils.ResponseUtils;
+import io.github.pangju666.framework.web.utils.ServletResponseUtils;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
@@ -46,7 +46,7 @@ public class GlobalExceptionAdvice {
 
 	@ExceptionHandler(value = BaseHttpException.class)
 	public void handleBaseRuntimeException(BaseHttpException e, HttpServletResponse response) {
-		ResponseUtils.writeHttpExceptionToResponse(e, response);
+		ServletResponseUtils.writeHttpExceptionToResponse(e, response);
 	}
 
 	@ResponseStatus(HttpStatus.METHOD_NOT_ALLOWED)

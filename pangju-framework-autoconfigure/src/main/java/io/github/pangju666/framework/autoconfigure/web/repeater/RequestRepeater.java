@@ -1,7 +1,7 @@
 package io.github.pangju666.framework.autoconfigure.web.repeater;
 
 import io.github.pangju666.framework.autoconfigure.web.annotation.validation.Repeat;
-import io.github.pangju666.framework.web.utils.RequestUtils;
+import io.github.pangju666.framework.web.utils.ServletRequestUtils;
 import jakarta.servlet.http.HttpServletRequest;
 
 public interface RequestRepeater {
@@ -15,7 +15,7 @@ public interface RequestRepeater {
 		if (!annotation.global()) {
 			keyBuilder
 				.append(delimiter)
-				.append(RequestUtils.getIpAddress(request));
+				.append(ServletRequestUtils.getIpAddress(request));
 		}
 		keyBuilder
 			.append(delimiter)
