@@ -29,7 +29,6 @@ import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
-import org.aspectj.lang.Signature;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -58,11 +57,6 @@ public class HashCacheAspect {
 
 	@Around("@annotation(io.github.pangju666.framework.autoconfigure.cache.hash.annoation.HashCacheable)")
 	public Object handleHashCacheable(ProceedingJoinPoint point) throws Throwable {
-		Signature signature = point.getSignature();
-		if (!(signature instanceof MethodSignature)) {
-			return point.proceed();
-		}
-
 		MethodSignature methodSignature = (MethodSignature) point.getSignature();
 		Method method = methodSignature.getMethod();
 		Object[] args = point.getArgs();
@@ -147,32 +141,41 @@ public class HashCacheAspect {
 	public void handleHashCachePut(JoinPoint point, Object returnValue) {
 		MethodSignature methodSignature = (MethodSignature) point.getSignature();
 		Method method = methodSignature.getMethod();
+		Object[] args = point.getArgs();
+		Object target = point.getTarget();
+		HashCacheExpressionRootObject rootObject = new HashCacheExpressionRootObject(method, args, target, target.getClass());
 
-		EvaluationContext context = SpELUtils.initEvaluationContext(method, point.getArgs(), discoverer);
-		context.setVariable("result", returnValue);
-		context.setVariable("target", point.getTarget());
+		EvaluationContext context = SpELUtils.initEvaluationContext(method, args, discoverer);
+		context.setVariable("target", target);
+		context.setVariable("root", rootObject);
 
 		HashCachePut annotation = method.getAnnotation(HashCachePut.class);
-		put(context, annotation);
+		put(context, annotation, rootObject);
 	}
 
 	@AfterReturning(pointcut = "@annotation(io.github.pangju666.framework.autoconfigure.cache.hash.annoation.HashCacheEvict)", returning = "returnValue")
 	public void handleHashCacheEvict(JoinPoint point, Object returnValue) {
 		MethodSignature methodSignature = (MethodSignature) point.getSignature();
 		Method method = methodSignature.getMethod();
+		Object[] args = point.getArgs();
+		Object target = point.getTarget();
+		HashCacheExpressionRootObject rootObject = new HashCacheExpressionRootObject(method, args, target, target.getClass());
 
 		EvaluationContext context = SpELUtils.initEvaluationContext(method, point.getArgs(), discoverer);
 		context.setVariable("result", returnValue);
 		context.setVariable("target", point.getTarget());
 
 		HashCacheEvict annotation = method.getAnnotation(HashCacheEvict.class);
-		evict(context, annotation);
+		evict(context, annotation, rootObject);
 	}
 
 	@AfterReturning(pointcut = "@annotation(io.github.pangju666.framework.autoconfigure.cache.hash.annoation.HashCaching)", returning = "returnValue")
 	public void handleHashCaching(JoinPoint point, Object returnValue) {
 		MethodSignature methodSignature = (MethodSignature) point.getSignature();
 		Method method = methodSignature.getMethod();
+		Object[] args = point.getArgs();
+		Object target = point.getTarget();
+		HashCacheExpressionRootObject rootObject = new HashCacheExpressionRootObject(method, args, target, target.getClass());
 
 		EvaluationContext context = SpELUtils.initEvaluationContext(method, point.getArgs(), discoverer);
 		context.setVariable("result", returnValue);
@@ -180,18 +183,18 @@ public class HashCacheAspect {
 
 		HashCaching annotation = method.getAnnotation(HashCaching.class);
 		for (HashCacheEvict evictAnnotation : annotation.evicts()) {
-			evict(context, evictAnnotation);
+			evict(context, evictAnnotation, rootObject);
 		}
 		for (HashCachePut putAnnotation : annotation.puts()) {
-			put(context, putAnnotation);
+			put(context, putAnnotation, rootObject);
 		}
 	}
 
-	private void put(EvaluationContext context, HashCachePut annotation) {
+	private void put(EvaluationContext context, HashCachePut annotation, Object rootObject) {
 		Boolean condition = true;
 		if (StringUtils.isNotBlank(annotation.condition())) {
 			Expression conditionExpression = parser.parseExpression(annotation.condition());
-			condition = conditionExpression.getValue(context, Boolean.class);
+			condition = conditionExpression.getValue(context, rootObject, Boolean.class);
 		}
 
 		if (Boolean.TRUE.equals(condition)) {
@@ -217,11 +220,11 @@ public class HashCacheAspect {
 		}
 	}
 
-	private void evict(EvaluationContext context, HashCacheEvict annotation) {
+	private void evict(EvaluationContext context, HashCacheEvict annotation, Object rootObject) {
 		Boolean condition = true;
 		if (StringUtils.isNotBlank(annotation.condition())) {
 			Expression conditionExpression = parser.parseExpression(annotation.condition());
-			condition = conditionExpression.getValue(context, Boolean.class);
+			condition = conditionExpression.getValue(context, rootObject, Boolean.class);
 		}
 
 		if (Boolean.TRUE.equals(condition)) {
@@ -238,7 +241,8 @@ public class HashCacheAspect {
 				if (Objects.nonNull(key)) {
 					if (key instanceof Collection<?> collection) {
 						for (String cacheName : cacheNames) {
-							hashCacheManager.evictAll(cacheName, StringUtils.defaultIfBlank(annotation.keyField(), null), collection);
+							hashCacheManager.evictAll(cacheName, StringUtils.defaultIfBlank(
+								annotation.keyField(), null), collection);
 						}
 					} else {
 						String keyStr = key.toString();
@@ -253,10 +257,10 @@ public class HashCacheAspect {
 		}
 	}
 
-	private List<?> getEntities(String cacheName, Collection<?> cacheKeys, String cacheKeyField) {
+	private List<?> getEntities(String cacheName, Collection<?> cacheKeys, String keyFieldName) {
 		Set<String> hashKeys;
 		Class<?> keyClass = ReflectionUtils.getClassGenericType(cacheKeys.getClass());
-		if (ClassUtils.isPrimitiveOrWrapper(keyClass) || keyClass.isAssignableFrom(String.class)) {
+		if (ClassUtils.isPrimitiveOrWrapper(keyClass) || keyClass.isAssignableFrom(CharSequence.class)) {
 			hashKeys = cacheKeys.stream()
 				.filter(Objects::nonNull)
 				.map(Objects::toString)
@@ -264,10 +268,10 @@ public class HashCacheAspect {
 		} else {
 			hashKeys = cacheKeys.stream()
 				.map(object -> {
-					if (StringUtils.isBlank(cacheKeyField)) {
+					if (StringUtils.isBlank(keyFieldName)) {
 						return Objects.toString(object, null);
 					} else {
-						return Objects.toString(ReflectionUtils.getFieldValue(object, cacheKeyField), null);
+						return Objects.toString(ReflectionUtils.getFieldValue(object, keyFieldName), null);
 					}
 				})
 				.filter(Objects::nonNull)
