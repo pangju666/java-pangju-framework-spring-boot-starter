@@ -18,7 +18,7 @@ package io.github.pangju666.framework.autoconfigure.jackson;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@ConfigurationProperties(prefix = "pangju.framework.jackson")
+@ConfigurationProperties(prefix = "pangju.jackson")
 public class JacksonProperties {
 	private boolean localDateSupport = true;
 	private boolean localDateTimeSupport = true;

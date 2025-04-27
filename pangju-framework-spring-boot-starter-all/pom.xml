@@ -42,7 +42,11 @@
 		</dependency>
 		<dependency>
 			<groupId>io.github.pangju666</groupId>
-			<artifactId>pangju-framework-cache-redis-spring-boot-starter</artifactId>
+			<artifactId>pangju-framework-data-redis-spring-boot-starter</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.github.pangju666</groupId>
+			<artifactId>pangju-framework-cache-spring-boot-starter</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>io.github.pangju666</groupId>

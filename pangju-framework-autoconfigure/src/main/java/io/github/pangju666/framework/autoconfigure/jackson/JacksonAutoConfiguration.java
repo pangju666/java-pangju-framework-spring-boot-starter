@@ -48,7 +48,7 @@ public class JacksonAutoConfiguration {
 	}
 
 	@Order
-	@ConditionalOnProperty(prefix = "pangju.framework.jackson", name = "local-date-support", havingValue = "true", matchIfMissing = true)
+	@ConditionalOnProperty(prefix = "pangju.jackson", name = "local-date-support", havingValue = "true", matchIfMissing = true)
 	@Bean
 	public Jackson2ObjectMapperBuilderCustomizer localDateJackson2ObjectMapperBuilderCustomizer() {
 		return jacksonObjectMapperBuilder -> jacksonObjectMapperBuilder
@@ -57,7 +57,7 @@ public class JacksonAutoConfiguration {
 	}
 
 	@Order
-	@ConditionalOnProperty(prefix = "pangju.framework.jackson", name = "local-date-time-support", havingValue = "true", matchIfMissing = true)
+	@ConditionalOnProperty(prefix = "pangju.jackson", name = "local-date-time-support", havingValue = "true", matchIfMissing = true)
 	@Bean
 	public Jackson2ObjectMapperBuilderCustomizer localDateTimeJackson2ObjectMapperBuilderCustomizer() {
 		return jacksonObjectMapperBuilder -> jacksonObjectMapperBuilder

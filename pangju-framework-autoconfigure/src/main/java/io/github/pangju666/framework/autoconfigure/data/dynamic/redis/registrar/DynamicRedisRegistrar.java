@@ -2,6 +2,7 @@ package io.github.pangju666.framework.autoconfigure.data.dynamic.redis.registrar
 
 import io.github.pangju666.framework.autoconfigure.data.dynamic.redis.properties.DynamicRedisProperties;
 import io.github.pangju666.framework.autoconfigure.data.dynamic.redis.utils.DynamicRedisUtils;
+import io.github.pangju666.framework.autoconfigure.data.redis.utils.RedisSerializerUtils;
 import io.lettuce.core.resource.ClientResources;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.slf4j.Logger;
@@ -94,10 +95,10 @@ public class DynamicRedisRegistrar implements EnvironmentAware, BeanFactoryAware
 				GenericBeanDefinition redisTemplateBeanDefinition = new GenericBeanDefinition();
 				redisTemplateBeanDefinition.setBeanClass(RedisTemplate.class);
 				redisTemplateBeanDefinition.getPropertyValues().add("connectionFactory", connectionFactory);
-				redisTemplateBeanDefinition.getPropertyValues().add("keySerializer", redisProperties.getKeySerializer().getSerializer());
-				redisTemplateBeanDefinition.getPropertyValues().add("hashKeySerializer", redisProperties.getHashKeySerializer().getSerializer());
-				redisTemplateBeanDefinition.getPropertyValues().add("valueSerializer", redisProperties.getValueSerializer().getSerializer());
-				redisTemplateBeanDefinition.getPropertyValues().add("hashValueSerializer", redisProperties.getHashValueSerializer().getSerializer());
+				redisTemplateBeanDefinition.getPropertyValues().add("keySerializer", RedisSerializerUtils.getSerializer(redisProperties.getKeySerializer()));
+				redisTemplateBeanDefinition.getPropertyValues().add("hashKeySerializer", RedisSerializerUtils.getSerializer(redisProperties.getHashKeySerializer()));
+				redisTemplateBeanDefinition.getPropertyValues().add("valueSerializer", RedisSerializerUtils.getSerializer(redisProperties.getValueSerializer()));
+				redisTemplateBeanDefinition.getPropertyValues().add("hashValueSerializer", RedisSerializerUtils.getSerializer(redisProperties.getHashValueSerializer()));
 
 				if (dynamicRedisProperties.getPrimary().equals(name)) {
 					GenericBeanDefinition primaryRedisTemplateBeanDefinition = new GenericBeanDefinition(redisTemplateBeanDefinition);

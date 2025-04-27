@@ -3,6 +3,7 @@ package io.github.pangju666.framework.autoconfigure.cache.spring.registrar;
 import io.github.pangju666.framework.autoconfigure.cache.spring.utils.DynamicRedisCacheUtils;
 import io.github.pangju666.framework.autoconfigure.data.dynamic.redis.properties.DynamicRedisProperties;
 import io.github.pangju666.framework.autoconfigure.data.dynamic.redis.utils.DynamicRedisUtils;
+import io.github.pangju666.framework.autoconfigure.data.redis.utils.RedisSerializerUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -98,7 +99,7 @@ public class DynamicRedisCacheManagerRegistrar implements BeanFactoryAware, Envi
 						cacheWriter.withStatisticsCollector(CacheStatisticsCollector.create());
 					}
 					redisCacheConfiguration = redisCacheConfiguration.serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(RedisSerializer.string()));
-					redisCacheConfiguration = redisCacheConfiguration.serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(redisProperties.getValueSerializer().getSerializer()));
+					redisCacheConfiguration = redisCacheConfiguration.serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer((RedisSerializerUtils.getSerializer(redisProperties.getValueSerializer()))));
 
 					return new RedisCacheManager(cacheWriter, redisCacheConfiguration, true, new LinkedHashMap<>());
 				});
