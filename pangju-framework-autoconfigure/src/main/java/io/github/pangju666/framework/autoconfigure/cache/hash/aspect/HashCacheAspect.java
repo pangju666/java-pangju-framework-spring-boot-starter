@@ -26,10 +26,10 @@ import io.github.pangju666.framework.spring.utils.SpELUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.ClassUtils;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.Signature;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -41,10 +41,6 @@ import org.springframework.expression.Expression;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 
 import java.lang.reflect.Method;
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -62,111 +58,89 @@ public class HashCacheAspect {
 
 	@Around("@annotation(io.github.pangju666.framework.autoconfigure.cache.hash.annoation.HashCacheable)")
 	public Object handleHashCacheable(ProceedingJoinPoint point) throws Throwable {
+		Signature signature = point.getSignature();
+		if (!(signature instanceof MethodSignature)) {
+			return point.proceed();
+		}
+
 		MethodSignature methodSignature = (MethodSignature) point.getSignature();
 		Method method = methodSignature.getMethod();
-		EvaluationContext context = SpELUtils.initEvaluationContext(method, point.getArgs(), discoverer);
+		Object[] args = point.getArgs();
+		Object target = point.getTarget();
+		HashCacheExpressionRootObject rootObject = new HashCacheExpressionRootObject(method, args, target, target.getClass());
+
+		EvaluationContext context = SpELUtils.initEvaluationContext(method, args, discoverer);
+		context.setVariable("target", target);
+		context.setVariable("root", rootObject);
 
 		HashCacheable annotation = method.getAnnotation(HashCacheable.class);
+		Object cacheKey;
 
-		Boolean condition = true;
-		if (StringUtils.isNotBlank(annotation.condition())) {
-			Expression conditionExpression = parser.parseExpression(annotation.condition());
-			condition = conditionExpression.getValue(context, Boolean.class);
+		// 如果缓存名称为空，则直接返回方法值
+		if (StringUtils.isBlank(annotation.cache())) {
+			return point.proceed();
 		}
-		if (Boolean.TRUE.equals(condition)) {
-			String cacheName = annotation.cache();
-			if (StringUtils.isBlank(cacheName)) {
-				return point.proceed();
-			}
-
+		// 判断缓存结果是否存在，存在则返回缓存结果
+		if (hashCacheManager.existCache(annotation.cache())) {
+			// 判断是否返回所有缓存条目
 			if (annotation.allEntries()) {
-				if (!hashCacheManager.existCache(cacheName)) {
-					Object returnValue = point.proceed();
-					putResultToCache(returnValue, context, cacheName, annotation);
-					return returnValue;
-				}
-
-				List<Object> result = hashCacheManager.getAll(cacheName)
-					.stream()
-					.filter(Objects::nonNull)
-					.collect(Collectors.toList());
-				if (CollectionUtils.isNotEmpty(result)) {
-					result.sort(getResultComparator(context, annotation.keyField(), annotation.sortField(), annotation.reverseOrder()));
-				}
-				return result;
-			}
-
-			Expression keyExpression = parser.parseExpression(annotation.key());
-			Object key = keyExpression.getValue(context, Object.class);
-			if (ObjectUtils.isEmpty(key)) {
-				return point.proceed();
-			}
-			if (key instanceof Collection<?> collection) {
-				if (CollectionUtils.isEmpty(collection)) {
-					return Collections.emptyList();
-				}
-				if (!hashCacheManager.existCache(cacheName)) {
-					Object returnValue = point.proceed();
-					putResultToCache(returnValue, context, cacheName, annotation);
-					return returnValue;
-				}
-
-				Set<String> hashKeys;
-				Class<?> keyClass = collection.iterator()
-					.next()
-					.getClass();
-				if (ClassUtils.isPrimitiveOrWrapper(keyClass) || keyClass.isAssignableFrom(String.class)) {
-					hashKeys = collection
-						.stream()
-						.map(Object::toString)
-						.collect(Collectors.toSet());
-				} else {
-					hashKeys = collection
-						.stream()
-						.map(object -> getFieldValue(object, annotation.keyField()))
-						.filter(Objects::nonNull)
-						.map(Object::toString)
-						.collect(Collectors.toSet());
-				}
-
-				List<Object> result = ListUtils.emptyIfNull(hashCacheManager.multiGet(cacheName, hashKeys))
-					.stream()
-					.filter(Objects::nonNull)
-					.sorted(getResultComparator(context, annotation.keyField(), annotation.sortField(), annotation.reverseOrder()))
-					.toList();
-				if (result.size() != hashKeys.size()) {
-					Object returnValue = point.proceed();
-					putResultToCache(returnValue, context, cacheName, annotation);
-					return returnValue;
-				}
-				return result;
+				return hashCacheManager.getAll(annotation.cache());
 			} else {
-				String hashKey = key.toString();
-				if (StringUtils.isBlank(hashKey)) {
+				// 如果key表达式为空，则直接返回方法值
+				if (StringUtils.isBlank(annotation.key())) {
 					return point.proceed();
 				}
-				if (!ClassUtils.isPrimitiveOrWrapper(key.getClass()) && !key.getClass().isAssignableFrom(String.class)) {
-					hashKey = getFieldValue(key, annotation.keyField()).toString();
-				}
-				if (hashCacheManager.exist(cacheName, hashKey)) {
-					return hashCacheManager.get(cacheName, hashKey);
-				}
 
-				Object returnValue = point.proceed();
-				context.setVariable("result", returnValue);
-				context.setVariable("target", point.getTarget());
-				Boolean unless = false;
-				if (StringUtils.isNotBlank(annotation.unless())) {
-					Expression unlessExpression = parser.parseExpression(annotation.unless());
-					unless = unlessExpression.getValue(context, Boolean.class);
+				Expression expression = parser.parseExpression(annotation.key());
+				cacheKey = expression.getValue(context, rootObject);
+				// 如果key为null，则直接返回方法值
+				if (Objects.isNull(cacheKey)) {
+					return point.proceed();
+				} else if (cacheKey instanceof Collection<?> collection) {    // 根据hashkey集合获取缓存结果
+					List<?> cacheResult = getEntities(annotation.cache(), collection, annotation.keyField());
+					// 如果缓存条目结果不为空则返回
+					if (!cacheResult.isEmpty()) {
+						return cacheResult;
+					}
+					// 如果存在缓存条目则返回
+				} else if (hashCacheManager.exist(annotation.cache(), Objects.toString(cacheKey))) {
+					return hashCacheManager.get(annotation.cache(), Objects.toString(cacheKey));
 				}
-				if (!Boolean.TRUE.equals(unless)) {
-					hashCacheManager.put(cacheName, hashKey, returnValue);
-				}
-				return returnValue;
 			}
 		}
-		return point.proceed();
+
+		Boolean condition = true;
+		// 如果缓存写入条件表达式不为空，则计算缓存写入条件
+		if (StringUtils.isNotBlank(annotation.condition())) {
+			Expression conditionExpression = parser.parseExpression(annotation.condition());
+			condition = conditionExpression.getValue(context, rootObject, Boolean.class);
+		}
+		// 如果缓存写入条件不为true，则直接返回方法值
+		if (!Boolean.TRUE.equals(condition)) {
+			return point.proceed();
+		}
+
+		Object returnValue = point.proceed();
+		context.setVariable("result", returnValue);
+
+		Boolean unless = false;
+		// 如果缓存否决条件表达式不为空，则计算缓存否决条件
+		if (StringUtils.isNotBlank(annotation.unless())) {
+			Expression unlessExpression = parser.parseExpression(annotation.unless());
+			unless = unlessExpression.getValue(context, rootObject, Boolean.class);
+		}
+		// 如果缓存否决条件不为true，则将返回值写入缓存
+		if (!Boolean.TRUE.equals(unless)) {
+			if (returnValue instanceof Collection<?> collection) {
+				hashCacheManager.putAll(annotation.cache(), StringUtils.defaultIfBlank(
+					annotation.keyField(), null), collection);
+			} else {
+				hashCacheManager.put(annotation.cache(), StringUtils.defaultIfBlank(annotation.keyField(),
+					null), returnValue);
+			}
+		}
+
+		return returnValue;
 	}
 
 	@AfterReturning(pointcut = "@annotation(io.github.pangju666.framework.autoconfigure.cache.hash.annoation.HashCachePut)", returning = "returnValue")
@@ -211,92 +185,6 @@ public class HashCacheAspect {
 		for (HashCachePut putAnnotation : annotation.puts()) {
 			put(context, putAnnotation);
 		}
-	}
-
-	private Comparator<? super Object> getResultComparator(EvaluationContext context, String hashKeyField,
-														   String sortField, String reverseOrder) {
-		Boolean isReverseOrder = false;
-		if (StringUtils.isNotBlank(reverseOrder)) {
-			Expression reverseOrderExpression = parser.parseExpression(reverseOrder);
-			isReverseOrder = reverseOrderExpression.getValue(context, Boolean.class);
-		}
-		Comparator<? super Object> comparator = (a, b) -> {
-			if (StringUtils.isBlank(hashKeyField)) {
-				Object left = a;
-				Object right = b;
-
-				if (StringUtils.isNotBlank(sortField)) {
-					left = ReflectionUtils.getFieldValue(a, sortField);
-					right = ReflectionUtils.getFieldValue(b, sortField);
-				}
-
-				if (left instanceof Long longA && right instanceof Long longB) {
-					return longA.compareTo(longB);
-				}
-				if (left instanceof Integer integerA && right instanceof Integer integerB) {
-					return integerA.compareTo(integerB);
-				}
-				if (left instanceof Short shortA && right instanceof Short shortB) {
-					return shortA.compareTo(shortB);
-				}
-				if (left instanceof Double doubleA && right instanceof Double doubleB) {
-					return doubleA.compareTo(doubleB);
-				}
-				if (left instanceof Float floatA && right instanceof Float floatB) {
-					return floatA.compareTo(floatB);
-				}
-				if (left instanceof Date dateA && right instanceof Date dateB) {
-					return dateA.compareTo(dateB);
-				}
-				if (left instanceof LocalDate localDateA && right instanceof LocalDate localDateB) {
-					return localDateA.compareTo(localDateB);
-				}
-				if (left instanceof LocalDateTime localDateTimeA && right instanceof LocalDateTime localDateTimeB) {
-					return localDateTimeA.compareTo(localDateTimeB);
-				}
-				if (left instanceof BigInteger bigIntegerA && right instanceof BigInteger bigIntegerB) {
-					return bigIntegerA.compareTo(bigIntegerB);
-				}
-				if (left instanceof BigDecimal bigDecimalA && right instanceof BigDecimal bigDecimalB) {
-					return bigDecimalA.compareTo(bigDecimalB);
-				}
-				if (left instanceof String stringA && right instanceof String stringB) {
-					return stringA.compareTo(stringB);
-				}
-				return Integer.compare(left.hashCode(), right.hashCode());
-			}
-			if (StringUtils.isNotBlank(sortField)) {
-				return Comparator.naturalOrder().compare(
-					ReflectionUtils.getFieldValue(a, sortField),
-					ReflectionUtils.getFieldValue(b, sortField)
-				);
-			} else {
-				return Comparator.naturalOrder().compare(
-					ReflectionUtils.getFieldValue(a, hashKeyField),
-					ReflectionUtils.getFieldValue(b, hashKeyField)
-				);
-			}
-		};
-		return Boolean.TRUE.equals(isReverseOrder) ? comparator.reversed() : comparator;
-	}
-
-	private void putResultToCache(Object result, EvaluationContext context, String cacheName, HashCacheable annotation) {
-		if (result instanceof Collection<?> resultCollection) {
-			context.setVariable("result", resultCollection);
-
-			Boolean unless = false;
-			if (StringUtils.isNotBlank(annotation.unless())) {
-				Expression unlessExpression = parser.parseExpression(annotation.unless());
-				unless = unlessExpression.getValue(context, Boolean.class);
-			}
-			if (!Boolean.TRUE.equals(unless)) {
-				hashCacheManager.putAll(cacheName, StringUtils.defaultIfBlank(annotation.keyField(), null), resultCollection);
-			}
-		}
-	}
-
-	private Object getFieldValue(Object object, String field) {
-		return StringUtils.isNotBlank(field) ? ReflectionUtils.getFieldValue(object, field) : object;
 	}
 
 	private void put(EvaluationContext context, HashCachePut annotation) {
@@ -363,5 +251,33 @@ public class HashCacheAspect {
 				}
 			}
 		}
+	}
+
+	private List<?> getEntities(String cacheName, Collection<?> cacheKeys, String cacheKeyField) {
+		Set<String> hashKeys;
+		Class<?> keyClass = ReflectionUtils.getClassGenericType(cacheKeys.getClass());
+		if (ClassUtils.isPrimitiveOrWrapper(keyClass) || keyClass.isAssignableFrom(String.class)) {
+			hashKeys = cacheKeys.stream()
+				.filter(Objects::nonNull)
+				.map(Objects::toString)
+				.collect(Collectors.toSet());
+		} else {
+			hashKeys = cacheKeys.stream()
+				.map(object -> {
+					if (StringUtils.isBlank(cacheKeyField)) {
+						return Objects.toString(object, null);
+					} else {
+						return Objects.toString(ReflectionUtils.getFieldValue(object, cacheKeyField), null);
+					}
+				})
+				.filter(Objects::nonNull)
+				.map(Objects::toString)
+				.collect(Collectors.toSet());
+		}
+		List<?> cacheResult = ListUtils.emptyIfNull(hashCacheManager.multiGet(cacheName, hashKeys));
+		if (cacheResult.size() == cacheKeys.size()) {
+			return cacheResult;
+		}
+		return Collections.emptyList();
 	}
 }

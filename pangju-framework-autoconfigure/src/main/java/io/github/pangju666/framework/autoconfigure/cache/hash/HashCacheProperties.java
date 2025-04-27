@@ -44,7 +44,6 @@ public class HashCacheProperties {
 	public static class Redis {
 		private boolean cacheNullValues = true;
 		private String keyPrefix;
-		private boolean useKeyPrefix = true;
 		private RedisSerializerType valueSerializer = RedisSerializerType.JAVA;
 
 		public boolean isCacheNullValues() {
@@ -61,14 +60,6 @@ public class HashCacheProperties {
 
 		public void setKeyPrefix(String keyPrefix) {
 			this.keyPrefix = keyPrefix;
-		}
-
-		public boolean isUseKeyPrefix() {
-			return useKeyPrefix;
-		}
-
-		public void setUseKeyPrefix(boolean useKeyPrefix) {
-			this.useKeyPrefix = useKeyPrefix;
 		}
 
 		public RedisSerializerType getValueSerializer() {

@@ -47,18 +47,18 @@ public class HashCacheAutoConfiguration {
 		@Bean
 		@ConditionalOnMissingBean
 		@ConditionalOnSingleCandidate(RedisConnectionFactory.class)
-		public HashCacheManager hashCacheManager(RedisConnectionFactory redisConnectionFactory,
-												 HashCacheProperties hashCacheProperties) {
+		public HashCacheManager hashCacheManager(RedisConnectionFactory redisConnectionFactory, HashCacheProperties properties) {
 			RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
 			redisTemplate.setConnectionFactory(redisConnectionFactory);
 			redisTemplate.setKeySerializer(RedisSerializer.string());
 			redisTemplate.setValueSerializer(RedisSerializerUtils.createSerializer(
-				hashCacheProperties.getRedis().getValueSerializer()));
+				properties.getRedis().getValueSerializer()));
 			redisTemplate.setHashKeySerializer(RedisSerializer.string());
 			redisTemplate.setHashValueSerializer(RedisSerializerUtils.createSerializer(
-				hashCacheProperties.getRedis().getValueSerializer()));
+				properties.getRedis().getValueSerializer()));
 			redisTemplate.afterPropertiesSet();
-			return new RedisHashCacheManager(redisTemplate, hashCacheProperties);
+			return new RedisHashCacheManager(redisTemplate, properties.getRedis().getKeyPrefix(),
+				properties.getRedis().isCacheNullValues());
 		}
 	}
 }

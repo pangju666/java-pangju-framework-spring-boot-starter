@@ -28,10 +28,6 @@ public @interface HashCacheable {
 
 	String keyField() default "";
 
-	String sortField() default "";
-
-	String reverseOrder() default "";
-
 	boolean allEntries() default false;
 
 	String condition() default "";

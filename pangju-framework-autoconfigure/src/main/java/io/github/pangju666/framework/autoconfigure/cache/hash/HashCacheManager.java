@@ -22,23 +22,23 @@ import java.util.Collection;
 import java.util.List;
 
 public interface HashCacheManager {
-	int DEFAULT_BATCH_SIZE = 100000;
+	int DEFAULT_BATCH_SIZE = 500;
 
 	boolean existCache(String cacheName);
 
-	boolean exist(String cacheName, String key);
+	boolean exist(String cacheName, String hashKey);
 
-	Object get(String cacheName, String key);
+	Object get(String cacheName, String hashKey);
 
-	default List<Object> multiGet(String cacheName, Collection<String> keys) {
-		return multiGet(cacheName, keys, DEFAULT_BATCH_SIZE);
+	default List<Object> multiGet(String cacheName, Collection<String> hashKeys) {
+		return multiGet(cacheName, hashKeys, DEFAULT_BATCH_SIZE);
 	}
 
-	List<Object> multiGet(String cacheName, Collection<String> keys, int batchSize);
+	List<Object> multiGet(String cacheName, Collection<String> hashKeys, int batchSize);
 
 	List<Object> getAll(String cacheName);
 
-	void put(String cacheName, String key, Object value);
+	void put(String cacheName, String hashKey, Object value);
 
 	default void putAll(String cacheName, @Nullable String keyFieldName, Collection<?> values) {
 		putAll(cacheName, keyFieldName, values, DEFAULT_BATCH_SIZE);
@@ -46,13 +46,13 @@ public interface HashCacheManager {
 
 	void putAll(String cacheName, @Nullable String keyFieldName, Collection<?> values, int batchSize);
 
-	void evict(String cacheName, String key);
+	void evict(String cacheName, String hashKeys);
 
-	default void evictAll(String cacheName, @Nullable String keyFieldName, Collection<?> keys) {
-		evictAll(cacheName, keyFieldName, keys, DEFAULT_BATCH_SIZE);
+	default void evictAll(String cacheName, @Nullable String keyFieldName, Collection<?> hashKeys) {
+		evictAll(cacheName, keyFieldName, hashKeys, DEFAULT_BATCH_SIZE);
 	}
 
-	void evictAll(String cacheName, @Nullable String keyFieldName, Collection<?> keys, int batchSize);
+	void evictAll(String cacheName, @Nullable String keyFieldName, Collection<?> hashKeys, int batchSize);
 
 	void clear(String cacheName);
 

@@ -17,7 +17,6 @@
 package io.github.pangju666.framework.autoconfigure.cache.hash.redis;
 
 import io.github.pangju666.framework.autoconfigure.cache.hash.HashCacheManager;
-import io.github.pangju666.framework.autoconfigure.cache.hash.HashCacheProperties;
 import io.github.pangju666.framework.data.redis.utils.RedisUtils;
 import io.github.pangju666.framework.spring.utils.ReflectionUtils;
 import org.apache.commons.collections4.CollectionUtils;
@@ -37,10 +36,10 @@ public class RedisHashCacheManager implements HashCacheManager {
 	private final String cacheNamePrefix;
 	private final boolean cacheNullValues;
 
-	public RedisHashCacheManager(RedisTemplate<String, Object> redisTemplate, HashCacheProperties properties) {
+	public RedisHashCacheManager(RedisTemplate<String, Object> redisTemplate, String cacheNamePrefix, boolean cacheNullValues) {
 		this.redisTemplate = redisTemplate;
-		this.cacheNullValues = properties.getRedis().isCacheNullValues();
-		this.cacheNamePrefix = properties.getRedis().isUseKeyPrefix() ? properties.getRedis().getKeyPrefix() : StringUtils.EMPTY;
+		this.cacheNullValues = cacheNullValues;
+		this.cacheNamePrefix = StringUtils.defaultIfBlank(cacheNamePrefix, StringUtils.EMPTY);
 	}
 
 	public RedisTemplate<String, Object> getRedisTemplate() {
