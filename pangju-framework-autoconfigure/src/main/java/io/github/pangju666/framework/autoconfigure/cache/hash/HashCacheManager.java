@@ -22,7 +22,8 @@ import java.util.Collection;
 import java.util.List;
 
 public interface HashCacheManager {
-	int DEFAULT_BATCH_SIZE = 500;
+	int DEFAULT_MULTI_GET_SIZE = 500;
+	int DEFAULT_BATCH_SIZE = 1000;
 
 	boolean existCache(String cacheName);
 
@@ -31,7 +32,7 @@ public interface HashCacheManager {
 	Object get(String cacheName, String hashKey);
 
 	default List<Object> multiGet(String cacheName, Collection<String> hashKeys) {
-		return multiGet(cacheName, hashKeys, DEFAULT_BATCH_SIZE);
+		return multiGet(cacheName, hashKeys, DEFAULT_MULTI_GET_SIZE);
 	}
 
 	List<Object> multiGet(String cacheName, Collection<String> hashKeys, int batchSize);

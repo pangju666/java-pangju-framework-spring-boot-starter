@@ -14,27 +14,21 @@
  *    limitations under the License.
  */
 
-package io.github.pangju666.framework.autoconfigure.cache.hash.annoation;
+package io.github.pangju666.framework.autoconfigure.cache.hash;
 
-import java.lang.annotation.*;
+import org.apache.commons.collections4.comparators.ComparatorChain;
 
-@Target(ElementType.METHOD)
-@Retention(RetentionPolicy.RUNTIME)
-@Documented
-public @interface HashCacheable {
-	String cache();
+import java.util.Comparator;
+import java.util.List;
 
-	String key() default "";
+public interface HashCacheSorter<T> {
+	default void sort(List<T> cacheResult, boolean reverseOrder, String... sortFields) {
+		ComparatorChain<T> comparatorChain = new ComparatorChain<>();
+		for (String sortField : sortFields) {
+			comparatorChain.addComparator(getComparator(sortField), reverseOrder);
+		}
+		cacheResult.sort(comparatorChain);
+	}
 
-	String keyField() default "";
-
-	String[] sortFields() default {};
-
-	String reverseOrder() default "";
-
-	boolean allEntries() default false;
-
-	String condition() default "";
-
-	String unless() default "";
+	Comparator<T> getComparator(String sortField);
 }

@@ -99,9 +99,14 @@ public class RedisHashCacheManager implements HashCacheManager {
 				.collect(Collectors.toMap(pair -> pair.getKey().toString(), Pair::getValue));
 		}
 		if (MapUtils.isNotEmpty(map)) {
-			for (List<Map.Entry<String, Object>> part : ListUtils.partition(new ArrayList<>(map.entrySet()), batchSize)) {
+			ListUtils.partition(new ArrayList<>(map.entrySet()), batchSize)
+				.parallelStream()
+				.forEach(part -> {
+					redisTemplate.opsForHash().putAll(getCacheName(cacheName), Map.ofEntries(part.toArray(Map.Entry[]::new)));
+				});
+			/*for (List<Map.Entry<String, Object>> part : ListUtils.partition(new ArrayList<>(map.entrySet()), batchSize)) {
 				redisTemplate.opsForHash().putAll(getCacheName(cacheName), Map.ofEntries(part.toArray(Map.Entry[]::new)));
-			}
+			}*/
 		}
 	}
 

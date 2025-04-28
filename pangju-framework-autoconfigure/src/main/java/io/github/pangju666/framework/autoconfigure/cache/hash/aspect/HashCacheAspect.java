@@ -17,6 +17,7 @@
 package io.github.pangju666.framework.autoconfigure.cache.hash.aspect;
 
 import io.github.pangju666.framework.autoconfigure.cache.hash.HashCacheManager;
+import io.github.pangju666.framework.autoconfigure.cache.hash.HashCacheSorter;
 import io.github.pangju666.framework.autoconfigure.cache.hash.annoation.HashCacheEvict;
 import io.github.pangju666.framework.autoconfigure.cache.hash.annoation.HashCachePut;
 import io.github.pangju666.framework.autoconfigure.cache.hash.annoation.HashCacheable;
@@ -26,6 +27,7 @@ import io.github.pangju666.framework.spring.utils.SpELUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.ClassUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -40,7 +42,10 @@ import org.springframework.expression.Expression;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Aspect
@@ -55,13 +60,15 @@ public class HashCacheAspect {
 		this.hashCacheManager = hashCacheManager;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Around("@annotation(io.github.pangju666.framework.autoconfigure.cache.hash.annoation.HashCacheable)")
 	public Object handleHashCacheable(ProceedingJoinPoint point) throws Throwable {
 		MethodSignature methodSignature = (MethodSignature) point.getSignature();
 		Method method = methodSignature.getMethod();
 		Object[] args = point.getArgs();
 		Object target = point.getTarget();
-		HashCacheExpressionRootObject rootObject = new HashCacheExpressionRootObject(method, args, target, target.getClass());
+		Class<?> targetClass = target.getClass();
+		HashCacheExpressionRootObject rootObject = new HashCacheExpressionRootObject(method, args, target, targetClass);
 
 		EvaluationContext context = SpELUtils.initEvaluationContext(method, args, discoverer);
 		context.setVariable("target", target);
@@ -85,16 +92,27 @@ public class HashCacheAspect {
 					return point.proceed();
 				}
 
-				Expression expression = parser.parseExpression(annotation.key());
-				cacheKey = expression.getValue(context, rootObject);
+				Expression keyExpression = parser.parseExpression(annotation.key());
+				cacheKey = keyExpression.getValue(context, rootObject);
 				// 如果key为null，则直接返回方法值
 				if (Objects.isNull(cacheKey)) {
 					return point.proceed();
 				} else if (cacheKey instanceof Collection<?> collection) {    // 根据hashkey集合获取缓存结果
-					List<?> cacheResult = getEntities(annotation.cache(), collection, annotation.keyField());
-					// 如果缓存条目结果不为空则返回
-					if (!cacheResult.isEmpty()) {
-						return cacheResult;
+					if (!collection.isEmpty()) {
+						List<?> cacheResult = getEntities(annotation.cache(), collection, annotation.keyField());
+						// 如果缓存条目结果不为空则返回
+						if (Objects.nonNull(cacheResult)) {
+							if (annotation.sortFields().length > 0 && rootObject.target() instanceof HashCacheSorter sorter) {
+								Boolean reverseOrder = false;
+								if (StringUtils.isNotBlank(annotation.reverseOrder())) {
+									Expression reverseOrderExpression = parser.parseExpression(annotation.reverseOrder());
+									reverseOrder = ObjectUtils.defaultIfNull(reverseOrderExpression.getValue(context,
+										rootObject, Boolean.class), false);
+								}
+								sorter.sort(cacheResult, reverseOrder, annotation.sortFields());
+							}
+							return cacheResult;
+						}
 					}
 					// 如果存在缓存条目则返回
 				} else if (hashCacheManager.exist(annotation.cache(), Objects.toString(cacheKey))) {
@@ -147,6 +165,7 @@ public class HashCacheAspect {
 
 		EvaluationContext context = SpELUtils.initEvaluationContext(method, args, discoverer);
 		context.setVariable("target", target);
+		context.setVariable("result", returnValue);
 		context.setVariable("root", rootObject);
 
 		HashCachePut annotation = method.getAnnotation(HashCachePut.class);
@@ -162,8 +181,9 @@ public class HashCacheAspect {
 		HashCacheExpressionRootObject rootObject = new HashCacheExpressionRootObject(method, args, target, target.getClass());
 
 		EvaluationContext context = SpELUtils.initEvaluationContext(method, point.getArgs(), discoverer);
+		context.setVariable("target", target);
 		context.setVariable("result", returnValue);
-		context.setVariable("target", point.getTarget());
+		context.setVariable("root", rootObject);
 
 		HashCacheEvict annotation = method.getAnnotation(HashCacheEvict.class);
 		evict(context, annotation, rootObject);
@@ -178,8 +198,9 @@ public class HashCacheAspect {
 		HashCacheExpressionRootObject rootObject = new HashCacheExpressionRootObject(method, args, target, target.getClass());
 
 		EvaluationContext context = SpELUtils.initEvaluationContext(method, point.getArgs(), discoverer);
+		context.setVariable("target", target);
 		context.setVariable("result", returnValue);
-		context.setVariable("target", point.getTarget());
+		context.setVariable("root", rootObject);
 
 		HashCaching annotation = method.getAnnotation(HashCaching.class);
 		for (HashCacheEvict evictAnnotation : annotation.evicts()) {
@@ -259,7 +280,7 @@ public class HashCacheAspect {
 
 	private List<?> getEntities(String cacheName, Collection<?> cacheKeys, String keyFieldName) {
 		Set<String> hashKeys;
-		Class<?> keyClass = ReflectionUtils.getClassGenericType(cacheKeys.getClass());
+		Class<?> keyClass = ReflectionUtils.getCollectionElementType(cacheKeys);
 		if (ClassUtils.isPrimitiveOrWrapper(keyClass) || keyClass.isAssignableFrom(CharSequence.class)) {
 			hashKeys = cacheKeys.stream()
 				.filter(Objects::nonNull)
@@ -278,10 +299,11 @@ public class HashCacheAspect {
 				.map(Objects::toString)
 				.collect(Collectors.toSet());
 		}
+
 		List<?> cacheResult = ListUtils.emptyIfNull(hashCacheManager.multiGet(cacheName, hashKeys));
 		if (cacheResult.size() == cacheKeys.size()) {
 			return cacheResult;
 		}
-		return Collections.emptyList();
+		return null;
 	}
 }
