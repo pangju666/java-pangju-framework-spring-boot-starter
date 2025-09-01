@@ -8,12 +8,16 @@ import io.github.pangju666.framework.autoconfigure.data.dynamic.mongo.utils.Dyna
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.boot.autoconfigure.mongo.*;
 import org.springframework.boot.context.properties.PropertyMapper;
 import org.springframework.boot.context.properties.bind.Binder;
+import org.springframework.boot.ssl.SslBundles;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.core.env.Environment;
@@ -37,14 +41,20 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 
-public class DynamicMongoRegistrar implements EnvironmentAware, ImportBeanDefinitionRegistrar {
+public class DynamicMongoRegistrar implements EnvironmentAware, BeanFactoryAware, ImportBeanDefinitionRegistrar {
 	private static final Logger log = LoggerFactory.getLogger(DynamicMongoRegistrar.class);
 
 	private Binder binder;
+	private BeanFactory beanFactory;
 
 	@Override
 	public void setEnvironment(Environment environment) {
 		this.binder = Binder.get(environment);
+	}
+
+	@Override
+	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
+		this.beanFactory = beanFactory;
 	}
 
 	@Override
@@ -62,15 +72,15 @@ public class DynamicMongoRegistrar implements EnvironmentAware, ImportBeanDefini
 			return;
 		}
 
+		SslBundles sslBundles = beanFactory.getBean(SslBundles.class);
 		Map<String, MongoProperties> mongoDatabases = dynamicMongoProperties.getDatabases();
 		if (!CollectionUtils.isEmpty(mongoDatabases)) {
 			mongoDatabases.forEach((name, properties) -> {
 				// Mongo
-				MongoConnectionDetails connectionDetails = new PropertiesMongoConnectionDetails(properties);
+				MongoConnectionDetails connectionDetails = new PropertiesMongoConnectionDetails(properties, sslBundles);
 				MongoClientSettings clientSettings = MongoClientSettings.builder().build();
 				MongoClientSettingsBuilderCustomizer settingsBuilderCustomizer = new StandardMongoClientSettingsBuilderCustomizer(
-					connectionDetails.getConnectionString(), properties.getUuidRepresentation(), properties.getSsl(), null
-				);
+					connectionDetails, properties.getUuidRepresentation());
 				MongoClient client = new MongoClientFactory(Collections.singletonList(settingsBuilderCustomizer)).createMongoClient(clientSettings);
 
 				BeanDefinitionBuilder connectionDetailsBeanBuilder = BeanDefinitionBuilder.genericBeanDefinition(MongoConnectionDetails.class, () -> connectionDetails);

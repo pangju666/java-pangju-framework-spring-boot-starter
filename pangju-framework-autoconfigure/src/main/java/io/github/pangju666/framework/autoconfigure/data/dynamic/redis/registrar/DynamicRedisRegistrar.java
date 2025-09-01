@@ -3,6 +3,7 @@ package io.github.pangju666.framework.autoconfigure.data.dynamic.redis.registrar
 import io.github.pangju666.framework.autoconfigure.data.dynamic.redis.properties.DynamicRedisProperties;
 import io.github.pangju666.framework.autoconfigure.data.dynamic.redis.utils.DynamicRedisUtils;
 import io.github.pangju666.framework.autoconfigure.data.redis.utils.RedisSerializerUtils;
+import io.lettuce.core.api.StatefulConnection;
 import io.lettuce.core.resource.ClientResources;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.slf4j.Logger;
@@ -147,7 +148,7 @@ public class DynamicRedisRegistrar implements EnvironmentAware, BeanFactoryAware
 	private RedisConnectionFactory createLettuceConnectionFactory(DynamicRedisProperties.RedisProperties redisProperties, ClientResources clientResources) {
 		LettuceClientConfiguration.LettuceClientConfigurationBuilder builder = LettuceClientConfiguration.builder();
 		if (isPoolEnabled(redisProperties.getLettuce().getPool())) {
-			GenericObjectPoolConfig<?> poolConfig = getPoolConfig(redisProperties.getLettuce().getPool());
+			GenericObjectPoolConfig<StatefulConnection<?, ?>> poolConfig = getPoolConfig(redisProperties.getLettuce().getPool());
 			builder = LettucePoolingClientConfiguration.builder()
 				.clientResources(clientResources)
 				.poolConfig(poolConfig);
@@ -175,8 +176,8 @@ public class DynamicRedisRegistrar implements EnvironmentAware, BeanFactoryAware
 		return connectionFactory;
 	}
 
-	private GenericObjectPoolConfig<?> getPoolConfig(RedisProperties.Pool pool) {
-		GenericObjectPoolConfig<?> config = new GenericObjectPoolConfig<>();
+	private GenericObjectPoolConfig<StatefulConnection<?, ?>> getPoolConfig(RedisProperties.Pool pool) {
+		GenericObjectPoolConfig<StatefulConnection<?, ?>> config = new GenericObjectPoolConfig<>();
 		config.setMaxTotal(pool.getMaxActive());
 		config.setMaxIdle(pool.getMaxIdle());
 		config.setMinIdle(pool.getMinIdle());

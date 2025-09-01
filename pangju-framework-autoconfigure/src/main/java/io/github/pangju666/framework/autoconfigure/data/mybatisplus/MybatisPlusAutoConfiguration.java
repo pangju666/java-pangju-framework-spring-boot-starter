@@ -44,7 +44,7 @@ import javax.sql.DataSource;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Objects;
 
-@AutoConfiguration(after = com.baomidou.mybatisplus.autoconfigure.MybatisPlusAutoConfiguration.class)
+@AutoConfiguration(after = com.baomidou.mybatisplus.autoconfigure.MybatisPlusInnerInterceptorAutoConfiguration.class)
 @ConditionalOnClass({SqlSessionFactory.class, SqlSessionFactoryBean.class})
 @ConditionalOnSingleCandidate(DataSource.class)
 @EnableConfigurationProperties(MybatisPlusInterceptorProperties.class)
