@@ -180,7 +180,7 @@ public class MybatisPlusInterceptorProperties {
 	}
 
 	public static class OptimisticLocker {
-		private boolean enabled = true;
+		private boolean enabled = false;
 		private boolean wrapperMode = true;
 
 		public boolean isEnabled() {
