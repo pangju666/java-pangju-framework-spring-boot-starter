@@ -17,20 +17,19 @@
 package io.github.pangju666.framework.autoconfigure.validation;
 
 import jakarta.validation.executable.ExecutableValidator;
-import org.hibernate.validator.HibernateValidator;
 import org.hibernate.validator.HibernateValidatorConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnResource;
 import org.springframework.boot.autoconfigure.validation.ValidationConfigurationCustomizer;
 import org.springframework.context.annotation.Bean;
-import org.springframework.core.annotation.Order;
 
 @AutoConfiguration(before = org.springframework.boot.autoconfigure.validation.ValidationAutoConfiguration.class)
-@ConditionalOnClass({ExecutableValidator.class, HibernateValidator.class})
+@ConditionalOnClass({ExecutableValidator.class, HibernateValidatorConfiguration.class})
 @ConditionalOnResource(resources = "classpath:META-INF/services/jakarta.validation.spi.ValidationProvider")
 public class ValidationAutoConfiguration {
-	@Order
+	@ConditionalOnMissingBean(ValidationConfigurationCustomizer.class)
 	@Bean
 	public ValidationConfigurationCustomizer hibernateValidationConfigurationCustomizer() {
 		return configuration -> {
