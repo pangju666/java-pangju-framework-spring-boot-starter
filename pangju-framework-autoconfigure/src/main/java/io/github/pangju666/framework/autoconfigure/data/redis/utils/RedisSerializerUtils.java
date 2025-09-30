@@ -28,13 +28,4 @@ public final class RedisSerializerUtils {
 			case BYTE_ARRAY -> RedisSerializer.byteArray();
 		};
 	}
-
-	public static RedisSerializer<?> createSerializer(RedisSerializerType type) {
-		return switch (type) {
-			case STRING -> RedisSerializer.string();
-			case JAVA -> RedisSerializer.java();
-			case JSON -> RedisSerializer.json();
-			case BYTE_ARRAY -> RedisSerializer.byteArray();
-		};
-	}
 }

@@ -62,10 +62,10 @@ public class RedisAutoConfiguration {
 															   RedisConnectionFactory redisConnectionFactory) {
 		ScanRedisTemplate<Object, Object> redisTemplate = new ScanRedisTemplate<>();
 		redisTemplate.setConnectionFactory(redisConnectionFactory);
-		redisTemplate.setKeySerializer(RedisSerializerUtils.createSerializer(redisProperties.getKeySerializer()));
-		redisTemplate.setHashKeySerializer(RedisSerializerUtils.createSerializer(redisProperties.getHashKeySerializer()));
-		redisTemplate.setValueSerializer(RedisSerializerUtils.createSerializer(redisProperties.getValueSerializer()));
-		redisTemplate.setHashValueSerializer(RedisSerializerUtils.createSerializer(redisProperties.getHashValueSerializer()));
+		redisTemplate.setKeySerializer(RedisSerializerUtils.getSerializer(redisProperties.getKeySerializer()));
+		redisTemplate.setHashKeySerializer(RedisSerializerUtils.getSerializer(redisProperties.getHashKeySerializer()));
+		redisTemplate.setValueSerializer(RedisSerializerUtils.getSerializer(redisProperties.getValueSerializer()));
+		redisTemplate.setHashValueSerializer(RedisSerializerUtils.getSerializer(redisProperties.getHashValueSerializer()));
 		return redisTemplate;
 	}
 }
