@@ -16,11 +16,18 @@
 
 package io.github.pangju666.framework.autoconfigure.data.dynamic.mongo.processor;
 
+import io.github.pangju666.framework.autoconfigure.data.dynamic.mongo.annotation.DynamicMongo;
+import io.github.pangju666.framework.autoconfigure.data.dynamic.mongo.utils.DynamicMongoUtils;
+import io.github.pangju666.framework.data.mongodb.repository.BaseRepository;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
+import org.springframework.beans.factory.config.BeanPostProcessor;
+import org.springframework.data.mongodb.core.MongoTemplate;
 
-public class DynamicMongoBeanPostProcessor implements /*BeanPostProcessor, */BeanFactoryAware {
+import java.util.Objects;
+
+public class DynamicMongoBeanPostProcessor implements BeanPostProcessor, BeanFactoryAware {
 	private BeanFactory beanFactory;
 
 	@Override
@@ -28,7 +35,7 @@ public class DynamicMongoBeanPostProcessor implements /*BeanPostProcessor, */Bea
 		this.beanFactory = beanFactory;
 	}
 
-	/*@Override
+	@Override
 	public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
 		if (bean instanceof BaseRepository<?, ?> baseRepository) {
 			DynamicMongo annotation = bean.getClass().getAnnotation(DynamicMongo.class);
@@ -38,5 +45,5 @@ public class DynamicMongoBeanPostProcessor implements /*BeanPostProcessor, */Bea
 			}
 		}
 		return bean;
-	}*/
+	}
 }

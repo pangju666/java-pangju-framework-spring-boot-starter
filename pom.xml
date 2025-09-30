@@ -22,7 +22,6 @@
 		<module>pangju-framework-data-redis-spring-boot-starter</module>
 		<module>pangju-framework-spock-test-spring-boot-starter</module>
 		<module>pangju-framework-spring-boot-starter</module>
-		<module>pangju-framework-spring-boot-starter-all</module>
 		<module>pangju-framework-test-spring-boot-starter</module>
 		<module>pangju-framework-validation-spring-boot-starter</module>
 		<module>pangju-framework-web-crypto-spring-boot-starter</module>
