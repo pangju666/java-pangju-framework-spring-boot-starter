@@ -1,21 +1,41 @@
+/*
+ *   Copyright 2025 pangju666
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+
 package io.github.pangju666.framework.autoconfigure.data.dynamic.redis;
 
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.resource.ClientResources;
 import io.lettuce.core.resource.DefaultClientResources;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.data.redis.ClientResourcesBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
 
 @AutoConfiguration
 @ConditionalOnClass(RedisClient.class)
-@ConditionalOnProperty(prefix = "spring.redis", name = "client-type", havingValue = "lettuce", matchIfMissing = true)
+@ConditionalOnProperty(name = "spring.data.redis.client-type", havingValue = "lettuce", matchIfMissing = true)
 public class ClientResourcesAutoConfiguration {
 	@Bean(destroyMethod = "shutdown")
 	@ConditionalOnMissingBean(ClientResources.class)
-	public ClientResources clientResources() {
-		return DefaultClientResources.create();
+	DefaultClientResources lettuceClientResources(ObjectProvider<ClientResourcesBuilderCustomizer> customizers) {
+		DefaultClientResources.Builder builder = DefaultClientResources.builder();
+		customizers.orderedStream().forEach((customizer) -> customizer.customize(builder));
+		return builder.build();
 	}
 }

@@ -37,8 +37,8 @@ public class RedisAutoConfiguration {
 	@Bean
 	@ConditionalOnMissingBean
 	@ConditionalOnSingleCandidate(RedisConnectionFactory.class)
-	public StringScanRedisTemplate stringScanRedisTemplate(RedisConnectionFactory redisConnectionFactory) {
-		return new StringScanRedisTemplate(redisConnectionFactory);
+	public StringScanRedisTemplate stringScanRedisTemplate(RedisConnectionFactory connectionFactory) {
+		return new StringScanRedisTemplate(connectionFactory);
 	}
 
 	@Bean
@@ -59,13 +59,13 @@ public class RedisAutoConfiguration {
 	@ConditionalOnMissingBean(name = "scanRedisTemplate")
 	@ConditionalOnSingleCandidate(RedisConnectionFactory.class)
 	public ScanRedisTemplate<Object, Object> scanRedisTemplate(RedisProperties redisProperties,
-															   RedisConnectionFactory redisConnectionFactory) {
-		ScanRedisTemplate<Object, Object> redisTemplate = new ScanRedisTemplate<>();
-		redisTemplate.setConnectionFactory(redisConnectionFactory);
-		redisTemplate.setKeySerializer(RedisSerializerUtils.getSerializer(redisProperties.getKeySerializer()));
-		redisTemplate.setHashKeySerializer(RedisSerializerUtils.getSerializer(redisProperties.getHashKeySerializer()));
-		redisTemplate.setValueSerializer(RedisSerializerUtils.getSerializer(redisProperties.getValueSerializer()));
-		redisTemplate.setHashValueSerializer(RedisSerializerUtils.getSerializer(redisProperties.getHashValueSerializer()));
-		return redisTemplate;
+															   RedisConnectionFactory connectionFactory) {
+		ScanRedisTemplate<Object, Object> scanRedisTemplate = new ScanRedisTemplate<>();
+		scanRedisTemplate.setConnectionFactory(connectionFactory);
+		scanRedisTemplate.setKeySerializer(RedisSerializerUtils.getSerializer(redisProperties.getKeySerializer()));
+		scanRedisTemplate.setHashKeySerializer(RedisSerializerUtils.getSerializer(redisProperties.getHashKeySerializer()));
+		scanRedisTemplate.setValueSerializer(RedisSerializerUtils.getSerializer(redisProperties.getValueSerializer()));
+		scanRedisTemplate.setHashValueSerializer(RedisSerializerUtils.getSerializer(redisProperties.getHashValueSerializer()));
+		return scanRedisTemplate;
 	}
 }

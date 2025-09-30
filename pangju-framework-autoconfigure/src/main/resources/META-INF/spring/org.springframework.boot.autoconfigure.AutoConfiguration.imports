@@ -2,5 +2,5 @@ io.github.pangju666.framework.autoconfigure.validation.ValidationAutoConfigurati
 io.github.pangju666.framework.autoconfigure.jackson.JacksonAutoConfiguration
 io.github.pangju666.framework.autoconfigure.data.mybatisplus.MybatisPlusAutoConfiguration
 io.github.pangju666.framework.autoconfigure.data.redis.RedisAutoConfiguration
-
-#io.github.pangju666.framework.autoconfigure.cache.hash.HashCacheAutoConfiguration
+io.github.pangju666.framework.autoconfigure.data.dynamic.redis.DynamicRedisAutoConfiguration
+io.github.pangju666.framework.autoconfigure.data.dynamic.redis.ClientResourcesAutoConfiguration
