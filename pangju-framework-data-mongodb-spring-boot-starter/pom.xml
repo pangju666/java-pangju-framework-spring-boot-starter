@@ -8,9 +8,7 @@
 		<artifactId>pangju-framework-spring-boot-starter-parent</artifactId>
 		<version>1.0.0</version>
 	</parent>
-	<artifactId>pangju-framework-data-dynamic-mongodb-spring-boot-starter</artifactId>
-	<description>java 动态MongoDB数据源 Spring Boot Starter</description>
-	<url>https://github.com/pangju666/java-pangju-framework-spring-boot-starter</url>
+	<artifactId>pangju-framework-data-mongodb-spring-boot-starter</artifactId>
 
 	<licenses>
 		<license>
@@ -20,10 +18,6 @@
 	</licenses>
 
 	<dependencies>
-		<dependency>
-			<groupId>io.github.pangju666</groupId>
-			<artifactId>pangju-framework-autoconfigure</artifactId>
-		</dependency>
 		<dependency>
 			<groupId>io.github.pangju666</groupId>
 			<artifactId>pangju-framework-spring-boot-starter</artifactId>

@@ -9,8 +9,6 @@
 		<version>1.0.0</version>
 	</parent>
 	<artifactId>pangju-framework-web-crypto-spring-boot-starter</artifactId>
-	<description>java Web Spring Boot Starter</description>
-	<url>https://github.com/pangju666/java-pangju-framework-spring-boot-starter</url>
 
 	<licenses>
 		<license>

@@ -4,10 +4,6 @@
 
 #io.github.pangju666.framework.autoconfigure.cache.spring.DynamicRedisCacheAutoConfiguration
 
-#io.github.pangju666.framework.autoconfigure.data.dynamic.mongo.DynamicMongoAutoConfiguration
-#io.github.pangju666.framework.autoconfigure.data.dynamic.redis.ClientResourcesAutoConfiguration
-#io.github.pangju666.framework.autoconfigure.data.dynamic.redis.DynamicRedisAutoConfiguration
-
 
 #io.github.pangju666.framework.autoconfigure.web.RestClientAutoConfiguration
 #io.github.pangju666.framework.autoconfigure.web.advice.exception.GlobalExceptionAdvice

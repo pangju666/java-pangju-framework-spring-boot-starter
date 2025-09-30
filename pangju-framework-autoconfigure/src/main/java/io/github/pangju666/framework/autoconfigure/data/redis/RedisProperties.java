@@ -19,42 +19,42 @@ package io.github.pangju666.framework.autoconfigure.data.redis;
 import io.github.pangju666.framework.autoconfigure.data.redis.enums.RedisSerializerType;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@ConfigurationProperties(prefix = "pangju.data.redis")
+@ConfigurationProperties("spring.data.redis.serializer")
 public class RedisProperties {
-	private RedisSerializerType keySerializer = RedisSerializerType.STRING;
-	private RedisSerializerType valueSerializer = RedisSerializerType.JAVA;
-	private RedisSerializerType hashKeySerializer = RedisSerializerType.STRING;
-	private RedisSerializerType hashValueSerializer = RedisSerializerType.JAVA;
+	private RedisSerializerType key = RedisSerializerType.STRING;
+	private RedisSerializerType value = RedisSerializerType.JAVA;
+	private RedisSerializerType hashKey = RedisSerializerType.STRING;
+	private RedisSerializerType hashValue = RedisSerializerType.JAVA;
 
-	public RedisSerializerType getKeySerializer() {
-		return keySerializer;
+	public RedisSerializerType getKey() {
+		return key;
 	}
 
-	public void setKeySerializer(RedisSerializerType keySerializer) {
-		this.keySerializer = keySerializer;
+	public void setKey(RedisSerializerType key) {
+		this.key = key;
 	}
 
-	public RedisSerializerType getValueSerializer() {
-		return valueSerializer;
+	public RedisSerializerType getValue() {
+		return value;
 	}
 
-	public void setValueSerializer(RedisSerializerType valueSerializer) {
-		this.valueSerializer = valueSerializer;
+	public void setValue(RedisSerializerType value) {
+		this.value = value;
 	}
 
-	public RedisSerializerType getHashKeySerializer() {
-		return hashKeySerializer;
+	public RedisSerializerType getHashKey() {
+		return hashKey;
 	}
 
-	public void setHashKeySerializer(RedisSerializerType hashKeySerializer) {
-		this.hashKeySerializer = hashKeySerializer;
+	public void setHashKey(RedisSerializerType hashKey) {
+		this.hashKey = hashKey;
 	}
 
-	public RedisSerializerType getHashValueSerializer() {
-		return hashValueSerializer;
+	public RedisSerializerType getHashValue() {
+		return hashValue;
 	}
 
-	public void setHashValueSerializer(RedisSerializerType hashValueSerializer) {
-		this.hashValueSerializer = hashValueSerializer;
+	public void setHashValue(RedisSerializerType hashValue) {
+		this.hashValue = hashValue;
 	}
 }

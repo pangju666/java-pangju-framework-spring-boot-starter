@@ -17,7 +17,7 @@
 	<modules>
 		<module>pangju-framework-autoconfigure</module>
 		<module>pangju-framework-cache-spring-boot-starter</module>
-		<module>pangju-framework-data-dynamic-mongodb-spring-boot-starter</module>
+		<module>pangju-framework-data-mongodb-spring-boot-starter</module>
 		<module>pangju-framework-data-mybatis-plus-spring-boot-starter</module>
 		<module>pangju-framework-data-redis-spring-boot-starter</module>
 		<module>pangju-framework-spock-test-spring-boot-starter</module>
@@ -90,7 +90,7 @@
 			</dependency>
 			<dependency>
 				<groupId>io.github.pangju666</groupId>
-				<artifactId>pangju-framework-data-dynamic-mongodb-spring-boot-starter</artifactId>
+				<artifactId>pangju-framework-data-mongodb-spring-boot-starter</artifactId>
 				<version>1.0.0</version>
 			</dependency>
 			<dependency>
