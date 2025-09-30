@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package io.github.pangju666.framework.autoconfigure.data.dynamic.redis.properties;
+package io.github.pangju666.framework.autoconfigure.data.dynamic.redis;
 
 import io.github.pangju666.framework.autoconfigure.data.redis.enums.RedisSerializerType;
 import org.springframework.boot.context.properties.ConfigurationProperties;

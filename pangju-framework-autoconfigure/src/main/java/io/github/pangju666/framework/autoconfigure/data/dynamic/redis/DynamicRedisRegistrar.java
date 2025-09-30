@@ -14,12 +14,11 @@
  *    limitations under the License.
  */
 
-package io.github.pangju666.framework.autoconfigure.data.dynamic.redis.registrar;
+package io.github.pangju666.framework.autoconfigure.data.dynamic.redis;
 
 import io.github.pangju666.framework.autoconfigure.data.dynamic.redis.config.JedisConnectionConfiguration;
 import io.github.pangju666.framework.autoconfigure.data.dynamic.redis.config.LettuceConnectionConfiguration;
 import io.github.pangju666.framework.autoconfigure.data.dynamic.redis.config.PropertiesRedisConnectionDetails;
-import io.github.pangju666.framework.autoconfigure.data.dynamic.redis.properties.DynamicRedisProperties;
 import io.github.pangju666.framework.autoconfigure.data.dynamic.redis.utils.DynamicRedisUtils;
 import io.github.pangju666.framework.autoconfigure.data.redis.utils.RedisSerializerUtils;
 import io.github.pangju666.framework.data.redis.bean.ScanRedisTemplate;
