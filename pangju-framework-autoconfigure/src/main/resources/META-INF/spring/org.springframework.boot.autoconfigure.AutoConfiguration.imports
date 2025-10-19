@@ -5,3 +5,6 @@ io.github.pangju666.framework.autoconfigure.data.redis.RedisAutoConfiguration
 io.github.pangju666.framework.autoconfigure.data.dynamic.redis.DynamicRedisAutoConfiguration
 io.github.pangju666.framework.autoconfigure.data.dynamic.redis.ClientResourcesAutoConfiguration
 io.github.pangju666.framework.autoconfigure.data.dynamic.mongo.DynamicMongoAutoConfiguration
+io.github.pangju666.framework.autoconfigure.web.advice.bind.RequestParamBindingAdvice
+io.github.pangju666.framework.autoconfigure.web.advice.wrapper.ResponseBodyWrapperAdvice
+io.github.pangju666.framework.autoconfigure.web.advice.exception.GlobalExceptionAdvice

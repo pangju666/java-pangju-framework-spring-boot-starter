@@ -3,6 +3,7 @@ package io.github.pangju666.framework.autoconfigure.web;
 import io.github.pangju666.framework.autoconfigure.web.interceptor.RequestRateLimitInterceptor;
 import io.github.pangju666.framework.autoconfigure.web.interceptor.RequestSignatureInterceptor;
 import io.github.pangju666.framework.autoconfigure.web.limiter.RequestRateLimiter;
+import io.github.pangju666.framework.autoconfigure.web.properties.AdviceProperties;
 import io.github.pangju666.framework.autoconfigure.web.properties.RequestSignatureProperties;
 import io.github.pangju666.framework.autoconfigure.web.resolver.EncryptRequestParamArgumentResolver;
 import io.github.pangju666.framework.autoconfigure.web.resolver.EnumRequestParamArgumentResolver;
@@ -13,6 +14,7 @@ import org.apache.commons.collections4.ListUtils;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -24,6 +26,7 @@ import java.util.List;
 @AutoConfiguration(after = org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration.class)
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @ConditionalOnClass({Servlet.class, DispatcherServlet.class, WebMvcConfigurer.class})
+@EnableConfigurationProperties({AdviceProperties.class})
 public class WebMvcAutoConfiguration implements WebMvcConfigurer {
 	private final List<BaseHttpHandlerInterceptor> interceptors;
 	private final RequestSignatureProperties signatureProperties;
