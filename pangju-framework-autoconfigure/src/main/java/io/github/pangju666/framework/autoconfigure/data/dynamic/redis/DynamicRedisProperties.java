@@ -16,7 +16,7 @@
 
 package io.github.pangju666.framework.autoconfigure.data.dynamic.redis;
 
-import io.github.pangju666.framework.autoconfigure.data.redis.enums.RedisSerializerType;
+import io.github.pangju666.framework.data.redis.enums.RedisSerializerType;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.util.Map;

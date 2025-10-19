@@ -20,8 +20,8 @@ import io.github.pangju666.framework.autoconfigure.data.dynamic.redis.config.Jed
 import io.github.pangju666.framework.autoconfigure.data.dynamic.redis.config.LettuceConnectionConfiguration;
 import io.github.pangju666.framework.autoconfigure.data.dynamic.redis.config.PropertiesRedisConnectionDetails;
 import io.github.pangju666.framework.autoconfigure.data.dynamic.redis.utils.DynamicRedisUtils;
-import io.github.pangju666.framework.autoconfigure.data.redis.utils.RedisSerializerUtils;
 import io.github.pangju666.framework.data.redis.bean.ScanRedisTemplate;
+import io.github.pangju666.framework.data.redis.utils.RedisUtils;
 import io.lettuce.core.resource.ClientResources;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -141,10 +141,10 @@ public class DynamicRedisRegistrar implements EnvironmentAware, BeanFactoryAware
 
 				Supplier<ScanRedisTemplate> redisTemplateSupplier = () -> {
 					ScanRedisTemplate<Object, Object> redisTemplate = new ScanRedisTemplate<>();
-					redisTemplate.setKeySerializer(RedisSerializerUtils.getSerializer(redisProperties.getKeySerializer()));
-					redisTemplate.setValueSerializer(RedisSerializerUtils.getSerializer(redisProperties.getValueSerializer()));
-					redisTemplate.setHashKeySerializer(RedisSerializerUtils.getSerializer(redisProperties.getHashKeySerializer()));
-					redisTemplate.setHashValueSerializer(RedisSerializerUtils.getSerializer(redisProperties.getHashValueSerializer()));
+					redisTemplate.setKeySerializer(RedisUtils.getSerializer(redisProperties.getKeySerializer()));
+					redisTemplate.setValueSerializer(RedisUtils.getSerializer(redisProperties.getValueSerializer()));
+					redisTemplate.setHashKeySerializer(RedisUtils.getSerializer(redisProperties.getHashKeySerializer()));
+					redisTemplate.setHashValueSerializer(RedisUtils.getSerializer(redisProperties.getHashValueSerializer()));
 					redisTemplate.setConnectionFactory(beanFactory.getBean(connectionFactoryBeanName, RedisConnectionFactory.class));
 					return redisTemplate;
 				};

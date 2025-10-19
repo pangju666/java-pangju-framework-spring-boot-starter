@@ -23,7 +23,7 @@ import com.baomidou.mybatisplus.extension.plugins.handler.TenantLineHandler;
 import com.baomidou.mybatisplus.extension.plugins.pagination.dialects.IDialect;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@ConfigurationProperties(prefix = "pangju.mybatis-plus.plugins")
+@ConfigurationProperties(prefix = "mybatis-plus.plugins")
 public class MybatisPlusInterceptorProperties {
 	/**
 	 * 分页插件，默认开启

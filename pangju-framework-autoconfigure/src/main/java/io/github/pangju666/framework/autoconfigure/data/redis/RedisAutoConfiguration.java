@@ -16,11 +16,11 @@
 
 package io.github.pangju666.framework.autoconfigure.data.redis;
 
-import io.github.pangju666.framework.autoconfigure.data.redis.utils.RedisSerializerUtils;
 import io.github.pangju666.framework.data.redis.bean.JavaScanRedisTemplate;
 import io.github.pangju666.framework.data.redis.bean.JsonScanRedisTemplate;
 import io.github.pangju666.framework.data.redis.bean.ScanRedisTemplate;
 import io.github.pangju666.framework.data.redis.bean.StringScanRedisTemplate;
+import io.github.pangju666.framework.data.redis.utils.RedisUtils;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -62,10 +62,10 @@ public class RedisAutoConfiguration {
 															   RedisConnectionFactory connectionFactory) {
 		ScanRedisTemplate<Object, Object> scanRedisTemplate = new ScanRedisTemplate<>();
 		scanRedisTemplate.setConnectionFactory(connectionFactory);
-		scanRedisTemplate.setKeySerializer(RedisSerializerUtils.getSerializer(redisProperties.getKey()));
-		scanRedisTemplate.setHashKeySerializer(RedisSerializerUtils.getSerializer(redisProperties.getHashKey()));
-		scanRedisTemplate.setValueSerializer(RedisSerializerUtils.getSerializer(redisProperties.getValue()));
-		scanRedisTemplate.setHashValueSerializer(RedisSerializerUtils.getSerializer(redisProperties.getHashValue()));
+		scanRedisTemplate.setKeySerializer(RedisUtils.getSerializer(redisProperties.getKey()));
+		scanRedisTemplate.setHashKeySerializer(RedisUtils.getSerializer(redisProperties.getHashKey()));
+		scanRedisTemplate.setValueSerializer(RedisUtils.getSerializer(redisProperties.getValue()));
+		scanRedisTemplate.setHashValueSerializer(RedisUtils.getSerializer(redisProperties.getHashValue()));
 		return scanRedisTemplate;
 	}
 }

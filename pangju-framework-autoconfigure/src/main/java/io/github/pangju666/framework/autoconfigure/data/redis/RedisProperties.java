@@ -16,7 +16,7 @@
 
 package io.github.pangju666.framework.autoconfigure.data.redis;
 
-import io.github.pangju666.framework.autoconfigure.data.redis.enums.RedisSerializerType;
+import io.github.pangju666.framework.data.redis.enums.RedisSerializerType;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties("spring.data.redis.serializer")
