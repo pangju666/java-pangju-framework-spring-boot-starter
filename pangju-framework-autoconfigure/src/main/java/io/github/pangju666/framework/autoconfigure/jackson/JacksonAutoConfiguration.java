@@ -25,9 +25,9 @@ import io.github.pangju666.framework.autoconfigure.jackson.serializer.LocalDateJ
 import io.github.pangju666.framework.autoconfigure.jackson.serializer.LocalDateTimeJsonSerializer;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
-import org.springframework.core.annotation.Order;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
 import java.time.LocalDate;
@@ -36,27 +36,15 @@ import java.time.LocalDateTime;
 @AutoConfiguration(before = org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration.class)
 @ConditionalOnClass({Jackson2ObjectMapperBuilder.class, ObjectMapper.class})
 public class JacksonAutoConfiguration {
-	@Order
+	@ConditionalOnMissingBean
 	@Bean
 	public Jackson2ObjectMapperBuilderCustomizer jackson2ObjectMapperBuilderCustomizer() {
 		return jacksonObjectMapperBuilder -> jacksonObjectMapperBuilder
 			.deserializerByType(Class.class, new ClassJsonDeserializer())
-			.deserializerByType(Enum.class, new EnumJsonDeserializer());
-	}
-
-	@Order
-	@Bean
-	public Jackson2ObjectMapperBuilderCustomizer localDateJackson2ObjectMapperBuilderCustomizer() {
-		return jacksonObjectMapperBuilder -> jacksonObjectMapperBuilder
+			.deserializerByType(Enum.class, new EnumJsonDeserializer())
+			.serializerByType(LocalDateTime.class, new LocalDateTimeJsonSerializer())
+			.deserializerByType(LocalDateTime.class, new LocalDateTimeJsonDeserializer())
 			.serializerByType(LocalDate.class, new LocalDateJsonSerializer())
 			.deserializerByType(LocalDate.class, new LocalDateJsonDeserializer());
-	}
-
-	@Order
-	@Bean
-	public Jackson2ObjectMapperBuilderCustomizer localDateTimeJackson2ObjectMapperBuilderCustomizer() {
-		return jacksonObjectMapperBuilder -> jacksonObjectMapperBuilder
-			.serializerByType(LocalDateTime.class, new LocalDateTimeJsonSerializer())
-			.deserializerByType(LocalDateTime.class, new LocalDateTimeJsonDeserializer());
 	}
 }
