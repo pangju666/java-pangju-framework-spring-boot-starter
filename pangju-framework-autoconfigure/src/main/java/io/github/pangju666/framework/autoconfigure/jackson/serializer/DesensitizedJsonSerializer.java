@@ -110,7 +110,8 @@ public class DesensitizedJsonSerializer extends JsonSerializer<String> implement
 		if (Objects.isNull(property)) {
 			return NullSerializer.instance;
 		}
-		if (Objects.equals(property.getType().getRawClass(), String.class)) {
+
+		if (String.class.isAssignableFrom(property.getType().getRawClass())) {
 			DesensitizeFormat desensitizeFormat = property.getAnnotation(DesensitizeFormat.class);
 			if (Objects.isNull(desensitizeFormat)) {
 				desensitizeFormat = property.getContextAnnotation(DesensitizeFormat.class);

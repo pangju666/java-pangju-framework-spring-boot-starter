@@ -20,9 +20,9 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.BeanProperty;
 import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.deser.ContextualDeserializer;
+import io.github.pangju666.framework.web.exception.base.ServerException;
 import org.apache.commons.lang3.EnumUtils;
 
 import java.io.IOException;
@@ -31,7 +31,7 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class EnumJsonDeserializer extends JsonDeserializer<Enum> implements ContextualDeserializer {
-	private static final Map<JavaType, EnumJsonDeserializer> DESERIALIZER_MAP = new ConcurrentHashMap<>(10);
+	private static final Map<Class<? extends Enum>, EnumJsonDeserializer> DESERIALIZER_MAP = new ConcurrentHashMap<>(10);
 
 	private final Class<? extends Enum> enumClass;
 
@@ -49,16 +49,20 @@ public class EnumJsonDeserializer extends JsonDeserializer<Enum> implements Cont
 		try {
 			return EnumUtils.getEnumIgnoreCase(this.enumClass, p.getText());
 		} catch (JsonParseException e) {
-			return null;
+			throw new ServerException("数据解析失败", e);
 		}
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
 	public JsonDeserializer<Enum> createContextual(DeserializationContext ctxt, BeanProperty property) {
-		JavaType type = Objects.nonNull(ctxt.getContextualType()) ? ctxt.getContextualType() : property.getMember().getType();
-		return DESERIALIZER_MAP.computeIfAbsent(type, enumType ->
-			new EnumJsonDeserializer((Class<? extends Enum>) enumType.getRawClass())
-		);
+		Class<? extends Enum> clz = Objects.nonNull(ctxt.getContextualType()) ?
+			(Class<? extends Enum>) ctxt.getContextualType().getRawClass() :
+			(Class<? extends Enum>) property.getMember().getType().getRawClass();
+		JsonDeserializer<Enum> deserializer = DESERIALIZER_MAP.putIfAbsent(clz, new EnumJsonDeserializer(clz));
+		if (Objects.isNull(deserializer)) {
+			return DESERIALIZER_MAP.get(clz);
+		}
+		return deserializer;
 	}
 }

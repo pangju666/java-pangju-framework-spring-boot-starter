@@ -20,6 +20,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
+import io.github.pangju666.framework.web.exception.base.ServerException;
 
 import java.io.IOException;
 
@@ -28,8 +29,10 @@ public class ClassJsonDeserializer extends JsonDeserializer<Class> {
 	public Class deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
 		try {
 			return Class.forName(p.getText());
-		} catch (ClassNotFoundException | JsonParseException e) {
+		} catch (ClassNotFoundException e) {
 			return null;
+		} catch (JsonParseException e) {
+			throw new ServerException("数据解析失败", e);
 		}
 	}
 }

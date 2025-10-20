@@ -21,6 +21,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import io.github.pangju666.commons.lang.utils.DateUtils;
+import io.github.pangju666.framework.web.exception.base.ServerException;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -31,7 +32,7 @@ public class LocalDateTimeJsonDeserializer extends JsonDeserializer<LocalDateTim
 		try {
 			return DateUtils.toLocalDateTime(p.getLongValue());
 		} catch (JsonParseException e) {
-			return null;
+			throw new ServerException("数据解析失败", e);
 		}
 	}
 }
