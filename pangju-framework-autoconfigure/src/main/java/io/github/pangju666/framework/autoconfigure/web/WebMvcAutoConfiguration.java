@@ -1,21 +1,30 @@
+/*
+ *   Copyright 2025 pangju666
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+
 package io.github.pangju666.framework.autoconfigure.web;
 
-import io.github.pangju666.framework.autoconfigure.web.interceptor.RequestRateLimitInterceptor;
-import io.github.pangju666.framework.autoconfigure.web.interceptor.RequestSignatureInterceptor;
-import io.github.pangju666.framework.autoconfigure.web.limiter.RequestRateLimiter;
-import io.github.pangju666.framework.autoconfigure.web.properties.RequestSignatureProperties;
-import io.github.pangju666.framework.autoconfigure.web.resolver.EncryptRequestParamArgumentResolver;
-import io.github.pangju666.framework.autoconfigure.web.resolver.EnumRequestParamArgumentResolver;
-import io.github.pangju666.framework.autoconfigure.web.store.SignatureSecretKeyStore;
+import io.github.pangju666.framework.autoconfigure.web.resolver.bind.EnumRequestParamArgumentResolver;
+import io.github.pangju666.framework.autoconfigure.web.resolver.crypto.EncryptRequestParamArgumentResolver;
 import io.github.pangju666.framework.web.interceptor.BaseHttpHandlerInterceptor;
 import jakarta.servlet.Servlet;
-import org.apache.commons.collections4.ListUtils;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.DispatcherServlet;
-import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.util.Collections;
@@ -26,20 +35,20 @@ import java.util.List;
 @ConditionalOnClass({Servlet.class, DispatcherServlet.class, WebMvcConfigurer.class})
 public class WebMvcAutoConfiguration implements WebMvcConfigurer {
 	private final List<BaseHttpHandlerInterceptor> interceptors;
-	private final RequestSignatureProperties signatureProperties;
+	/*private final RequestSignatureProperties signatureProperties;
 	private final RequestRateLimiter requestRateLimiter;
 	private final SignatureSecretKeyStore secretKeyStore;
-
+*/
 	private List<String> excludePathPatterns = Collections.emptyList();
 
-	public WebMvcAutoConfiguration(List<BaseHttpHandlerInterceptor> interceptors,
-								   RequestSignatureProperties signatureProperties,
+	public WebMvcAutoConfiguration(List<BaseHttpHandlerInterceptor> interceptors
+								   /*RequestSignatureProperties signatureProperties,
 								   RequestRateLimiter requestRateLimiter,
-								   SignatureSecretKeyStore secretKeyStore) {
+								   SignatureSecretKeyStore secretKeyStore*/) {
 		this.interceptors = interceptors;
-		this.signatureProperties = signatureProperties;
+/*		this.signatureProperties = signatureProperties;
 		this.requestRateLimiter = requestRateLimiter;
-		this.secretKeyStore = secretKeyStore;
+		this.secretKeyStore = secretKeyStore;*/
 	}
 
 	/*@Autowired(required = false)
@@ -57,7 +66,7 @@ public class WebMvcAutoConfiguration implements WebMvcConfigurer {
 		resolvers.add(new EncryptRequestParamArgumentResolver());
 	}
 
-	@Override
+	/*@Override
 	public void addInterceptors(InterceptorRegistry registry) {
 		registry.addInterceptor(new RequestSignatureInterceptor(signatureProperties, secretKeyStore))
 			.addPathPatterns("/**")
@@ -72,5 +81,5 @@ public class WebMvcAutoConfiguration implements WebMvcConfigurer {
 				.excludePathPatterns(ListUtils.union(interceptor.getExcludePathPatterns(), excludePathPatterns))
 				.order(interceptor.getOrder());
 		}
-	}
+	}*/
 }

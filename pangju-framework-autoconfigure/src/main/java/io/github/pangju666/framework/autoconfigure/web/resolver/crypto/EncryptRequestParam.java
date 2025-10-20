@@ -14,9 +14,27 @@
  *    limitations under the License.
  */
 
-package io.github.pangju666.framework.autoconfigure.enums;
+package io.github.pangju666.framework.autoconfigure.web.resolver.crypto;
 
-public enum Encoding {
-	BASE64,
-	HEX
+
+import io.github.pangju666.framework.autoconfigure.enums.Algorithm;
+import io.github.pangju666.framework.autoconfigure.enums.Encoding;
+
+import java.lang.annotation.*;
+
+@Target({ElementType.PARAMETER})
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+public @interface EncryptRequestParam {
+	String key() default "";
+
+	Algorithm algorithm() default Algorithm.AES256;
+
+	Encoding encoding() default Encoding.BASE64;
+
+	String name() default "";
+
+	boolean required() default true;
+
+	String defaultValue() default "";
 }

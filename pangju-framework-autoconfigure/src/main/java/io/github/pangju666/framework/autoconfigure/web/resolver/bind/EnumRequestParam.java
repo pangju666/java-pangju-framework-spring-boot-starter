@@ -14,9 +14,19 @@
  *    limitations under the License.
  */
 
-package io.github.pangju666.framework.autoconfigure.enums;
+package io.github.pangju666.framework.autoconfigure.web.resolver.bind;
 
-public enum Encoding {
-	BASE64,
-	HEX
+import java.lang.annotation.*;
+
+@Target({ElementType.PARAMETER})
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+public @interface EnumRequestParam {
+	String value() default "";
+
+	boolean required() default true;
+
+	String defaultValue() default "";
+
+	String description() default "枚举值";
 }

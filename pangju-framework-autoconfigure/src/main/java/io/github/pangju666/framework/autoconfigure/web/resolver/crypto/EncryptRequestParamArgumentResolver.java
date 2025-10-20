@@ -1,7 +1,22 @@
-package io.github.pangju666.framework.autoconfigure.web.resolver;
+/*
+ *   Copyright 2025 pangju666
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+
+package io.github.pangju666.framework.autoconfigure.web.resolver.crypto;
 
 import io.github.pangju666.framework.autoconfigure.spring.StaticSpringContext;
-import io.github.pangju666.framework.autoconfigure.web.annotation.crypto.EncryptRequestParam;
 import io.github.pangju666.framework.autoconfigure.web.utils.CryptoUtils;
 import io.github.pangju666.framework.web.exception.base.ServerException;
 import io.github.pangju666.framework.web.exception.base.ServiceException;
@@ -39,9 +54,15 @@ public class EncryptRequestParamArgumentResolver implements HandlerMethodArgumen
 			return annotation.defaultValue();
 		}
 
-		String key = StaticSpringContext.getProperty(annotation.key());
-		if (StringUtils.isBlank(key)) {
-			throw new ServerException("属性：" + annotation.key() + "值为空");
+		String key = null;
+		if (annotation.algorithm().needKey()) {
+			if (StringUtils.isBlank(annotation.key())) {
+				throw new ServerException("无效的密钥属性值");
+			}
+			key = StaticSpringContext.getProperty(annotation.key());
+			if (StringUtils.isBlank(key)) {
+				throw new ServerException("未找到密钥，属性：" + key);
+			}
 		}
 
 		try {

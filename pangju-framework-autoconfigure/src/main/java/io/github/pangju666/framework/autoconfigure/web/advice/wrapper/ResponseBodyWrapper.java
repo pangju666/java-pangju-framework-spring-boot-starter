@@ -14,9 +14,12 @@
  *    limitations under the License.
  */
 
-package io.github.pangju666.framework.autoconfigure.enums;
+package io.github.pangju666.framework.autoconfigure.web.advice.wrapper;
 
-public enum Encoding {
-	BASE64,
-	HEX
+import java.lang.annotation.*;
+
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE, ElementType.METHOD})
+public @interface ResponseBodyWrapper {
 }
