@@ -14,10 +14,13 @@
  *    limitations under the License.
  */
 
-package io.github.pangju666.framework.autoconfigure.web.log.sender;
+package io.github.pangju666.framework.autoconfigure.web.log.annotation;
 
-import io.github.pangju666.framework.autoconfigure.web.log.model.WebLog;
+import java.lang.annotation.*;
 
-public interface WebLogSender {
-	void send(WebLog webLog);
+@Target(ElementType.METHOD)
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+public @interface WebLogOperation {
+	String value();
 }

@@ -14,10 +14,16 @@
  *    limitations under the License.
  */
 
-package io.github.pangju666.framework.autoconfigure.web.log.sender;
+package io.github.pangju666.framework.autoconfigure.web.log.handler;
 
 import io.github.pangju666.framework.autoconfigure.web.log.model.WebLog;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.lang.Nullable;
 
-public interface WebLogSender {
-	void send(WebLog webLog);
+import java.lang.reflect.Method;
+
+public interface WebLogHandler {
+	void handle(WebLog webLog, HttpServletRequest request, HttpServletResponse response,
+				@Nullable Class<?> targetClass, @Nullable Method targetMethod);
 }

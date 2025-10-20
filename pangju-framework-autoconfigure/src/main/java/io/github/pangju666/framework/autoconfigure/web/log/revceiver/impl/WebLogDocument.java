@@ -14,10 +14,18 @@
  *    limitations under the License.
  */
 
-package io.github.pangju666.framework.autoconfigure.web.log.sender;
+package io.github.pangju666.framework.autoconfigure.web.log.revceiver.impl;
 
 import io.github.pangju666.framework.autoconfigure.web.log.model.WebLog;
+import io.github.pangju666.framework.data.mongodb.pool.MongoConstants;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
+import org.springframework.data.mongodb.core.mapping.FieldType;
+import org.springframework.data.mongodb.core.mapping.MongoId;
 
-public interface WebLogSender {
-	void send(WebLog webLog);
+@Document
+public class WebLogDocument extends WebLog {
+	@MongoId(value = FieldType.STRING)
+	@Field(name = MongoConstants.ID_FIELD_NAME)
+	private String id;
 }
