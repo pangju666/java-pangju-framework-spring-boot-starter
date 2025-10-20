@@ -16,8 +16,9 @@
 
 package io.github.pangju666.framework.autoconfigure.web.limiter.annotation;
 
-
-import io.github.pangju666.framework.autoconfigure.web.limiter.enums.RateLimitMethod;
+import io.github.pangju666.framework.autoconfigure.web.limiter.source.RateLimitSourceExtractor;
+import io.github.pangju666.framework.autoconfigure.web.limiter.source.impl.IpRateLimitSourceExtractor;
+import io.github.pangju666.framework.autoconfigure.web.limiter.enums.RateLimitScope;
 
 import java.lang.annotation.*;
 import java.util.concurrent.TimeUnit;
@@ -28,15 +29,17 @@ import java.util.concurrent.TimeUnit;
 public @interface RateLimit {
 	String key() default "";
 
+	String keyExpression() default "";
+
 	int interval() default 1;
 
 	TimeUnit timeUnit() default TimeUnit.SECONDS;
 
 	int rate();
 
-	boolean global() default false;
+	RateLimitScope scope() default RateLimitScope.GLOBAL;
 
-	RateLimitMethod method() default RateLimitMethod.REQUEST;
+	Class<? extends RateLimitSourceExtractor> source() default IpRateLimitSourceExtractor.class;
 
 	String message() default "请求次数已达上限，请稍候再试";
 }

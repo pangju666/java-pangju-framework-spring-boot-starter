@@ -14,12 +14,9 @@
  *    limitations under the License.
  */
 
-package io.github.pangju666.framework.autoconfigure.web.limiter.handler;
+package io.github.pangju666.framework.autoconfigure.web.limiter.enums;
 
-import io.github.pangju666.framework.autoconfigure.web.limiter.annotation.RateLimit;
-import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.lang.Nullable;
-
-public interface RequestRateLimiter {
-	boolean tryAcquire(@Nullable String key, RateLimit annotation, HttpServletRequest request);
+public enum RateLimitScope {
+	GLOBAL,
+	SOURCE
 }

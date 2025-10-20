@@ -17,6 +17,7 @@
 package io.github.pangju666.framework.autoconfigure.web.limiter;
 
 import io.github.pangju666.framework.autoconfigure.web.WebMvcAutoConfiguration;
+import io.github.pangju666.framework.autoconfigure.web.limiter.source.impl.IpRateLimitSourceExtractor;
 import io.github.pangju666.framework.autoconfigure.web.limiter.config.RedissonRequestRateLimiterConfiguration;
 import io.github.pangju666.framework.autoconfigure.web.limiter.config.Resilience4jRequestRateLimiterConfiguration;
 import jakarta.servlet.Servlet;
@@ -33,4 +34,9 @@ import org.springframework.web.servlet.DispatcherServlet;
 @EnableConfigurationProperties(RequestRateLimitProperties.class)
 @Import({Resilience4jRequestRateLimiterConfiguration.class, RedissonRequestRateLimiterConfiguration.class})
 public class RequestRateLimiterAutoConfiguration {
+	//@ConditionalOnMissingBean
+	//@Bean
+	public IpRateLimitSourceExtractor ipRateLimitSourceExtractor() {
+		return new IpRateLimitSourceExtractor();
+	}
 }

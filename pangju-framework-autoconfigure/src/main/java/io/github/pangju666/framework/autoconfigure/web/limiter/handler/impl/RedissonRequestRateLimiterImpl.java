@@ -29,7 +29,6 @@ import org.springframework.beans.factory.BeanFactory;
 
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
-import java.util.Arrays;
 
 public class RedissonRequestRateLimiterImpl implements RequestRateLimiter {
 	private static final String REDIS_PATH_DELIMITER = "::";
@@ -49,20 +48,15 @@ public class RedissonRequestRateLimiterImpl implements RequestRateLimiter {
 	@Override
 	public boolean tryAcquire(String key, RateLimit annotation, HttpServletRequest request) {
 		String rateLimitKey = key;
-		if (StringUtils.isBlank(rateLimitKey)) {
-			rateLimitKey = generateKey(annotation, request, REDIS_PATH_DELIMITER);
-		}
 		if (StringUtils.isNotBlank(properties.getRedisson().getKeyPrefix())) {
-			rateLimitKey = StringUtils.join(Arrays.asList(properties.getRedisson().getKeyPrefix(), rateLimitKey),
-				REDIS_PATH_DELIMITER);
+			rateLimitKey = properties.getRedisson().getKeyPrefix() + REDIS_PATH_DELIMITER + rateLimitKey;
 		}
 		RRateLimiter rateLimiter = redissonClient.getRateLimiter(rateLimitKey);
 		if (!rateLimiter.isExists()) {
 			if (!initRateLimiter(rateLimiter, annotation)) {
 				throw new ServerException("redisson速率限制器初始化失败，key：%s".formatted(rateLimitKey));
 			}
-			long expireMillis = annotation.timeUnit().toMillis(annotation.interval());
-			Duration expireDuration = properties.getRedisson().getExpire().plusMillis(expireMillis);
+			Duration expireDuration = Duration.ofMillis(annotation.timeUnit().toMillis(annotation.interval()));
 			redissonClient.getBucket(rateLimitKey).expire(expireDuration);
 		}
 		return rateLimiter.tryAcquire(1);

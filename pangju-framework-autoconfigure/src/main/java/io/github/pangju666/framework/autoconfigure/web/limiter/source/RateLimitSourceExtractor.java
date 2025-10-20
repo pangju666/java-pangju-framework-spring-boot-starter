@@ -14,9 +14,10 @@
  *    limitations under the License.
  */
 
-package io.github.pangju666.framework.autoconfigure.web.limiter.enums;
+package io.github.pangju666.framework.autoconfigure.web.limiter.source;
 
-public enum RateLimitMethod {
-	REQUEST,
-	AOP
+import jakarta.servlet.http.HttpServletRequest;
+
+public interface RateLimitSourceExtractor {
+	String getSource(HttpServletRequest request);
 }

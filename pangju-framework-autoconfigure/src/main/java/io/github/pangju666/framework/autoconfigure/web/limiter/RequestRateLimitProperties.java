@@ -18,8 +18,6 @@ package io.github.pangju666.framework.autoconfigure.web.limiter;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-import java.time.Duration;
-
 @ConfigurationProperties(prefix = "pangju.web.rate-limit")
 public class RequestRateLimitProperties {
 	private Type type = Type.RESILIENCE4J;
@@ -48,8 +46,7 @@ public class RequestRateLimitProperties {
 
 	public static class Redisson {
 		private String beanName;
-		private String keyPrefix = "request-limit";
-		private Duration expire = Duration.ofSeconds(5);
+		private String keyPrefix = "rate-limit";
 
 		public String getBeanName() {
 			return beanName;
@@ -65,14 +62,6 @@ public class RequestRateLimitProperties {
 
 		public void setKeyPrefix(String keyPrefix) {
 			this.keyPrefix = keyPrefix;
-		}
-
-		public Duration getExpire() {
-			return expire;
-		}
-
-		public void setExpire(Duration expire) {
-			this.expire = expire;
 		}
 	}
 }

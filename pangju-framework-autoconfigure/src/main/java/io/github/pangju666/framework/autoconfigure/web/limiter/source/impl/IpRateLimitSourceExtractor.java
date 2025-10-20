@@ -14,12 +14,15 @@
  *    limitations under the License.
  */
 
-package io.github.pangju666.framework.autoconfigure.web.limiter.handler;
+package io.github.pangju666.framework.autoconfigure.web.limiter.source.impl;
 
-import io.github.pangju666.framework.autoconfigure.web.limiter.annotation.RateLimit;
+import io.github.pangju666.framework.autoconfigure.web.limiter.source.RateLimitSourceExtractor;
+import io.github.pangju666.framework.web.utils.ServletRequestUtils;
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.lang.Nullable;
 
-public interface RequestRateLimiter {
-	boolean tryAcquire(@Nullable String key, RateLimit annotation, HttpServletRequest request);
+public class IpRateLimitSourceExtractor implements RateLimitSourceExtractor {
+	@Override
+	public String getSource(HttpServletRequest request) {
+		return ServletRequestUtils.getIpAddress(request);
+	}
 }

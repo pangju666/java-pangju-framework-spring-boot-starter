@@ -16,8 +16,10 @@
 
 package io.github.pangju666.framework.autoconfigure.web.limiter.interceptor;
 
+import io.github.pangju666.framework.autoconfigure.spring.StaticSpringContext;
 import io.github.pangju666.framework.autoconfigure.web.limiter.annotation.RateLimit;
-import io.github.pangju666.framework.autoconfigure.web.limiter.enums.RateLimitMethod;
+import io.github.pangju666.framework.autoconfigure.web.limiter.source.RateLimitSourceExtractor;
+import io.github.pangju666.framework.autoconfigure.web.limiter.enums.RateLimitScope;
 import io.github.pangju666.framework.autoconfigure.web.limiter.exception.RequestLimitException;
 import io.github.pangju666.framework.autoconfigure.web.limiter.handler.RequestRateLimiter;
 import io.github.pangju666.framework.web.exception.base.ServerException;
@@ -25,18 +27,30 @@ import io.github.pangju666.framework.web.interceptor.BaseHttpHandlerInterceptor;
 import io.github.pangju666.framework.web.utils.ServletResponseUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.expression.EvaluationContext;
+import org.springframework.expression.Expression;
+import org.springframework.expression.spel.standard.SpelExpressionParser;
+import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.lang.NonNull;
 import org.springframework.web.method.HandlerMethod;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
+import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class RequestRateLimitInterceptor extends BaseHttpHandlerInterceptor {
 	private final RequestRateLimiter requestRateLimiter;
+	private final SpelExpressionParser parser;
+	private final Map<Class<? extends RateLimitSourceExtractor>, RateLimitSourceExtractor> sourceExtractorMap = new ConcurrentHashMap(10);
 
-	public RequestRateLimitInterceptor(RequestRateLimiter requestLimitHandlers) {
+	public RequestRateLimitInterceptor(RequestRateLimiter requestLimiter) {
 		super(Collections.singleton("/**"), Collections.emptySet());
-		this.requestRateLimiter = requestLimitHandlers;
+		this.requestRateLimiter = requestLimiter;
+		this.parser = new SpelExpressionParser();
 	}
 
 	@Override
@@ -50,22 +64,59 @@ public class RequestRateLimitInterceptor extends BaseHttpHandlerInterceptor {
 			if (Objects.isNull(annotation)) {
 				return true;
 			}
-			if (annotation.method() != RateLimitMethod.REQUEST) {
-				return true;
-			}
 
-			boolean result;
 			try {
-				result = requestRateLimiter.tryAcquire(annotation.key(), annotation, request);
+				String key = generateKey(annotation, request);
+				if (!requestRateLimiter.tryAcquire(key, annotation, request)) {
+					ServletResponseUtils.writeHttpExceptionToResponse(new RequestLimitException(annotation), response);
+					return false;
+				}
 			} catch (Exception e) {
 				ServletResponseUtils.writeHttpExceptionToResponse(new ServerException(e), response);
 				return false;
 			}
-			if (!result) {
-				ServletResponseUtils.writeHttpExceptionToResponse(new RequestLimitException(annotation), response);
-				return false;
-			}
 		}
 		return true;
+	}
+
+	private String generateKey(RateLimit annotation, HttpServletRequest request) throws NoSuchMethodException,
+		InvocationTargetException, InstantiationException, IllegalAccessException {
+		StringBuilder keyBuilder = new StringBuilder();
+		if (StringUtils.isNotBlank(annotation.keyExpression())) {
+			EvaluationContext context = new StandardEvaluationContext();
+			context.setVariable("request", request);
+			Expression expression = parser.parseExpression(annotation.keyExpression());
+			keyBuilder.append(expression.getValue(context, String.class));
+		} else if (StringUtils.isNotBlank(annotation.key())) {
+			keyBuilder.append(annotation.key());
+		} else {
+			keyBuilder
+				.append(request.getRequestURI())
+				.append("_")
+				.append(request.getMethod());
+		}
+
+		if (annotation.scope() == RateLimitScope.SOURCE) {
+			RateLimitSourceExtractor sourceExtractor;
+			try {
+				sourceExtractor = sourceExtractorMap.putIfAbsent(annotation.source(),
+					StaticSpringContext.getBeanFactory().getBean(annotation.source()));
+				if (Objects.isNull(sourceExtractor)) {
+					sourceExtractor = sourceExtractorMap.get(annotation.source());
+				}
+			} catch (NoSuchBeanDefinitionException e) {
+				sourceExtractor = sourceExtractorMap.putIfAbsent(annotation.source(),
+					annotation.source().getDeclaredConstructor().newInstance());
+				if (Objects.isNull(sourceExtractor)) {
+					sourceExtractor = sourceExtractorMap.get(annotation.source());
+				}
+			}
+
+			keyBuilder
+				.append("_")
+				.append(sourceExtractor.getSource(request));
+		}
+
+		return keyBuilder.toString();
 	}
 }
