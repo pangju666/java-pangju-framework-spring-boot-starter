@@ -46,9 +46,9 @@ public class DynamicRedisProperties {
 
 	public static class RedisProperties extends org.springframework.boot.autoconfigure.data.redis.RedisProperties {
 		private RedisSerializerType keySerializer = RedisSerializerType.STRING;
-		private RedisSerializerType valueSerializer = RedisSerializerType.JAVA;
+		private RedisSerializerType valueSerializer = RedisSerializerType.JSON;
 		private RedisSerializerType hashKeySerializer = RedisSerializerType.STRING;
-		private RedisSerializerType hashValueSerializer = RedisSerializerType.JAVA;
+		private RedisSerializerType hashValueSerializer = RedisSerializerType.JSON;
 
 		public RedisSerializerType getKeySerializer() {
 			return keySerializer;

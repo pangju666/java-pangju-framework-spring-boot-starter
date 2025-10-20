@@ -22,9 +22,9 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties("spring.data.redis.serializer")
 public class RedisProperties {
 	private RedisSerializerType key = RedisSerializerType.STRING;
-	private RedisSerializerType value = RedisSerializerType.JAVA;
+	private RedisSerializerType value = RedisSerializerType.JSON;
 	private RedisSerializerType hashKey = RedisSerializerType.STRING;
-	private RedisSerializerType hashValue = RedisSerializerType.JAVA;
+	private RedisSerializerType hashValue = RedisSerializerType.JSON;
 
 	public RedisSerializerType getKey() {
 		return key;

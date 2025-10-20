@@ -14,8 +14,9 @@
  *    limitations under the License.
  */
 
-package io.github.pangju666.framework.autoconfigure.web.limit;
+package io.github.pangju666.framework.autoconfigure.web.limiter.exception;
 
+import io.github.pangju666.framework.autoconfigure.web.limiter.annotation.RateLimit;
 import io.github.pangju666.framework.web.annotation.HttpException;
 import io.github.pangju666.framework.web.enums.HttpExceptionType;
 import io.github.pangju666.framework.web.exception.base.ValidationException;
