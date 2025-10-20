@@ -8,3 +8,6 @@ io.github.pangju666.framework.autoconfigure.data.dynamic.mongo.DynamicMongoAutoC
 io.github.pangju666.framework.autoconfigure.web.advice.bind.RequestParamBindingAdvice
 io.github.pangju666.framework.autoconfigure.web.advice.wrapper.ResponseBodyWrapperAdvice
 io.github.pangju666.framework.autoconfigure.web.advice.exception.GlobalExceptionAdvice
+io.github.pangju666.framework.autoconfigure.web.advice.crypto.RequestBodyDecryptAdvice
+io.github.pangju666.framework.autoconfigure.web.advice.crypto.ResponseBodyEncryptAdvice
+io.github.pangju666.framework.autoconfigure.web.advice.AdviceAutoConfiguration
