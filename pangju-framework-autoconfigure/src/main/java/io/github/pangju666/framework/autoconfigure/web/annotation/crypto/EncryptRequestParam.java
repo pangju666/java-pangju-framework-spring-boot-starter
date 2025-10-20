@@ -1,8 +1,8 @@
 package io.github.pangju666.framework.autoconfigure.web.annotation.crypto;
 
 
-import io.github.pangju666.framework.autoconfigure.web.enums.Algorithm;
-import io.github.pangju666.framework.autoconfigure.web.enums.Encoding;
+import io.github.pangju666.framework.autoconfigure.enums.Algorithm;
+import io.github.pangju666.framework.autoconfigure.enums.Encoding;
 
 import java.lang.annotation.*;
 

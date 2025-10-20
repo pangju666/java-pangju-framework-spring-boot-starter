@@ -45,7 +45,7 @@ public class DecryptJsonDeserializer extends JsonDeserializer<Object> implements
 			}
 			key = StaticSpringContext.getProperty(annotation.key());
 			if (StringUtils.isBlank(key)) {
-				throw new ServerException("属性：" + annotation.key() + "值为空");
+				throw new ServerException("未找到密钥，属性：" + key);
 			}
 		}
 

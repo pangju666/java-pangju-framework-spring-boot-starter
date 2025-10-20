@@ -1,8 +1,8 @@
-package io.github.pangju666.framework.autoconfigure.web.annotation.crypto;
+package io.github.pangju666.framework.autoconfigure.web.advice.annotation.crypto;
 
 
-import io.github.pangju666.framework.autoconfigure.web.enums.Algorithm;
-import io.github.pangju666.framework.autoconfigure.web.enums.Encoding;
+import io.github.pangju666.framework.autoconfigure.enums.Algorithm;
+import io.github.pangju666.framework.autoconfigure.enums.Encoding;
 
 import java.lang.annotation.*;
 
@@ -10,7 +10,7 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.PARAMETER)
 public @interface DecryptRequestBody {
-	String key();
+	String key() default "";
 
 	Algorithm algorithm() default Algorithm.AES256;
 

@@ -2,8 +2,8 @@ package io.github.pangju666.framework.autoconfigure.web.utils;
 
 import io.github.pangju666.commons.crypto.encryption.binary.RSABinaryEncryptor;
 import io.github.pangju666.commons.crypto.key.RSAKey;
-import io.github.pangju666.framework.autoconfigure.web.enums.Algorithm;
-import io.github.pangju666.framework.autoconfigure.web.enums.Encoding;
+import io.github.pangju666.framework.autoconfigure.enums.Algorithm;
+import io.github.pangju666.framework.autoconfigure.enums.Encoding;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;

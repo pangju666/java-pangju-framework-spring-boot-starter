@@ -43,7 +43,7 @@ public class EncryptJsonSerializer extends JsonSerializer<Object> implements Con
 			}
 			key = StaticSpringContext.getProperty(annotation.key());
 			if (StringUtils.isBlank(key)) {
-				throw new ServerException("属性：" + annotation.key() + "值为空");
+				throw new ServerException("未找到密钥，属性：" + key);
 			}
 		} else {
 			key = null;
