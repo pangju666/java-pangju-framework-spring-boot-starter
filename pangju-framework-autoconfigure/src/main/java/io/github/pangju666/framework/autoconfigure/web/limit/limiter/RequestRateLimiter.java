@@ -1,12 +1,14 @@
-package io.github.pangju666.framework.autoconfigure.web.repeater;
+package io.github.pangju666.framework.autoconfigure.web.limit.limiter;
 
+import io.github.pangju666.framework.autoconfigure.web.limit.RateLimit;
 import io.github.pangju666.framework.web.utils.ServletRequestUtils;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.lang.Nullable;
 
-public interface RequestRepeater {
-	boolean tryAcquire(String key, Repeat repeat, HttpServletRequest request);
+public interface RequestRateLimiter {
+	boolean tryAcquire(@Nullable String key, RateLimit annotation, HttpServletRequest request);
 
-	default String generateKey(String key, String delimiter, Repeat annotation, HttpServletRequest request) {
+	default String generateKey(RateLimit annotation, HttpServletRequest request, String delimiter) {
 		StringBuilder keyBuilder = new StringBuilder()
 			.append(request.getRequestURI())
 			.append(delimiter)
@@ -16,9 +18,6 @@ public interface RequestRepeater {
 				.append(delimiter)
 				.append(ServletRequestUtils.getIpAddress(request));
 		}
-		keyBuilder
-			.append(delimiter)
-			.append(key);
 		return keyBuilder.toString();
 	}
 }

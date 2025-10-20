@@ -1,7 +1,7 @@
 package io.github.pangju666.framework.autoconfigure.web.repeater.impl;
 
-import io.github.pangju666.framework.autoconfigure.web.annotation.validation.Repeat;
-import io.github.pangju666.framework.autoconfigure.web.properties.RequestRepeatProperties;
+import io.github.pangju666.framework.autoconfigure.web.repeater.Repeat;
+import io.github.pangju666.framework.autoconfigure.web.repeater.RequestRepeatProperties;
 import io.github.pangju666.framework.autoconfigure.web.repeater.RequestRepeater;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;

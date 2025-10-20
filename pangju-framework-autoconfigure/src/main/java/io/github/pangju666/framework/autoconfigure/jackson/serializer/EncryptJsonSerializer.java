@@ -24,7 +24,7 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.ContextualSerializer;
 import io.github.pangju666.framework.autoconfigure.jackson.annotation.EncryptFormat;
 import io.github.pangju666.framework.autoconfigure.spring.StaticSpringContext;
-import io.github.pangju666.framework.autoconfigure.web.utils.CryptoUtils;
+import io.github.pangju666.framework.autoconfigure.web.crypto.utils.CryptoUtils;
 import io.github.pangju666.framework.web.exception.base.ServerException;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;

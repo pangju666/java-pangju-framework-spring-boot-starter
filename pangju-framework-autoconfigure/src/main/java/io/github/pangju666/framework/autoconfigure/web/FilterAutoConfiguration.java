@@ -1,3 +1,19 @@
+/*
+ *   Copyright 2025 pangju666
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+
 package io.github.pangju666.framework.autoconfigure.web;
 
 import io.github.pangju666.framework.web.filter.ContentCachingWrapperFilter;
@@ -15,23 +31,11 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.servlet.DispatcherServlet;
 
 import java.util.Collections;
-import java.util.Set;
 
 @AutoConfiguration
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @ConditionalOnClass({Servlet.class, DispatcherServlet.class})
 public class FilterAutoConfiguration {
-	private Set<String> excludePathPatterns = Collections.emptySet();
-
-	/*@Autowired(required = false)
-	public void setExcludePathPatterns(Map<String, ExcludePathPatternsProvider> excludePathPatternProviderMap) {
-		this.excludePathPatterns = excludePathPatternProviderMap.values()
-			.stream()
-			.map(ExcludePathPatternsProvider::getExcludePaths)
-			.flatMap(Set::stream)
-			.collect(Collectors.toSet());
-	}
-*/
 	@ConditionalOnClass(CorsFilter.class)
 	@ConditionalOnMissingFilterBean
 	@Bean
@@ -45,18 +49,20 @@ public class FilterAutoConfiguration {
 		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 		source.registerCorsConfiguration("/**", config);
 
-		FilterRegistrationBean<CorsFilter> filterRegistrationBean = new FilterRegistrationBean<>(new CorsFilter(source, excludePathPatterns));
+		FilterRegistrationBean<CorsFilter> filterRegistrationBean = new FilterRegistrationBean<>(
+			new CorsFilter(source, Collections.emptySet()));
 		filterRegistrationBean.setOrder(Ordered.HIGHEST_PRECEDENCE);
 		return filterRegistrationBean;
 	}
 
 	@ConditionalOnClass(ContentCachingWrapperFilter.class)
+	@ConditionalOnMissingFilterBean
 	@Bean
 	public FilterRegistrationBean<ContentCachingWrapperFilter> contentCachingWrapperFilterRegistrationBean() {
-		ContentCachingWrapperFilter contentCachingWrapperFilter = new ContentCachingWrapperFilter(excludePathPatterns);
+		ContentCachingWrapperFilter contentCachingWrapperFilter = new ContentCachingWrapperFilter(Collections.emptySet());
 		FilterRegistrationBean<ContentCachingWrapperFilter> filterRegistrationBean = new FilterRegistrationBean<>(contentCachingWrapperFilter);
 		filterRegistrationBean.addUrlPatterns("/*");
-		filterRegistrationBean.setOrder(Ordered.HIGHEST_PRECEDENCE + 2);
+		filterRegistrationBean.setOrder(Ordered.HIGHEST_PRECEDENCE + 1);
 		return filterRegistrationBean;
 	}
 }
