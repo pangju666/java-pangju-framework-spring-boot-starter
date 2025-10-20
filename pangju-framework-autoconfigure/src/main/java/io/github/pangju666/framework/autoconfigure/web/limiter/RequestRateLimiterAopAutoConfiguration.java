@@ -17,15 +17,16 @@
 package io.github.pangju666.framework.autoconfigure.web.limiter;
 
 import io.github.pangju666.framework.autoconfigure.web.limiter.aspect.RequestRateLimitAspect;
-import io.github.pangju666.framework.autoconfigure.web.limiter.limiter.RequestRateLimiter;
+import io.github.pangju666.framework.autoconfigure.web.limiter.handler.RequestRateLimiter;
 import org.aspectj.weaver.Advice;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.aop.AopAutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.context.annotation.Bean;
 
-@AutoConfiguration(after = {RequestRateLimiterAutoConfiguration.class, org.springframework.boot.autoconfigure.aop.AopAutoConfiguration.class})
+@AutoConfiguration(after = {RequestRateLimiterAutoConfiguration.class, AopAutoConfiguration.class})
 @ConditionalOnBooleanProperty(name = "spring.aop.auto", matchIfMissing = true)
 @ConditionalOnClass(Advice.class)
 public class RequestRateLimiterAopAutoConfiguration {

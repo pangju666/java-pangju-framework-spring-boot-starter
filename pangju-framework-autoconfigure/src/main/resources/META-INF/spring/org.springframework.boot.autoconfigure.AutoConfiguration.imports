@@ -13,6 +13,9 @@ io.github.pangju666.framework.autoconfigure.web.crypto.advice.RequestBodyDecrypt
 io.github.pangju666.framework.autoconfigure.web.crypto.advice.ResponseBodyEncryptAdvice
 io.github.pangju666.framework.autoconfigure.web.limiter.RequestRateLimiterAutoConfiguration
 io.github.pangju666.framework.autoconfigure.web.limiter.RequestRateLimiterAopAutoConfiguration
+io.github.pangju666.framework.autoconfigure.web.repeater.RequestRepeaterAutoConfiguration
+io.github.pangju666.framework.autoconfigure.web.repeater.RequestRepeaterAopAutoConfiguration
+io.github.pangju666.framework.autoconfigure.web.signature.RequestSignatureAutoConfiguration
 io.github.pangju666.framework.autoconfigure.web.FilterAutoConfiguration
 io.github.pangju666.framework.autoconfigure.web.RestClientAutoConfiguration
 io.github.pangju666.framework.autoconfigure.web.WebMvcAutoConfiguration

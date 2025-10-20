@@ -14,8 +14,9 @@
  *    limitations under the License.
  */
 
-package io.github.pangju666.framework.autoconfigure.web.repeater;
+package io.github.pangju666.framework.autoconfigure.web.repeater.exception;
 
+import io.github.pangju666.framework.autoconfigure.web.repeater.annotation.Repeat;
 import io.github.pangju666.framework.web.annotation.HttpException;
 import io.github.pangju666.framework.web.enums.HttpExceptionType;
 import io.github.pangju666.framework.web.exception.base.ValidationException;

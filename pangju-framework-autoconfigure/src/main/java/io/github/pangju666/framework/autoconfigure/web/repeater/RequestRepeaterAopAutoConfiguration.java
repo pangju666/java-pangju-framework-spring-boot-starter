@@ -16,22 +16,20 @@
 
 package io.github.pangju666.framework.autoconfigure.web.repeater;
 
-import io.github.pangju666.framework.autoconfigure.web.limiter.RequestRateLimiterAutoConfiguration;
-import io.github.pangju666.framework.autoconfigure.web.limiter.aspect.RequestRateLimitAspect;
-import io.github.pangju666.framework.autoconfigure.web.limiter.limiter.RequestRateLimiter;
+import io.github.pangju666.framework.autoconfigure.web.repeater.aspect.RequestRepeatAspect;
+import io.github.pangju666.framework.autoconfigure.web.repeater.handler.RequestRepeater;
+import org.aspectj.weaver.Advice;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.aop.AopAutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.context.annotation.Bean;
 
-@AutoConfiguration(after = {RequestRateLimiterAutoConfiguration.class, RequestRepeaterAutoConfiguration.class,
-	org.springframework.boot.autoconfigure.aop.AopAutoConfiguration.class})
-public class AopAutoConfiguration {
-	@ConditionalOnBean(RequestRateLimiter.class)
-	@Bean
-	public RequestRateLimitAspect requestRateLimitAspect(RequestRateLimiter requestRateLimiter) {
-		return new RequestRateLimitAspect(requestRateLimiter);
-	}
-
+@AutoConfiguration(after = {RequestRepeaterAutoConfiguration.class, AopAutoConfiguration.class})
+@ConditionalOnBooleanProperty(name = "spring.aop.auto", matchIfMissing = true)
+@ConditionalOnClass(Advice.class)
+public class RequestRepeaterAopAutoConfiguration {
 	@ConditionalOnBean(RequestRepeater.class)
 	@Bean
 	public RequestRepeatAspect requestRepeatAspect(RequestRepeater requestRepeater) {

@@ -14,11 +14,11 @@
  *    limitations under the License.
  */
 
-package io.github.pangju666.framework.autoconfigure.web.limiter.limiter.impl;
+package io.github.pangju666.framework.autoconfigure.web.limiter.handler.impl;
 
 import io.github.pangju666.framework.autoconfigure.web.limiter.RequestRateLimitProperties;
 import io.github.pangju666.framework.autoconfigure.web.limiter.annotation.RateLimit;
-import io.github.pangju666.framework.autoconfigure.web.limiter.limiter.RequestRateLimiter;
+import io.github.pangju666.framework.autoconfigure.web.limiter.handler.RequestRateLimiter;
 import io.github.pangju666.framework.web.exception.base.ServerException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;

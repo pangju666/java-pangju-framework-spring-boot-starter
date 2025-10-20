@@ -19,7 +19,7 @@ package io.github.pangju666.framework.autoconfigure.web.limiter.interceptor;
 import io.github.pangju666.framework.autoconfigure.web.limiter.annotation.RateLimit;
 import io.github.pangju666.framework.autoconfigure.web.limiter.enums.RateLimitMethod;
 import io.github.pangju666.framework.autoconfigure.web.limiter.exception.RequestLimitException;
-import io.github.pangju666.framework.autoconfigure.web.limiter.limiter.RequestRateLimiter;
+import io.github.pangju666.framework.autoconfigure.web.limiter.handler.RequestRateLimiter;
 import io.github.pangju666.framework.web.exception.base.ServerException;
 import io.github.pangju666.framework.web.interceptor.BaseHttpHandlerInterceptor;
 import io.github.pangju666.framework.web.utils.ServletResponseUtils;

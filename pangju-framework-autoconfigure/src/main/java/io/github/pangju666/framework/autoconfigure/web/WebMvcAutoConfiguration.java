@@ -17,9 +17,12 @@
 package io.github.pangju666.framework.autoconfigure.web;
 
 import io.github.pangju666.framework.autoconfigure.web.crypto.resolver.EncryptRequestParamArgumentResolver;
+import io.github.pangju666.framework.autoconfigure.web.limiter.handler.RequestRateLimiter;
 import io.github.pangju666.framework.autoconfigure.web.limiter.interceptor.RequestRateLimitInterceptor;
-import io.github.pangju666.framework.autoconfigure.web.limiter.limiter.RequestRateLimiter;
 import io.github.pangju666.framework.autoconfigure.web.resolver.EnumRequestParamArgumentResolver;
+import io.github.pangju666.framework.autoconfigure.web.signature.RequestSignatureProperties;
+import io.github.pangju666.framework.autoconfigure.web.signature.handler.SignatureSecretKeyStore;
+import io.github.pangju666.framework.autoconfigure.web.signature.interceptor.RequestSignatureInterceptor;
 import io.github.pangju666.framework.web.interceptor.BaseHttpHandlerInterceptor;
 import jakarta.servlet.Servlet;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -37,20 +40,18 @@ import java.util.List;
 @ConditionalOnClass({Servlet.class, DispatcherServlet.class, WebMvcConfigurer.class})
 public class WebMvcAutoConfiguration implements WebMvcConfigurer {
 	private final List<BaseHttpHandlerInterceptor> interceptors;
-	//private final RequestSignatureProperties signatureProperties;
 	private final RequestRateLimiter requestRateLimiter;
-	//private final SignatureSecretKeyStore secretKeyStore;
+	private final SignatureSecretKeyStore secretKeyStore;
+	private final RequestSignatureProperties signatureProperties;
 
 	public WebMvcAutoConfiguration(List<BaseHttpHandlerInterceptor> interceptors,
-								   RequestRateLimiter requestRateLimiter
-								   /*RequestSignatureProperties signatureProperties,
-
-								   SignatureSecretKeyStore secretKeyStore*/) {
+								   RequestRateLimiter requestRateLimiter,
+								   RequestSignatureProperties signatureProperties,
+								   SignatureSecretKeyStore secretKeyStore) {
 		this.interceptors = interceptors;
 		this.requestRateLimiter = requestRateLimiter;
-		/*this.signatureProperties = signatureProperties;
-
-		this.secretKeyStore = secretKeyStore;*/
+		this.signatureProperties = signatureProperties;
+		this.secretKeyStore = secretKeyStore;
 	}
 
 	@Override
@@ -61,13 +62,15 @@ public class WebMvcAutoConfiguration implements WebMvcConfigurer {
 
 	@Override
 	public void addInterceptors(InterceptorRegistry registry) {
-		/*registry.addInterceptor(new RequestSignatureInterceptor(signatureProperties, secretKeyStore))
-			.addPathPatterns("/**")
-			.excludePathPatterns(excludePathPatterns);*/
 		RequestRateLimitInterceptor requestRateLimitInterceptor = new RequestRateLimitInterceptor(requestRateLimiter);
 		registry.addInterceptor(requestRateLimitInterceptor)
 			.addPathPatterns(requestRateLimitInterceptor.getPatterns())
 			.excludePathPatterns(requestRateLimitInterceptor.getExcludePathPatterns());
+
+		RequestSignatureInterceptor requestSignatureInterceptor = new RequestSignatureInterceptor(signatureProperties, secretKeyStore);
+		registry.addInterceptor(requestSignatureInterceptor)
+			.addPathPatterns(requestSignatureInterceptor.getPatterns())
+			.excludePathPatterns(requestSignatureInterceptor.getExcludePathPatterns());
 
 		for (BaseHttpHandlerInterceptor interceptor : this.interceptors) {
 			registry.addInterceptor(interceptor)

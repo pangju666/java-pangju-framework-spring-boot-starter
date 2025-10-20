@@ -14,10 +14,10 @@
  *    limitations under the License.
  */
 
-package io.github.pangju666.framework.autoconfigure.web.limiter.limiter.impl;
+package io.github.pangju666.framework.autoconfigure.web.limiter.handler.impl;
 
 import io.github.pangju666.framework.autoconfigure.web.limiter.annotation.RateLimit;
-import io.github.pangju666.framework.autoconfigure.web.limiter.limiter.RequestRateLimiter;
+import io.github.pangju666.framework.autoconfigure.web.limiter.handler.RequestRateLimiter;
 import io.github.resilience4j.ratelimiter.RateLimiterConfig;
 import io.github.resilience4j.ratelimiter.RateLimiterRegistry;
 import jakarta.servlet.http.HttpServletRequest;

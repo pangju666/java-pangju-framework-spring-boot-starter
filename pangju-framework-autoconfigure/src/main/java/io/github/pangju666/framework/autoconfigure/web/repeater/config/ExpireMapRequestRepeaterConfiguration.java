@@ -14,21 +14,21 @@
  *    limitations under the License.
  */
 
-package io.github.pangju666.framework.autoconfigure.web.limiter.config;
+package io.github.pangju666.framework.autoconfigure.web.repeater.config;
 
-import io.github.pangju666.framework.autoconfigure.web.limiter.handler.RequestRateLimiter;
-import io.github.pangju666.framework.autoconfigure.web.limiter.handler.impl.Resilience4JRequestRateLimiterImpl;
+import io.github.pangju666.framework.autoconfigure.web.repeater.handler.RequestRepeater;
+import io.github.pangju666.framework.autoconfigure.web.repeater.handler.impl.ExpireMapRequestRepeater;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration(proxyBeanMethods = false)
-@ConditionalOnProperty(prefix = "pangju.web.rate-limit", value = "type", havingValue = "RESILIENCE4J", matchIfMissing = true)
-public class Resilience4jRequestRateLimiterConfiguration {
-	@ConditionalOnMissingBean(RequestRateLimiter.class)
+@ConditionalOnProperty(prefix = "pangju.web.repeat", value = "type", havingValue = "EXPIRE_MAP", matchIfMissing = true)
+public class ExpireMapRequestRepeaterConfiguration {
+	@ConditionalOnMissingBean(RequestRepeater.class)
 	@Bean
-	public Resilience4JRequestRateLimiterImpl resilience4JRequestRateLimiter() {
-		return new Resilience4JRequestRateLimiterImpl();
+	public ExpireMapRequestRepeater expireMapRequestRepeater() {
+		return new ExpireMapRequestRepeater();
 	}
 }
