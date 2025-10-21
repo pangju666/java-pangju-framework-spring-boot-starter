@@ -195,14 +195,73 @@ import java.util.Objects;
 @ConditionalOnClass({Servlet.class, DispatcherServlet.class})
 @RestControllerAdvice
 public class ResponseBodyWrapperAdvice implements ResponseBodyAdvice<Object> {
+	/**
+	 * Jackson ObjectMapper实例
+	 * <p>
+	 * 用于Jackson序列化和反序列化操作，包括JSON字符串和Jackson JsonNode之间的转换。
+	 * 该实例由Spring容器自动注入。
+	 * </p>
+	 *
+	 * @since 1.0.0
+	 */
 	private final ObjectMapper objectMapper;
+	/**
+	 * Jackson ObjectReader实例
+	 * <p>
+	 * 用于高效地读取和解析JSON内容，基于{@link #objectMapper}创建。
+	 * 主要用于将JSON字符串转换为Jackson JsonNode对象。
+	 * </p>
+	 *
+	 * @since 1.0.0
+	 */
 	private final ObjectReader objectReader;
 
+	/**
+	 * 构造方法
+	 * <p>
+	 * 初始化响应体包装处理器，创建ObjectReader实例供后续JSON处理使用。
+	 * </p>
+	 *
+	 * @param objectMapper Spring容器注入的ObjectMapper Bean实例
+	 * @since 1.0.0
+	 */
 	public ResponseBodyWrapperAdvice(ObjectMapper objectMapper) {
 		this.objectMapper = objectMapper;
 		this.objectReader = objectMapper.reader();
 	}
 
+	/**
+	 * 检查该通知是否支持处理当前的HTTP消息转换器
+	 * <p>
+	 * 该方法执行以下检查：
+	 * <ol>
+	 *     <li>验证HTTP消息转换器是否为支持的类型之一：
+	 *         <ul>
+	 *             <li>{@link MappingJackson2HttpMessageConverter} - Jackson JSON转换器</li>
+	 *             <li>{@link GsonHttpMessageConverter} - Gson JSON转换器</li>
+	 *             <li>{@link ByteArrayHttpMessageConverter} - 字节数组转换器</li>
+	 *             <li>{@link StringHttpMessageConverter} - 字符串转换器</li>
+	 *         </ul>
+	 *     </li>
+	 *     <li>排除条件检查 - 返回false的情况：
+	 *         <ul>
+	 *             <li>返回类型是{@link ResponseEntity}的子类</li>
+	 *             <li>方法标注了{@link ResponseBodyWrapperIgnore}注解</li>
+	 *         </ul>
+	 *     </li>
+	 *     <li>支持条件检查 - 返回true的情况：
+	 *         <ul>
+	 *             <li>方法标注了{@link ResponseBodyWrapper}注解，或</li>
+	 *             <li>方法所在的类标注了{@link ResponseBodyWrapper}注解</li>
+	 *         </ul>
+	 *     </li>
+	 * </ol>
+	 * </p>
+	 *
+	 * @param returnType    当前处理的方法返回类型参数
+	 * @param converterType 当前使用的HTTP消息转换器类型
+	 * @return 如果该通知支持处理当前返回值则返回true，否则返回false
+	 */
 	@Override
 	public boolean supports(MethodParameter returnType, Class<? extends HttpMessageConverter<?>> converterType) {
 		if (MappingJackson2HttpMessageConverter.class.isAssignableFrom(converterType) ||
@@ -219,6 +278,88 @@ public class ResponseBodyWrapperAdvice implements ResponseBodyAdvice<Object> {
 		return false;
 	}
 
+	/**
+	 * 在响应体被写入之前进行包装处理
+	 * <p>
+	 * 该方法根据响应体的类型和使用的HTTP消息转换器，采用不同的包装策略。
+	 * 处理流程如下：
+	 * </p>
+	 * <p>
+	 * <strong>处理流程：</strong>
+	 * <ol>
+	 *     <li><strong>String类型响应</strong>
+	 *         <ul>
+	 *             <li>将响应体包装到Result对象中</li>
+	 *             <li>设置Content-Type为application/json</li>
+	 *             <li>返回Result对象的字符串表示</li>
+	 *         </ul>
+	 *     </li>
+	 *     <li><strong>byte[]类型响应</strong>
+	 *         <ul>
+	 *             <li>将响应体包装到Result对象中</li>
+	 *             <li>设置Content-Type为application/json</li>
+	 *             <li>返回Result对象字符串的字节数组</li>
+	 *         </ul>
+	 *     </li>
+	 *     <li><strong>Result类型响应</strong>
+	 *         <ul>
+	 *             <li>已经是Result类型，直接返回，不再包装</li>
+	 *         </ul>
+	 *     </li>
+	 *     <li><strong>Gson JsonElement类型响应</strong>
+	 *         <ul>
+	 *             <li>当使用GsonHttpMessageConverter时</li>
+	 *             <li>创建JsonObject，包含code、message和data字段</li>
+	 *             <li>data字段存放原始的JsonElement</li>
+	 *         </ul>
+	 *     </li>
+	 *     <li><strong>Jackson JsonNode类型响应</strong>
+	 *         <ul>
+	 *             <li>当使用MappingJackson2HttpMessageConverter时</li>
+	 *             <li>创建ObjectNode，包含code、message和data字段</li>
+	 *             <li>data字段存放原始的JsonNode</li>
+	 *         </ul>
+	 *     </li>
+	 *     <li><strong>其他类型响应</strong>
+	 *         <ul>
+	 *             <li>统一包装到Result对象中</li>
+	 *             <li>原始对象作为Result的data字段</li>
+	 *         </ul>
+	 *     </li>
+	 * </ol>
+	 * </p>
+	 * <p>
+	 * <strong>包装格式说明：</strong>
+	 * <p>
+	 * 包装后的响应统一符合以下格式：
+	 * <pre>
+	 * {@code
+	 * {
+	 *   "code": 0,                    // 响应代码，0表示成功
+	 *   "message": "请求成功",        // 响应消息
+	 *   "data": <原始响应数据>        // 包装的原始数据
+	 * }
+	 * }
+	 * </pre>
+	 * </p>
+	 * </p>
+	 * <p>
+	 * <strong>异常处理：</strong>
+	 * <p>
+	 * 在JSON处理过程中发生的任何{@link JsonProcessingException}都会被转换为
+	 * {@link ServerException}抛出。
+	 * </p>
+	 * </p>
+	 *
+	 * @param body                   原始的响应体对象，可能为null
+	 * @param returnType             当前处理的方法返回类型参数
+	 * @param selectedContentType    选中的内容类型
+	 * @param selectedConverterType  选中的HTTP消息转换器类型
+	 * @param request                当前HTTP请求
+	 * @param response               当前HTTP响应
+	 * @return 包装后的响应体对象，类型根据原始响应类型和转换器类型而定
+	 * @throws ServerException 当JSON处理过程中发生异常时抛出
+	 */
 	@Override
 	public Object beforeBodyWrite(@Nullable Object body, MethodParameter returnType, MediaType selectedContentType,
 								  Class<? extends HttpMessageConverter<?>> selectedConverterType,
