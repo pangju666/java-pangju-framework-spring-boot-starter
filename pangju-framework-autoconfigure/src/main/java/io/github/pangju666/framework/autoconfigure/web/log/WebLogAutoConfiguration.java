@@ -16,21 +16,19 @@
 
 package io.github.pangju666.framework.autoconfigure.web.log;
 
-import io.github.pangju666.framework.autoconfigure.web.log.config.KafkaSenderAutoConfiguration;
-import io.github.pangju666.framework.autoconfigure.web.log.config.MongoReceiverAutoConfiguration;
 import io.github.pangju666.framework.autoconfigure.web.log.filter.WebLogFilter;
 import io.github.pangju666.framework.autoconfigure.web.log.handler.WebLogHandler;
+import io.github.pangju666.framework.autoconfigure.web.log.revceiver.WebLogReceiver;
 import io.github.pangju666.framework.autoconfigure.web.log.sender.WebLogSender;
+import io.github.pangju666.framework.autoconfigure.web.log.sender.impl.disruptor.DisruptorWebLogEventHandler;
+import io.github.pangju666.framework.autoconfigure.web.log.sender.impl.disruptor.DisruptorWebLogSender;
 import jakarta.servlet.Servlet;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
+import org.springframework.boot.autoconfigure.condition.*;
+import org.springframework.boot.autoconfigure.web.servlet.ConditionalOnMissingFilterBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Import;
 import org.springframework.core.Ordered;
 import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -42,11 +40,27 @@ import java.util.List;
 @AutoConfiguration
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @ConditionalOnClass({Servlet.class, DispatcherServlet.class, WebMvcConfigurer.class})
-@ConditionalOnProperty(prefix = "pangju.web.log", name = "enabled", havingValue = "true", matchIfMissing = true)
-@Import({KafkaSenderAutoConfiguration.class, MongoReceiverAutoConfiguration.class})
+@ConditionalOnBooleanProperty(prefix = "pangju.web.log", name = "enabled", matchIfMissing = true)
 @EnableConfigurationProperties(WebLogProperties.class)
 public class WebLogAutoConfiguration {
+	@ConditionalOnProperty(prefix = "pangju.web.log", name = "sender-type", havingValue = "DISRUPTOR", matchIfMissing = true)
+	@ConditionalOnMissingBean(DisruptorWebLogEventHandler.class)
+	@ConditionalOnBean(WebLogReceiver.class)
+	@Bean
+	public DisruptorWebLogEventHandler disruptorWebLogEventHandler(WebLogReceiver webLogReceiver) {
+		return new DisruptorWebLogEventHandler(webLogReceiver);
+	}
+
+	@ConditionalOnProperty(prefix = "pangju.web.log", name = "sender-type", havingValue = "DISRUPTOR", matchIfMissing = true)
+	@ConditionalOnBean(DisruptorWebLogEventHandler.class)
+	@ConditionalOnMissingBean(WebLogSender.class)
+	@Bean
+	public DisruptorWebLogSender disruptorWebLogSender(WebLogProperties properties, DisruptorWebLogEventHandler eventHandler) {
+		return new DisruptorWebLogSender(properties, eventHandler);
+	}
+
 	@ConditionalOnBean({WebLogSender.class})
+	@ConditionalOnMissingFilterBean
 	@Bean
 	public FilterRegistrationBean<WebLogFilter> webLogFilterRegistrationBean(WebLogProperties properties,
 																			 WebLogSender webLogSender,

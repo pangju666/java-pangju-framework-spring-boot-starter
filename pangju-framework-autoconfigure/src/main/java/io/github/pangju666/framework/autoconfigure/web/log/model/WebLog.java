@@ -18,8 +18,8 @@ package io.github.pangju666.framework.autoconfigure.web.log.model;
 
 import jakarta.servlet.http.Part;
 import org.springframework.http.HttpHeaders;
-import org.springframework.util.MultiValueMap;
 
+import java.util.List;
 import java.util.Map;
 
 public class WebLog {
@@ -107,7 +107,7 @@ public class WebLog {
 
 	public static class Request {
 		private HttpHeaders headers;
-		private MultiValueMap<String, String> queryParams;
+		private Map<String, List<String>> queryParams;
 		private String characterEncoding;
 		private Map<String, Part> formData;
 		private int contentLength;
@@ -154,11 +154,11 @@ public class WebLog {
 			this.headers = headers;
 		}
 
-		public MultiValueMap<String, String> getQueryParams() {
+		public Map<String, List<String>> getQueryParams() {
 			return queryParams;
 		}
 
-		public void setQueryParams(MultiValueMap<String, String> queryParams) {
+		public void setQueryParams(Map<String, List<String>> queryParams) {
 			this.queryParams = queryParams;
 		}
 

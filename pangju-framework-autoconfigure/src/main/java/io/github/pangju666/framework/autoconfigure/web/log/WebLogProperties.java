@@ -20,11 +20,21 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = "pangju.web.log")
 public class WebLogProperties {
+	private SenderType senderType = SenderType.DISRUPTOR;
 	private Kafka kafka = new Kafka();
 	private Mongo mongo = new Mongo();
+	private Disruptor disruptor = new Disruptor();
 	private boolean enabled = true;
 	private Request request = new Request();
 	private Response response = new Response();
+
+	public SenderType getSenderType() {
+		return senderType;
+	}
+
+	public void setSenderType(SenderType senderType) {
+		this.senderType = senderType;
+	}
 
 	public Mongo getMongo() {
 		return mongo;
@@ -40,6 +50,14 @@ public class WebLogProperties {
 
 	public void setKafka(Kafka kafka) {
 		this.kafka = kafka;
+	}
+
+	public Disruptor getDisruptor() {
+		return disruptor;
+	}
+
+	public void setDisruptor(Disruptor disruptor) {
+		this.disruptor = disruptor;
 	}
 
 	public Request getRequest() {
@@ -66,16 +84,21 @@ public class WebLogProperties {
 		this.enabled = enabled;
 	}
 
-	public static class Mongo {
-		private String templateBeanName;
-		private String collectionPrefix = "request_log";
+	public enum SenderType {
+		KAFKA,
+		DISRUPTOR
+	}
 
-		public String getTemplateBeanName() {
-			return templateBeanName;
+	public static class Mongo {
+		private String mongoTemplateBeanName;
+		private String collectionPrefix = "web_log";
+
+		public String getMongoTemplateBeanName() {
+			return mongoTemplateBeanName;
 		}
 
-		public void setTemplateBeanName(String templateBeanName) {
-			this.templateBeanName = templateBeanName;
+		public void setMongoTemplateBeanName(String mongoTemplateBeanName) {
+			this.mongoTemplateBeanName = mongoTemplateBeanName;
 		}
 
 		public String getCollectionPrefix() {
@@ -88,15 +111,15 @@ public class WebLogProperties {
 	}
 
 	public static class Kafka {
-		private String templateBeanName;
+		private String kafkaTemplateBeanName;
 		private String topic;
 
-		public String getTemplateBeanName() {
-			return templateBeanName;
+		public String getKafkaTemplateBeanName() {
+			return kafkaTemplateBeanName;
 		}
 
-		public void setTemplateBeanName(String templateBeanName) {
-			this.templateBeanName = templateBeanName;
+		public void setKafkaTemplateBeanName(String kafkaTemplateBeanName) {
+			this.kafkaTemplateBeanName = kafkaTemplateBeanName;
 		}
 
 		public String getTopic() {
@@ -105,6 +128,18 @@ public class WebLogProperties {
 
 		public void setTopic(String topic) {
 			this.topic = topic;
+		}
+	}
+
+	public static class Disruptor {
+		private int bufferSize = 1024;
+
+		public int getBufferSize() {
+			return bufferSize;
+		}
+
+		public void setBufferSize(int bufferSize) {
+			this.bufferSize = bufferSize;
 		}
 	}
 
@@ -150,7 +185,7 @@ public class WebLogProperties {
 	public static class Response {
 		private boolean headers = true;
 		private boolean body = true;
-		private boolean bodyData = false;
+		private boolean resultData = false;
 
 		public boolean isHeaders() {
 			return headers;
@@ -168,12 +203,12 @@ public class WebLogProperties {
 			this.body = body;
 		}
 
-		public boolean isBodyData() {
-			return bodyData;
+		public boolean isResultData() {
+			return resultData;
 		}
 
-		public void setBodyData(boolean bodyData) {
-			this.bodyData = bodyData;
+		public void setResultData(boolean resultData) {
+			this.resultData = resultData;
 		}
 	}
 }

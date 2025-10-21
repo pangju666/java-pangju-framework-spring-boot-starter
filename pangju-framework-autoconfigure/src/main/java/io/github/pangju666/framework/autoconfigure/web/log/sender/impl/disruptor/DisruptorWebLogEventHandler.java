@@ -14,29 +14,26 @@
  *    limitations under the License.
  */
 
-package io.github.pangju666.framework.autoconfigure.web.log.sender.impl;
+package io.github.pangju666.framework.autoconfigure.web.log.sender.impl.disruptor;
 
+import com.lmax.disruptor.EventHandler;
 import io.github.pangju666.framework.autoconfigure.web.log.model.WebLog;
 import io.github.pangju666.framework.autoconfigure.web.log.revceiver.WebLogReceiver;
-import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.kafka.support.Acknowledgment;
 
 import java.util.Objects;
 
-public class WebLogKafkaListener {
+public class DisruptorWebLogEventHandler implements EventHandler<WebLogEvent> {
 	private final WebLogReceiver receiver;
 
-	public WebLogKafkaListener(WebLogReceiver webLogReceiver) {
+	public DisruptorWebLogEventHandler(WebLogReceiver webLogReceiver) {
 		this.receiver = webLogReceiver;
 	}
 
-	@KafkaListener(topics = "${pangju.web.log.kafka.topic}")
-	public void listenRequestLog(ConsumerRecord<String, WebLog> record, Acknowledgment ack) {
-		WebLog webLog = record.value();
+	@Override
+	public void onEvent(WebLogEvent event, long sequence, boolean endOfBatch) {
+		WebLog webLog = event.getWebLog();
 		if (Objects.nonNull(webLog)) {
 			receiver.receive(webLog);
 		}
-		ack.acknowledge();
 	}
 }

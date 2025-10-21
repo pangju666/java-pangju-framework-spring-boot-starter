@@ -14,28 +14,25 @@
  *    limitations under the License.
  */
 
-package io.github.pangju666.framework.autoconfigure.web.log.config;
+package io.github.pangju666.framework.autoconfigure.web.log;
 
 import com.mongodb.client.MongoClient;
-import io.github.pangju666.framework.autoconfigure.web.log.WebLogProperties;
 import io.github.pangju666.framework.autoconfigure.web.log.revceiver.WebLogReceiver;
 import io.github.pangju666.framework.autoconfigure.web.log.revceiver.impl.MongoWebLogReceiver;
 import jakarta.servlet.Servlet;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
+import org.springframework.boot.autoconfigure.condition.*;
 import org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-@AutoConfiguration(after = MongoDataAutoConfiguration.class)
+@AutoConfiguration(before = WebLogAutoConfiguration.class, after = MongoDataAutoConfiguration.class)
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @ConditionalOnClass({Servlet.class, DispatcherServlet.class, WebMvcConfigurer.class, MongoClient.class, MongoTemplate.class})
+@ConditionalOnBooleanProperty(prefix = "pangju.web.log", name = "enabled", matchIfMissing = true)
 public class MongoReceiverAutoConfiguration {
 	@ConditionalOnMissingBean(WebLogReceiver.class)
 	@ConditionalOnBean(MongoTemplate.class)

@@ -34,8 +34,8 @@ public class MongoWebLogReceiver implements WebLogReceiver {
 	private final WebLogProperties properties;
 
 	public MongoWebLogReceiver(WebLogProperties properties, BeanFactory beanFactory) {
-		if (StringUtils.hasText(properties.getMongo().getTemplateBeanName())) {
-			this.mongoTemplate = beanFactory.getBean(properties.getMongo().getTemplateBeanName(), MongoTemplate.class);
+		if (StringUtils.hasText(properties.getMongo().getMongoTemplateBeanName())) {
+			this.mongoTemplate = beanFactory.getBean(properties.getMongo().getMongoTemplateBeanName(), MongoTemplate.class);
 		} else {
 			this.mongoTemplate = beanFactory.getBean(MongoTemplate.class);
 		}

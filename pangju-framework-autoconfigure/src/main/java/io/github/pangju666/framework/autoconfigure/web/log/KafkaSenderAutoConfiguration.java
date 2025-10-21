@@ -14,13 +14,12 @@
  *    limitations under the License.
  */
 
-package io.github.pangju666.framework.autoconfigure.web.log.config;
+package io.github.pangju666.framework.autoconfigure.web.log;
 
-import io.github.pangju666.framework.autoconfigure.web.log.WebLogProperties;
 import io.github.pangju666.framework.autoconfigure.web.log.revceiver.WebLogReceiver;
 import io.github.pangju666.framework.autoconfigure.web.log.sender.WebLogSender;
-import io.github.pangju666.framework.autoconfigure.web.log.sender.impl.KafkaWebLogSender;
-import io.github.pangju666.framework.autoconfigure.web.log.sender.impl.WebLogKafkaListener;
+import io.github.pangju666.framework.autoconfigure.web.log.sender.impl.kafka.KafkaWebLogSender;
+import io.github.pangju666.framework.autoconfigure.web.log.sender.impl.kafka.WebLogKafkaListener;
 import jakarta.servlet.Servlet;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -31,11 +30,12 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-@AutoConfiguration(after = KafkaAutoConfiguration.class)
+@AutoConfiguration(before = WebLogAutoConfiguration.class, after = KafkaAutoConfiguration.class)
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @ConditionalOnClass({Servlet.class, DispatcherServlet.class, WebMvcConfigurer.class, KafkaTemplate.class})
+@ConditionalOnBooleanProperty(prefix = "pangju.web.log", name = "enabled", matchIfMissing = true)
+@ConditionalOnProperty(prefix = "pangju.web.log", name = "sender-type", havingValue = "KAFKA")
 public class KafkaSenderAutoConfiguration {
-	@ConditionalOnProperty(prefix = "pangju.web.log", name = "kafka.topic")
 	@ConditionalOnMissingBean(WebLogSender.class)
 	@ConditionalOnBean(KafkaTemplate.class)
 	@Bean
@@ -44,7 +44,7 @@ public class KafkaSenderAutoConfiguration {
 	}
 
 	@ConditionalOnProperty(prefix = "pangju.web.log", name = "kafka.topic")
-	@ConditionalOnBean(KafkaWebLogSender.class)
+	@ConditionalOnBean(WebLogReceiver.class)
 	@Bean
 	public WebLogKafkaListener webLogKafkaListener(WebLogReceiver webLogReceiver) {
 		return new WebLogKafkaListener(webLogReceiver);

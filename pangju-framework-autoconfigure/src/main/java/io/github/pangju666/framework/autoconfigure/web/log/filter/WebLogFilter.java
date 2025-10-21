@@ -16,8 +16,9 @@
 
 package io.github.pangju666.framework.autoconfigure.web.log.filter;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
-import com.google.gson.reflect.TypeToken;
 import io.github.pangju666.commons.lang.utils.DateFormatUtils;
 import io.github.pangju666.commons.lang.utils.JsonUtils;
 import io.github.pangju666.framework.autoconfigure.web.log.WebLogProperties;
@@ -51,7 +52,10 @@ import org.springframework.web.util.ContentCachingResponseWrapper;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.Date;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 public class WebLogFilter extends BaseHttpOncePerRequestFilter {
 	private static final Logger logger = LoggerFactory.getLogger(WebLogFilter.class);
@@ -135,7 +139,7 @@ public class WebLogFilter extends BaseHttpOncePerRequestFilter {
 				} catch (IllegalStateException ignored) {
 				}
 			} else if (properties.getRequest().isBody()) {
-				requestLog.setBody(ServletRequestUtils.getJsonRequestBody(requestWrapper));
+				requestLog.setBody(ServletRequestUtils.getJsonRequestBody(requestWrapper, Object.class));
 			}
 			webLog.setRequest(requestLog);
 
@@ -157,10 +161,16 @@ public class WebLogFilter extends BaseHttpOncePerRequestFilter {
 					String responseBodyStr = new String(responseWrapper.getContentAsByteArray(), StandardCharsets.UTF_8);
 					if (StringUtils.isNotBlank(responseBodyStr)) {
 						try {
-							Map<String, Object> responseBody = JsonUtils.fromString(responseBodyStr,
-								new TypeToken<Map<String, Object>>() {
-								});
-							responseLog.setBody(responseBody);
+							JsonElement responseBodyJson = JsonUtils.parseString(responseBodyStr);
+							if (responseBodyJson.isJsonObject()) {
+								JsonObject responseBodyJsonObject = responseBodyJson.getAsJsonObject();
+								if (responseBodyJsonObject.has("code") &&
+									responseBodyJsonObject.has("message") &&
+									!properties.getResponse().isResultData()) {
+									responseBodyJsonObject.remove("data");
+								}
+							}
+							responseLog.setBody(JsonUtils.fromJson(responseBodyJson, Object.class));
 						} catch (JsonSyntaxException e) {
 							logger.error("响应结果解析失败", e);
 						}

@@ -15,6 +15,8 @@ io.github.pangju666.framework.autoconfigure.web.limit.RateLimiterAutoConfigurati
 io.github.pangju666.framework.autoconfigure.web.idempotent.IdempotentAutoConfiguration
 io.github.pangju666.framework.autoconfigure.web.signature.SignatureAutoConfiguration
 io.github.pangju666.framework.autoconfigure.web.log.WebLogAutoConfiguration
+io.github.pangju666.framework.autoconfigure.web.log.KafkaSenderAutoConfiguration
+io.github.pangju666.framework.autoconfigure.web.log.MongoReceiverAutoConfiguration
 io.github.pangju666.framework.autoconfigure.web.FilterAutoConfiguration
 io.github.pangju666.framework.autoconfigure.web.RestClientAutoConfiguration
 io.github.pangju666.framework.autoconfigure.web.WebMvcAutoConfiguration

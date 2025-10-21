@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package io.github.pangju666.framework.autoconfigure.web.log.sender.impl;
+package io.github.pangju666.framework.autoconfigure.web.log.sender.impl.kafka;
 
 import io.github.pangju666.framework.autoconfigure.web.log.WebLogProperties;
 import io.github.pangju666.framework.autoconfigure.web.log.model.WebLog;
@@ -31,9 +31,10 @@ public class KafkaWebLogSender implements WebLogSender {
 	private final KafkaTemplate<String, Object> kafkaTemplate;
 	private final WebLogProperties properties;
 
+	@SuppressWarnings("unchecked")
 	public KafkaWebLogSender(WebLogProperties properties, BeanFactory beanFactory) {
-		if (StringUtils.hasText(properties.getKafka().getTemplateBeanName())) {
-			this.kafkaTemplate = beanFactory.getBean(properties.getKafka().getTemplateBeanName(), KafkaTemplate.class);
+		if (StringUtils.hasText(properties.getKafka().getKafkaTemplateBeanName())) {
+			this.kafkaTemplate = beanFactory.getBean(properties.getKafka().getKafkaTemplateBeanName(), KafkaTemplate.class);
 		} else {
 			this.kafkaTemplate = beanFactory.getBean(KafkaTemplate.class);
 		}
@@ -45,7 +46,7 @@ public class KafkaWebLogSender implements WebLogSender {
 		try {
 			kafkaTemplate.send(properties.getKafka().getTopic(), webLog);
 		} catch (RuntimeException e) {
-			log.error("接口请求信息发送至消息队列失败", e);
+			log.error("接口请求信息发送至Kafka消息队列失败", e);
 		}
 	}
 }

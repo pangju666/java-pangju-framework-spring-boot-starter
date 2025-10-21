@@ -14,16 +14,18 @@
  *    limitations under the License.
  */
 
-package io.github.pangju666.framework.autoconfigure.web.log.handler;
+package io.github.pangju666.framework.autoconfigure.web.log.sender.impl.disruptor;
 
 import io.github.pangju666.framework.autoconfigure.web.log.model.WebLog;
-import org.springframework.lang.Nullable;
-import org.springframework.web.util.ContentCachingRequestWrapper;
-import org.springframework.web.util.ContentCachingResponseWrapper;
 
-import java.lang.reflect.Method;
+public class WebLogEvent {
+	private WebLog webLog;
 
-public interface WebLogHandler {
-	void handle(WebLog webLog, ContentCachingRequestWrapper request, ContentCachingResponseWrapper response,
-				@Nullable Class<?> targetClass, @Nullable Method targetMethod);
+	public WebLog getWebLog() {
+		return webLog;
+	}
+
+	public void setWebLog(WebLog webLog) {
+		this.webLog = webLog;
+	}
 }
