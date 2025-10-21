@@ -45,6 +45,27 @@ import javax.sql.DataSource;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Objects;
 
+/**
+ * MyBatis-Plus自动配置类
+ * <p>
+ * 该类用于自动配置MyBatis-Plus相关的拦截器和SQL注入器。
+ * 配置优先级在{@code com.baomidou.mybatisplus.autoconfigure.MybatisPlusInnerInterceptorAutoConfiguration}之后执行。
+ * </p>
+ * <p>
+ * 支持的功能包括：
+ * <ul>
+ *     <li>数据权限插件</li>
+ *     <li>多租户插件</li>
+ *     <li>动态表名插件</li>
+ *     <li>分页插件</li>
+ *     <li>乐观锁插件</li>
+ *     <li>防全表更新与删除插件</li>
+ * </ul>
+ * </p>
+ *
+ * @author pangju666
+ * @since 1.0.0
+ */
 @AutoConfiguration(after = com.baomidou.mybatisplus.autoconfigure.MybatisPlusInnerInterceptorAutoConfiguration.class)
 @ConditionalOnClass({SqlSessionFactory.class, SqlSessionFactoryBean.class})
 @ConditionalOnSingleCandidate(DataSource.class)
@@ -59,6 +80,24 @@ public class MybatisPlusAutoConfiguration implements BeanFactoryAware {
 		this.beanFactory = beanFactory;
 	}
 
+	/**
+	 * 创建MyBatis-Plus拦截器
+	 * <p>
+	 * 根据配置属性动态加载以下拦截器：
+	 * <ul>
+	 *     <li>数据权限拦截器 - 用于实现数据权限控制</li>
+	 *     <li>多租户拦截器 - 用于实现多租户数据隔离</li>
+	 *     <li>动态表名拦截器 - 用于动态修改表名</li>
+	 *     <li>分页拦截器 - 用于实现分页查询</li>
+	 *     <li>乐观锁拦截器 - 用于实现乐观锁机制</li>
+	 *     <li>防全表更新与删除拦截器 - 用于防止误操作全表</li>
+	 * </ul>
+	 * </p>
+	 *
+	 * @param properties MyBatis-Plus拦截器配置属性
+	 * @return 配置好的MyBatis-Plus拦截器实例
+	 * @since 1.0.0
+	 */
 	@ConditionalOnMissingBean
 	@Bean
 	public MybatisPlusInterceptor mybatisPlusInterceptor(MybatisPlusInterceptorProperties properties) {
@@ -142,9 +181,28 @@ public class MybatisPlusAutoConfiguration implements BeanFactoryAware {
 		}
 	}
 
+	/**
+	 * 表逻辑填充SQL注入器配置类
+	 * <p>
+	 * 该内部配置类用于注册{@link TableLogicFillSqlInjector}，
+	 * 提供表逻辑删除字段的自动填充功能。
+	 * </p>
+	 *
+	 * @author pangju666
+	 * @since 1.0.0
+	 */
 	@Configuration(proxyBeanMethods = false)
 	@ConditionalOnClass(TableLogicFillSqlInjector.class)
 	static class TableLogicFillSqlInjectorConfiguration {
+		/**
+		 * 创建表逻辑填充SQL注入器
+		 * <p>
+		 * 该Bean具有最高优先级+1的顺序，确保在其他SQL注入器之前加载。
+		 * </p>
+		 *
+		 * @return 表逻辑填充SQL注入器实例
+		 * @since 1.0.0
+		 */
 		@Order(Ordered.HIGHEST_PRECEDENCE + 1)
 		@ConditionalOnMissingBean
 		@Bean
