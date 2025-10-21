@@ -21,6 +21,11 @@
 			<artifactId>pangju-framework-test-spring-boot-starter</artifactId>
 			<scope>compile</scope>
 		</dependency>
+
+		<dependency>
+			<groupId>org.spockframework</groupId>
+			<artifactId>spock-spring</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>io.rest-assured</groupId>
 			<artifactId>rest-assured</artifactId>
@@ -38,10 +43,6 @@
 					<artifactId>groovy-xml</artifactId>
 				</exclusion>
 			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>org.spockframework</groupId>
-			<artifactId>spock-spring</artifactId>
 		</dependency>
 	</dependencies>
 </project>

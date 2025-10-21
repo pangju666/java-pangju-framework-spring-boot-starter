@@ -24,10 +24,6 @@
 		</dependency>
 		<dependency>
 			<groupId>io.github.pangju666</groupId>
-			<artifactId>pangju-framework-spring-boot-starter</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>io.github.pangju666</groupId>
 			<artifactId>pangju-framework-web</artifactId>
 		</dependency>
 
