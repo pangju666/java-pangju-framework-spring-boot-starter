@@ -16,12 +16,12 @@
 
 package io.github.pangju666.framework.autoconfigure.web.idempotent.aspect;
 
-import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import io.github.pangju666.framework.autoconfigure.web.idempotent.annotation.Idempotent;
 import io.github.pangju666.framework.autoconfigure.web.idempotent.exception.IdempotentException;
 import io.github.pangju666.framework.autoconfigure.web.idempotent.validator.IdempotentValidator;
 import io.github.pangju666.framework.spring.utils.SpELUtils;
 import io.github.pangju666.framework.web.exception.base.ServerException;
+import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
