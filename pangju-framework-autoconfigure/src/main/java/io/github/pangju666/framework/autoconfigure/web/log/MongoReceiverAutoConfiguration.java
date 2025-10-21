@@ -29,11 +29,69 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+/**
+ * MongoDB 日志接收器自动配置类
+ * <p>
+ * 该类用于自动配置基于 MongoDB 的 Web 日志接收器 {@link MongoWebLogReceiver}。
+ * 当应用环境满足相关条件时（如启用 Web 日志功能、存在 MongoTemplate Bean 等），
+ * 自动注册 MongoDB 日志接收器，实现日志的持久化存储。
+ * </p>
+ *
+ * <p>功能说明：</p>
+ * <ul>
+ *     <li>自动注册 {@link MongoWebLogReceiver}，用于将 Web 日志存储到 MongoDB。</li>
+ *     <li>通过配置和条件注解控制组件的动态加载，保证在合适的环境下启用 MongoDB 日志接收功能。</li>
+ * </ul>
+ *
+ * <p>配置条件：</p>
+ * <ul>
+ *     <li>仅在 Servlet 类型的 Web 应用中生效（受 {@link ConditionalOnWebApplication} 限制）。</li>
+ *     <li>要求类路径中存在 {@link MongoClient} 和 {@link MongoTemplate} 类。</li>
+ *     <li>启用 Web 日志功能（配置项 {@code pangju.web.log.enabled=true}，默认为启用）。</li>
+ *     <li>未定义其他类型的 {@link WebLogReceiver} Bean（受 {@link ConditionalOnMissingBean} 限制）。</li>
+ *     <li>存在 {@link MongoTemplate} Bean（受 {@link ConditionalOnBean} 限制）。</li>
+ * </ul>
+ *
+ * <p>使用场景：</p>
+ * <ul>
+ *     <li>需要将应用中 Web 请求和响应日志存储到 MongoDB。</li>
+ *     <li>结合 Spring Data MongoDB 进行日志的高效查询、分类管理和分析。</li>
+ * </ul>
+ *
+ * <p>关键配置项：</p>
+ * <pre>
+ * pangju:
+ *   web:
+ *     log:
+ *       enabled: true                 # 是否启用 Web 日志功能（默认启用）
+ *       mongo:
+ *         mongo-template-bean-name:  # 指定使用的 MongoTemplate Bean 名称（可选）
+ *         collection-prefix: web_log  # MongoDB 集合前缀
+ * </pre>
+ *
+ * @author pangju666
+ * @see MongoWebLogReceiver
+ * @see MongoTemplate
+ * @see WebLogReceiver
+ * @since 1.0.0
+ */
 @AutoConfiguration(before = WebLogAutoConfiguration.class, after = MongoDataAutoConfiguration.class)
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @ConditionalOnClass({Servlet.class, DispatcherServlet.class, WebMvcConfigurer.class, MongoClient.class, MongoTemplate.class})
 @ConditionalOnBooleanProperty(prefix = "pangju.web.log", name = "enabled", matchIfMissing = true)
 public class MongoReceiverAutoConfiguration {
+	/**
+	 * 注册 MongoDB Web 日志接收器
+	 * <p>
+	 * 自动注册 {@link MongoWebLogReceiver}，用于将 Web 请求与响应日志存储到 MongoDB。
+	 * 仅在满足所有条件注解时生效，例如启用了 Web 日志功能、存在 MongoTemplate Bean 等。
+	 * </p>
+	 *
+	 * @param properties  Web 日志属性配置 {@link WebLogProperties}
+	 * @param beanFactory Spring Bean 工厂，用于动态获取 MongoTemplate Bean
+	 * @return MongoDB Web 日志接收器 {@link MongoWebLogReceiver}
+	 * @since 1.0.0
+	 */
 	@ConditionalOnMissingBean(WebLogReceiver.class)
 	@ConditionalOnBean(MongoTemplate.class)
 	@Bean

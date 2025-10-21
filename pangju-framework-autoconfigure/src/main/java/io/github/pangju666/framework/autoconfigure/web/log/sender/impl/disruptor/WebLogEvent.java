@@ -18,7 +18,41 @@ package io.github.pangju666.framework.autoconfigure.web.log.sender.impl.disrupto
 
 import io.github.pangju666.framework.autoconfigure.web.log.model.WebLog;
 
+/**
+ * Web 日志事件类
+ * <p>
+ * 该类被设计用于封装一次 Web 日志事件的数据，适配高性能异步处理框架（如 Disruptor）。
+ * 每个实例表示一个可被异步处理的 {@link io.github.pangju666.framework.autoconfigure.web.log.model.WebLog} 日志记录。
+ * 它通常作为事件模型，在日志的生产者（如请求处理完成时）与消费者（如日志持久化处理）之间传递。
+ * </p>
+ *
+ * <p>功能说明：</p>
+ * <ul>
+ *     <li>作为 Disruptor 或其他事件处理框架的事件承载对象。</li>
+ *     <li>封装 {@link WebLog} 日志数据，使其可以在不同线程中异步处理。</li>
+ * </ul>
+ *
+ * <p>使用场景：</p>
+ * <ul>
+ *     <li>高吞吐量场景下使用 Disruptor 进行 Web 日志异步处理。</li>
+ *     <li>日志数据在采集后，将其封装成事件对象，传递给事件处理器进行存储或进一步处理。</li>
+ * </ul>
+ *
+ * @author pangju666
+ * @see io.github.pangju666.framework.autoconfigure.web.log.model.WebLog
+ * @see io.github.pangju666.framework.autoconfigure.web.log.sender.impl.disruptor.DisruptorWebLogSender
+ * @see io.github.pangju666.framework.autoconfigure.web.log.sender.impl.disruptor.DisruptorWebLogEventHandler
+ * @since 1.0.0
+ */
 public class WebLogEvent {
+	/**
+	 * Web 日志数据
+	 * <p>
+	 * 封装具体的 Web 请求与响应日志数据，供事件消费者使用。
+	 * </p>
+	 *
+	 * @since 1.0.0
+	 */
 	private WebLog webLog;
 
 	public WebLog getWebLog() {
