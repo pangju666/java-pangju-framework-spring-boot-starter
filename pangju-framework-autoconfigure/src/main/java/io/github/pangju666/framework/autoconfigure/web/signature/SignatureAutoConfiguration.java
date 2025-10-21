@@ -17,9 +17,10 @@
 package io.github.pangju666.framework.autoconfigure.web.signature;
 
 import io.github.pangju666.framework.autoconfigure.web.WebMvcAutoConfiguration;
-import io.github.pangju666.framework.autoconfigure.web.signature.handler.SignatureSecretKeyStore;
-import io.github.pangju666.framework.autoconfigure.web.signature.handler.impl.DefaultSignatureSecretKeyStore;
+import io.github.pangju666.framework.autoconfigure.web.signature.storer.SignatureSecretKeyStorer;
+import io.github.pangju666.framework.autoconfigure.web.signature.storer.impl.DefaultSignatureSecretKeyStorer;
 import jakarta.servlet.Servlet;
+import org.apache.commons.collections4.MapUtils;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -31,11 +32,11 @@ import org.springframework.web.servlet.DispatcherServlet;
 @AutoConfiguration(before = WebMvcAutoConfiguration.class)
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @ConditionalOnClass({Servlet.class, DispatcherServlet.class})
-@EnableConfigurationProperties(RequestSignatureProperties.class)
-public class RequestSignatureAutoConfiguration {
-	@ConditionalOnMissingBean
+@EnableConfigurationProperties(SignatureProperties.class)
+public class SignatureAutoConfiguration {
+	@ConditionalOnMissingBean(SignatureSecretKeyStorer.class)
 	@Bean
-	public SignatureSecretKeyStore signatureSecretKeyStore(RequestSignatureProperties properties) {
-		return new DefaultSignatureSecretKeyStore(properties);
+	public DefaultSignatureSecretKeyStorer defaultSignatureSecretKeyStorer(SignatureProperties properties) {
+		return new DefaultSignatureSecretKeyStorer(MapUtils.emptyIfNull(properties.getSecretKeys()));
 	}
 }

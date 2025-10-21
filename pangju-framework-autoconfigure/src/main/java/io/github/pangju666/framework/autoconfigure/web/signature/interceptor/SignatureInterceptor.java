@@ -17,10 +17,10 @@
 package io.github.pangju666.framework.autoconfigure.web.signature.interceptor;
 
 import io.github.pangju666.commons.lang.utils.DateUtils;
-import io.github.pangju666.framework.autoconfigure.web.signature.RequestSignatureProperties;
+import io.github.pangju666.framework.autoconfigure.web.signature.SignatureProperties;
 import io.github.pangju666.framework.autoconfigure.web.signature.annotation.Signature;
 import io.github.pangju666.framework.autoconfigure.web.signature.enums.SignatureAlgorithm;
-import io.github.pangju666.framework.autoconfigure.web.signature.handler.SignatureSecretKeyStore;
+import io.github.pangju666.framework.autoconfigure.web.signature.storer.SignatureSecretKeyStorer;
 import io.github.pangju666.framework.web.exception.base.ValidationException;
 import io.github.pangju666.framework.web.interceptor.BaseHttpHandlerInterceptor;
 import io.github.pangju666.framework.web.utils.ServletResponseUtils;
@@ -40,14 +40,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-public class RequestSignatureInterceptor extends BaseHttpHandlerInterceptor {
-	private final RequestSignatureProperties properties;
-	private final SignatureSecretKeyStore secretKeyStore;
+public class SignatureInterceptor extends BaseHttpHandlerInterceptor {
+	private final SignatureProperties properties;
+	private final SignatureSecretKeyStorer secretKeyStorer;
 
-	public RequestSignatureInterceptor(RequestSignatureProperties properties, SignatureSecretKeyStore secretKeyStore) {
+	public SignatureInterceptor(SignatureProperties properties, SignatureSecretKeyStorer secretKeyStorer) {
 		super(Collections.singleton("/**"), Collections.emptySet());
 		this.properties = properties;
-		this.secretKeyStore = secretKeyStore;
+		this.secretKeyStorer = secretKeyStorer;
 	}
 
 	@Override
@@ -95,7 +95,7 @@ public class RequestSignatureInterceptor extends BaseHttpHandlerInterceptor {
 			throw new MissingServletRequestParameterException(properties.getSignatureParamName(), "string");
 		}
 
-		String secretKey = secretKeyStore.loadSecretKey(appId);
+		String secretKey = secretKeyStorer.loadSecretKey(appId);
 		if (StringUtils.isBlank(secretKey)) {
 			ServletResponseUtils.writeHttpExceptionToResponse(new ValidationException("应用标识符不存在"), response);
 			return false;
@@ -140,7 +140,7 @@ public class RequestSignatureInterceptor extends BaseHttpHandlerInterceptor {
 				return false;
 			}
 
-			String secretKey = secretKeyStore.loadSecretKey(appId);
+			String secretKey = secretKeyStorer.loadSecretKey(appId);
 			if (StringUtils.isBlank(secretKey)) {
 				ServletResponseUtils.writeHttpExceptionToResponse(new ValidationException("应用标识符不存在"), response);
 				return false;

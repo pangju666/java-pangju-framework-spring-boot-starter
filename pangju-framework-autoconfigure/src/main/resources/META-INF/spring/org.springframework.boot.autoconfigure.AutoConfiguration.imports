@@ -13,7 +13,7 @@ io.github.pangju666.framework.autoconfigure.web.crypto.advice.RequestBodyDecrypt
 io.github.pangju666.framework.autoconfigure.web.crypto.advice.ResponseBodyEncryptAdvice
 io.github.pangju666.framework.autoconfigure.web.limit.RateLimiterAutoConfiguration
 io.github.pangju666.framework.autoconfigure.web.idempotent.IdempotentAutoConfiguration
-io.github.pangju666.framework.autoconfigure.web.signature.RequestSignatureAutoConfiguration
+io.github.pangju666.framework.autoconfigure.web.signature.SignatureAutoConfiguration
 io.github.pangju666.framework.autoconfigure.web.log.WebLogAutoConfiguration
 io.github.pangju666.framework.autoconfigure.web.FilterAutoConfiguration
 io.github.pangju666.framework.autoconfigure.web.RestClientAutoConfiguration

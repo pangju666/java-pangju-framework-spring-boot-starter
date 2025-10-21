@@ -20,9 +20,9 @@ import io.github.pangju666.framework.autoconfigure.web.crypto.resolver.EncryptRe
 import io.github.pangju666.framework.autoconfigure.web.limit.interceptor.RateLimitInterceptor;
 import io.github.pangju666.framework.autoconfigure.web.limit.limiter.RateLimiter;
 import io.github.pangju666.framework.autoconfigure.web.resolver.EnumRequestParamArgumentResolver;
-import io.github.pangju666.framework.autoconfigure.web.signature.RequestSignatureProperties;
-import io.github.pangju666.framework.autoconfigure.web.signature.handler.SignatureSecretKeyStore;
-import io.github.pangju666.framework.autoconfigure.web.signature.interceptor.RequestSignatureInterceptor;
+import io.github.pangju666.framework.autoconfigure.web.signature.SignatureProperties;
+import io.github.pangju666.framework.autoconfigure.web.signature.interceptor.SignatureInterceptor;
+import io.github.pangju666.framework.autoconfigure.web.signature.storer.SignatureSecretKeyStorer;
 import io.github.pangju666.framework.web.interceptor.BaseHttpHandlerInterceptor;
 import jakarta.servlet.Servlet;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -41,17 +41,17 @@ import java.util.List;
 public class WebMvcAutoConfiguration implements WebMvcConfigurer {
 	private final List<BaseHttpHandlerInterceptor> interceptors;
 	private final RateLimiter rateLimiter;
-	private final SignatureSecretKeyStore secretKeyStore;
-	private final RequestSignatureProperties signatureProperties;
+	private final SignatureSecretKeyStorer secretKeyStorer;
+	private final SignatureProperties signatureProperties;
 
 	public WebMvcAutoConfiguration(List<BaseHttpHandlerInterceptor> interceptors,
 								   RateLimiter rateLimiter,
-								   RequestSignatureProperties signatureProperties,
-								   SignatureSecretKeyStore secretKeyStore) {
+								   SignatureProperties signatureProperties,
+								   SignatureSecretKeyStorer secretKeyStorer) {
 		this.interceptors = interceptors;
 		this.rateLimiter = rateLimiter;
 		this.signatureProperties = signatureProperties;
-		this.secretKeyStore = secretKeyStore;
+		this.secretKeyStorer = secretKeyStorer;
 	}
 
 	@Override
@@ -67,10 +67,10 @@ public class WebMvcAutoConfiguration implements WebMvcConfigurer {
 			.addPathPatterns(rateLimitInterceptor.getPatterns())
 			.excludePathPatterns(rateLimitInterceptor.getExcludePathPatterns());
 
-		RequestSignatureInterceptor requestSignatureInterceptor = new RequestSignatureInterceptor(signatureProperties, secretKeyStore);
-		registry.addInterceptor(requestSignatureInterceptor)
-			.addPathPatterns(requestSignatureInterceptor.getPatterns())
-			.excludePathPatterns(requestSignatureInterceptor.getExcludePathPatterns());
+		SignatureInterceptor signatureInterceptor = new SignatureInterceptor(signatureProperties, secretKeyStorer);
+		registry.addInterceptor(signatureInterceptor)
+			.addPathPatterns(signatureInterceptor.getPatterns())
+			.excludePathPatterns(signatureInterceptor.getExcludePathPatterns());
 
 		for (BaseHttpHandlerInterceptor interceptor : this.interceptors) {
 			registry.addInterceptor(interceptor)

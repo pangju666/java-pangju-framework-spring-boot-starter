@@ -21,7 +21,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import java.util.Map;
 
 @ConfigurationProperties(prefix = "pangju.web.signature")
-public class RequestSignatureProperties {
+public class SignatureProperties {
 	private String signatureHeaderName = "Api-Signature";
 	private String appIdHeaderName = "Api-App-Id";
 	private String timestampHeaderName = "Api-Timestamp";

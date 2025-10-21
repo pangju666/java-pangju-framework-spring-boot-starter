@@ -14,8 +14,21 @@
  *    limitations under the License.
  */
 
-package io.github.pangju666.framework.autoconfigure.web.signature.handler;
+package io.github.pangju666.framework.autoconfigure.web.signature.storer.impl;
 
-public interface SignatureSecretKeyStore {
-	String loadSecretKey(String appId);
+import io.github.pangju666.framework.autoconfigure.web.signature.storer.SignatureSecretKeyStorer;
+
+import java.util.Map;
+
+public class DefaultSignatureSecretKeyStorer implements SignatureSecretKeyStorer {
+	private final Map<String, String> secretKeyMap;
+
+	public DefaultSignatureSecretKeyStorer(Map<String, String> secretKeyMap) {
+		this.secretKeyMap = secretKeyMap;
+	}
+
+	@Override
+	public String loadSecretKey(String appId) {
+		return secretKeyMap.get(appId);
+	}
 }
