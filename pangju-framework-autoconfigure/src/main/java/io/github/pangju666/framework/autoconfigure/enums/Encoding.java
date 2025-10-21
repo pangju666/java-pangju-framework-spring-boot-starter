@@ -16,7 +16,33 @@
 
 package io.github.pangju666.framework.autoconfigure.enums;
 
+/**
+ * 编码方式枚举类
+ * <p>
+ * 定义支持的各种数据编码格式
+ * </p>
+ *
+ * @author pangju666
+ * @since 1.0.0
+ */
 public enum Encoding {
+	/**
+	 * BASE64编码
+	 * <p>
+	 * 一种基本的编码方案，用于将二进制数据转换为ASCII字符串格式
+	 * </p>
+	 *
+	 * @since 1.0.0
+	 */
 	BASE64,
+
+	/**
+	 * 十六进制编码
+	 * <p>
+	 * 将二进制数据转换为十六进制字符串表示
+	 * </p>
+	 *
+	 * @since 1.0.0
+	 */
 	HEX
 }

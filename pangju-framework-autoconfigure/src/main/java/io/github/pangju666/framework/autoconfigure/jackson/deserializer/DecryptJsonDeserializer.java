@@ -39,19 +39,80 @@ import java.security.spec.InvalidKeySpecException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * JSON字段解密反序列化器
+ * <p>
+ * 该反序列化器用于处理使用{@link DecryptFormat}注解标记的JSON字段，将加密的内容解密后再反序列化。
+ * 支持处理字符串、集合和Map类型的数据，对不同类型的数据采用不同的解密策略。
+ * 实现了{@link ContextualDeserializer}接口，可根据上下文自动确定处理方式。
+ * </p>
+ *
+ * @author pangju666
+ * @see DecryptFormat
+ * @see ContextualDeserializer
+ * @see CryptoUtils
+ * @since 1.0.0
+ */
 public class DecryptJsonDeserializer extends JsonDeserializer<Object> implements ContextualDeserializer {
+	/**
+	 * 反序列化器缓存，用于存储已创建的反序列化器实例
+	 * <p>
+	 * 键为注解配置的唯一标识，值为对应的反序列化器实例
+	 * </p>
+	 *
+	 * @since 1.0.0
+	 */
 	private static final Map<String, DecryptJsonDeserializer> DESERIALIZER_MAP = new ConcurrentHashMap<>(10);
 
+	/**
+	 * 当前反序列化器使用的解密注解
+	 *
+	 * @since 1.0.0
+	 */
 	private final DecryptFormat annotation;
 
+	/**
+	 * 默认构造方法，创建一个没有指定解密注解的反序列化器
+	 * <p>
+	 * 该构造方法主要用于Jackson初始化，实际使用时会通过{@link #createContextual}方法创建具体配置的反序列化器
+	 * </p>
+	 *
+	 * @since 1.0.0
+	 */
 	public DecryptJsonDeserializer() {
 		this.annotation = null;
 	}
 
+	/**
+	 * 构造方法，创建一个指定解密注解的反序列化器
+	 *
+	 * @param annotation 解密格式注解
+	 * @since 1.0.0
+	 */
 	public DecryptJsonDeserializer(DecryptFormat annotation) {
 		this.annotation = annotation;
 	}
 
+	/**
+	 * 将加密的JSON内容解密并反序列化
+	 * <p>
+	 * 根据JSON内容的类型，采用不同的解密策略：
+	 * <ul>
+	 *     <li>对于数组类型，解析为Collection后对每个字符串元素进行解密</li>
+	 *     <li>对于对象类型，解析为Map后对每个字符串值进行解密</li>
+	 *     <li>对于字符串类型，直接解密字符串值</li>
+	 *     <li>对于其他类型，直接返回当前值</li>
+	 * </ul>
+	 * 解密过程使用{@link CryptoUtils#decryptToString}方法，根据注解配置的算法和编码方式进行解密。
+	 * </p>
+	 *
+	 * @param p    用于读取JSON内容的解析器
+	 * @param ctxt 反序列化上下文
+	 * @return 解密后的对象
+	 * @throws IOException 如果读取JSON内容时发生I/O错误
+	 * @throws ServerException 如果解密过程中发生错误
+	 * @throws ServiceException 如果十六进制解码失败
+	 */
 	@Override
 	public Object deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
 		String key = null;
@@ -90,11 +151,12 @@ public class DecryptJsonDeserializer extends JsonDeserializer<Object> implements
 					}
 				}
 				return decryptMap;
-			} else {
+			} else if (p.getCurrentToken() == JsonToken.VALUE_STRING) {
 				String value = p.getText();
 				return StringUtils.isBlank(value) ? value : CryptoUtils.decryptToString(value, key,
 					annotation.algorithm(), annotation.encoding());
 			}
+			return p.currentValue();
 		} catch (EncryptionOperationNotPossibleException e) {
 			throw new ServerException("数据加密失败", e);
 		} catch (InvalidKeySpecException e) {
@@ -106,6 +168,18 @@ public class DecryptJsonDeserializer extends JsonDeserializer<Object> implements
 		}
 	}
 
+	/**
+	 * 创建上下文相关的反序列化器
+	 * <p>
+	 * 检查当前处理的属性是否标记了{@link DecryptFormat}注解，以及属性类型是否为支持的类型（字符串、集合或Map）。
+	 * 如果符合条件，则创建或复用适当的反序列化器实例；否则使用上下文中的默认反序列化器。
+	 * </p>
+	 *
+	 * @param ctxt     反序列化上下文
+	 * @param property 当前处理的Bean属性
+	 * @return 上下文相关的反序列化器实例
+	 * @throws JsonMappingException 如果创建反序列化器时发生错误
+	 */
 	@Override
 	public JsonDeserializer<?> createContextual(DeserializationContext ctxt, BeanProperty property) throws JsonMappingException {
 		if (Objects.isNull(property)) {

@@ -24,7 +24,30 @@ import io.github.pangju666.framework.web.exception.base.ServerException;
 
 import java.io.IOException;
 
+/**
+ * Class类型的JSON反序列化器
+ * <p>
+ * 该反序列化器用于将JSON中的类名字符串转换为对应的Class对象。
+ * 支持从字符串形式的全限定类名转换为实际的Class对象。
+ * </p>
+ *
+ * @author pangju666
+ * @since 1.0.0
+ */
 public class ClassJsonDeserializer extends JsonDeserializer<Class> {
+	/**
+	 * 将JSON中的类名字符串反序列化为Class对象
+	 * <p>
+	 * 通过{@link Class#forName(String)}方法尝试加载类。如果类不存在，
+	 * 则返回null；如果解析过程中发生错误，则抛出ServerException异常。
+	 * </p>
+	 *
+	 * @param p    用于读取JSON内容的解析器
+	 * @param ctxt 反序列化上下文
+	 * @return 对应的Class对象，如果类不存在则返回null
+	 * @throws IOException     如果读取JSON内容时发生I/O错误
+	 * @throws ServerException 如果JSON解析过程中发生错误
+	 */
 	@Override
 	public Class deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
 		try {

@@ -26,7 +26,32 @@ import io.github.pangju666.framework.web.exception.base.ServerException;
 import java.io.IOException;
 import java.time.LocalDateTime;
 
+/**
+ * LocalDateTime类型的JSON反序列化器
+ * <p>
+ * 该反序列化器用于将JSON中的时间戳（毫秒）转换为Java 8的LocalDateTime对象。
+ * 通过{@link DateUtils#toLocalDateTime(Long)}方法进行转换，将毫秒时间戳转为对应的日期时间。
+ * </p>
+ *
+ * @author pangju666
+ * @see DateUtils
+ * @see LocalDateTime
+ * @since 1.0.0
+ */
 public class LocalDateTimeJsonDeserializer extends JsonDeserializer<LocalDateTime> {
+	/**
+	 * 将JSON中的毫秒时间戳反序列化为LocalDateTime对象
+	 * <p>
+	 * 从JSON解析器中读取长整型数值（毫秒时间戳），然后转换为LocalDateTime对象。
+	 * 如果解析过程中发生错误，则抛出ServerException异常。
+	 * </p>
+	 *
+	 * @param p    用于读取JSON内容的解析器
+	 * @param ctxt 反序列化上下文
+	 * @return 对应的LocalDateTime对象
+	 * @throws IOException     如果读取JSON内容时发生I/O错误
+	 * @throws ServerException 如果JSON解析过程中发生错误
+	 */
 	@Override
 	public LocalDateTime deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
 		try {
