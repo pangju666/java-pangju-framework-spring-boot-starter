@@ -26,6 +26,10 @@
 			<groupId>io.github.pangju666</groupId>
 			<artifactId>pangju-framework-spring</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>io.github.pangju666</groupId>
+			<artifactId>pangju-commons-crypto</artifactId>
+		</dependency>
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
