@@ -16,6 +16,7 @@
 
 package io.github.pangju666.framework.autoconfigure.web.crypto.advice;
 
+import io.github.pangju666.commons.crypto.key.RSAKey;
 import io.github.pangju666.framework.autoconfigure.enums.Algorithm;
 import io.github.pangju666.framework.autoconfigure.enums.Encoding;
 import io.github.pangju666.framework.autoconfigure.spring.StaticSpringContext;
@@ -136,7 +137,7 @@ import java.util.Objects;
  * @since 1.0.0
  */
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
-@ConditionalOnClass({Servlet.class, DispatcherServlet.class})
+@ConditionalOnClass({Servlet.class, DispatcherServlet.class, RSAKey.class})
 @RestControllerAdvice
 public class RequestBodyDecryptAdvice implements RequestBodyAdvice {
 	/**

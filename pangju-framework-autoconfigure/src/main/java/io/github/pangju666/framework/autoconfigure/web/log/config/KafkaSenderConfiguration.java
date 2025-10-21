@@ -14,21 +14,22 @@
  *    limitations under the License.
  */
 
-package io.github.pangju666.framework.autoconfigure.web.log;
+package io.github.pangju666.framework.autoconfigure.web.log.config;
 
+import io.github.pangju666.framework.autoconfigure.web.log.WebLogProperties;
 import io.github.pangju666.framework.autoconfigure.web.log.revceiver.WebLogReceiver;
 import io.github.pangju666.framework.autoconfigure.web.log.sender.WebLogSender;
 import io.github.pangju666.framework.autoconfigure.web.log.sender.impl.kafka.KafkaWebLogSender;
 import io.github.pangju666.framework.autoconfigure.web.log.sender.impl.kafka.WebLogKafkaListener;
-import jakarta.servlet.Servlet;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.boot.autoconfigure.condition.*;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.web.servlet.DispatcherServlet;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
  * 基于 Kafka 的 Web 日志发送器自动配置类
@@ -75,12 +76,10 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
  * @see WebLogKafkaListener
  * @since 1.0.0
  */
-@AutoConfiguration(before = WebLogAutoConfiguration.class, after = KafkaAutoConfiguration.class)
-@ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
-@ConditionalOnClass({Servlet.class, DispatcherServlet.class, WebMvcConfigurer.class, KafkaTemplate.class})
-@ConditionalOnBooleanProperty(prefix = "pangju.web.log", name = "enabled", matchIfMissing = true)
+@AutoConfiguration(after = KafkaAutoConfiguration.class)
+@ConditionalOnClass({KafkaTemplate.class})
 @ConditionalOnProperty(prefix = "pangju.web.log", name = "sender-type", havingValue = "KAFKA")
-public class KafkaSenderAutoConfiguration {
+public class KafkaSenderConfiguration {
 	/**
 	 * 注册 Kafka 日志发送器
 	 * <p>

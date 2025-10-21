@@ -14,20 +14,20 @@
  *    limitations under the License.
  */
 
-package io.github.pangju666.framework.autoconfigure.web.log;
+package io.github.pangju666.framework.autoconfigure.web.log.config;
 
 import com.mongodb.client.MongoClient;
+import io.github.pangju666.framework.autoconfigure.web.log.WebLogProperties;
 import io.github.pangju666.framework.autoconfigure.web.log.revceiver.WebLogReceiver;
 import io.github.pangju666.framework.autoconfigure.web.log.revceiver.impl.MongoWebLogReceiver;
-import jakarta.servlet.Servlet;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.boot.autoconfigure.condition.*;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.web.servlet.DispatcherServlet;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
  * MongoDB 日志接收器自动配置类
@@ -45,9 +45,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
  *
  * <p>配置条件：</p>
  * <ul>
- *     <li>仅在 Servlet 类型的 Web 应用中生效（受 {@link ConditionalOnWebApplication} 限制）。</li>
  *     <li>要求类路径中存在 {@link MongoClient} 和 {@link MongoTemplate} 类。</li>
- *     <li>启用 Web 日志功能（配置项 {@code pangju.web.log.enabled=true}，默认为启用）。</li>
  *     <li>未定义其他类型的 {@link WebLogReceiver} Bean（受 {@link ConditionalOnMissingBean} 限制）。</li>
  *     <li>存在 {@link MongoTemplate} Bean（受 {@link ConditionalOnBean} 限制）。</li>
  * </ul>
@@ -75,11 +73,9 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
  * @see WebLogReceiver
  * @since 1.0.0
  */
-@AutoConfiguration(before = WebLogAutoConfiguration.class, after = MongoDataAutoConfiguration.class)
-@ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
-@ConditionalOnClass({Servlet.class, DispatcherServlet.class, WebMvcConfigurer.class, MongoClient.class, MongoTemplate.class})
-@ConditionalOnBooleanProperty(prefix = "pangju.web.log", name = "enabled", matchIfMissing = true)
-public class MongoReceiverAutoConfiguration {
+@AutoConfiguration(after = MongoDataAutoConfiguration.class)
+@ConditionalOnClass({MongoClient.class, MongoTemplate.class})
+public class MongoReceiverConfiguration {
 	/**
 	 * 注册 MongoDB Web 日志接收器
 	 * <p>

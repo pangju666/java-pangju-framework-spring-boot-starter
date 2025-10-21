@@ -25,6 +25,8 @@ import io.github.pangju666.framework.autoconfigure.web.signature.interceptor.Sig
 import io.github.pangju666.framework.autoconfigure.web.signature.storer.SignatureSecretKeyStorer;
 import io.github.pangju666.framework.web.interceptor.BaseHttpHandlerInterceptor;
 import jakarta.servlet.Servlet;
+import org.apache.commons.lang3.ObjectUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
@@ -34,6 +36,7 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Web MVC 自动配置类。
@@ -99,7 +102,7 @@ public class WebMvcAutoConfiguration implements WebMvcConfigurer {
 	 *
 	 * @since 1.0.0
 	 */
-	private final RateLimiter rateLimiter;
+	private RateLimiter rateLimiter;
 	/**
 	 * 签名密钥存储器
 	 * <p>
@@ -109,7 +112,7 @@ public class WebMvcAutoConfiguration implements WebMvcConfigurer {
 	 *
 	 * @since 1.0.0
 	 */
-	private final SignatureSecretKeyStorer secretKeyStorer;
+	private SignatureSecretKeyStorer secretKeyStorer;
 	/**
 	 * 签名属性配置
 	 * <p>
@@ -120,7 +123,7 @@ public class WebMvcAutoConfiguration implements WebMvcConfigurer {
 	 *
 	 * @since 1.0.0
 	 */
-	private final SignatureProperties signatureProperties;
+	private SignatureProperties signatureProperties;
 
 	/**
 	 * 构造方法，初始化 Web MVC 配置。
@@ -129,19 +132,25 @@ public class WebMvcAutoConfiguration implements WebMvcConfigurer {
 	 * </p>
 	 *
 	 * @param interceptors 自定义拦截器列表，用于扩展 HTTP 请求处理。
-	 * @param rateLimiter 限流器实例。
-	 * @param signatureProperties 签名功能配置。
-	 * @param secretKeyStorer 签名密钥存储器。
 	 * @since 1.0.0
 	 */
-	public WebMvcAutoConfiguration(List<BaseHttpHandlerInterceptor> interceptors,
-								   RateLimiter rateLimiter,
-								   SignatureProperties signatureProperties,
-								   SignatureSecretKeyStorer secretKeyStorer) {
+	public WebMvcAutoConfiguration(List<BaseHttpHandlerInterceptor> interceptors) {
 		this.interceptors = interceptors;
+	}
+
+	@Autowired(required = false)
+	public void setRateLimiter(RateLimiter rateLimiter) {
 		this.rateLimiter = rateLimiter;
-		this.signatureProperties = signatureProperties;
+	}
+
+	@Autowired(required = false)
+	public void setSecretKeyStorer(SignatureSecretKeyStorer secretKeyStorer) {
 		this.secretKeyStorer = secretKeyStorer;
+	}
+
+	@Autowired(required = false)
+	public void setSignatureProperties(SignatureProperties signatureProperties) {
+		this.signatureProperties = signatureProperties;
 	}
 
 	/**
@@ -160,7 +169,11 @@ public class WebMvcAutoConfiguration implements WebMvcConfigurer {
 	@Override
 	public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
 		resolvers.add(new EnumRequestParamArgumentResolver());
-		resolvers.add(new EncryptRequestParamArgumentResolver());
+		try {
+			Class.forName("io.github.pangju666.commons.crypto.key.RSAKey");
+			resolvers.add(new EncryptRequestParamArgumentResolver());
+		} catch (ClassNotFoundException ignored) {
+		}
 	}
 
 	/**
@@ -179,15 +192,19 @@ public class WebMvcAutoConfiguration implements WebMvcConfigurer {
 	 */
 	@Override
 	public void addInterceptors(InterceptorRegistry registry) {
-		RateLimitInterceptor rateLimitInterceptor = new RateLimitInterceptor(rateLimiter);
-		registry.addInterceptor(rateLimitInterceptor)
-			.addPathPatterns(rateLimitInterceptor.getPatterns())
-			.excludePathPatterns(rateLimitInterceptor.getExcludePathPatterns());
+		if (Objects.nonNull(rateLimiter)) {
+			RateLimitInterceptor rateLimitInterceptor = new RateLimitInterceptor(rateLimiter);
+			registry.addInterceptor(rateLimitInterceptor)
+				.addPathPatterns(rateLimitInterceptor.getPatterns())
+				.excludePathPatterns(rateLimitInterceptor.getExcludePathPatterns());
+		}
 
-		SignatureInterceptor signatureInterceptor = new SignatureInterceptor(signatureProperties, secretKeyStorer);
-		registry.addInterceptor(signatureInterceptor)
-			.addPathPatterns(signatureInterceptor.getPatterns())
-			.excludePathPatterns(signatureInterceptor.getExcludePathPatterns());
+		if (ObjectUtils.allNotNull(signatureProperties, secretKeyStorer)) {
+			SignatureInterceptor signatureInterceptor = new SignatureInterceptor(signatureProperties, secretKeyStorer);
+			registry.addInterceptor(signatureInterceptor)
+				.addPathPatterns(signatureInterceptor.getPatterns())
+				.excludePathPatterns(signatureInterceptor.getExcludePathPatterns());
+		}
 
 		for (BaseHttpHandlerInterceptor interceptor : this.interceptors) {
 			registry.addInterceptor(interceptor)

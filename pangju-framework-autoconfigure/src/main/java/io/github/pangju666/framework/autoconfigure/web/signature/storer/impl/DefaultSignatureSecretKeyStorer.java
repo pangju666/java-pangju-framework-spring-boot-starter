@@ -19,7 +19,9 @@ package io.github.pangju666.framework.autoconfigure.web.signature.storer.impl;
 import io.github.pangju666.framework.autoconfigure.web.signature.annotation.Signature;
 import io.github.pangju666.framework.autoconfigure.web.signature.storer.SignatureSecretKeyStorer;
 
+import java.util.Collections;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * 默认的签名密钥存储器实现。
@@ -81,7 +83,7 @@ public class DefaultSignatureSecretKeyStorer implements SignatureSecretKeyStorer
 	 * @since 1.0.0
 	 */
 	public DefaultSignatureSecretKeyStorer(Map<String, String> secretKeyMap) {
-		this.secretKeyMap = secretKeyMap;
+		this.secretKeyMap = Objects.isNull(secretKeyMap) ? Collections.emptyMap() : secretKeyMap;
 	}
 
 	/**

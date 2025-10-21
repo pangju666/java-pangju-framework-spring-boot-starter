@@ -8,6 +8,8 @@ io.github.pangju666.framework.autoconfigure.data.dynamic.mongo.DynamicMongoAutoC
 io.github.pangju666.framework.autoconfigure.web.advice.bind.RequestParamBindingAdvice
 io.github.pangju666.framework.autoconfigure.web.advice.wrapper.ResponseBodyWrapperAdvice
 io.github.pangju666.framework.autoconfigure.web.advice.exception.GlobalExceptionAdvice
+io.github.pangju666.framework.autoconfigure.web.advice.exception.GlobalDataExceptionAdvice
+io.github.pangju666.framework.autoconfigure.web.advice.exception.GlobalValidationExceptionAdvice
 io.github.pangju666.framework.autoconfigure.web.advice.AdviceAutoConfiguration
 io.github.pangju666.framework.autoconfigure.web.crypto.advice.RequestBodyDecryptAdvice
 io.github.pangju666.framework.autoconfigure.web.crypto.advice.ResponseBodyEncryptAdvice
@@ -15,8 +17,6 @@ io.github.pangju666.framework.autoconfigure.web.limit.RateLimiterAutoConfigurati
 io.github.pangju666.framework.autoconfigure.web.idempotent.IdempotentAutoConfiguration
 io.github.pangju666.framework.autoconfigure.web.signature.SignatureAutoConfiguration
 io.github.pangju666.framework.autoconfigure.web.log.WebLogAutoConfiguration
-io.github.pangju666.framework.autoconfigure.web.log.KafkaSenderAutoConfiguration
-io.github.pangju666.framework.autoconfigure.web.log.MongoReceiverAutoConfiguration
 io.github.pangju666.framework.autoconfigure.web.FilterAutoConfiguration
 io.github.pangju666.framework.autoconfigure.web.RestClientAutoConfiguration
 io.github.pangju666.framework.autoconfigure.web.WebMvcAutoConfiguration

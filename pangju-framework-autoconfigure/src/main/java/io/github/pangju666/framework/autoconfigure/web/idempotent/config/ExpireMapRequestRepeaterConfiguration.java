@@ -18,6 +18,8 @@ package io.github.pangju666.framework.autoconfigure.web.idempotent.config;
 
 import io.github.pangju666.framework.autoconfigure.web.idempotent.validator.IdempotentValidator;
 import io.github.pangju666.framework.autoconfigure.web.idempotent.validator.impl.ExpireMapIdempotentValidator;
+import net.jodah.expiringmap.ExpiringMap;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
@@ -53,6 +55,7 @@ import org.springframework.context.annotation.Configuration;
  * @since 1.0.0
  */
 @Configuration(proxyBeanMethods = false)
+@ConditionalOnClass(ExpiringMap.class)
 @ConditionalOnProperty(prefix = "pangju.web.idempotent", value = "type", havingValue = "EXPIRE_MAP", matchIfMissing = true)
 public class ExpireMapRequestRepeaterConfiguration {
 	/**

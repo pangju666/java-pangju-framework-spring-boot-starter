@@ -16,6 +16,7 @@
 
 package io.github.pangju666.framework.autoconfigure.web.crypto.advice;
 
+import io.github.pangju666.commons.crypto.key.RSAKey;
 import io.github.pangju666.commons.lang.utils.JsonUtils;
 import io.github.pangju666.framework.autoconfigure.enums.Algorithm;
 import io.github.pangju666.framework.autoconfigure.enums.Encoding;
@@ -184,7 +185,7 @@ import java.util.Objects;
  */
 @Order(Ordered.LOWEST_PRECEDENCE - 1)
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
-@ConditionalOnClass({Servlet.class, DispatcherServlet.class})
+@ConditionalOnClass({Servlet.class, DispatcherServlet.class, RSAKey.class})
 @RestControllerAdvice
 public class ResponseBodyEncryptAdvice implements ResponseBodyAdvice<Object> {
 	/**

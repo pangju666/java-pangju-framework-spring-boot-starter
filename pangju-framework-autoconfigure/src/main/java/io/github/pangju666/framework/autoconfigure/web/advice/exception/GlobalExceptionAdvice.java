@@ -21,8 +21,6 @@ import io.github.pangju666.framework.web.model.common.Result;
 import io.github.pangju666.framework.web.utils.ServletResponseUtils;
 import jakarta.servlet.Servlet;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.ConstraintViolationException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.tomcat.util.http.fileupload.impl.SizeLimitExceededException;
 import org.slf4j.Logger;
@@ -31,7 +29,8 @@ import org.springframework.beans.ConversionNotSupportedException;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
-import org.springframework.dao.DataAccessException;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.converter.HttpMessageNotWritableException;
@@ -58,7 +57,6 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 /**
  * 全局异常处理器
@@ -73,7 +71,6 @@ import java.util.Set;
  *     <li>处理HTTP请求相关的异常</li>
  *     <li>处理参数验证异常</li>
  *     <li>处理文件上传异常</li>
- *     <li>处理数据访问异常</li>
  *     <li>处理系统级异常</li>
  *     <li>返回统一格式的错误响应</li>
  * </ul>
@@ -150,10 +147,6 @@ import java.util.Set;
  *         <p>请求参数验证不合法（Bean Validation）</p>
  *     </li>
  *     <li>
- *         <strong>ConstraintViolationException</strong> - 400 Bad Request
- *         <p>请求参数约束验证失败</p>
- *     </li>
- *     <li>
  *         <strong>NoHandlerFoundException</strong> - 404 Not Found
  *         <p>请求路径对应的处理器不存在</p>
  *     </li>
@@ -168,10 +161,6 @@ import java.util.Set;
  *     <li>
  *         <strong>HttpMessageNotWritableException</strong> - 500 Internal Server Error
  *         <p>响应体内容写入失败</p>
- *     </li>
- *     <li>
- *         <strong>DataAccessException</strong> - 500 Internal Server Error
- *         <p>数据访问异常</p>
  *     </li>
  *     <li>
  *         <strong>IOException</strong> - 500 Internal Server Error
@@ -223,6 +212,7 @@ import java.util.Set;
  * @see ExceptionHandler
  * @since 1.0.0
  */
+@Order(Ordered.LOWEST_PRECEDENCE - 2)
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @ConditionalOnClass({Servlet.class, DispatcherServlet.class})
 @ConditionalOnBooleanProperty(prefix = "pangju.web.advice", value = "exception", matchIfMissing = true)
@@ -482,24 +472,6 @@ public class GlobalExceptionAdvice {
 	}
 
 	/**
-	 * 处理参数验证异常
-	 *
-	 * @param e 异常实例
-	 * @return 错误响应，HTTP状态码400
-	 * @since 1.0.0
-	 */
-	@ResponseStatus(HttpStatus.BAD_REQUEST)
-	@ExceptionHandler(value = ConstraintViolationException.class)
-	public Result<Void> handleConstraintViolationException(ConstraintViolationException e) {
-		Set<ConstraintViolation<?>> constraints = e.getConstraintViolations();
-		if (!constraints.isEmpty()) {
-			ConstraintViolation<?> constraint = constraints.iterator().next();
-			return Result.fail(StringUtils.defaultString(constraint.getMessage()));
-		}
-		return Result.fail("请求参数验证不合法");
-	}
-
-	/**
 	 * 处理请求路径不存在异常
 	 *
 	 * @param e 异常实例
@@ -537,20 +509,6 @@ public class GlobalExceptionAdvice {
 	public Result<Void> handleAsyncRequestTimeoutException(AsyncRequestTimeoutException e) {
 		LOGGER.error("异步请求超时", e);
 		return Result.fail("异步请求超时");
-	}
-
-	/**
-	 * 处理数据访问异常
-	 *
-	 * @param e 异常实例
-	 * @return 错误响应，HTTP状态码500
-	 * @since 1.0.0
-	 */
-	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-	@ExceptionHandler(value = DataAccessException.class)
-	public Result<Void> handleDataAccessException(DataAccessException e) {
-		LOGGER.error("数据访问异常", e);
-		return Result.fail("数据访问错误");
 	}
 
 	/**

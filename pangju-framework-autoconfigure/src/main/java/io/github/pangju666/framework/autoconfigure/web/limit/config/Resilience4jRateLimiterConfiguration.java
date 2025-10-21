@@ -19,6 +19,7 @@ package io.github.pangju666.framework.autoconfigure.web.limit.config;
 import io.github.pangju666.framework.autoconfigure.web.limit.RateLimitProperties;
 import io.github.pangju666.framework.autoconfigure.web.limit.limiter.RateLimiter;
 import io.github.pangju666.framework.autoconfigure.web.limit.limiter.impl.Resilience4JRateLimiter;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
@@ -139,6 +140,7 @@ import org.springframework.context.annotation.Configuration;
  * @since 1.0.0
  */
 @Configuration(proxyBeanMethods = false)
+@ConditionalOnClass(io.github.resilience4j.ratelimiter.RateLimiter.class)
 @ConditionalOnProperty(prefix = "pangju.web.rate-limit", value = "type", havingValue = "RESILIENCE4J", matchIfMissing = true)
 public class Resilience4jRateLimiterConfiguration {
 	/**
