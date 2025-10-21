@@ -26,7 +26,7 @@ import io.github.pangju666.framework.autoconfigure.enums.Algorithm;
 import io.github.pangju666.framework.autoconfigure.enums.Encoding;
 import io.github.pangju666.framework.autoconfigure.jackson.annotation.EncryptFormat;
 import io.github.pangju666.framework.autoconfigure.spring.StaticSpringContext;
-import io.github.pangju666.framework.autoconfigure.web.crypto.utils.CryptoUtils;
+import io.github.pangju666.framework.autoconfigure.utils.CryptoUtils;
 import io.github.pangju666.framework.web.exception.base.ServerException;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;

@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package io.github.pangju666.framework.autoconfigure.web.crypto.utils;
+package io.github.pangju666.framework.autoconfigure.utils;
 
 import io.github.pangju666.commons.crypto.encryption.binary.RSABinaryEncryptor;
 import io.github.pangju666.commons.crypto.key.RSAKey;

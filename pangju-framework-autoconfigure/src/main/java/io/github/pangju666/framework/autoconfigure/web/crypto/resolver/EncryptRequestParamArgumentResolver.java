@@ -17,7 +17,7 @@
 package io.github.pangju666.framework.autoconfigure.web.crypto.resolver;
 
 import io.github.pangju666.framework.autoconfigure.spring.StaticSpringContext;
-import io.github.pangju666.framework.autoconfigure.web.crypto.utils.CryptoUtils;
+import io.github.pangju666.framework.autoconfigure.utils.CryptoUtils;
 import io.github.pangju666.framework.web.exception.base.ServerException;
 import io.github.pangju666.framework.web.exception.base.ServiceException;
 import org.apache.commons.codec.DecoderException;

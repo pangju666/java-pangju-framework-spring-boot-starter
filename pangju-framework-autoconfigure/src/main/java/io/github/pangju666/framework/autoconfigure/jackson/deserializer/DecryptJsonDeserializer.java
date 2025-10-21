@@ -27,7 +27,7 @@ import com.fasterxml.jackson.databind.deser.ContextualDeserializer;
 import com.fasterxml.jackson.databind.deser.std.NullifyingDeserializer;
 import io.github.pangju666.framework.autoconfigure.jackson.annotation.DecryptFormat;
 import io.github.pangju666.framework.autoconfigure.spring.StaticSpringContext;
-import io.github.pangju666.framework.autoconfigure.web.crypto.utils.CryptoUtils;
+import io.github.pangju666.framework.autoconfigure.utils.CryptoUtils;
 import io.github.pangju666.framework.web.exception.base.ServerException;
 import io.github.pangju666.framework.web.exception.base.ServiceException;
 import org.apache.commons.codec.DecoderException;
