@@ -49,6 +49,147 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 
 import java.util.Objects;
 
+/**
+ * 响应体包装处理器
+ * <p>
+ * 该类用于对Web应用的响应体进行统一包装和格式化处理。
+ * 通过{@link RestControllerAdvice}和{@link ResponseBodyAdvice}机制，
+ * 为标注了{@link ResponseBodyWrapper}注解的方法返回值自动包装成统一的响应格式。
+ * </p>
+ * <p>
+ * 主要功能：
+ * <ul>
+ *     <li>统一包装API响应格式</li>
+ *     <li>支持多种序列化器（Jackson、Gson等）</li>
+ *     <li>支持多种数据类型的包装</li>
+ *     <li>提供灵活的包装排除机制</li>
+ * </ul>
+ * </p>
+ * <p>
+ * 配置条件：
+ * <ul>
+ *     <li>应用必须是Servlet类型的Web应用</li>
+ *     <li>Classpath中必须存在Servlet和DispatcherServlet类</li>
+ *     <li>方法或类需要标注{@link ResponseBodyWrapper}注解</li>
+ * </ul>
+ * </p>
+ * <p>
+ * 处理优先级：
+ * <p>
+ * 该类的执行优先级为{@link Ordered#HIGHEST_PRECEDENCE} + 1，
+ * 确保在其他{@link ResponseBodyAdvice}之前执行，最先对响应体进行包装。
+ * </p>
+ * </p>
+ * <p>
+ * 包装规则：
+ * <ul>
+ *     <li>
+ *         <strong>String类型响应</strong>
+ *         <p>
+ *         将字符串包装到{@link Result}中，并将Content-Type设置为application/json
+ *         </p>
+ *     </li>
+ *     <li>
+ *         <strong>字节数组响应</strong>
+ *         <p>
+ *         将字节数组包装到{@link Result}中，并将Content-Type设置为application/json
+ *         </p>
+ *     </li>
+ *     <li>
+ *         <strong>Result类型响应</strong>
+ *         <p>
+ *         已经是Result类型，直接返回，不再包装
+ *         </p>
+ *     </li>
+ *     <li>
+ *         <strong>Gson JsonElement类型响应</strong>
+ *         <p>
+ *         使用Gson序列化器时，将JsonElement包装在JsonObject中
+ *         </p>
+ *     </li>
+ *     <li>
+ *         <strong>Jackson JsonNode类型响应</strong>
+ *         <p>
+ *         使用Jackson序列化器时，将JsonNode包装在ObjectNode中
+ *         </p>
+ *     </li>
+ *     <li>
+ *         <strong>其他类型响应</strong>
+ *         <p>
+ *         统一包装到{@link Result}中
+ *         </p>
+ *     </li>
+ * </ul>
+ * </p>
+ * <p>
+ * 排除规则：
+ * <p>
+ * 以下情况下不会进行包装：
+ * <ul>
+ *     <li>返回类型为{@link ResponseEntity}时</li>
+ *     <li>方法标注了{@link ResponseBodyWrapperIgnore}注解时</li>
+ *     <li>方法或类没有标注{@link ResponseBodyWrapper}注解时</li>
+ * </ul>
+ * </p>
+ * <p>
+ * 使用示例：
+ * <pre>
+ * // 在方法上标注注解
+ * &#64;GetMapping("/api/users/{id}")
+ * &#64;ResponseBodyWrapper
+ * public User getUserById(&#64;PathVariable Long id) {
+ *     return userService.findById(id);
+ * }
+ *
+ * // 在类上标注注解，该类的所有方法都会进行包装
+ * &#64;RestController
+ * &#64;RequestMapping("/api/users")
+ * &#64;ResponseBodyWrapper
+ * public class UserController {
+ *     &#64;GetMapping
+ *     public List&lt;User&gt; listUsers() {
+ *         return userService.findAll();
+ *     }
+ *
+ *     // 该方法会被排除包装
+ *     &#64;GetMapping("/{id}")
+ *     &#64;ResponseBodyWrapperIgnore
+ *     public ResponseEntity&lt;User&gt; getUserById(&#64;PathVariable Long id) {
+ *         return ResponseEntity.ok(userService.findById(id));
+ *     }
+ * }
+ * </pre>
+ * </p>
+ * <p>
+ * 响应格式示例：
+ * <pre>
+ * // 原始响应
+ * {
+ *   "id": 1,
+ *   "name": "John",
+ *   "age": 30
+ * }
+ *
+ * // 包装后的响应
+ * {
+ *   "code": 0,
+ *   "message": "请求成功",
+ *   "data": {
+ *     "id": 1,
+ *     "name": "John",
+ *     "age": 30
+ *   }
+ * }
+ * </pre>
+ * </p>
+ *
+ * @author pangju666
+ * @see ResponseBodyWrapper
+ * @see ResponseBodyWrapperIgnore
+ * @see ResponseBodyAdvice
+ * @see Result
+ * @since 1.0.0
+ */
 @Order(Ordered.HIGHEST_PRECEDENCE + 1)
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @ConditionalOnClass({Servlet.class, DispatcherServlet.class})
