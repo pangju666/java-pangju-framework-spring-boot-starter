@@ -66,7 +66,7 @@ public class RedisHashCacheManager implements HashCacheManager {
 		if (CollectionUtils.isEmpty(hashKeys)) {
 			return Collections.emptyList();
 		}
-		return ListUtils.partition(new ArrayList<>(hashKeys), batchSize)
+		return ListUtils.partition(List.copyOf(hashKeys), batchSize)
 			.stream()
 			.map(part -> redisTemplate.opsForHash().multiGet(getCacheName(cacheName), hashKeys))
 			.flatMap(List::stream)
@@ -99,14 +99,14 @@ public class RedisHashCacheManager implements HashCacheManager {
 				.collect(Collectors.toMap(pair -> pair.getKey().toString(), Pair::getValue));
 		}
 		if (MapUtils.isNotEmpty(map)) {
-			ListUtils.partition(new ArrayList<>(map.entrySet()), batchSize)
+			ListUtils.partition(List.copyOf(map.entrySet()), batchSize)
 				.parallelStream()
 				.forEach(part -> {
 					redisTemplate.opsForHash().putAll(getCacheName(cacheName), Map.ofEntries(part.toArray(Map.Entry[]::new)));
 				});
-			/*for (List<Map.Entry<String, Object>> part : ListUtils.partition(new ArrayList<>(map.entrySet()), batchSize)) {
+			for (List<Map.Entry<String, Object>> part : ListUtils.partition(List.copyOf(map.entrySet()), batchSize)) {
 				redisTemplate.opsForHash().putAll(getCacheName(cacheName), Map.ofEntries(part.toArray(Map.Entry[]::new)));
-			}*/
+			}
 		}
 	}
 
@@ -128,7 +128,7 @@ public class RedisHashCacheManager implements HashCacheManager {
 				.collect(Collectors.toSet());
 		}
 		if (CollectionUtils.isNotEmpty(hashKeys)) {
-			for (List<?> part : ListUtils.partition(new ArrayList<>(hashKeys), batchSize)) {
+			for (List<?> part : ListUtils.partition(List.copyOf(hashKeys), batchSize)) {
 				redisTemplate.opsForHash().delete(getCacheName(cacheName), part.toArray(Object[]::new));
 			}
 		}

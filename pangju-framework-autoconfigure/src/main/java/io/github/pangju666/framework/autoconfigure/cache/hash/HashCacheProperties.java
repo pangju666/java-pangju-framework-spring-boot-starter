@@ -17,7 +17,7 @@
 package io.github.pangju666.framework.autoconfigure.cache.hash;
 
 import io.github.pangju666.framework.autoconfigure.cache.hash.enums.HashCacheType;
-import io.github.pangju666.framework.autoconfigure.data.redis.enums.RedisSerializerType;
+import io.github.pangju666.framework.data.redis.enums.RedisSerializerType;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = "pangju.cache.hash")

@@ -17,36 +17,10 @@
 package io.github.pangju666.framework.autoconfigure.cache.hash.aspect;
 
 import io.github.pangju666.framework.autoconfigure.cache.hash.HashCacheManager;
-import io.github.pangju666.framework.autoconfigure.cache.hash.HashCacheSorter;
-import io.github.pangju666.framework.autoconfigure.cache.hash.annoation.HashCacheEvict;
-import io.github.pangju666.framework.autoconfigure.cache.hash.annoation.HashCachePut;
-import io.github.pangju666.framework.autoconfigure.cache.hash.annoation.HashCacheable;
-import io.github.pangju666.framework.autoconfigure.cache.hash.annoation.HashCaching;
-import io.github.pangju666.framework.spring.utils.ReflectionUtils;
-import io.github.pangju666.framework.spring.utils.SpELUtils;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.ListUtils;
-import org.apache.commons.lang3.ClassUtils;
-import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.aspectj.lang.JoinPoint;
-import org.aspectj.lang.ProceedingJoinPoint;
-import org.aspectj.lang.annotation.AfterReturning;
-import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.core.DefaultParameterNameDiscoverer;
 import org.springframework.core.ParameterNameDiscoverer;
-import org.springframework.expression.EvaluationContext;
-import org.springframework.expression.Expression;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
-
-import java.lang.reflect.Method;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Aspect
 public class HashCacheAspect {
@@ -60,7 +34,7 @@ public class HashCacheAspect {
 		this.hashCacheManager = hashCacheManager;
 	}
 
-	@SuppressWarnings("unchecked")
+	/*@SuppressWarnings("unchecked")
 	@Around("@annotation(io.github.pangju666.framework.autoconfigure.cache.hash.annoation.HashCacheable)")
 	public Object handleHashCacheable(ProceedingJoinPoint point) throws Throwable {
 		MethodSignature methodSignature = (MethodSignature) point.getSignature();
@@ -75,48 +49,58 @@ public class HashCacheAspect {
 		context.setVariable("root", rootObject);
 
 		HashCacheable annotation = method.getAnnotation(HashCacheable.class);
-		Object cacheKey;
 
 		// 如果缓存名称为空，则直接返回方法值
 		if (StringUtils.isBlank(annotation.cache())) {
 			return point.proceed();
 		}
+
+		// 如果key表达式为空，则直接返回方法值
+		if (StringUtils.isBlank(annotation.key())) {
+			return point.proceed();
+		}
+		// 计算key SPEL表达式
+		Expression keyExpression = parser.parseExpression(annotation.key());
+		Object cacheKey = keyExpression.getValue(context, rootObject);
+		// 如果key为null，则直接返回方法值
+		if (Objects.isNull(cacheKey)) {
+			return point.proceed();
+		}
+
 		// 判断缓存结果是否存在，存在则返回缓存结果
 		if (hashCacheManager.existCache(annotation.cache())) {
 			// 判断是否返回所有缓存条目
 			if (annotation.allEntries()) {
 				return hashCacheManager.getAll(annotation.cache());
 			} else {
-				// 如果key表达式为空，则直接返回方法值
-				if (StringUtils.isBlank(annotation.key())) {
-					return point.proceed();
-				}
-
-				Expression keyExpression = parser.parseExpression(annotation.key());
-				cacheKey = keyExpression.getValue(context, rootObject);
-				// 如果key为null，则直接返回方法值
-				if (Objects.isNull(cacheKey)) {
-					return point.proceed();
-				} else if (cacheKey instanceof Collection<?> collection) {    // 根据hashkey集合获取缓存结果
+				if (cacheKey instanceof Collection<?> collection) {    // 根据hashkey集合获取缓存结果
 					if (!collection.isEmpty()) {
 						List<?> cacheResult = getEntities(annotation.cache(), collection, annotation.keyField());
 						// 如果缓存条目结果不为空则返回
 						if (Objects.nonNull(cacheResult)) {
-							if (annotation.sortFields().length > 0 && rootObject.target() instanceof HashCacheSorter sorter) {
-								Boolean reverseOrder = false;
-								if (StringUtils.isNotBlank(annotation.reverseOrder())) {
-									Expression reverseOrderExpression = parser.parseExpression(annotation.reverseOrder());
-									reverseOrder = ObjectUtils.defaultIfNull(reverseOrderExpression.getValue(context,
-										rootObject, Boolean.class), false);
-								}
-								sorter.sort(cacheResult, reverseOrder, annotation.sortFields());
+							if (!cacheResult.isEmpty() && annotation.sortFields().length > 0 &&
+								rootObject.target() instanceof HashCacheSorter sorter) {
+								return sorter.sort(cacheResult, annotation.reverseOrder(), annotation.sortFields());
 							}
 							return cacheResult;
 						}
 					}
 					// 如果存在缓存条目则返回
-				} else if (hashCacheManager.exist(annotation.cache(), Objects.toString(cacheKey))) {
-					return hashCacheManager.get(annotation.cache(), Objects.toString(cacheKey));
+				} else {
+					String cacheKeyValue;
+					// 判断是否存在字段名称属性，存在则反射获取字段值
+					if (StringUtils.isBlank(annotation.keyField())) {
+						cacheKey = ReflectionUtils.getFieldValue(cacheKey, annotation.keyField());
+					} else {
+						cacheKeyValue = Objects.toString(cacheKey, null);
+					}
+					if (hashCacheManager.exist(annotation.cache(), Objects.toString(cacheKey))) {
+						// 判断是否存在字段名称属性，存在则反射获取字段值
+						if (StringUtils.isBlank(annotation.keyField())) {
+							cacheKey = ReflectionUtils.getFieldValue(cacheKey, annotation.keyField());
+						}
+						return hashCacheManager.get(annotation.cache(), Objects.toString(cacheKey));
+					}
 				}
 			}
 		}
@@ -147,8 +131,7 @@ public class HashCacheAspect {
 				hashCacheManager.putAll(annotation.cache(), StringUtils.defaultIfBlank(
 					annotation.keyField(), null), collection);
 			} else {
-				hashCacheManager.put(annotation.cache(), StringUtils.defaultIfBlank(annotation.keyField(),
-					null), returnValue);
+				hashCacheManager.put(annotation.cache(), Objects.toString(cacheKey), returnValue);
 			}
 		}
 
@@ -305,5 +288,5 @@ public class HashCacheAspect {
 			return cacheResult;
 		}
 		return null;
-	}
+	}*/
 }

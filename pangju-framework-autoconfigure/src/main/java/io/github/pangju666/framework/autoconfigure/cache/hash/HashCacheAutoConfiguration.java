@@ -18,7 +18,7 @@ package io.github.pangju666.framework.autoconfigure.cache.hash;
 
 import io.github.pangju666.framework.autoconfigure.cache.hash.aspect.HashCacheAspect;
 import io.github.pangju666.framework.autoconfigure.cache.hash.redis.RedisHashCacheManager;
-import io.github.pangju666.framework.autoconfigure.data.redis.utils.RedisSerializerUtils;
+import io.github.pangju666.framework.data.redis.utils.RedisUtils;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.aop.AopAutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.*;
@@ -51,10 +51,10 @@ public class HashCacheAutoConfiguration {
 			RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
 			redisTemplate.setConnectionFactory(redisConnectionFactory);
 			redisTemplate.setKeySerializer(RedisSerializer.string());
-			redisTemplate.setValueSerializer(RedisSerializerUtils.createSerializer(
+			redisTemplate.setValueSerializer(RedisUtils.getSerializer(
 				properties.getRedis().getValueSerializer()));
 			redisTemplate.setHashKeySerializer(RedisSerializer.string());
-			redisTemplate.setHashValueSerializer(RedisSerializerUtils.createSerializer(
+			redisTemplate.setHashValueSerializer(RedisUtils.getSerializer(
 				properties.getRedis().getValueSerializer()));
 			redisTemplate.afterPropertiesSet();
 			return new RedisHashCacheManager(redisTemplate, properties.getRedis().getKeyPrefix(),
