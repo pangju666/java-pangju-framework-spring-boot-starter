@@ -51,7 +51,7 @@ public class FilterAutoConfiguration {
 
 		FilterRegistrationBean<CorsFilter> filterRegistrationBean = new FilterRegistrationBean<>(
 			new CorsFilter(source, Collections.emptySet()));
-		filterRegistrationBean.setOrder(Ordered.HIGHEST_PRECEDENCE);
+		filterRegistrationBean.setOrder(Ordered.HIGHEST_PRECEDENCE + 1);
 		return filterRegistrationBean;
 	}
 
@@ -62,7 +62,7 @@ public class FilterAutoConfiguration {
 		ContentCachingWrapperFilter contentCachingWrapperFilter = new ContentCachingWrapperFilter(Collections.emptySet());
 		FilterRegistrationBean<ContentCachingWrapperFilter> filterRegistrationBean = new FilterRegistrationBean<>(contentCachingWrapperFilter);
 		filterRegistrationBean.addUrlPatterns("/*");
-		filterRegistrationBean.setOrder(Ordered.HIGHEST_PRECEDENCE + 1);
+		filterRegistrationBean.setOrder(Ordered.HIGHEST_PRECEDENCE + 2);
 		return filterRegistrationBean;
 	}
 }
