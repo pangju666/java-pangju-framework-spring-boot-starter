@@ -26,11 +26,11 @@ import java.util.concurrent.TimeUnit;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE, ElementType.METHOD})
 public @interface Signature {
-	String[] appId() default {};
+	String[] appId();
 
 	SignatureType type() default SignatureType.ANY;
 
-	SignatureAlgorithm algorithm() default SignatureAlgorithm.SHA1;
+	SignatureAlgorithm algorithm() default SignatureAlgorithm.SHA256;
 
 	long timeout() default 1;
 
