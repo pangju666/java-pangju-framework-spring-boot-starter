@@ -29,6 +29,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisOperations;
+import org.springframework.data.redis.serializer.RedisSerializer;
 
 @AutoConfiguration(after = org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration.class)
 @ConditionalOnClass({RedisOperations.class, ScanRedisTemplate.class})
@@ -58,12 +59,12 @@ public class RedisAutoConfiguration {
 	@Bean
 	@ConditionalOnMissingBean(name = "scanRedisTemplate")
 	@ConditionalOnSingleCandidate(RedisConnectionFactory.class)
-	public ScanRedisTemplate<Object, Object> scanRedisTemplate(RedisProperties redisProperties,
+	public ScanRedisTemplate<String, Object> scanRedisTemplate(RedisProperties redisProperties,
 															   RedisConnectionFactory connectionFactory) {
-		ScanRedisTemplate<Object, Object> scanRedisTemplate = new ScanRedisTemplate<>();
+		ScanRedisTemplate<String, Object> scanRedisTemplate = new ScanRedisTemplate<>();
 		scanRedisTemplate.setConnectionFactory(connectionFactory);
-		scanRedisTemplate.setKeySerializer(RedisUtils.getSerializer(redisProperties.getKey()));
-		scanRedisTemplate.setHashKeySerializer(RedisUtils.getSerializer(redisProperties.getHashKey()));
+		scanRedisTemplate.setKeySerializer(RedisSerializer.string());
+		scanRedisTemplate.setHashKeySerializer(RedisSerializer.string());
 		scanRedisTemplate.setValueSerializer(RedisUtils.getSerializer(redisProperties.getValue()));
 		scanRedisTemplate.setHashValueSerializer(RedisUtils.getSerializer(redisProperties.getHashValue()));
 		return scanRedisTemplate;

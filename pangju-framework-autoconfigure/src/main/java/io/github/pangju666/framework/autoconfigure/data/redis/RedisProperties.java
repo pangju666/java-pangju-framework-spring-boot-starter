@@ -21,18 +21,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties("spring.data.redis.serializer")
 public class RedisProperties {
-	private RedisSerializerType key = RedisSerializerType.STRING;
 	private RedisSerializerType value = RedisSerializerType.JSON;
-	private RedisSerializerType hashKey = RedisSerializerType.STRING;
 	private RedisSerializerType hashValue = RedisSerializerType.JSON;
-
-	public RedisSerializerType getKey() {
-		return key;
-	}
-
-	public void setKey(RedisSerializerType key) {
-		this.key = key;
-	}
 
 	public RedisSerializerType getValue() {
 		return value;
@@ -40,14 +30,6 @@ public class RedisProperties {
 
 	public void setValue(RedisSerializerType value) {
 		this.value = value;
-	}
-
-	public RedisSerializerType getHashKey() {
-		return hashKey;
-	}
-
-	public void setHashKey(RedisSerializerType hashKey) {
-		this.hashKey = hashKey;
 	}
 
 	public RedisSerializerType getHashValue() {
