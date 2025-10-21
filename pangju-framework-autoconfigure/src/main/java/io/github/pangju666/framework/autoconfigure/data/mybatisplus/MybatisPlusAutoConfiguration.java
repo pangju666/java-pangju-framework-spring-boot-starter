@@ -38,6 +38,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnSingleCandi
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 
 import javax.sql.DataSource;
@@ -144,7 +145,7 @@ public class MybatisPlusAutoConfiguration implements BeanFactoryAware {
 	@Configuration(proxyBeanMethods = false)
 	@ConditionalOnClass(TableLogicFillSqlInjector.class)
 	static class TableLogicFillSqlInjectorConfiguration {
-		@Order
+		@Order(Ordered.HIGHEST_PRECEDENCE + 1)
 		@ConditionalOnMissingBean
 		@Bean
 		public ISqlInjector tableLogicFillSqlInjector() {

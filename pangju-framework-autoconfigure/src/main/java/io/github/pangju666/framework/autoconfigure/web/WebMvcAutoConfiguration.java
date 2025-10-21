@@ -17,8 +17,8 @@
 package io.github.pangju666.framework.autoconfigure.web;
 
 import io.github.pangju666.framework.autoconfigure.web.crypto.resolver.EncryptRequestParamArgumentResolver;
-import io.github.pangju666.framework.autoconfigure.web.limiter.handler.RequestRateLimiter;
-import io.github.pangju666.framework.autoconfigure.web.limiter.interceptor.RequestRateLimitInterceptor;
+import io.github.pangju666.framework.autoconfigure.web.limit.interceptor.RateLimitInterceptor;
+import io.github.pangju666.framework.autoconfigure.web.limit.limiter.RateLimiter;
 import io.github.pangju666.framework.autoconfigure.web.resolver.EnumRequestParamArgumentResolver;
 import io.github.pangju666.framework.autoconfigure.web.signature.RequestSignatureProperties;
 import io.github.pangju666.framework.autoconfigure.web.signature.handler.SignatureSecretKeyStore;
@@ -40,16 +40,16 @@ import java.util.List;
 @ConditionalOnClass({Servlet.class, DispatcherServlet.class, WebMvcConfigurer.class})
 public class WebMvcAutoConfiguration implements WebMvcConfigurer {
 	private final List<BaseHttpHandlerInterceptor> interceptors;
-	private final RequestRateLimiter requestRateLimiter;
+	private final RateLimiter rateLimiter;
 	private final SignatureSecretKeyStore secretKeyStore;
 	private final RequestSignatureProperties signatureProperties;
 
 	public WebMvcAutoConfiguration(List<BaseHttpHandlerInterceptor> interceptors,
-								   RequestRateLimiter requestRateLimiter,
+								   RateLimiter rateLimiter,
 								   RequestSignatureProperties signatureProperties,
 								   SignatureSecretKeyStore secretKeyStore) {
 		this.interceptors = interceptors;
-		this.requestRateLimiter = requestRateLimiter;
+		this.rateLimiter = rateLimiter;
 		this.signatureProperties = signatureProperties;
 		this.secretKeyStore = secretKeyStore;
 	}
@@ -62,10 +62,10 @@ public class WebMvcAutoConfiguration implements WebMvcConfigurer {
 
 	@Override
 	public void addInterceptors(InterceptorRegistry registry) {
-		RequestRateLimitInterceptor requestRateLimitInterceptor = new RequestRateLimitInterceptor(requestRateLimiter);
-		registry.addInterceptor(requestRateLimitInterceptor)
-			.addPathPatterns(requestRateLimitInterceptor.getPatterns())
-			.excludePathPatterns(requestRateLimitInterceptor.getExcludePathPatterns());
+		RateLimitInterceptor rateLimitInterceptor = new RateLimitInterceptor(rateLimiter);
+		registry.addInterceptor(rateLimitInterceptor)
+			.addPathPatterns(rateLimitInterceptor.getPatterns())
+			.excludePathPatterns(rateLimitInterceptor.getExcludePathPatterns());
 
 		RequestSignatureInterceptor requestSignatureInterceptor = new RequestSignatureInterceptor(signatureProperties, secretKeyStore);
 		registry.addInterceptor(requestSignatureInterceptor)
