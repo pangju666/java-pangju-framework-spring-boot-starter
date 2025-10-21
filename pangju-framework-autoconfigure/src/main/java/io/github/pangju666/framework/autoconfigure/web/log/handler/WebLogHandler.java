@@ -52,8 +52,8 @@ import java.lang.reflect.Method;
  * public class SensitiveDataMaskingHandler implements WebLogHandler {
  *     &#64;Override
  *     public void handle(WebLog webLog, ContentCachingRequestWrapper request,
- *                        ContentCachingResponseWrapper response, Class<?> targetClass, Method targetMethod) {
- *         if (webLog.getRequest() != null && webLog.getRequest().getQueryParams() != null) {
+ *                        ContentCachingResponseWrapper response, Class&lt;?&gt; targetClass, Method targetMethod) {
+ *         if (webLog.getRequest() != null &amp;&amp; webLog.getRequest().getQueryParams() != null) {
  *             webLog.getRequest().getQueryParams().forEach((key, value) -> {
  *                 if ("password".equals(key)) {
  *                     value.replaceAll(v -> "****"); // 脱敏处理

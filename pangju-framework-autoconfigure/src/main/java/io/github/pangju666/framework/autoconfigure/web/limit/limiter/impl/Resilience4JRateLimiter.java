@@ -129,7 +129,7 @@ import java.time.Duration;
  * <p>
  * 性能特性：
  * <ul>
- *     <li>延迟：< 1ms，仅内存操作</li>
+ *     <li>延迟：&lt; 1ms，仅内存操作</li>
  *     <li>吞吐量：支持高并发，取决于硬件</li>
  *     <li>内存占用：每个限流键约几KB</li>
  *     <li>CPU占用：低，主要是原子操作</li>
@@ -218,7 +218,7 @@ public class Resilience4JRateLimiter implements RateLimiter {
 	 * <p>
 	 * 性能特性：
 	 * <ul>
-	 *     <li>单次调用延迟：< 1ms</li>
+	 *     <li>单次调用延迟：&lt; 1ms</li>
 	 *     <li>支持高并发：Resilience4j内部使用原子操作保证线程安全</li>
 	 *     <li>无阻塞：timeoutDuration=0确保非阻塞操作</li>
 	 * </ul>
