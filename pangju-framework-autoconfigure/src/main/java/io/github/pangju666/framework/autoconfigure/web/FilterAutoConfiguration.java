@@ -16,13 +16,17 @@
 
 package io.github.pangju666.framework.autoconfigure.web;
 
+import io.github.pangju666.framework.autoconfigure.web.exception.HttpExceptionInfoFilter;
+import io.github.pangju666.framework.autoconfigure.web.exception.HttpExceptionInfoProperties;
 import io.github.pangju666.framework.web.filter.ContentCachingWrapperFilter;
 import io.github.pangju666.framework.web.filter.CorsFilter;
 import jakarta.servlet.Servlet;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.autoconfigure.web.servlet.ConditionalOnMissingFilterBean;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.Ordered;
@@ -39,6 +43,7 @@ import java.util.Collections;
  * <ul>
  *     <li>跨域资源共享(CORS)过滤器 - 用于处理跨域请求</li>
  *     <li>内容缓存包装过滤器 - 用于缓存请求和响应内容以支持多次读取</li>
+ *     <li>Http异常信息过滤器 - 用于获取Http异常类型列表和Http异常列表</li>
  * </ul>
  * </p>
  * <p>
@@ -59,6 +64,7 @@ import java.util.Collections;
 @AutoConfiguration
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @ConditionalOnClass({Servlet.class, DispatcherServlet.class})
+@EnableConfigurationProperties(HttpExceptionInfoProperties.class)
 public class FilterAutoConfiguration {
 	/**
 	 * 配置跨域资源共享(CORS)过滤器
@@ -136,6 +142,39 @@ public class FilterAutoConfiguration {
 		FilterRegistrationBean<ContentCachingWrapperFilter> filterRegistrationBean = new FilterRegistrationBean<>(contentCachingWrapperFilter);
 		filterRegistrationBean.addUrlPatterns("/*");
 		filterRegistrationBean.setOrder(Ordered.HIGHEST_PRECEDENCE + 2);
+		return filterRegistrationBean;
+	}
+
+	/**
+	 * 配置 HttpExceptionInfoFilter 过滤器。
+	 * <p>
+	 * 该过滤器用于提供 HTTP 异常信息的访问端点，包括：
+	 * <ul>
+	 *     <li>异常类型列表：返回系统中已定义的所有异常类型。</li>
+	 *     <li>异常信息列表：返回所有使用 {@link io.github.pangju666.framework.web.annotation.HttpException}
+	 *     注解标注的异常类信息。</li>
+	 * </ul>
+	 * 配置通过 {@link HttpExceptionInfoProperties} 提供，允许自定义异常访问的路径和扫描的包范围，
+	 * 从而灵活扩展异常信息统计。
+	 * </p>
+	 * <p>
+	 * 过滤器的执行优先级设置为 {@link Ordered#HIGHEST_PRECEDENCE} + 3，确保在主要业务逻辑之前拦截并处理请求。
+	 * </p>
+	 *
+	 * @param properties {@link HttpExceptionInfoProperties} 配置类，用于指定过滤器的异常访问路径、扫描包范围等
+	 * @return 注册完成的 {@link FilterRegistrationBean} 实例，包含过滤器实例及其配置
+	 * @since 1.0.0
+	 */
+	@ConditionalOnBooleanProperty(prefix = "pangju.web.exception.info", name = "enabled", matchIfMissing = true)
+	@ConditionalOnMissingFilterBean
+	@Bean
+	public FilterRegistrationBean<HttpExceptionInfoFilter> httpExceptionInfoFilterFilterRegistrationBean(HttpExceptionInfoProperties properties) {
+		HttpExceptionInfoFilter httpExceptionInfoFilter = new HttpExceptionInfoFilter(
+			properties.getRequestPath().getTypes(), properties.getRequestPath().getList(),
+			properties.getPackages());
+		FilterRegistrationBean<HttpExceptionInfoFilter> filterRegistrationBean = new FilterRegistrationBean<>(httpExceptionInfoFilter);
+		filterRegistrationBean.addUrlPatterns(properties.getRequestPath().getTypes(), properties.getRequestPath().getList());
+		filterRegistrationBean.setOrder(Ordered.HIGHEST_PRECEDENCE + 3);
 		return filterRegistrationBean;
 	}
 }

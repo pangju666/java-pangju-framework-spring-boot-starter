@@ -136,7 +136,7 @@ public class WebLogAutoConfiguration {
 			webLogHandlers, requestMappingHandlerMapping);
 		FilterRegistrationBean<WebLogFilter> filterRegistrationBean = new FilterRegistrationBean<>(webLogFilter);
 		filterRegistrationBean.addUrlPatterns("/*");
-		filterRegistrationBean.setOrder(Ordered.HIGHEST_PRECEDENCE + 3);
+		filterRegistrationBean.setOrder(Ordered.HIGHEST_PRECEDENCE + 4);
 		return filterRegistrationBean;
 	}
 }
