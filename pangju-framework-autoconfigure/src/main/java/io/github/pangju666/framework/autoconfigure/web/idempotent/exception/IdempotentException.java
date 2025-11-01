@@ -17,23 +17,20 @@
 package io.github.pangju666.framework.autoconfigure.web.idempotent.exception;
 
 import io.github.pangju666.framework.autoconfigure.web.idempotent.annotation.Idempotent;
-import io.github.pangju666.framework.autoconfigure.web.idempotent.aspect.IdempotentAspect;
 import io.github.pangju666.framework.web.annotation.HttpException;
 import io.github.pangju666.framework.web.enums.HttpExceptionType;
 import io.github.pangju666.framework.web.exception.base.ValidationException;
-import org.springframework.http.HttpStatus;
 
 /**
  * 幂等性验证异常
  * <p>
  * 当请求被判定为重复请求（违反幂等性约束）时抛出该异常。
- * 该异常被标记为HTTP异常，会被自动转换为HTTP 429（Too Many Requests）响应。
+ * 该异常被标记为HTTP异常。
  * </p>
  * <p>
  * 异常特性：
  * <ul>
- *     <li>HTTP状态码：429 Too Many Requests</li>
- *     <li>异常代码：420</li>
+ *     <li>异常错误码：420</li>
  *     <li>异常类型：VALIDATION（验证类异常）</li>
  *     <li>日志记录：false（该异常不会被记录到应用日志中）</li>
  * </ul>
@@ -77,23 +74,12 @@ import org.springframework.http.HttpStatus;
  * 客户端响应示例：
  * <pre>
  * {@code
- * HTTP/1.1 429 Too Many Requests
- * Content-Type: application/json
- *
  * {
  *   "code": 4420,
  *   "message": "您的请求已处理，请勿重复提交"
  * }
  * }
  * </pre>
- * </p>
- * <p>
- * 与其他组件的关系：
- * <ul>
- *     <li>由{@link IdempotentAspect}或相关幂等性实现在检测到重复请求时抛出</li>
- *     <li>由Spring的异常处理器自动转换为HTTP 429响应</li>
- *     <li>与{@link Idempotent}注解一起工作，使用注解中的错误消息</li>
- * </ul>
  * </p>
  * <p>
  * 幂等性存储支持：
@@ -106,16 +92,14 @@ import org.springframework.http.HttpStatus;
  * @author pangju666
  * @see Idempotent
  * @see ValidationException
- * @see HttpStatus#TOO_MANY_REQUESTS
  * @since 1.0.0
  */
-@HttpException(code = 420, type = HttpExceptionType.VALIDATION, log = false, status = HttpStatus.TOO_MANY_REQUESTS)
+@HttpException(code = 420, type = HttpExceptionType.VALIDATION, log = false)
 public class IdempotentException extends ValidationException {
 	/**
 	 * 使用错误消息构造异常
 	 * <p>
 	 * 创建一个包含自定义错误消息的幂等性异常。
-	 * 该异常会被转换为HTTP 429响应，并附带指定的错误消息。
 	 * </p>
 	 * <p>
 	 * 使用示例：

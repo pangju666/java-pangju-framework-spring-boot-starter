@@ -17,7 +17,6 @@
 package io.github.pangju666.framework.autoconfigure.web.limit.exception;
 
 import io.github.pangju666.framework.autoconfigure.web.limit.annotation.RateLimit;
-import io.github.pangju666.framework.autoconfigure.web.limit.interceptor.RateLimitInterceptor;
 import io.github.pangju666.framework.web.annotation.HttpException;
 import io.github.pangju666.framework.web.enums.HttpExceptionType;
 import io.github.pangju666.framework.web.exception.base.ValidationException;
@@ -67,9 +66,6 @@ import org.springframework.http.HttpStatus;
  * 客户端响应示例：
  * <pre>
  * {@code
- * HTTP/1.1 429 Too Many Requests
- * Content-Type: application/json
- *
  * {
  *   "code": 4410,
  *   "message": "请求次数已达上限，请稍候再试"
@@ -77,19 +73,10 @@ import org.springframework.http.HttpStatus;
  * }
  * </pre>
  * </p>
- * <p>
- * 与其他组件的关系：
- * <ul>
- *     <li>由{@link RateLimitInterceptor}或相关限流实现在检测到限流时抛出</li>
- *     <li>由Spring的异常处理器自动转换为HTTP 429响应</li>
- *     <li>与{@link RateLimit}注解一起工作，使用注解中的错误消息</li>
- * </ul>
- * </p>
  *
  * @author pangju666
  * @see RateLimit
  * @see ValidationException
- * @see HttpStatus#TOO_MANY_REQUESTS
  * @since 1.0.0
  */
 @HttpException(code = 410, type = HttpExceptionType.VALIDATION, log = false, status = HttpStatus.TOO_MANY_REQUESTS)

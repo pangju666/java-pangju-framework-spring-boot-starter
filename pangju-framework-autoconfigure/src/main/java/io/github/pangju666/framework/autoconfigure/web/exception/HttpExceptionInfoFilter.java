@@ -59,6 +59,12 @@ public class HttpExceptionInfoFilter extends OncePerRequestFilter {
 	 * @since 1.0.0
 	 */
 	protected final static String FRAMEWORK_EXCEPTION_PACKAGE = "io.github.pangju666.framework.web.exception";
+	/**
+	 * 框架自动装配内置异常包路径
+	 *
+	 * @since 1.0.0
+	 */
+	protected final static String FRAMEWORK_AUTOCONFIGURE_EXCEPTION_PACKAGE = "io.github.pangju666.framework.autoconfigure.web";
 
 	/**
 	 * 异常列表请求路径
@@ -166,7 +172,7 @@ public class HttpExceptionInfoFilter extends OncePerRequestFilter {
 	protected List<HttpExceptionVO> scanHttpExceptions(String[] packages) {
 		ConfigurationBuilder configurationBuilder = new ConfigurationBuilder()
 			.setScanners(Scanners.TypesAnnotated, Scanners.SubTypes)
-			.forPackage(FRAMEWORK_EXCEPTION_PACKAGE);
+			.forPackages(FRAMEWORK_EXCEPTION_PACKAGE, FRAMEWORK_AUTOCONFIGURE_EXCEPTION_PACKAGE);
 		if (packages.length > 0) {
 			configurationBuilder.forPackages(packages);
 		}
