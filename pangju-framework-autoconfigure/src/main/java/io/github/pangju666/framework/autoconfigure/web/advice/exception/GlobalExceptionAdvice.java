@@ -18,7 +18,7 @@ package io.github.pangju666.framework.autoconfigure.web.advice.exception;
 
 import io.github.pangju666.framework.web.exception.base.BaseHttpException;
 import io.github.pangju666.framework.web.model.common.Result;
-import io.github.pangju666.framework.web.utils.ServletResponseUtils;
+import io.github.pangju666.framework.web.utils.HttpServletResponseUtils;
 import jakarta.servlet.Servlet;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
@@ -238,7 +238,7 @@ public class GlobalExceptionAdvice {
 	 */
 	@ExceptionHandler(value = BaseHttpException.class)
 	public void handleBaseHttpException(BaseHttpException e, HttpServletResponse response) {
-		ServletResponseUtils.writeHttpExceptionToResponse(e, response);
+		HttpServletResponseUtils.writeHttpExceptionToResponse(e, response);
 	}
 
 	/**

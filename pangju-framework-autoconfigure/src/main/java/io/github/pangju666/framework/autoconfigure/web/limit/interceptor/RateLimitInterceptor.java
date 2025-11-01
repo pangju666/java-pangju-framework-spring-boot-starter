@@ -23,8 +23,8 @@ import io.github.pangju666.framework.autoconfigure.web.limit.exception.RateLimit
 import io.github.pangju666.framework.autoconfigure.web.limit.limiter.RateLimiter;
 import io.github.pangju666.framework.autoconfigure.web.limit.source.RateLimitSourceExtractor;
 import io.github.pangju666.framework.web.exception.base.ServerException;
-import io.github.pangju666.framework.web.interceptor.BaseHttpHandlerInterceptor;
-import io.github.pangju666.framework.web.utils.ServletResponseUtils;
+import io.github.pangju666.framework.web.interceptor.BaseHttpInterceptor;
+import io.github.pangju666.framework.web.utils.HttpServletResponseUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
@@ -121,7 +121,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * <ul>
  *     <li>限流被触发：返回{@link RateLimitException}，HTTP状态码429</li>
  *     <li>限流检查异常：返回{@link ServerException}，HTTP状态码500</li>
- *     <li>所有异常都通过{@link ServletResponseUtils#writeHttpExceptionToResponse}写入响应</li>
+ *     <li>所有异常都通过{@link HttpServletResponseUtils#writeHttpExceptionToResponse}写入响应</li>
  * </ul>
  * </p>
  * <p>
@@ -179,10 +179,10 @@ import java.util.concurrent.ConcurrentHashMap;
  * @see RateLimiter
  * @see RateLimitSourceExtractor
  * @see RateLimitException
- * @see BaseHttpHandlerInterceptor
+ * @see BaseHttpInterceptor
  * @since 1.0.0
  */
-public class RateLimitInterceptor extends BaseHttpHandlerInterceptor {
+public class RateLimitInterceptor extends BaseHttpInterceptor {
 	/**
 	 * 限流器实例
 	 * <p>
@@ -266,11 +266,11 @@ public class RateLimitInterceptor extends BaseHttpHandlerInterceptor {
 			try {
 				String key = generateKey(annotation, request);
 				if (!rateLimiter.tryAcquire(key, annotation, request)) {
-					ServletResponseUtils.writeHttpExceptionToResponse(new RateLimitException(annotation), response);
+					HttpServletResponseUtils.writeHttpExceptionToResponse(new RateLimitException(annotation), response);
 					return false;
 				}
 			} catch (Exception e) {
-				ServletResponseUtils.writeHttpExceptionToResponse(new ServerException(e), response);
+				HttpServletResponseUtils.writeHttpExceptionToResponse(new ServerException(e), response);
 				return false;
 			}
 		}

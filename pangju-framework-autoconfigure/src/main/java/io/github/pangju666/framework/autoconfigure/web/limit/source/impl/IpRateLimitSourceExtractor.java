@@ -21,8 +21,9 @@ import io.github.pangju666.framework.autoconfigure.web.limit.annotation.RateLimi
 import io.github.pangju666.framework.autoconfigure.web.limit.enums.RateLimitScope;
 import io.github.pangju666.framework.autoconfigure.web.limit.interceptor.RateLimitInterceptor;
 import io.github.pangju666.framework.autoconfigure.web.limit.source.RateLimitSourceExtractor;
-import io.github.pangju666.framework.web.utils.ServletRequestUtils;
+import io.github.pangju666.framework.web.utils.HttpServletRequestUtils;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.web.bind.ServletRequestUtils;
 
 /**
  * 基于IP地址的速率限制源提取器
@@ -34,7 +35,7 @@ import jakarta.servlet.http.HttpServletRequest;
  * <p>
  * 工作原理：
  * <p>
- * 使用{@link ServletRequestUtils#getIpAddress(HttpServletRequest)}方法从请求中获取
+ * 使用{@link HttpServletRequestUtils#getIpAddress(HttpServletRequest)}方法从请求中获取
  * 客户端的真实IP地址。该方法会智能地处理以下场景：
  * <ul>
  *     <li>直接连接：获取Socket连接的远程地址</li>
@@ -99,7 +100,7 @@ import jakarta.servlet.http.HttpServletRequest;
  * <p>
  * IP获取机制详解：
  * <p>
- * {@link ServletRequestUtils#getIpAddress}方法会按以下优先级获取IP：
+ * {@link HttpServletRequestUtils#getIpAddress}方法会按以下优先级获取IP：
  * <ol>
  *     <li>检查X-Forwarded-For头（代理链中的原始客户端IP）</li>
  *     <li>检查X-Real-IP头（Nginx代理设置的原始IP）</li>
@@ -139,7 +140,7 @@ import jakarta.servlet.http.HttpServletRequest;
  * 性能特性：
  * <ul>
  *     <li>轻量级 - 仅进行字符串操作，无复杂计算</li>
- *     <li>线程安全 - {@link ServletRequestUtils#getIpAddress}是线程安全的</li>
+ *     <li>线程安全 - {@link HttpServletRequestUtils#getIpAddress}是线程安全的</li>
  *     <li>高效 - 直接获取请求属性，无I/O操作</li>
  *     <li>可缓存 - 相同IP的多次请求返回相同的标识</li>
  * </ul>
@@ -160,7 +161,7 @@ import jakarta.servlet.http.HttpServletRequest;
  *     <li>由{@link RateLimitInterceptor}在生成限流键时调用</li>
  *     <li>由{@link RateLimit#source()}注解引用</li>
  *     <li>在{@link RateLimitScope#SOURCE}限流作用域下使用</li>
- *     <li>依赖{@link ServletRequestUtils#getIpAddress}获取IP地址</li>
+ *     <li>依赖{@link HttpServletRequestUtils#getIpAddress}获取IP地址</li>
  * </ul>
  * </p>
  *
@@ -175,7 +176,7 @@ public class IpRateLimitSourceExtractor implements RateLimitSourceExtractor {
 	/**
 	 * 从HTTP请求中提取客户端IP地址
 	 * <p>
-	 * 使用{@link ServletRequestUtils#getIpAddress}方法智能地从请求中获取
+	 * 使用{@link HttpServletRequestUtils#getIpAddress}方法智能地从请求中获取
 	 * 客户端的真实IP地址，支持多种网络部署场景（直连、代理、负载均衡等）。
 	 * </p>
 	 * <p>
@@ -188,6 +189,6 @@ public class IpRateLimitSourceExtractor implements RateLimitSourceExtractor {
 	 */
 	@Override
 	public String getSource(HttpServletRequest request) {
-		return ServletRequestUtils.getIpAddress(request);
+		return HttpServletRequestUtils.getIpAddress(request);
 	}
 }

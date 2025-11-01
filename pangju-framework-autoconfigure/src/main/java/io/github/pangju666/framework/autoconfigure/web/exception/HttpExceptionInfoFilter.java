@@ -20,9 +20,8 @@ import io.github.pangju666.framework.web.annotation.HttpException;
 import io.github.pangju666.framework.web.enums.HttpExceptionType;
 import io.github.pangju666.framework.web.exception.base.BaseHttpException;
 import io.github.pangju666.framework.web.model.vo.EnumVO;
-import io.github.pangju666.framework.web.model.vo.HttpExceptionVO;
 import io.github.pangju666.framework.web.pool.WebConstants;
-import io.github.pangju666.framework.web.utils.ServletResponseUtils;
+import io.github.pangju666.framework.web.utils.HttpServletResponseUtils;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -133,9 +132,9 @@ public class HttpExceptionInfoFilter extends OncePerRequestFilter {
 									FilterChain filterChain) throws ServletException, IOException {
 		String servletPath = request.getServletPath();
 		if (servletPath.equals(typesRequestPath)) {
-			ServletResponseUtils.writeBeanToResponse(this.httpExceptionTypeList, response, false);
+			HttpServletResponseUtils.writeBeanToResponse(this.httpExceptionTypeList, response, false);
 		} else if (servletPath.equals(listRequestPath)) {
-			ServletResponseUtils.writeBeanToResponse(httpExceptionList, response, true);
+			HttpServletResponseUtils.writeBeanToResponse(httpExceptionList, response, true);
 		} else {
 			filterChain.doFilter(request, response);
 		}

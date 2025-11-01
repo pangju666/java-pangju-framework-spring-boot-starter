@@ -18,8 +18,8 @@ package io.github.pangju666.framework.autoconfigure.web;
 
 import io.github.pangju666.framework.autoconfigure.web.exception.HttpExceptionInfoFilter;
 import io.github.pangju666.framework.autoconfigure.web.exception.HttpExceptionInfoProperties;
-import io.github.pangju666.framework.web.filter.ContentCachingWrapperFilter;
-import io.github.pangju666.framework.web.filter.CorsFilter;
+import io.github.pangju666.framework.web.filter.ContentCachingWrapperHttpRequestFilter;
+import io.github.pangju666.framework.web.pool.WebConstants;
 import jakarta.servlet.Servlet;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty;
@@ -32,6 +32,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.core.Ordered;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
 import org.springframework.web.servlet.DispatcherServlet;
 
 import java.util.Collections;
@@ -57,8 +58,7 @@ import java.util.Collections;
  * </p>
  *
  * @author pangju666
- * @see CorsFilter
- * @see ContentCachingWrapperFilter
+ * @see ContentCachingWrapperHttpRequestFilter
  * @since 1.0.0
  */
 @AutoConfiguration
@@ -81,7 +81,7 @@ public class FilterAutoConfiguration {
 	 * <p>
 	 * 条件激活：
 	 * <ul>
-	 *     <li>类路径中存在{@link CorsFilter}类</li>
+	 *     <li>类路径中存在{@link org.springframework.web.filter.CorsFilter}类</li>
 	 *     <li>Spring容器中不存在该类型的过滤器bean</li>
 	 * </ul>
 	 * </p>
@@ -89,7 +89,6 @@ public class FilterAutoConfiguration {
 	 * @return CORS过滤器的注册Bean，包含过滤器实例和执行顺序配置
 	 * @since 1.0.0
 	 */
-	@ConditionalOnClass(CorsFilter.class)
 	@ConditionalOnMissingFilterBean
 	@Bean
 	public FilterRegistrationBean<CorsFilter> corsFilterRegistrationBean() {
@@ -100,10 +99,9 @@ public class FilterAutoConfiguration {
 		config.addAllowedMethod("*");
 
 		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-		source.registerCorsConfiguration("/**", config);
+		source.registerCorsConfiguration(WebConstants.ANY_PATH_PATTERN, config);
 
-		FilterRegistrationBean<CorsFilter> filterRegistrationBean = new FilterRegistrationBean<>(
-			new CorsFilter(source, Collections.emptySet()));
+		FilterRegistrationBean<CorsFilter> filterRegistrationBean = new FilterRegistrationBean<>(new CorsFilter(source));
 		filterRegistrationBean.setOrder(Ordered.HIGHEST_PRECEDENCE + 1);
 		return filterRegistrationBean;
 	}
@@ -126,7 +124,7 @@ public class FilterAutoConfiguration {
 	 * <p>
 	 * 条件激活：
 	 * <ul>
-	 *     <li>类路径中存在{@link ContentCachingWrapperFilter}类</li>
+	 *     <li>类路径中存在{@link ContentCachingWrapperHttpRequestFilter}类</li>
 	 *     <li>Spring容器中不存在该类型的过滤器bean</li>
 	 * </ul>
 	 * </p>
@@ -134,12 +132,12 @@ public class FilterAutoConfiguration {
 	 * @return 内容缓存包装过滤器的注册Bean，包含过滤器实例、URL模式和执行顺序配置
 	 * @since 1.0.0
 	 */
-	@ConditionalOnClass(ContentCachingWrapperFilter.class)
+	@ConditionalOnClass(ContentCachingWrapperHttpRequestFilter.class)
 	@ConditionalOnMissingFilterBean
 	@Bean
-	public FilterRegistrationBean<ContentCachingWrapperFilter> contentCachingWrapperFilterRegistrationBean() {
-		ContentCachingWrapperFilter contentCachingWrapperFilter = new ContentCachingWrapperFilter(Collections.emptySet());
-		FilterRegistrationBean<ContentCachingWrapperFilter> filterRegistrationBean = new FilterRegistrationBean<>(contentCachingWrapperFilter);
+	public FilterRegistrationBean<ContentCachingWrapperHttpRequestFilter> contentCachingWrapperHttpRequestFilterRegistrationBean() {
+		ContentCachingWrapperHttpRequestFilter contentCachingWrapperFilter = new ContentCachingWrapperHttpRequestFilter(Collections.emptySet());
+		FilterRegistrationBean<ContentCachingWrapperHttpRequestFilter> filterRegistrationBean = new FilterRegistrationBean<>(contentCachingWrapperFilter);
 		filterRegistrationBean.addUrlPatterns("/*");
 		filterRegistrationBean.setOrder(Ordered.HIGHEST_PRECEDENCE + 2);
 		return filterRegistrationBean;

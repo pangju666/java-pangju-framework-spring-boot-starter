@@ -23,7 +23,7 @@ import io.github.pangju666.framework.autoconfigure.web.resolver.EnumRequestParam
 import io.github.pangju666.framework.autoconfigure.web.signature.SignatureProperties;
 import io.github.pangju666.framework.autoconfigure.web.signature.interceptor.SignatureInterceptor;
 import io.github.pangju666.framework.autoconfigure.web.signature.storer.SignatureSecretKeyStorer;
-import io.github.pangju666.framework.web.interceptor.BaseHttpHandlerInterceptor;
+import io.github.pangju666.framework.web.interceptor.BaseHttpInterceptor;
 import jakarta.servlet.Servlet;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,7 +56,7 @@ import java.util.Objects;
  * <ul>
  *     <li>注册请求参数解析器，如 {@link EnumRequestParamArgumentResolver} 和 {@link EncryptRequestParamArgumentResolver}。</li>
  *     <li>注册拦截器，如限流拦截器 {@link RateLimitInterceptor}、签名校验拦截器 {@link SignatureInterceptor}。</li>
- *     <li>支持通过扩展 {@link BaseHttpHandlerInterceptor} 动态配置自定义拦截器。</li>
+ *     <li>支持通过扩展 {@link BaseHttpInterceptor} 动态配置自定义拦截器。</li>
  * </ul>
  *
  * <p>配置示例：</p>
@@ -85,18 +85,18 @@ public class WebMvcAutoConfiguration implements WebMvcConfigurer {
 	 * 自定义 HTTP 请求拦截器列表
 	 * <p>
 	 * 该属性用于存储由用户自定义的拦截器，实现不同的请求处理逻辑增强功能。
-	 * 每个拦截器需要继承 {@link BaseHttpHandlerInterceptor}，并定义其拦截逻辑。
+	 * 每个拦截器需要继承 {@link BaseHttpInterceptor}，并定义其拦截逻辑。
 	 * 在 MVC 配置中会自动注册这些自定义拦截器。
 	 * </p>
 	 *
 	 * @since 1.0.0
 	 */
-	private final List<BaseHttpHandlerInterceptor> interceptors;
+	private final List<BaseHttpInterceptor> interceptors;
 	/**
 	 * 自定义 HTTP 请求拦截器列表
 	 * <p>
 	 * 该属性用于存储由用户自定义的拦截器，实现不同的请求处理逻辑增强功能。
-	 * 每个拦截器需要继承 {@link BaseHttpHandlerInterceptor}，并定义其拦截逻辑。
+	 * 每个拦截器需要继承 {@link BaseHttpInterceptor}，并定义其拦截逻辑。
 	 * 在 MVC 配置中会自动注册这些自定义拦截器。
 	 * </p>
 	 *
@@ -134,7 +134,7 @@ public class WebMvcAutoConfiguration implements WebMvcConfigurer {
 	 * @param interceptors 自定义拦截器列表，用于扩展 HTTP 请求处理。
 	 * @since 1.0.0
 	 */
-	public WebMvcAutoConfiguration(List<BaseHttpHandlerInterceptor> interceptors) {
+	public WebMvcAutoConfiguration(List<BaseHttpInterceptor> interceptors) {
 		this.interceptors = interceptors;
 	}
 
@@ -184,7 +184,7 @@ public class WebMvcAutoConfiguration implements WebMvcConfigurer {
 	 *     <li>{@link RateLimitInterceptor}：基于限流规则的请求拦截器。</li>
 	 *     <li>{@link SignatureInterceptor}：基于签名校验的请求拦截器。</li>
 	 * </ul>
-	 * 同时支持自定义拦截器（继承自 {@link BaseHttpHandlerInterceptor}）的动态注册。
+	 * 同时支持自定义拦截器（继承自 {@link BaseHttpInterceptor}）的动态注册。
 	 * </p>
 	 *
 	 * @param registry 拦截器注册表。
@@ -206,7 +206,7 @@ public class WebMvcAutoConfiguration implements WebMvcConfigurer {
 				.excludePathPatterns(signatureInterceptor.getExcludePathPatterns());
 		}
 
-		for (BaseHttpHandlerInterceptor interceptor : this.interceptors) {
+		for (BaseHttpInterceptor interceptor : this.interceptors) {
 			registry.addInterceptor(interceptor)
 				.addPathPatterns(interceptor.getPatterns())
 				.excludePathPatterns(interceptor.getExcludePathPatterns())

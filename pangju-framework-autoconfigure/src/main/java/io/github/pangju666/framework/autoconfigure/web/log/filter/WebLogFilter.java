@@ -28,8 +28,8 @@ import io.github.pangju666.framework.autoconfigure.web.log.handler.WebLogHandler
 import io.github.pangju666.framework.autoconfigure.web.log.model.WebLog;
 import io.github.pangju666.framework.autoconfigure.web.log.sender.WebLogSender;
 import io.github.pangju666.framework.web.exception.base.BaseHttpException;
-import io.github.pangju666.framework.web.filter.BaseHttpOncePerRequestFilter;
-import io.github.pangju666.framework.web.utils.ServletRequestUtils;
+import io.github.pangju666.framework.web.filter.BaseHttpRequestFilter;
+import io.github.pangju666.framework.web.utils.HttpServletRequestUtils;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -83,7 +83,7 @@ import java.util.Set;
  * @author pangju666
  * @since 1.0.0
  */
-public class WebLogFilter extends BaseHttpOncePerRequestFilter {
+public class WebLogFilter extends BaseHttpRequestFilter {
 	/**
 	 * 日志记录器
 	 *
@@ -169,7 +169,7 @@ public class WebLogFilter extends BaseHttpOncePerRequestFilter {
 	 * @throws IOException 输入输出异常
 	 */
 	@Override
-	protected void handle(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 		Date requestDate = new Date();
 
 		WebLogOperation operation = null;
@@ -202,7 +202,7 @@ public class WebLogFilter extends BaseHttpOncePerRequestFilter {
 			if (Objects.nonNull(operation)) {
 				webLog.setOperation(operation.value());
 			}
-			webLog.setIp(ServletRequestUtils.getIpAddress(requestWrapper));
+			webLog.setIp(HttpServletRequestUtils.getIpAddress(requestWrapper));
 			webLog.setMethod(requestWrapper.getMethod());
 			webLog.setDate(DateFormatUtils.formatDatetime(requestDate));
 			webLog.setUrl(requestWrapper.getRequestURI());
@@ -214,23 +214,23 @@ public class WebLogFilter extends BaseHttpOncePerRequestFilter {
 			requestLog.setContentType(requestWrapper.getContentType());
 
 			if (properties.getRequest().isHeaders()) {
-				requestLog.setHeaders(ServletRequestUtils.getHttpHeaders(requestWrapper));
+				requestLog.setHeaders(HttpServletRequestUtils.getHttpHeaders(requestWrapper));
 			}
 			if (properties.getRequest().isQueryParams()) {
-				requestLog.setQueryParams(ServletRequestUtils.getRequestParameters(requestWrapper));
+				requestLog.setQueryParams(HttpServletRequestUtils.getRequestParameters(requestWrapper));
 			}
 			if (properties.getRequest().isMultipart() &&
 				StringUtils.startsWithIgnoreCase(requestWrapper.getContentType(), MediaType.MULTIPART_FORM_DATA_VALUE)) {
 				requestLog.setContentType(MediaType.MULTIPART_FORM_DATA_VALUE);
 				try {
-					requestLog.setFormData(ServletRequestUtils.getRequestParts(requestWrapper));
+					requestLog.setFormData(HttpServletRequestUtils.getRequestParts(requestWrapper));
 					requestWrapper.getParts().stream()
 						.map(Part::getName)
 						.forEach(fieldName -> requestLog.getQueryParams().remove(fieldName));
 				} catch (IllegalStateException ignored) {
 				}
 			} else if (properties.getRequest().isBody()) {
-				requestLog.setBody(ServletRequestUtils.getJsonRequestBody(requestWrapper, Object.class));
+				requestLog.setBody(HttpServletRequestUtils.getJsonRequestBody(requestWrapper, Object.class));
 			}
 			webLog.setRequest(requestLog);
 
