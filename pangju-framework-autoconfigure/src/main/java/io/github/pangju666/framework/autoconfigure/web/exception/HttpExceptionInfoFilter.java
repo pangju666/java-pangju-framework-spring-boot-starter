@@ -54,9 +54,11 @@ import java.util.*;
  */
 public class HttpExceptionInfoFilter extends OncePerRequestFilter {
 	/**
-	 * 框架包路径
+	 * 框架内置异常包路径
+	 *
+	 * @since 1.0.0
 	 */
-	protected final static String FRAMEWORK_PACKAGE = "io.github.pangju666.framework";
+	protected final static String FRAMEWORK_EXCEPTION_PACKAGE = "io.github.pangju666.framework.web.exception";
 
 	/**
 	 * 异常列表请求路径
@@ -103,10 +105,16 @@ public class HttpExceptionInfoFilter extends OncePerRequestFilter {
 
 		this.typesRequestPath = typesRequestPath;
 		this.listRequestPath = listRequestPath;
+
 		this.httpExceptionTypeList = Arrays.stream(HttpExceptionType.values())
 			.map(type -> new EnumVO(type.getLabel(), type.name()))
 			.toList();
-		this.httpExceptionList = scanHttpExceptions(packages);
+
+		String[] packagesArray = CollectionUtils.emptyIfNull(packages)
+			.stream()
+			.distinct()
+			.toArray(String[]::new);
+		this.httpExceptionList = scanHttpExceptions(packagesArray);
 	}
 
 	/**
@@ -155,12 +163,12 @@ public class HttpExceptionInfoFilter extends OncePerRequestFilter {
 	 * @return 异常信息列表
 	 * @since 1.0.0
 	 */
-	protected List<HttpExceptionVO> scanHttpExceptions(Collection<String> packages) {
+	protected List<HttpExceptionVO> scanHttpExceptions(String[] packages) {
 		ConfigurationBuilder configurationBuilder = new ConfigurationBuilder()
 			.setScanners(Scanners.TypesAnnotated, Scanners.SubTypes)
-			.forPackage(FRAMEWORK_PACKAGE);
-		if (CollectionUtils.isNotEmpty(packages)) {
-			configurationBuilder.forPackages(packages.toArray(String[]::new));
+			.forPackage(FRAMEWORK_EXCEPTION_PACKAGE);
+		if (packages.length > 0) {
+			configurationBuilder.forPackages(packages);
 		}
 
 		Reflections reflections = new Reflections(configurationBuilder);
