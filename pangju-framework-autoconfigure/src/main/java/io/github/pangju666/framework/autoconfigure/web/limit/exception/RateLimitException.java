@@ -79,7 +79,7 @@ import org.springframework.http.HttpStatus;
  * @see ValidationException
  * @since 1.0.0
  */
-@HttpException(code = 410, type = HttpExceptionType.VALIDATION, log = false, status = HttpStatus.TOO_MANY_REQUESTS)
+@HttpException(code = 410, type = HttpExceptionType.VALIDATION, description = "接口限流错误", log = false, status = HttpStatus.TOO_MANY_REQUESTS)
 public class RateLimitException extends ValidationException {
 	/**
 	 * 使用错误消息构造异常

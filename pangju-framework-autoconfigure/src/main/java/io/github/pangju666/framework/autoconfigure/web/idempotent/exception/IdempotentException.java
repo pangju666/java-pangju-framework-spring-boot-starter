@@ -94,7 +94,7 @@ import io.github.pangju666.framework.web.exception.base.ValidationException;
  * @see ValidationException
  * @since 1.0.0
  */
-@HttpException(code = 420, type = HttpExceptionType.VALIDATION, log = false)
+@HttpException(code = 420, type = HttpExceptionType.VALIDATION, description = "接口幂等性错误", log = false)
 public class IdempotentException extends ValidationException {
 	/**
 	 * 使用错误消息构造异常
