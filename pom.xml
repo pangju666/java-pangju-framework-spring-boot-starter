@@ -8,25 +8,27 @@
 		<version>1.1.0</version>
 		<relativePath/>
 	</parent>
-	<artifactId>pangju-framework-spring-boot-starter-parent</artifactId>
+	<groupId>io.github.pangju666.framework.boot</groupId>
+	<artifactId>framework-spring-boot-starter-parent</artifactId>
 	<version>1.0.0</version>
 	<packaging>pom</packaging>
 	<description>胖橘框架 Spring Boot Starter 父级依赖</description>
 	<url>https://github.com/pangju666/java-pangju-framework-spring-boot-starter</url>
 
 	<modules>
-		<module>pangju-framework-autoconfigure</module>
-		<module>pangju-framework-data-mongodb-spring-boot-starter</module>
-		<module>pangju-framework-data-mybatis-plus-spring-boot-starter</module>
-		<module>pangju-framework-data-redis-spring-boot-starter</module>
-		<module>pangju-framework-spock-test-spring-boot-starter</module>
-		<module>pangju-framework-spring-boot-starter</module>
-		<module>pangju-framework-test-spring-boot-starter</module>
-		<module>pangju-framework-validation-spring-boot-starter</module>
-		<module>pangju-framework-web-crypto-spring-boot-starter</module>
-		<module>pangju-framework-web-log-spring-boot-starter</module>
-		<module>pangju-framework-web-spring-boot-starter</module>
-		<module>pangju-framework-web-validation-spring-boot-starter</module>
+		<module>framework-boot</module>
+		<module>framework-autoconfigure</module>
+		<module>framework-spring-boot-starter-data-mongodb</module>
+		<module>framework-spring-boot-starter-data-mybatis-plus</module>
+		<module>framework-spring-boot-starter-data-redis</module>
+		<module>framework-spring-boot-starter-spock-test</module>
+		<module>framework-spring-boot-starter</module>
+		<module>framework-spring-boot-starter-test</module>
+		<module>framework-spring-boot-starter-validation</module>
+		<module>framework-spring-boot-starter-web-crypto</module>
+		<module>framework-spring-boot-starter-web-log</module>
+		<module>framework-spring-boot-starter-web</module>
+		<module>framework-spring-boot-starter-web-validation</module>
 	</modules>
 
 	<properties>
@@ -60,76 +62,76 @@
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
-				<groupId>io.github.pangju666</groupId>
-				<artifactId>pangju-framework-bom</artifactId>
+				<groupId>io.github.pangju666.framework</groupId>
+				<artifactId>framework-bom</artifactId>
 				<version>${framework.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
 			<dependency>
-				<groupId>io.github.pangju666</groupId>
-				<artifactId>pangju-framework-autoconfigure</artifactId>
+				<groupId>io.github.pangju666.framework.boot</groupId>
+				<artifactId>framework-boot</artifactId>
 				<version>1.0.0</version>
 			</dependency>
 			<dependency>
-				<groupId>io.github.pangju666</groupId>
-				<artifactId>pangju-framework-spring-boot-starter</artifactId>
+				<groupId>io.github.pangju666.framework.boot</groupId>
+				<artifactId>framework-autoconfigure</artifactId>
 				<version>1.0.0</version>
 			</dependency>
 			<dependency>
-				<groupId>io.github.pangju666</groupId>
-				<artifactId>pangju-framework-validation-spring-boot-starter</artifactId>
+				<groupId>io.github.pangju666.framework.boot</groupId>
+				<artifactId>framework-spring-boot-starter</artifactId>
 				<version>1.0.0</version>
 			</dependency>
 			<dependency>
-				<groupId>io.github.pangju666</groupId>
-				<artifactId>pangju-framework-web-spring-boot-starter</artifactId>
+				<groupId>io.github.pangju666.framework.boot</groupId>
+				<artifactId>frameworkspring-boot-starter-validation</artifactId>
 				<version>1.0.0</version>
 			</dependency>
 			<dependency>
-				<groupId>io.github.pangju666</groupId>
-				<artifactId>pangju-framework-data-mongodb-spring-boot-starter</artifactId>
+				<groupId>io.github.pangju666.framework.boot</groupId>
+				<artifactId>framework-spring-boot-starter-data-mongodb</artifactId>
 				<version>1.0.0</version>
 			</dependency>
 			<dependency>
-				<groupId>io.github.pangju666</groupId>
-				<artifactId>pangju-framework-data-mybatis-plus-spring-boot-starter</artifactId>
+				<groupId>io.github.pangju666.framework.boot</groupId>
+				<artifactId>framework-spring-boot-starter-data-mybatis-plus</artifactId>
 				<version>1.0.0</version>
 			</dependency>
 			<dependency>
-				<groupId>io.github.pangju666</groupId>
-				<artifactId>pangju-framework-data-redis-spring-boot-starter</artifactId>
+				<groupId>io.github.pangju666.framework.boot</groupId>
+				<artifactId>framework-spring-boot-starter-data-redis</artifactId>
 				<version>1.0.0</version>
 			</dependency>
 			<dependency>
-				<groupId>io.github.pangju666</groupId>
-				<artifactId>pangju-framework-cache-spring-boot-starter</artifactId>
+				<groupId>io.github.pangju666.framework.boot</groupId>
+				<artifactId>framework-spring-boot-starter-web</artifactId>
 				<version>1.0.0</version>
 			</dependency>
 			<dependency>
-				<groupId>io.github.pangju666</groupId>
-				<artifactId>pangju-framework-web-log-spring-boot-starter</artifactId>
+				<groupId>io.github.pangju666.framework.boot</groupId>
+				<artifactId>framework-spring-boot-starter-web-log</artifactId>
 				<version>1.0.0</version>
 			</dependency>
 			<dependency>
-				<groupId>io.github.pangju666</groupId>
-				<artifactId>pangju-framework-web-crypto-spring-boot-starter</artifactId>
+				<groupId>io.github.pangju666.framework.boot</groupId>
+				<artifactId>framework-spring-boot-starter-web-crypto</artifactId>
 				<version>1.0.0</version>
 			</dependency>
 			<dependency>
-				<groupId>io.github.pangju666</groupId>
-				<artifactId>pangju-framework-web-validation-spring-boot-starter</artifactId>
+				<groupId>io.github.pangju666.framework.boot</groupId>
+				<artifactId>framework-spring-boot-starter-web-validation</artifactId>
 				<version>1.0.0</version>
 			</dependency>
 			<dependency>
-				<groupId>io.github.pangju666</groupId>
-				<artifactId>pangju-framework-test-spring-boot-starter</artifactId>
+				<groupId>io.github.pangju666.framework.boot</groupId>
+				<artifactId>framework-spring-boot-starter-test</artifactId>
 				<version>1.0.0</version>
 				<scope>test</scope>
 			</dependency>
 			<dependency>
-				<groupId>io.github.pangju666</groupId>
-				<artifactId>pangju-framework-spock-test-spring-boot-starter</artifactId>
+				<groupId>io.github.pangju666.framework.boot</groupId>
+				<artifactId>framework-spring-boot-starter-spock-test</artifactId>
 				<version>1.0.0</version>
 				<scope>test</scope>
 			</dependency>
