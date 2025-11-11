@@ -16,12 +16,11 @@
 
 package io.github.pangju666.framework.boot.jackson.deserializer;
 
-import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import io.github.pangju666.commons.lang.utils.DateUtils;
-import io.github.pangju666.framework.web.exception.base.ServerException;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -43,21 +42,20 @@ public class LocalDateJsonDeserializer extends JsonDeserializer<LocalDate> {
 	 * 将JSON中的毫秒时间戳反序列化为LocalDate对象
 	 * <p>
 	 * 从JSON解析器中读取长整型数值（毫秒时间戳），然后转换为LocalDate对象。
-	 * 如果解析过程中发生错误，则抛出ServerException异常。
+	 * 空值/类型处理：当JSON token不是整型数值或值为空/缺失时，返回null，不抛出异常。
 	 * </p>
 	 *
 	 * @param p    用于读取JSON内容的解析器
-	 * @param ctxt 反序列化上下文
-	 * @return 对应的LocalDate对象
-	 * @throws IOException     如果读取JSON内容时发生I/O错误
-	 * @throws ServerException 如果JSON解析过程中发生错误
-	 */
-	@Override
-	public LocalDate deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
-		try {
-			return DateUtils.toLocalDate(p.getLongValue());
-		} catch (JsonParseException e) {
-			throw new ServerException("数据解析失败", e);
+     * @param ctxt 反序列化上下文
+     * @return 对应的LocalDate对象
+     * @throws IOException     如果读取JSON内容时发生I/O错误
+     * @since 1.0.0
+     */
+    @Override
+    public LocalDate deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
+		if (p.currentToken() != JsonToken.VALUE_NUMBER_INT) {
+			return null;
 		}
-	}
+		return DateUtils.toLocalDate(p.getLongValue());
+    }
 }

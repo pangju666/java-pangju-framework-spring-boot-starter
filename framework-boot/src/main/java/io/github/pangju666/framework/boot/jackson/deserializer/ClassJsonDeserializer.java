@@ -16,11 +16,10 @@
 
 package io.github.pangju666.framework.boot.jackson.deserializer;
 
-import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
-import io.github.pangju666.framework.web.exception.base.ServerException;
 
 import java.io.IOException;
 
@@ -38,24 +37,25 @@ public class ClassJsonDeserializer extends JsonDeserializer<Class> {
 	/**
 	 * 将JSON中的类名字符串反序列化为Class对象
 	 * <p>
-	 * 通过{@link Class#forName(String)}方法尝试加载类。如果类不存在，
-	 * 则返回null；如果解析过程中发生错误，则抛出ServerException异常。
+	 * 通过{@link Class#forName(String)}方法尝试加载类。如果类不存在，则返回null。
+	 * 空值/类型处理：当JSON token不是字符串或为空字符串、或类不存在时，返回null并且不抛出异常（捕获并吞掉ClassNotFoundException）。
 	 * </p>
 	 *
 	 * @param p    用于读取JSON内容的解析器
-	 * @param ctxt 反序列化上下文
-	 * @return 对应的Class对象，如果类不存在则返回null
-	 * @throws IOException     如果读取JSON内容时发生I/O错误
-	 * @throws ServerException 如果JSON解析过程中发生错误
-	 */
-	@Override
-	public Class deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
-		try {
-			return Class.forName(p.getText());
+     * @param ctxt 反序列化上下文
+     * @return 对应的Class对象，如果类不存在则返回null
+     * @throws IOException     如果读取JSON内容时发生I/O错误
+     * @since 1.0.0
+     */
+    @Override
+    public Class deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
+        try {
+			if (p.currentToken() != JsonToken.VALUE_STRING) {
+				return null;
+			}
+            return Class.forName(p.getText());
 		} catch (ClassNotFoundException e) {
 			return null;
-		} catch (JsonParseException e) {
-			throw new ServerException("数据解析失败", e);
 		}
 	}
 }

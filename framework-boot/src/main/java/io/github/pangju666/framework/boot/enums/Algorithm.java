@@ -16,84 +16,114 @@
 
 package io.github.pangju666.framework.boot.enums;
 
+import io.github.pangju666.framework.boot.crypto.factory.CryptoFactory;
+import io.github.pangju666.framework.boot.crypto.factory.impl.AES256CryptoFactory;
+import io.github.pangju666.framework.boot.crypto.factory.impl.BasicCryptoFactory;
+import io.github.pangju666.framework.boot.crypto.factory.impl.RSACryptoFactory;
+import io.github.pangju666.framework.boot.crypto.factory.impl.StrongCryptoFactory;
+
 /**
- * 加密算法枚举类
- * <p>
- * 定义了支持的各种加密算法类型，并标识每种算法是否需要密钥
- * </p>
+ * 加密算法枚举。
  *
  * @author pangju666
  * @since 1.0.0
  */
 public enum Algorithm {
 	/**
-	 * BASE64编码算法
+	 * RSA 非对称加密算法。
 	 * <p>
-	 * 一种基本的编码方案，用于将二进制数据转换为ASCII字符串格式
-	 * 不需要密钥
+	 * 基于公钥/私钥的非对称加密与签名算法，安全性高，适用于密钥交换、
+	 * 短消息加密或签名校验等场景。
+	 * </p>
+	 * <p>
+	 * 对应算法：<code>RSA/ECB/OAEPWithSHA-256AndMGF1Padding</code>
+	 * </p>
+	 * <p>
+	 * 关联工厂：{@link RSACryptoFactory}
+	 * </p>
+	 */
+	RSA(RSACryptoFactory.class),
+	/**
+	 * AES‑256 对称加密算法。
+	 * <p>
+	 * 使用 256 位密钥的高级加密标准算法，性能与安全性兼顾，适用于大多数
+	 * 业务数据的高效加解密。
+	 * </p>
+	 * <p>
+	 * 对应算法：<code>PBEWithMD5AndDES</code>（基于口令的加密，PBE）。
+	 * </p>
+	 * <p>
+	 * 关联工厂：{@link AES256CryptoFactory}
 	 * </p>
 	 *
 	 * @since 1.0.0
 	 */
-	BASE64(false),
-
+	AES256(AES256CryptoFactory.class),
 	/**
-	 * RSA非对称加密算法
+	 * 普通强度 DES 对称加密算法。
 	 * <p>
-	 * 一种使用公钥和私钥的非对称加密算法
-	 * 需要密钥
+	 * 对应算法：<code>PBEWithMD5AndDES</code>（基于口令的加密，PBE）。
+	 * </p>
+	 * <p>
+	 * 关联工厂：{@link BasicCryptoFactory}
 	 * </p>
 	 *
 	 * @since 1.0.0
 	 */
-	RSA(true),
-
+	BASIC(BasicCryptoFactory.class),
 	/**
-	 * AES256对称加密算法
+	 * 自定义加密算法。
 	 * <p>
-	 * 一种使用256位密钥的高级加密标准算法
-	 * 需要密钥
+	 * 允许用户扩展并提供自定义 {@link CryptoFactory} 的实现。
+	 * </p>
+	 * <p>
+	 * 默认关联为接口类型，只是作为占位使用。
 	 * </p>
 	 *
 	 * @since 1.0.0
 	 */
-	AES256(true),
-
+	CUSTOM(CryptoFactory.class),
 	/**
-	 * 十六进制编码
+	 * 高强度 DES 对称加密算法。
 	 * <p>
-	 * 将二进制数据转换为十六进制字符串表示
-	 * 不需要密钥
+	 * 提供更强的安全策略或多算法组合能力，适合对安全性要求更高的场景。
+	 * </p>
+	 * <p>
+	 * 对应算法：<code>PBEWithMD5AndTripleDES</code>（基于口令的加密，PBE）。
+	 * </p>
+	 * <p>
+	 * 关联工厂：{@link StrongCryptoFactory}
 	 * </p>
 	 *
 	 * @since 1.0.0
 	 */
-	HEX(false);
+	STRONG(StrongCryptoFactory.class);
 
 	/**
-	 * 是否需要密钥
+	 * 与算法枚举关联的工厂类型。
+	 * 用于实例化具体的加/解密器。
 	 *
 	 * @since 1.0.0
 	 */
-	private final boolean needKey;
+	private final Class<? extends CryptoFactory> factoryClass;
 
 	/**
-	 * 构造函数
+	 * 枚举构造函数，关联算法与工厂类型。
 	 *
-	 * @param needKey 是否需要密钥
+	 * @param cryptoFactoryClass 对应的工厂实现类
 	 * @since 1.0.0
 	 */
-	Algorithm(boolean needKey) {
-		this.needKey = needKey;
+	Algorithm(Class<? extends CryptoFactory> cryptoFactoryClass) {
+		this.factoryClass = cryptoFactoryClass;
 	}
 
 	/**
-	 * 判断该算法是否需要密钥
+	 * 获取与当前算法关联的工厂类型。
 	 *
-	 * @return 如果需要密钥返回true，否则返回false
+	 * @return 工厂实现类类型
 	 * @since 1.0.0
 	 */
-	public boolean needKey() {
-		return needKey;
+	public Class<? extends CryptoFactory> getFactoryClass() {
+		return factoryClass;
 	}
 }

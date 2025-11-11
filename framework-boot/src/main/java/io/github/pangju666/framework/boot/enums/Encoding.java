@@ -35,7 +35,6 @@ public enum Encoding {
 	 * @since 1.0.0
 	 */
 	BASE64,
-
 	/**
 	 * 十六进制编码
 	 * <p>

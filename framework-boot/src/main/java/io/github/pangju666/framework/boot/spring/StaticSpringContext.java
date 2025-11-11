@@ -16,6 +16,7 @@
 
 package io.github.pangju666.framework.boot.spring;
 
+import org.apache.commons.lang3.Strings;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationContext;
@@ -97,7 +98,7 @@ public class StaticSpringContext implements ApplicationListener<ApplicationReady
 	 */
 	public static String getProperty(String key) {
 		String propName = key;
-		if (propName.startsWith("${") && propName.endsWith("}")) {
+		if (Strings.CS.startsWith(propName, "${") && Strings.CS.endsWith(propName, "}")) {
 			propName = key.substring(2, key.length() - 1);
 			return ENVIRONMENT.getProperty(propName);
 		}

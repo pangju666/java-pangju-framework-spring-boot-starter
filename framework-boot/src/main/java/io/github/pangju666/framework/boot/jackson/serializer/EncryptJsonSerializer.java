@@ -22,19 +22,23 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.ContextualSerializer;
+import com.fasterxml.jackson.databind.ser.std.NullSerializer;
+import io.github.pangju666.framework.boot.crypto.factory.CryptoFactory;
 import io.github.pangju666.framework.boot.enums.Algorithm;
 import io.github.pangju666.framework.boot.enums.Encoding;
 import io.github.pangju666.framework.boot.jackson.annotation.EncryptFormat;
 import io.github.pangju666.framework.boot.spring.StaticSpringContext;
 import io.github.pangju666.framework.boot.utils.CryptoUtils;
 import io.github.pangju666.framework.web.exception.base.ServerException;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jasypt.exceptions.EncryptionOperationNotPossibleException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.security.spec.InvalidKeySpecException;
-import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -54,22 +58,14 @@ import java.util.concurrent.ConcurrentHashMap;
  * @since 1.0.0
  */
 public class EncryptJsonSerializer extends JsonSerializer<Object> implements ContextualSerializer {
-	/**
-	 * 序列化器缓存，用于存储已创建的序列化器实例
-	 * <p>
-	 * 键为注解配置的唯一标识，值为对应的序列化器实例
-	 * </p>
-	 *
-	 * @since 1.0.0
-	 */
-	private static final Map<String, EncryptJsonSerializer> SERIALIZER_MAP = new ConcurrentHashMap<>(10);
+	protected static final Logger LOGGER = LoggerFactory.getLogger(EncryptJsonSerializer.class);
 
-	/**
-	 * 当前序列化器使用的加密注解
-	 *
-	 * @since 1.0.0
-	 */
-	private final EncryptFormat annotation;
+	private static final Map<String, EncryptJsonSerializer> ALGORITHM_SERIALIZER_MAP = new ConcurrentHashMap<>();
+	private static final Map<String, EncryptJsonSerializer> CUSTOM_SERIALIZER_MAP = new ConcurrentHashMap<>();
+
+	private final String key;
+	private final Encoding encoding;
+	private final CryptoFactory cryptoFactory;
 
 	/**
 	 * 默认构造方法，创建一个没有指定加密注解的序列化器
@@ -80,7 +76,9 @@ public class EncryptJsonSerializer extends JsonSerializer<Object> implements Con
 	 * @since 1.0.0
 	 */
 	public EncryptJsonSerializer() {
-		this.annotation = null;
+		this.cryptoFactory = null;
+		this.encoding = null;
+		this.key = null;
 	}
 
 	/**
@@ -89,8 +87,10 @@ public class EncryptJsonSerializer extends JsonSerializer<Object> implements Con
 	 * @param annotation 加密格式注解
 	 * @since 1.0.0
 	 */
-	public EncryptJsonSerializer(EncryptFormat annotation) {
-		this.annotation = annotation;
+	public EncryptJsonSerializer(String key, Encoding encoding, CryptoFactory cryptoFactory) {
+		this.key = key;
+		this.cryptoFactory = cryptoFactory;
+		this.encoding = encoding;
 	}
 
 	/**
@@ -103,77 +103,24 @@ public class EncryptJsonSerializer extends JsonSerializer<Object> implements Con
 	 *     <li>对于集合类型，遍历集合中的字符串元素进行加密</li>
 	 *     <li>对于Map类型，遍历Map中的字符串值进行加密</li>
 	 * </ul>
-	 * 加密过程使用{@link CryptoUtils#encryptToString}或{@link CryptoUtils#encrypt(byte[], String, Algorithm, Encoding)}方法，根据注解配置的算法和编码方式进行加密。
 	 * </p>
 	 *
 	 * @param value       要序列化的对象
 	 * @param gen         用于生成JSON内容的生成器
 	 * @param serializers 序列化器提供者
-	 * @throws IOException 如果写入JSON内容时发生I/O错误
+	 * @throws IOException     如果写入JSON内容时发生I/O错误
 	 * @throws ServerException 如果加密过程中发生错误
 	 */
 	@Override
 	public void serialize(Object value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
-		String key;
-		if (annotation.algorithm().needKey()) {
-			if (StringUtils.isBlank(annotation.key())) {
-				throw new ServerException("无效的密钥属性值");
-			}
-			key = StaticSpringContext.getProperty(annotation.key());
-			if (StringUtils.isBlank(key)) {
-				throw new ServerException("未找到密钥，属性：" + key);
-			}
-		} else {
-			key = null;
-		}
-
 		try {
-			if (value instanceof byte[] bytes) {
-				if (ArrayUtils.isEmpty(bytes)) {
-					gen.writeBinary(bytes);
-				} else {
-					byte[] result = CryptoUtils.encrypt(bytes, key, annotation.algorithm(), annotation.encoding());
-					gen.writeBinary(result);
-				}
-			} else if (value instanceof String string) {
-				if (StringUtils.isBlank(string)) {
-					gen.writeString(string);
-				} else {
-					String result = CryptoUtils.encryptToString(string.getBytes(), key, annotation.algorithm(), annotation.encoding());
-					gen.writeString(result);
-				}
-			} else if (value instanceof Collection<?> collection) {
-				gen.writeStartArray();
-				for (Object o : collection) {
-					if (!String.class.isAssignableFrom(o.getClass())) {
-						gen.writePOJO(o);
-					} else {
-						String string = (String) o;
-						if (StringUtils.isBlank(string)) {
-							gen.writeString(string);
-						} else {
-							gen.writeString(CryptoUtils.encryptToString(string.getBytes(), key,
-								annotation.algorithm(), annotation.encoding()));
-						}
-					}
-				}
-				gen.writeEndArray();
-			} else if (value instanceof Map<?, ?> map) {
-				gen.writeStartObject();
-				for (var entry : map.entrySet()) {
-					if (!String.class.isAssignableFrom(entry.getValue().getClass())) {
-						gen.writeObjectField(entry.getKey().toString(), entry.getValue());
-					} else {
-						gen.writeStringField(entry.getKey().toString(), CryptoUtils.encryptToString(
-							((String) entry.getValue()).getBytes(), key, annotation.algorithm(), annotation.encoding()));
-					}
-				}
-				gen.writeEndObject();
-			}
+			writeValue(value, gen);
 		} catch (EncryptionOperationNotPossibleException e) {
-			throw new ServerException("数据加密失败", e);
+			LOGGER.error("数据加密失败", e);
+			gen.writeNull();
 		} catch (InvalidKeySpecException e) {
-			throw new ServerException("无效的密钥", e);
+			LOGGER.error("无效的密钥", e);
+			gen.writeNull();
 		}
 	}
 
@@ -191,19 +138,131 @@ public class EncryptJsonSerializer extends JsonSerializer<Object> implements Con
 	 */
 	@Override
 	public JsonSerializer<?> createContextual(SerializerProvider prov, BeanProperty property) throws JsonMappingException {
-		Class<?> clz = property.getType().getRawClass();
-		if (String.class.isAssignableFrom(clz) || byte[].class.equals(clz) ||
-			Collection.class.isAssignableFrom(clz) || Map.class.isAssignableFrom(clz)) {
-			EncryptFormat annotation = property.getAnnotation(EncryptFormat.class);
-			if (Objects.nonNull(annotation)) {
-				String key = annotation.key() + "-" + annotation.algorithm().name() + "-" + annotation.encoding().name();
-				JsonSerializer<?> serializer = SERIALIZER_MAP.putIfAbsent(key, new EncryptJsonSerializer(annotation));
-				if (Objects.isNull(serializer)) {
-					return SERIALIZER_MAP.get(key);
-				}
-				return serializer;
+		if (Objects.isNull(property)) {
+			return NullSerializer.instance;
+		}
+
+		EncryptFormat annotation = property.getAnnotation(EncryptFormat.class);
+		if (Objects.nonNull(annotation)) {
+			return getSerializer(annotation, prov);
+		}
+
+		return prov.findValueSerializer(property.getType(), property);
+	}
+
+	protected void writeBytes(byte[] value, JsonGenerator gen) throws InvalidKeySpecException, IOException {
+		gen.writeBinary(CryptoUtils.encrypt(cryptoFactory, value, key));
+	}
+
+	protected void writeString(CharSequence value, JsonGenerator gen) throws InvalidKeySpecException, IOException {
+		if (StringUtils.isBlank(value)) {
+			gen.writeString(value.toString());
+		} else {
+			gen.writeString(CryptoUtils.encryptString(cryptoFactory, value.toString(), key, encoding));
+		}
+	}
+
+	protected void writeBigInteger(BigInteger value, JsonGenerator gen) throws InvalidKeySpecException, IOException {
+		if (Objects.isNull(value)) {
+			gen.writeNull();
+		} else {
+			gen.writeNumber(CryptoUtils.encryptBigInteger(cryptoFactory, value, key));
+		}
+	}
+
+	protected void writeBigDecimal(BigDecimal value, JsonGenerator gen) throws InvalidKeySpecException, IOException {
+		if (Objects.isNull(value)) {
+			gen.writeNull();
+		} else {
+			gen.writeNumber(CryptoUtils.encryptBigDecimal(cryptoFactory, value, key));
+		}
+	}
+
+	protected void writeValue(Object value, JsonGenerator gen) throws InvalidKeySpecException, IOException {
+		if (value instanceof byte[] bytes) {
+			writeBytes(bytes, gen);
+		} else if (value instanceof CharSequence charSequence) {
+			writeString(charSequence, gen);
+		} else if (value instanceof Iterable<?> iterable) {
+			writeIterable(iterable, gen);
+		} else if (value instanceof Map<?, ?> map) {
+			writeMap(map, gen);
+		} else if (value instanceof BigDecimal bigDecimal) {
+			writeBigDecimal(bigDecimal, gen);
+		} else if (value instanceof BigInteger bigInteger) {
+			writeBigInteger(bigInteger, gen);
+		} else {
+			gen.writePOJO(value);
+		}
+	}
+
+	protected void writeIterable(Iterable<?> values, JsonGenerator gen) throws InvalidKeySpecException, IOException {
+		gen.writeStartArray();
+		for (Object value : values) {
+			writeValue(value, gen);
+		}
+		gen.writeEndArray();
+	}
+
+	protected void writeMap(Map<?, ?> value, JsonGenerator gen) throws InvalidKeySpecException, IOException {
+		gen.writeStartObject();
+		for (var entry : value.entrySet()) {
+			if (Objects.isNull(entry.getKey())) {
+				continue;
+			}
+			if (entry.getValue() instanceof byte[] bytes) {
+				gen.writeFieldName(entry.getKey().toString());
+				writeBytes(bytes, gen);
+			} else if (entry.getValue() instanceof CharSequence charSequence) {
+				gen.writeFieldName(entry.getKey().toString());
+				writeString(charSequence, gen);
+			} else if (entry.getValue() instanceof Iterable<?> iterable) {
+				gen.writeFieldName(entry.getKey().toString());
+				writeIterable(iterable, gen);
+			} else if (entry.getValue() instanceof Map<?, ?> map) {
+				gen.writeFieldName(entry.getKey().toString());
+				writeMap(map, gen);
+			} else if (value instanceof BigDecimal bigDecimal) {
+				gen.writeFieldName(entry.getKey().toString());
+				writeBigDecimal(bigDecimal, gen);
+			} else if (value instanceof BigInteger bigInteger) {
+				gen.writeFieldName(entry.getKey().toString());
+				writeBigInteger(bigInteger, gen);
+			} else {
+				gen.writePOJOField(entry.getKey().toString(), entry.getValue());
 			}
 		}
-		return prov.findValueSerializer(property.getType(), property);
+		gen.writeEndObject();
+	}
+
+	protected EncryptJsonSerializer getSerializer(EncryptFormat annotation, SerializerProvider prov) throws JsonMappingException {
+		String key = annotation.key() + "-" + annotation.encoding().name();
+		EncryptJsonSerializer serializer;
+		if (annotation.algorithm() == Algorithm.CUSTOM) {
+			key += "-" + annotation.factory().getName();
+			serializer = CUSTOM_SERIALIZER_MAP.get(key);
+			if (Objects.isNull(serializer)) {
+				String cryptoKey = CryptoUtils.getKey(annotation.key());
+				if (Objects.isNull(cryptoKey)) {
+					throw JsonMappingException.from(prov, "加密Jackson序列化器初始化失败");
+				}
+				CryptoFactory factory = StaticSpringContext.getBeanFactory().getBean(annotation.factory());
+				serializer = new EncryptJsonSerializer(cryptoKey, annotation.encoding(), factory);
+				CUSTOM_SERIALIZER_MAP.put(key, serializer);
+			}
+		} else {
+			key += "-" + annotation.algorithm().name();
+			serializer = ALGORITHM_SERIALIZER_MAP.get(key);
+			if (Objects.isNull(serializer)) {
+				String cryptoKey = CryptoUtils.getKey(annotation.key());
+				if (Objects.isNull(cryptoKey)) {
+					throw JsonMappingException.from(prov, "加密Jackson序列化器初始化失败");
+				}
+				CryptoFactory factory = StaticSpringContext.getBeanFactory().getBean(annotation.algorithm().getFactoryClass());
+				serializer = new EncryptJsonSerializer(cryptoKey, annotation.encoding(), factory);
+				ALGORITHM_SERIALIZER_MAP.put(key, serializer);
+			}
+		}
+		return serializer;
 	}
 }

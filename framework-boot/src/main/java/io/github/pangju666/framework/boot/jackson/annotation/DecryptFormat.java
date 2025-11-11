@@ -18,12 +18,16 @@ package io.github.pangju666.framework.boot.jackson.annotation;
 
 import com.fasterxml.jackson.annotation.JacksonAnnotationsInside;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import io.github.pangju666.framework.boot.crypto.factory.impl.AES256CryptoFactory;
 import io.github.pangju666.framework.boot.enums.Algorithm;
 import io.github.pangju666.framework.boot.enums.Encoding;
+import io.github.pangju666.framework.boot.crypto.factory.CryptoFactory;
 import io.github.pangju666.framework.boot.jackson.deserializer.DecryptJsonDeserializer;
 
+import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
  * JSON字段解密注解，用于在JSON反序列化过程中对指定字段进行解密操作
@@ -39,6 +43,7 @@ import java.lang.annotation.RetentionPolicy;
  * @since 1.0.0
  */
 @Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.FIELD)
 @JacksonAnnotationsInside
 @JsonDeserialize(using = DecryptJsonDeserializer.class)
 public @interface DecryptFormat {
@@ -48,7 +53,7 @@ public @interface DecryptFormat {
 	 * @return 解密密钥
 	 * @since 1.0.0
 	 */
-	String key() default "";
+	String key();
 
 	/**
 	 * 用于解密的算法
@@ -71,4 +76,5 @@ public @interface DecryptFormat {
 	 * @since 1.0.0
 	 */
 	Encoding encoding() default Encoding.BASE64;
+	Class<? extends CryptoFactory> factory() default AES256CryptoFactory.class;
 }

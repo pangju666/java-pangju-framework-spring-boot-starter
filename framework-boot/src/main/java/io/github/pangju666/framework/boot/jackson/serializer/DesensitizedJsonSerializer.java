@@ -49,7 +49,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @see ContextualSerializer
  * @since 1.0.0
  */
-public class DesensitizedJsonSerializer extends JsonSerializer<String> implements ContextualSerializer {
+public class DesensitizedJsonSerializer extends JsonSerializer<CharSequence> implements ContextualSerializer {
 	/**
 	 * 基于脱敏类型的序列化器缓存
 	 * <p>
@@ -67,7 +67,7 @@ public class DesensitizedJsonSerializer extends JsonSerializer<String> implement
 	 *
 	 * @since 1.0.0
 	 */
-	private static final Map<String, DesensitizedJsonSerializer> REGEX_SERIALIZER_MAP = new ConcurrentHashMap<>(10);
+	private static final Map<String, DesensitizedJsonSerializer> REGEX_SERIALIZER_MAP = new ConcurrentHashMap<>();
 	/**
 	 * 基于长度的序列化器缓存
 	 * <p>
@@ -76,7 +76,7 @@ public class DesensitizedJsonSerializer extends JsonSerializer<String> implement
 	 *
 	 * @since 1.0.0
 	 */
-	private static final Map<String, DesensitizedJsonSerializer> LENGTH_SERIALIZER_MAP = new ConcurrentHashMap<>(10);
+	private static final Map<String, DesensitizedJsonSerializer> LENGTH_SERIALIZER_MAP = new ConcurrentHashMap<>();
 
 	// 静态初始化块，预先创建所有内置脱敏类型的序列化器
 	static {
@@ -127,7 +127,7 @@ public class DesensitizedJsonSerializer extends JsonSerializer<String> implement
 	 * @return 对应的序列化器实例
 	 * @since 1.0.0
 	 */
-	private static JsonSerializer<String> getSerializer(String regex, String format) {
+	private static DesensitizedJsonSerializer getSerializer(String regex, String format) {
 		String key = regex + "_" + format;
 		if (REGEX_SERIALIZER_MAP.containsKey(key)) {
 			return REGEX_SERIALIZER_MAP.get(key);
@@ -154,7 +154,7 @@ public class DesensitizedJsonSerializer extends JsonSerializer<String> implement
 	 * @return 对应的序列化器实例
 	 * @since 1.0.0
 	 */
-	private static JsonSerializer<String> getSerializer(int left, int right) {
+	private static DesensitizedJsonSerializer getSerializer(int left, int right) {
 		String key = left + "&" + right;
 		if (LENGTH_SERIALIZER_MAP.containsKey(key)) {
 			return LENGTH_SERIALIZER_MAP.get(key);
@@ -182,20 +182,19 @@ public class DesensitizedJsonSerializer extends JsonSerializer<String> implement
 	 * 否则直接输出原字符串。
 	 * </p>
 	 *
-	 * @param s                 要序列化的字符串
-	 * @param jsonGenerator     用于生成JSON内容的生成器
-	 * @param serializerProvider 序列化器提供者
-	 * @throws IOException 如果写入JSON内容时发生I/O错误
-	 */
-	@Override
-	public void serialize(String s, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
-		if (Objects.nonNull(converter)) {
-			if (StringUtils.isBlank(s)) {
-				jsonGenerator.writeString(s);
-			} else {
-				jsonGenerator.writeString(converter.convert(s));
-			}
+	 * @param value       要序列化的字符串
+     * @param gen         用于生成JSON内容的生成器
+     * @param serializers 序列化器提供者
+     * @throws IOException 如果写入JSON内容时发生I/O错误
+     * @since 1.0.0
+     */
+    @Override
+    public void serialize(CharSequence value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+        if (Objects.isNull(converter) || StringUtils.isBlank(value)) {
+            gen.writeString(value.toString());
+			return;
 		}
+		gen.writeString(converter.convert(value.toString()));
 	}
 
 	/**
@@ -222,22 +221,20 @@ public class DesensitizedJsonSerializer extends JsonSerializer<String> implement
 			return NullSerializer.instance;
 		}
 
-		if (String.class.isAssignableFrom(property.getType().getRawClass())) {
-			DesensitizeFormat desensitizeFormat = property.getAnnotation(DesensitizeFormat.class);
-			if (Objects.isNull(desensitizeFormat)) {
-				desensitizeFormat = property.getContextAnnotation(DesensitizeFormat.class);
-			}
-			if (Objects.nonNull(desensitizeFormat)) {
-				if (DesensitizedType.CUSTOM == desensitizeFormat.type()) {
-					if (StringUtils.isAnyBlank(desensitizeFormat.regex(), desensitizeFormat.format())) {
-						return getSerializer(desensitizeFormat.prefix(), desensitizeFormat.suffix());
+		if (CharSequence.class.isAssignableFrom(property.getType().getRawClass())) {
+			DesensitizeFormat annotation = property.getAnnotation(DesensitizeFormat.class);
+			if (Objects.nonNull(annotation)) {
+				if (DesensitizedType.CUSTOM == annotation.type()) {
+					if (StringUtils.isAnyBlank(annotation.regex(), annotation.format())) {
+						return getSerializer(annotation.prefix(), annotation.suffix());
 					} else {
-						return getSerializer(desensitizeFormat.regex(), desensitizeFormat.format());
+						return getSerializer(annotation.regex(), annotation.format());
 					}
 				}
-				return TYPE_SERIALIZER_MAP.get(desensitizeFormat.type().name());
+				return TYPE_SERIALIZER_MAP.get(annotation.type().name());
 			}
 		}
+
 		return prov.findValueSerializer(property.getType(), property);
 	}
 }

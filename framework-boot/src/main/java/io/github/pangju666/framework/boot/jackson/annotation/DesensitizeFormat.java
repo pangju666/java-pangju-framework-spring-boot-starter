@@ -21,8 +21,10 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import io.github.pangju666.framework.boot.jackson.enums.DesensitizedType;
 import io.github.pangju666.framework.boot.jackson.serializer.DesensitizedJsonSerializer;
 
+import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
  * 数据脱敏注解，用于在JSON序列化过程中保护敏感信息
@@ -42,6 +44,7 @@ import java.lang.annotation.RetentionPolicy;
  * @since 1.0.0
  */
 @Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.FIELD)
 @JacksonAnnotationsInside
 @JsonSerialize(using = DesensitizedJsonSerializer.class)
 public @interface DesensitizeFormat {

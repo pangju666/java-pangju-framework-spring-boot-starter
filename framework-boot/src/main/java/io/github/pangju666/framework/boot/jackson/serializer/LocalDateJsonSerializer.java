@@ -23,6 +23,7 @@ import io.github.pangju666.commons.lang.utils.DateUtils;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.Objects;
 
 /**
  * LocalDate类型的JSON序列化器
@@ -43,15 +44,20 @@ public class LocalDateJsonSerializer extends JsonSerializer<LocalDate> {
 	 * <p>
 	 * 将传入的LocalDate对象转换为Date，然后获取其时间戳并写入JSON。
 	 * 序列化结果为数值类型的毫秒时间戳。
+	 * 空值处理：当传入的值为null时，写入JSON null，并且不抛出异常。
 	 * </p>
 	 *
 	 * @param value       要序列化的LocalDate对象
-	 * @param gen         用于生成JSON内容的生成器
-	 * @param serializers 序列化器提供者
-	 * @throws IOException 如果写入JSON内容时发生I/O错误
-	 */
-	@Override
-	public void serialize(LocalDate value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+     * @param gen         用于生成JSON内容的生成器
+     * @param serializers 序列化器提供者
+     * @throws IOException 如果写入JSON内容时发生I/O错误
+     * @since 1.0.0
+     */
+    @Override
+    public void serialize(LocalDate value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+		if (Objects.isNull(value)) {
+			gen.writeNull();
+		}
 		gen.writeNumber(DateUtils.toDate(value).getTime());
-	}
+    }
 }
