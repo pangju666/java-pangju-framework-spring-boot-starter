@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.github.pangju666.framework.boot.autoconfigure.data.dynamic.redis.config;
+package io.github.pangju666.framework.boot.autoconfigure.data.dynamic.redis;
 
 import org.springframework.boot.autoconfigure.data.redis.RedisConnectionDetails;
 import org.springframework.boot.autoconfigure.data.redis.RedisProperties;
@@ -28,6 +28,8 @@ import java.util.List;
 /**
  * Adapts {@link RedisProperties} to {@link RedisConnectionDetails}.
  *
+ * <p>copy from {@link org.springframework.boot.autoconfigure.data.redis.PropertiesRedisConnectionDetails}</p>
+ *
  * @author Moritz Halbritter
  * @author Andy Wilkinson
  * @author Phillip Webb
@@ -35,13 +37,13 @@ import java.util.List;
  * @author Yanming Zhou
  * @author Phillip Webb
  */
-public class PropertiesRedisConnectionDetails implements RedisConnectionDetails {
+class PropertiesRedisConnectionDetails implements RedisConnectionDetails {
 
 	private final RedisProperties properties;
 
 	private final SslBundles sslBundles;
 
-	public PropertiesRedisConnectionDetails(RedisProperties properties, SslBundles sslBundles) {
+	PropertiesRedisConnectionDetails(RedisProperties properties, SslBundles sslBundles) {
 		this.properties = properties;
 		this.sslBundles = sslBundles;
 	}
@@ -82,13 +84,13 @@ public class PropertiesRedisConnectionDetails implements RedisConnectionDetails 
 	@Override
 	public Sentinel getSentinel() {
 		RedisProperties.Sentinel sentinel = this.properties.getSentinel();
-		return (sentinel != null) ? new PropertiesSentinel(getStandalone().getDatabase(), sentinel) : null;
+		return (sentinel != null) ? new PropertiesRedisConnectionDetails.PropertiesSentinel(getStandalone().getDatabase(), sentinel) : null;
 	}
 
 	@Override
 	public Cluster getCluster() {
 		RedisProperties.Cluster cluster = this.properties.getCluster();
-		return (cluster != null) ? new PropertiesCluster(cluster) : null;
+		return (cluster != null) ? new PropertiesRedisConnectionDetails.PropertiesCluster(cluster) : null;
 	}
 
 	private RedisUrl getRedisUrl() {

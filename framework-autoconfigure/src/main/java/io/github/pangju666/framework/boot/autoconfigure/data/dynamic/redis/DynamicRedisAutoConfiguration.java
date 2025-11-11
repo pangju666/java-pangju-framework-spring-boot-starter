@@ -59,7 +59,6 @@ import org.springframework.data.redis.core.RedisOperations;
  *     <li>{name}RedisConnectionDetails - 每个数据源的连接详情</li>
  *     <li>{name}RedisConnectionFactory - 每个数据源的连接工厂</li>
  *     <li>{name}RedisTemplate - 每个数据源的模板</li>
- *     <li>redisTemplate - 主数据源的模板（标记为primary）</li>
  * </ul>
  * </p>
  * <p>

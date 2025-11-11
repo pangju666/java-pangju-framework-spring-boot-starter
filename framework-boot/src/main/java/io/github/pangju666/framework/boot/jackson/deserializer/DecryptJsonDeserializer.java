@@ -28,7 +28,7 @@ import io.github.pangju666.framework.boot.enums.Algorithm;
 import io.github.pangju666.framework.boot.enums.Encoding;
 import io.github.pangju666.framework.boot.jackson.annotation.DecryptFormat;
 import io.github.pangju666.framework.boot.spring.StaticSpringContext;
-import io.github.pangju666.framework.boot.utils.CryptoUtils;
+import io.github.pangju666.framework.boot.crypto.utils.CryptoUtils;
 import org.apache.commons.codec.DecoderException;
 import org.jasypt.exceptions.EncryptionOperationNotPossibleException;
 import org.slf4j.Logger;
@@ -60,7 +60,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @see io.github.pangju666.framework.boot.enums.Encoding
  * @see com.fasterxml.jackson.databind.deser.ContextualDeserializer
  * @see com.fasterxml.jackson.databind.deser.std.NullifyingDeserializer
- * @see io.github.pangju666.framework.boot.utils.CryptoUtils
+ * @see CryptoUtils
  * @since 1.0.0
  */
 public class DecryptJsonDeserializer extends JsonDeserializer<Object> implements ContextualDeserializer {

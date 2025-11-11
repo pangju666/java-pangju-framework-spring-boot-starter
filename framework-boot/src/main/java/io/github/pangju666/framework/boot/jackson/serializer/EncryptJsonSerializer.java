@@ -28,7 +28,7 @@ import io.github.pangju666.framework.boot.enums.Algorithm;
 import io.github.pangju666.framework.boot.enums.Encoding;
 import io.github.pangju666.framework.boot.jackson.annotation.EncryptFormat;
 import io.github.pangju666.framework.boot.spring.StaticSpringContext;
-import io.github.pangju666.framework.boot.utils.CryptoUtils;
+import io.github.pangju666.framework.boot.crypto.utils.CryptoUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jasypt.exceptions.EncryptionOperationNotPossibleException;
 import org.slf4j.Logger;
@@ -61,7 +61,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @see io.github.pangju666.framework.boot.enums.Encoding
  * @see com.fasterxml.jackson.databind.ser.ContextualSerializer
  * @see com.fasterxml.jackson.databind.ser.std.NullSerializer
- * @see io.github.pangju666.framework.boot.utils.CryptoUtils
+ * @see CryptoUtils
  * @since 1.0.0
  */
 public class EncryptJsonSerializer extends JsonSerializer<Object> implements ContextualSerializer {

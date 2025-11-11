@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.github.pangju666.framework.boot.autoconfigure.data.dynamic.redis.config;
+package io.github.pangju666.framework.boot.autoconfigure.data.dynamic.redis;
 
 import org.springframework.util.StringUtils;
 
@@ -23,6 +23,8 @@ import java.net.URISyntaxException;
 
 /**
  * A parsed URL used to connect to Redis.
+ *
+ * <p>copy from {@link org.springframework.boot.autoconfigure.data.redis.RedisUrl}</p>
  *
  * @param uri         the source URI
  * @param useSsl      if SSL is used to connect
@@ -47,7 +49,7 @@ record RedisUrl(URI uri, boolean useSsl, RedisUrl.Credentials credentials, int d
 
 	private static RedisUrl of(URI uri) {
 		boolean useSsl = ("rediss".equals(uri.getScheme()));
-		RedisUrl.Credentials credentials = RedisUrl.Credentials.fromUserInfo(uri.getUserInfo());
+		Credentials credentials = RedisUrl.Credentials.fromUserInfo(uri.getUserInfo());
 		int database = getDatabase(uri);
 		return new RedisUrl(uri, useSsl, credentials, database);
 	}
@@ -66,7 +68,8 @@ record RedisUrl(URI uri, boolean useSsl, RedisUrl.Credentials credentials, int d
 				throw new RedisUrlSyntaxException(url);
 			}
 			return uri;
-		} catch (URISyntaxException ex) {
+		}
+		catch (URISyntaxException ex) {
 			throw new RedisUrlSyntaxException(url, ex);
 		}
 	}

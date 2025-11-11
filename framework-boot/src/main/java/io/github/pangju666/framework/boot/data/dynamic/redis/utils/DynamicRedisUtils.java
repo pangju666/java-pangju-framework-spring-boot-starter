@@ -79,7 +79,7 @@ public class DynamicRedisUtils {
 	/**
 	 * 从Bean工厂中获取指定名称的Redis连接工厂
 	 *
-	 * @param name 数据源名称
+	 * @param name        数据源名称
 	 * @param beanFactory Spring Bean工厂
 	 * @return Redis连接工厂实例
 	 * @throws NoSuchBeanDefinitionException 当指定名称的Bean不存在时抛出
@@ -92,13 +92,14 @@ public class DynamicRedisUtils {
 	/**
 	 * 从Bean工厂中获取指定名称的RedisTemplate
 	 *
-	 * @param name 数据源名称
+	 * @param name        数据源名称
 	 * @param beanFactory Spring Bean工厂
 	 * @return RedisTemplate实例
 	 * @throws NoSuchBeanDefinitionException 当指定名称的Bean不存在时抛出
 	 * @since 1.0.0
 	 */
-	public static RedisTemplate<Object, Object> getTemplate(String name, BeanFactory beanFactory) {
+	@SuppressWarnings("rawtypes")
+	public static RedisTemplate getTemplate(String name, BeanFactory beanFactory) {
 		return beanFactory.getBean(TEMPLATE_BEAN_NAME_TEMPLATE.formatted(name), RedisTemplate.class);
 	}
 }

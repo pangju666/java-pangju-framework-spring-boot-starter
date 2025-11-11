@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.github.pangju666.framework.boot.autoconfigure.data.dynamic.redis.config;
+package io.github.pangju666.framework.boot.autoconfigure.data.dynamic.redis;
 
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.data.redis.JedisClientConfigurationBuilderCustomizer;
@@ -39,6 +39,8 @@ import javax.net.ssl.SSLParameters;
 /**
  * Redis connection configuration using Jedis.
  *
+ * <p>copy from {@link org.springframework.boot.autoconfigure.data.redis.JedisConnectionConfiguration}</p>
+ *
  * @author Mark Paluch
  * @author Stephane Nicoll
  * @author Moritz Halbritter
@@ -46,21 +48,22 @@ import javax.net.ssl.SSLParameters;
  * @author Phillip Webb
  * @author Scott Frederick
  */
-public class JedisConnectionConfiguration extends RedisConnectionConfiguration {
-	public JedisConnectionConfiguration(RedisProperties properties,
-										ObjectProvider<RedisStandaloneConfiguration> standaloneConfigurationProvider,
-										ObjectProvider<RedisSentinelConfiguration> sentinelConfiguration,
-										ObjectProvider<RedisClusterConfiguration> clusterConfiguration, RedisConnectionDetails connectionDetails) {
+class JedisConnectionConfiguration extends RedisConnectionConfiguration {
+
+	JedisConnectionConfiguration(RedisProperties properties,
+								 ObjectProvider<RedisStandaloneConfiguration> standaloneConfigurationProvider,
+								 ObjectProvider<RedisSentinelConfiguration> sentinelConfiguration,
+								 ObjectProvider<RedisClusterConfiguration> clusterConfiguration, RedisConnectionDetails connectionDetails) {
 		super(properties, connectionDetails, standaloneConfigurationProvider, sentinelConfiguration,
 			clusterConfiguration);
 	}
 
-	public JedisConnectionFactory createRedisConnectionFactory(
+	public JedisConnectionFactory redisConnectionFactory(
 		ObjectProvider<JedisClientConfigurationBuilderCustomizer> builderCustomizers) {
 		return createJedisConnectionFactory(builderCustomizers);
 	}
 
-	public JedisConnectionFactory createRedisConnectionFactoryVirtualThreads(
+	public JedisConnectionFactory redisConnectionFactoryVirtualThreads(
 		ObjectProvider<JedisClientConfigurationBuilderCustomizer> builderCustomizers) {
 		JedisConnectionFactory factory = createJedisConnectionFactory(builderCustomizers);
 		SimpleAsyncTaskExecutor executor = new SimpleAsyncTaskExecutor("redis-");
@@ -118,7 +121,7 @@ public class JedisConnectionConfiguration extends RedisConnectionConfiguration {
 	}
 
 	private void applyPooling(RedisProperties.Pool pool,
-							  JedisClientConfigurationBuilder builder) {
+							  JedisClientConfiguration.JedisClientConfigurationBuilder builder) {
 		builder.usePooling().poolConfig(jedisPoolConfig(pool));
 	}
 
@@ -136,9 +139,10 @@ public class JedisConnectionConfiguration extends RedisConnectionConfiguration {
 		return config;
 	}
 
-	private void customizeConfigurationFromUrl(JedisClientConfigurationBuilder builder) {
+	private void customizeConfigurationFromUrl(JedisClientConfiguration.JedisClientConfigurationBuilder builder) {
 		if (urlUsesSsl()) {
 			builder.useSsl();
 		}
 	}
+
 }

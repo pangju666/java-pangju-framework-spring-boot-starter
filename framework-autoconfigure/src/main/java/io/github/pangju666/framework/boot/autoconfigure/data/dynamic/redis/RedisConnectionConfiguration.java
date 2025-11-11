@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package io.github.pangju666.framework.boot.autoconfigure.data.dynamic.redis.config;
+package io.github.pangju666.framework.boot.autoconfigure.data.dynamic.redis;
 
+import org.springframework.boot.autoconfigure.data.redis.RedisProperties;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.data.redis.RedisConnectionDetails;
 import org.springframework.boot.autoconfigure.data.redis.RedisConnectionDetails.Cluster;
 import org.springframework.boot.autoconfigure.data.redis.RedisConnectionDetails.Node;
 import org.springframework.boot.autoconfigure.data.redis.RedisConnectionDetails.Sentinel;
-import org.springframework.boot.autoconfigure.data.redis.RedisProperties;
 import org.springframework.boot.autoconfigure.data.redis.RedisProperties.Pool;
 import org.springframework.boot.ssl.SslBundle;
 import org.springframework.data.redis.connection.*;
@@ -33,6 +33,8 @@ import java.util.List;
 /**
  * Base Redis connection configuration.
  *
+ * <p>copy from {@link org.springframework.boot.autoconfigure.data.redis.RedisConnectionConfiguration}</p>
+ * 
  * @author Mark Paluch
  * @author Stephane Nicoll
  * @author Alen Turkovic
@@ -47,12 +49,18 @@ abstract class RedisConnectionConfiguration {
 
 	private static final boolean COMMONS_POOL2_AVAILABLE = ClassUtils.isPresent("org.apache.commons.pool2.ObjectPool",
 		RedisConnectionConfiguration.class.getClassLoader());
-	protected final Mode mode;
+
 	private final RedisProperties properties;
+
 	private final RedisStandaloneConfiguration standaloneConfiguration;
+
 	private final RedisSentinelConfiguration sentinelConfiguration;
+
 	private final RedisClusterConfiguration clusterConfiguration;
+
 	private final RedisConnectionDetails connectionDetails;
+
+	protected final RedisConnectionConfiguration.Mode mode;
 
 	protected RedisConnectionConfiguration(RedisProperties properties, RedisConnectionDetails connectionDetails,
 										   ObjectProvider<RedisStandaloneConfiguration> standaloneConfigurationProvider,
@@ -105,7 +113,6 @@ abstract class RedisConnectionConfiguration {
 
 	/**
 	 * Create a {@link RedisClusterConfiguration} if necessary.
-	 *
 	 * @return {@literal null} if no cluster settings are set.
 	 */
 	protected final RedisClusterConfiguration getClusterConfiguration() {
@@ -177,14 +184,14 @@ abstract class RedisConnectionConfiguration {
 		return this.connectionDetails;
 	}
 
-	private Mode determineMode() {
+	private RedisConnectionConfiguration.Mode determineMode() {
 		if (getSentinelConfig() != null) {
-			return Mode.SENTINEL;
+			return RedisConnectionConfiguration.Mode.SENTINEL;
 		}
 		if (getClusterConfiguration() != null) {
-			return Mode.CLUSTER;
+			return RedisConnectionConfiguration.Mode.CLUSTER;
 		}
-		return Mode.STANDALONE;
+		return RedisConnectionConfiguration.Mode.STANDALONE;
 	}
 
 	enum Mode {

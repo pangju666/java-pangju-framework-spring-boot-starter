@@ -39,14 +39,14 @@ import java.util.Map;
  *             host: localhost
  *             port: 6379
  *             password: password
- *             keySerializer: STRING
- *             valueSerializer: JSON
+ *             key-serializer: STRING
+ *             value-serializer: JSON
  *           redis2:
  *             host: localhost
  *             port: 6380
  *             password: password
- *             keySerializer: STRING
- *             valueSerializer: JSON
+ *             key-serializer: STRING
+ *             value-serializer: JSON
  * </pre>
  * </p>
  *
@@ -119,8 +119,8 @@ public class DynamicRedisProperties {
 	 * </p>
 	 *
 	 * @author pangju666
-	 * @since 1.0.0
 	 * @see RedisSerializerType
+	 * @since 1.0.0
 	 */
 	public static class RedisProperties extends org.springframework.boot.autoconfigure.data.redis.RedisProperties {
 		/**
