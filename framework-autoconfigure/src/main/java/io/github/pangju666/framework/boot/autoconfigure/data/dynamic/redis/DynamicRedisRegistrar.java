@@ -87,7 +87,7 @@ import java.util.function.Supplier;
  * @see ImportBeanDefinitionRegistrar
  * @since 1.0.0
  */
-public class DynamicRedisRegistrar implements EnvironmentAware, BeanFactoryAware, ImportBeanDefinitionRegistrar {
+class DynamicRedisRegistrar implements EnvironmentAware, BeanFactoryAware, ImportBeanDefinitionRegistrar {
 	/**
 	 * 日志记录器
 	 *

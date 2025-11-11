@@ -40,38 +40,6 @@ import org.springframework.context.annotation.Bean;
 @ConditionalOnClass(RedisClient.class)
 @ConditionalOnProperty(name = "spring.data.redis.client-type", havingValue = "lettuce", matchIfMissing = true)
 public class ClientResourcesAutoConfiguration {
-	/**
-	 * 创建Lettuce客户端资源
-	 * <p>
-	 * 该Bean为全局单例，所有Lettuce Redis连接都将共享这个资源实例。
-	 * Bean的销毁方法为{@code shutdown}，在Spring容器关闭时自动释放资源。
-	 * </p>
-	 * <p>
-	 * 创建流程：
-	 * <ol>
-	 *     <li>使用{@link DefaultClientResources#builder()}创建构建器</li>
-	 *     <li>应用所有{@link ClientResourcesBuilderCustomizer}的自定义配置</li>
-	 *     <li>调用{@code build()}生成最终的ClientResources实例</li>
-	 * </ol>
-	 * </p>
-	 * <p>
-	 * 资源特性：
-	 * <ul>
-	 *     <li>管理I/O线程池 - 处理网络I/O操作</li>
-	 *     <li>管理计算线程池 - 处理异步操作</li>
-	 *     <li>支持事件循环组配置</li>
-	 *     <li>可配置超时和重连策略</li>
-	 * </ul>
-	 * </p>
-	 *
-	 * @param customizers {@link ClientResourcesBuilderCustomizer}提供者
-	 *                    用于对{@link DefaultClientResources.Builder}进行自定义配置。
-	 *                    多个定制器会按顺序依次应用
-	 * @return 配置完成的{@link DefaultClientResources}实例
-	 * @see DefaultClientResources
-	 * @see ClientResourcesBuilderCustomizer
-	 * @since 1.0.0
-	 */
 	@Bean(destroyMethod = "shutdown")
 	@ConditionalOnMissingBean(ClientResources.class)
 	public DefaultClientResources lettuceClientResources(ObjectProvider<ClientResourcesBuilderCustomizer> customizers) {

@@ -27,6 +27,31 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.config.MongoRepositoryConfigurationExtension;
 import org.springframework.data.mongodb.repository.support.MongoRepositoryFactoryBean;
 
+/**
+ * Mongo 仓库自动配置
+ * <p>
+ * 在满足依赖与仓库类型条件时，优先于 Spring Boot 默认的
+ * {@link org.springframework.boot.autoconfigure.data.mongo.MongoRepositoriesAutoConfiguration}
+ * 启用 Spring Data Mongo 仓库支持，并通过 {@link MongoRepositoriesRegistrar}
+ * 注册仓库扫描与配置扩展。
+ * </p>
+ * <p>
+ * 生效条件：
+ * <ul>
+ *     <li>类路径存在 {@link com.mongodb.client.MongoClient} 与 {@link org.springframework.data.mongodb.repository.MongoRepository}</li>
+ *     <li>上下文中不存在 {@link MongoRepositoryFactoryBean} 或
+ *     {@link org.springframework.data.mongodb.repository.config.MongoRepositoryConfigurationExtension}</li>
+ *     <li>仓库类型为 {@code mongodb} 且为命令式（{@link org.springframework.boot.autoconfigure.data.RepositoryType#IMPERATIVE}）</li>
+ * </ul>
+ * </p>
+ *
+ * @author pangju666
+ * @see MongoRepositoriesRegistrar
+ * @see org.springframework.data.mongodb.repository.MongoRepository
+ * @see org.springframework.data.mongodb.repository.config.MongoRepositoryConfigurationExtension
+ * @see MongoRepositoryFactoryBean
+ * @since 1.0.0
+ */
 @AutoConfiguration(before = org.springframework.boot.autoconfigure.data.mongo.MongoRepositoriesAutoConfiguration.class)
 @ConditionalOnClass({ MongoClient.class, MongoRepository.class })
 @ConditionalOnMissingBean({ MongoRepositoryFactoryBean.class, MongoRepositoryConfigurationExtension.class })

@@ -45,6 +45,7 @@ import org.springframework.dao.support.PersistenceExceptionTranslator;
 import org.springframework.data.mapping.model.FieldNamingStrategy;
 import org.springframework.data.mongodb.MongoDatabaseFactory;
 import org.springframework.data.mongodb.MongoManagedTypes;
+import org.springframework.data.mongodb.core.MongoDatabaseFactorySupport;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.SimpleMongoClientDatabaseFactory;
 import org.springframework.data.mongodb.core.convert.*;
@@ -89,7 +90,6 @@ import java.util.function.Supplier;
  *     <li>MongoConnectionDetails - 基础连接详情</li>
  *     <li>MongoClientSettings - 客户端设置</li>
  *     <li>MongoClient（依赖于1、2）- MongoDB客户端</li>
- *     <li>MongoCustomConversions - 自定义类型转换</li>
  *     <li>MongoMappingContext（依赖于4）- 映射上下文</li>
  *     <li>MongoDatabaseFactory（依赖于1、3）- 数据库工厂</li>
  *     <li>MongoConverter（依赖于5、4）- 数据转换器</li>
@@ -120,7 +120,7 @@ import java.util.function.Supplier;
  * @see ImportBeanDefinitionRegistrar
  * @since 1.0.0
  */
-public class DynamicMongoRegistrar implements EnvironmentAware, BeanFactoryAware, ImportBeanDefinitionRegistrar {
+class DynamicMongoRegistrar implements EnvironmentAware, BeanFactoryAware, ImportBeanDefinitionRegistrar {
 	/**
 	 * 日志记录器
 	 *
@@ -136,6 +136,25 @@ public class DynamicMongoRegistrar implements EnvironmentAware, BeanFactoryAware
 	 * @since 1.0.0
 	 */
 	private static final String CONNECTION_DETAILS_BEAN_NAME_TEMPLATE = "%sMongoConnectionDetails";
+	/**
+	 * MongoDB客户端设置Bean名称模板
+	 * <p>
+	 * 格式为：{name}MongoClientSettings
+	 * </p>
+	 *
+	 * @since 1.0.0
+	 */
+	private static final String CLIENT_SETTINGS_BEAN_NAME_TEMPLATE = "%sMongoClientSettings";
+	/**
+	 * MongoDB数据转换器Bean名称模板
+	 * <p>
+	 * 格式为：{name}MongoConverter
+	 * </p>
+	 *
+	 * @since 1.0.0
+	 */
+	private static final String MONGO_CONVERTER_BEAN_NAME_TEMPLATE = "%sMongoConverter";
+	private static final String MONGO_MAPPING_CONTEXT_BEAN_NAME_TEMPLATE = "%sMongoMappingContext";
 
 	/**
 	 * Spring属性绑定器
@@ -204,6 +223,7 @@ public class DynamicMongoRegistrar implements EnvironmentAware, BeanFactoryAware
 	 * @param beanDefinitionRegistry Bean定义注册表，用于注册新的Bean定义
 	 * @since 1.0.0
 	 */
+	@SuppressWarnings("rawtypes")
 	@Override
 	public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry beanDefinitionRegistry) {
 		DynamicMongoProperties dynamicMongoProperties;
@@ -227,15 +247,15 @@ public class DynamicMongoRegistrar implements EnvironmentAware, BeanFactoryAware
 				String connectionDetailsBeanName = CONNECTION_DETAILS_BEAN_NAME_TEMPLATE.formatted(name);
 				BeanDefinitionBuilder connectionDetailsBeanBuilder = BeanDefinitionBuilder.genericBeanDefinition(
 					MongoConnectionDetails.class, connectionDetailsSupplier);
-				AbstractBeanDefinition connectionDetailsBeanDefinition = connectionDetailsBeanBuilder.getRawBeanDefinition();
+				AbstractBeanDefinition connectionDetailsBeanDefinition = connectionDetailsBeanBuilder.getBeanDefinition();
 				beanDefinitionRegistry.registerBeanDefinition(connectionDetailsBeanName, connectionDetailsBeanDefinition);
 
 				// 注册 MongoClientSettings
 				Supplier<MongoClientSettings> mongoClientSettingsSupplier = () -> MongoClientSettings.builder().build();
-				String mongoClientSettingsBeanName = DynamicMongoUtils.getMongoClientSettingsBeanName(name);
+				String mongoClientSettingsBeanName = CLIENT_SETTINGS_BEAN_NAME_TEMPLATE.formatted(name);
 				BeanDefinitionBuilder mongoClientSettingsBeanBuilder = BeanDefinitionBuilder.genericBeanDefinition(
 					MongoClientSettings.class, mongoClientSettingsSupplier);
-				AbstractBeanDefinition mongoClientSettingsBeanDefinition = mongoClientSettingsBeanBuilder.getRawBeanDefinition();
+				AbstractBeanDefinition mongoClientSettingsBeanDefinition = mongoClientSettingsBeanBuilder.getBeanDefinition();
 				beanDefinitionRegistry.registerBeanDefinition(mongoClientSettingsBeanName, mongoClientSettingsBeanDefinition);
 
 				// 注册 MongoClient
@@ -248,20 +268,11 @@ public class DynamicMongoRegistrar implements EnvironmentAware, BeanFactoryAware
 				};
 				String mongoClientBeanName = DynamicMongoUtils.getMongoClientBeanName(name);
 				BeanDefinitionBuilder mongoClientBeanBuilder = BeanDefinitionBuilder.genericBeanDefinition(
-					MongoClient.class, mongoClientSupplier);
-				mongoClientBeanBuilder.addDependsOn(connectionDetailsBeanName);
-				mongoClientBeanBuilder.addDependsOn(mongoClientSettingsBeanName);
-				AbstractBeanDefinition mongoClientBeanDefinition = mongoClientBeanBuilder.getRawBeanDefinition();
+					MongoClient.class, mongoClientSupplier)
+					.addDependsOn(connectionDetailsBeanName)
+					.addDependsOn(mongoClientSettingsBeanName);
+				AbstractBeanDefinition mongoClientBeanDefinition = mongoClientBeanBuilder.getBeanDefinition();
 				beanDefinitionRegistry.registerBeanDefinition(mongoClientBeanName, mongoClientBeanDefinition);
-
-				// 注册 MongoCustomConversions
-				Supplier<MongoCustomConversions> mongoCustomConversionsSupplier = () -> new MongoCustomConversions(
-					Collections.emptyList());
-				String mongoCustomConversionsBeanName = DynamicMongoUtils.getMongoCustomConversionsBeanName(name);
-				BeanDefinitionBuilder mongoCustomConversionsBeanBuilder = BeanDefinitionBuilder.genericBeanDefinition(
-					MongoCustomConversions.class, mongoCustomConversionsSupplier);
-				AbstractBeanDefinition mongoCustomConversionsBeanDefinition = mongoCustomConversionsBeanBuilder.getRawBeanDefinition();
-				beanDefinitionRegistry.registerBeanDefinition(mongoCustomConversionsBeanName, mongoCustomConversionsBeanDefinition);
 
 				// 注册 MongoMappingContext
 				Supplier<MongoMappingContext> mongoMappingContextSupplier = () -> {
@@ -273,20 +284,17 @@ public class DynamicMongoRegistrar implements EnvironmentAware, BeanFactoryAware
 					if (strategyClass != null) {
 						context.setFieldNamingStrategy((FieldNamingStrategy) BeanUtils.instantiateClass(strategyClass));
 					}
-					context.setSimpleTypeHolder(beanFactory.getBean(mongoCustomConversionsBeanName,
-						MongoCustomConversions.class).getSimpleTypeHolder());
+					context.setSimpleTypeHolder(beanFactory.getBean(MongoCustomConversions.class).getSimpleTypeHolder());
 					return context;
 				};
-				String mongoMappingContextBeanName = DynamicMongoUtils.getMongoMappingContextBeanName(name);
+				String mongoMappingContextBeanName = MONGO_MAPPING_CONTEXT_BEAN_NAME_TEMPLATE.formatted(name);
 				BeanDefinitionBuilder mongoMappingContextBeanBuilder = BeanDefinitionBuilder.genericBeanDefinition(
 					MongoMappingContext.class, mongoMappingContextSupplier);
-				mongoMappingContextBeanBuilder.addDependsOn(mongoCustomConversionsBeanName);
-				//mongoMappingContextBeanBuilder.addDependsOn("mongoManagedTypes");
-				AbstractBeanDefinition mongoMappingContextBeanDefinition = mongoMappingContextBeanBuilder.getRawBeanDefinition();
+				AbstractBeanDefinition mongoMappingContextBeanDefinition = mongoMappingContextBeanBuilder.getBeanDefinition();
 				beanDefinitionRegistry.registerBeanDefinition(mongoMappingContextBeanName, mongoMappingContextBeanDefinition);
 
 				// 注册 MongoDatabaseFactory
-				Supplier<MongoDatabaseFactory> mongoDatabaseFactorySupplier = () -> {
+				Supplier<MongoDatabaseFactorySupport> mongoDatabaseFactorySupplier = () -> {
 					String database = mongoProperties.getDatabase();
 					if (database == null) {
 						database = beanFactory.getBean(connectionDetailsBeanName, MongoConnectionDetails.class)
@@ -297,30 +305,27 @@ public class DynamicMongoRegistrar implements EnvironmentAware, BeanFactoryAware
 				};
 				String mongoDatabaseFactoryBeanName = DynamicMongoUtils.getMongoDatabaseFactoryBeanName(name);
 				BeanDefinitionBuilder mongoDatabaseFactoryBeanBuilder = BeanDefinitionBuilder.genericBeanDefinition(
-					MongoDatabaseFactory.class, mongoDatabaseFactorySupplier);
-				mongoDatabaseFactoryBeanBuilder.addDependsOn(connectionDetailsBeanName);
-				mongoDatabaseFactoryBeanBuilder.addDependsOn(mongoClientBeanName);
-				AbstractBeanDefinition mongoDatabaseFactoryBeanDefinition = mongoDatabaseFactoryBeanBuilder.getRawBeanDefinition();
+					MongoDatabaseFactorySupport.class, mongoDatabaseFactorySupplier)
+					.addDependsOn(connectionDetailsBeanName)
+					.addDependsOn(mongoClientBeanName);
+				AbstractBeanDefinition mongoDatabaseFactoryBeanDefinition = mongoDatabaseFactoryBeanBuilder.getBeanDefinition();
 				beanDefinitionRegistry.registerBeanDefinition(mongoDatabaseFactoryBeanName, mongoDatabaseFactoryBeanDefinition);
 
 				// 注册 MongoConverter
-				Supplier<MongoConverter> mongoConverterSupplier = () -> {
+				Supplier<MappingMongoConverter> mongoConverterSupplier = () -> {
 					MongoDatabaseFactory mongoDatabaseFactory = beanFactory.getBean(mongoDatabaseFactoryBeanName,
 						MongoDatabaseFactory.class);
-					DbRefResolver dbRefResolver = (mongoDatabaseFactory != null) ? new DefaultDbRefResolver(mongoDatabaseFactory)
-						: NoOpDbRefResolver.INSTANCE;
+					DbRefResolver dbRefResolver = new DefaultDbRefResolver(mongoDatabaseFactory);
 					MappingMongoConverter mappingConverter = new MappingMongoConverter(dbRefResolver,
 						beanFactory.getBean(mongoMappingContextBeanName, MongoMappingContext.class));
-					mappingConverter.setCustomConversions(beanFactory.getBean(mongoCustomConversionsBeanName,
-						MongoCustomConversions.class));
+					mappingConverter.setCustomConversions(beanFactory.getBean(MongoCustomConversions.class));
 					return mappingConverter;
 				};
-				String mongoConverterBeanName = DynamicMongoUtils.getMongoConverterBeanName(name);
+				String mongoConverterBeanName = MONGO_CONVERTER_BEAN_NAME_TEMPLATE.formatted(name);
 				BeanDefinitionBuilder mongoConverterBeanBuilder = BeanDefinitionBuilder.genericBeanDefinition(
-					MongoConverter.class, mongoConverterSupplier);
-				mongoConverterBeanBuilder.addDependsOn(mongoMappingContextBeanName);
-				mongoConverterBeanBuilder.addDependsOn(mongoCustomConversionsBeanName);
-				AbstractBeanDefinition mongoConverterBeanDefinition = mongoConverterBeanBuilder.getRawBeanDefinition();
+					MappingMongoConverter.class, mongoConverterSupplier)
+					.addDependsOn(mongoMappingContextBeanName);
+				AbstractBeanDefinition mongoConverterBeanDefinition = mongoConverterBeanBuilder.getBeanDefinition();
 				beanDefinitionRegistry.registerBeanDefinition(mongoConverterBeanName, mongoConverterBeanDefinition);
 
 				// 注册 MongoTemplate
@@ -329,10 +334,10 @@ public class DynamicMongoRegistrar implements EnvironmentAware, BeanFactoryAware
 					beanFactory.getBean(mongoConverterBeanName, MongoConverter.class));
 				String mongoTemplateBeanName = DynamicMongoUtils.getMongoTemplateBeanName(name);
 				BeanDefinitionBuilder mongoTemplateBeanBuilder = BeanDefinitionBuilder.genericBeanDefinition(
-					MongoTemplate.class, mongoTemplateSupplier);
-				mongoTemplateBeanBuilder.addDependsOn(mongoDatabaseFactoryBeanName);
-				mongoTemplateBeanBuilder.addDependsOn(mongoConverterBeanName);
-				AbstractBeanDefinition mongoTemplateBeanDefinition = mongoTemplateBeanBuilder.getRawBeanDefinition();
+					MongoTemplate.class, mongoTemplateSupplier)
+					.addDependsOn(mongoDatabaseFactoryBeanName)
+					.addDependsOn(mongoConverterBeanName);
+				AbstractBeanDefinition mongoTemplateBeanDefinition = mongoTemplateBeanBuilder.getBeanDefinition();
 				beanDefinitionRegistry.registerBeanDefinition(mongoTemplateBeanName, mongoTemplateBeanDefinition);
 
 				// 注册 GridFsTemplate
@@ -353,23 +358,34 @@ public class DynamicMongoRegistrar implements EnvironmentAware, BeanFactoryAware
 				gridFsTemplateBeanBuilder.addDependsOn(connectionDetailsBeanName);
 				gridFsTemplateBeanBuilder.addDependsOn(mongoDatabaseFactoryBeanName);
 				gridFsTemplateBeanBuilder.addDependsOn(mongoTemplateBeanName);
-				AbstractBeanDefinition gridFsTemplateBeanDefinition = gridFsTemplateBeanBuilder.getRawBeanDefinition();
+				AbstractBeanDefinition gridFsTemplateBeanDefinition = gridFsTemplateBeanBuilder.getBeanDefinition();
 				beanDefinitionRegistry.registerBeanDefinition(gridFsTemplateBeanName, gridFsTemplateBeanDefinition);
 
 				if (dynamicMongoProperties.getPrimary().equals(name)) {
-					connectionDetailsBeanDefinition.setPrimary(true);
 					mongoClientSettingsBeanDefinition.setPrimary(true);
-					mongoClientBeanDefinition.setPrimary(true);
-					mongoCustomConversionsBeanDefinition.setPrimary(true);
 					mongoMappingContextBeanDefinition.setPrimary(true);
 					mongoConverterBeanDefinition.setPrimary(true);
-					mongoDatabaseFactoryBeanDefinition.setPrimary(true);
-					//mongoTemplateBeanDefinition.setPrimary(true);
-					//gridFsTemplateBeanDefinition.setPrimary(true);
+
+					GenericBeanDefinition primaryConnectionDetailsBeanDefinition = new GenericBeanDefinition(connectionDetailsBeanDefinition);
+					primaryConnectionDetailsBeanDefinition.setPrimary(true);
+					beanDefinitionRegistry.registerBeanDefinition("mongoConnectionDetails", primaryConnectionDetailsBeanDefinition);
+
+					GenericBeanDefinition primaryMongoClientBeanDefinition = new GenericBeanDefinition(mongoClientBeanDefinition);
+					primaryMongoClientBeanDefinition.setPrimary(true);
+					beanDefinitionRegistry.registerBeanDefinition("mongo", primaryMongoClientBeanDefinition);
+
+					GenericBeanDefinition primaryMongoDatabaseFactoryBeanDefinition = new GenericBeanDefinition(mongoDatabaseFactoryBeanDefinition);
+					primaryMongoDatabaseFactoryBeanDefinition.setPrimary(true);
+					beanDefinitionRegistry.registerBeanDefinition("mongoDatabaseFactory", primaryMongoDatabaseFactoryBeanDefinition);
 
 					GenericBeanDefinition primaryMongoTemplateBeanDefinition = new GenericBeanDefinition(mongoTemplateBeanDefinition);
 					primaryMongoTemplateBeanDefinition.setPrimary(true);
 					beanDefinitionRegistry.registerBeanDefinition("mongoTemplate", primaryMongoTemplateBeanDefinition);
+
+					// 解开注释报错
+					/*GenericBeanDefinition primaryGridFsTemplateBeanDefinition = new GenericBeanDefinition(gridFsTemplateBeanDefinition);
+					primaryGridFsTemplateBeanDefinition.setPrimary(true);
+					beanDefinitionRegistry.registerBeanDefinition("gridFsTemplate", primaryGridFsTemplateBeanDefinition);*/
 				}
 				log.info("dynamic-mongodb - add a database named [{}] success", name);
 			});
@@ -379,12 +395,16 @@ public class DynamicMongoRegistrar implements EnvironmentAware, BeanFactoryAware
 	}
 
 	/**
-	 * MongoDB GridFS数据库工厂内部类，来源于 org.springframework.boot.autoconfigure.data.mongo.MongoDatabaseFactoryDependentConfiguration.GridFsMongoDatabaseFactory
+	 * MongoDB GridFS数据库工厂内部类
+	 *
+	 * <p>来源于 org.springframework.boot.autoconfigure.data.mongo.MongoDatabaseFactoryDependentConfiguration.GridFsMongoDatabaseFactory</p>
 	 *
 	 * @since 1.0.0
 	 */
 	static class GridFsMongoDatabaseFactory implements MongoDatabaseFactory {
+
 		private final MongoDatabaseFactory mongoDatabaseFactory;
+
 		private final MongoConnectionDetails connectionDetails;
 
 		GridFsMongoDatabaseFactory(MongoDatabaseFactory mongoDatabaseFactory,

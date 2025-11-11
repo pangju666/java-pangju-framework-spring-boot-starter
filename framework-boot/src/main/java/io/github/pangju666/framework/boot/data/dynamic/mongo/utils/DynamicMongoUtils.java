@@ -16,15 +16,11 @@
 
 package io.github.pangju666.framework.boot.data.dynamic.mongo.utils;
 
-import com.mongodb.MongoClientSettings;
 import com.mongodb.client.MongoClient;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.data.mongodb.MongoDatabaseFactory;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.convert.MongoConverter;
-import org.springframework.data.mongodb.core.convert.MongoCustomConversions;
-import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
 import org.springframework.data.mongodb.gridfs.GridFsTemplate;
 
 /**
@@ -36,12 +32,8 @@ import org.springframework.data.mongodb.gridfs.GridFsTemplate;
  * <p>
  * 支持的Bean类型：
  * <ul>
- *     <li>{@link MongoClientSettings} - MongoDB客户端设置</li>
- *     <li>{@link MongoMappingContext} - MongoDB映射上下文</li>
- *     <li>{@link MongoCustomConversions} - MongoDB自定义类型转换</li>
  *     <li>{@link MongoClient} - MongoDB客户端实例</li>
  *     <li>{@link MongoDatabaseFactory} - MongoDB数据库工厂</li>
- *     <li>{@link MongoConverter} - MongoDB数据转换器</li>
  *     <li>{@link MongoTemplate} - MongoDB操作模板</li>
  *     <li>{@link GridFsTemplate} - MongoDB GridFS操作模板</li>
  * </ul>
@@ -49,13 +41,8 @@ import org.springframework.data.mongodb.gridfs.GridFsTemplate;
  * <p>
  * Bean命名规则：{name}{BeanType}
  * <ul>
- *     <li>{name}MongoConnectionDetails</li>
- *     <li>{name}MongoClientSettings</li>
- *     <li>{name}MongoMappingContext</li>
- *     <li>{name}MongoCustomConversions</li>
  *     <li>{name}MongoClient</li>
  *     <li>{name}MongoDatabaseFactory</li>
- *     <li>{name}MongoConverter</li>
  *     <li>{name}MongoTemplate</li>
  *     <li>{name}GridFsTemplate</li>
  * </ul>
@@ -66,24 +53,6 @@ import org.springframework.data.mongodb.gridfs.GridFsTemplate;
  */
 public class DynamicMongoUtils {
 	/**
-	 * MongoDB客户端设置Bean名称模板
-	 * <p>
-	 * 格式为：{name}MongoClientSettings
-	 * </p>
-	 *
-	 * @since 1.0.0
-	 */
-	private static final String CLIENT_SETTINGS_BEAN_NAME_TEMPLATE = "%sMongoClientSettings";
-	/**
-	 * MongoDB映射上下文Bean名称模板
-	 * <p>
-	 * 格式为：{name}MongoMappingContext
-	 * </p>
-	 *
-	 * @since 1.0.0
-	 */
-	private static final String MAPPING_CONTEXT_BEAN_NAME_TEMPLATE = "%sMongoMappingContext";
-	/**
 	 * MongoDB客户端Bean名称模板
 	 * <p>
 	 * 格式为：{name}MongoClient
@@ -92,24 +61,6 @@ public class DynamicMongoUtils {
 	 * @since 1.0.0
 	 */
 	private static final String CLIENT_BEAN_NAME_TEMPLATE = "%sMongoClient";
-	/**
-	 * MongoDB自定义类型转换Bean名称模板
-	 * <p>
-	 * 格式为：{name}MongoCustomConversions
-	 * </p>
-	 *
-	 * @since 1.0.0
-	 */
-	private static final String CUSTOM_CONVERSIONS_BEAN_NAME_TEMPLATE = "%sMongoCustomConversions";
-	/**
-	 * MongoDB数据转换器Bean名称模板
-	 * <p>
-	 * 格式为：{name}MongoConverter
-	 * </p>
-	 *
-	 * @since 1.0.0
-	 */
-	private static final String MONGO_CONVERTER_BEAN_NAME_TEMPLATE = "%sMongoConverter";
 	/**
 	 * MongoDB数据库工厂Bean名称模板
 	 * <p>
@@ -139,78 +90,6 @@ public class DynamicMongoUtils {
 	private static final String GRID_FS_TEMPLATE_BEAN_NAME_TEMPLATE = "%sGridFsTemplate";
 
 	protected DynamicMongoUtils() {
-	}
-
-	/**
-	 * 根据数据源名称获取MongoDB客户端设置Bean名称
-	 *
-	 * @param name 数据源名称
-	 * @return MongoDB客户端设置Bean名称
-	 * @since 1.0.0
-	 */
-	public static String getMongoClientSettingsBeanName(String name) {
-		return CLIENT_SETTINGS_BEAN_NAME_TEMPLATE.formatted(name);
-	}
-
-	/**
-	 * 从Bean工厂中获取指定名称的MongoDB客户端设置
-	 *
-	 * @param name        数据源名称
-	 * @param beanFactory Spring Bean工厂
-	 * @return MongoDB客户端设置实例
-	 * @throws NoSuchBeanDefinitionException 当指定名称的Bean不存在时抛出
-	 * @since 1.0.0
-	 */
-	public static MongoClientSettings getMongoClientSettings(String name, BeanFactory beanFactory) {
-		return beanFactory.getBean(CLIENT_SETTINGS_BEAN_NAME_TEMPLATE.formatted(name), MongoClientSettings.class);
-	}
-
-	/**
-	 * 根据数据源名称获取MongoDB映射上下文Bean名称
-	 *
-	 * @param name 数据源名称
-	 * @return MongoDB映射上下文Bean名称
-	 * @since 1.0.0
-	 */
-	public static String getMongoMappingContextBeanName(String name) {
-		return MAPPING_CONTEXT_BEAN_NAME_TEMPLATE.formatted(name);
-	}
-
-	/**
-	 * 从Bean工厂中获取指定名称的MongoDB映射上下文
-	 *
-	 * @param name        数据源名称
-	 * @param beanFactory Spring Bean工厂
-	 * @return MongoDB映射上下文实例
-	 * @throws NoSuchBeanDefinitionException 当指定名称的Bean不存在时抛出
-	 * @since 1.0.0
-	 */
-	public static MongoMappingContext getMongoMappingContext(String name, BeanFactory beanFactory) {
-		return beanFactory.getBean(MAPPING_CONTEXT_BEAN_NAME_TEMPLATE.formatted(name), MongoMappingContext.class);
-	}
-
-	/**
-	 * 根据数据源名称获取MongoDB自定义类型转换Bean名称
-	 *
-	 * @param name 数据源名称
-	 * @return MongoDB自定义类型转换Bean名称
-	 * @since 1.0.0
-	 */
-	public static String getMongoCustomConversionsBeanName(String name) {
-		return CUSTOM_CONVERSIONS_BEAN_NAME_TEMPLATE.formatted(name);
-	}
-
-	/**
-	 * 从Bean工厂中获取指定名称的MongoDB自定义类型转换
-	 *
-	 * @param name        数据源名称
-	 * @param beanFactory Spring Bean工厂
-	 * @return MongoDB自定义类型转换实例
-	 * @throws NoSuchBeanDefinitionException 当指定名称的Bean不存在时抛出
-	 * @since 1.0.0
-	 */
-	public static MongoCustomConversions getMongoCustomConversions(String name, BeanFactory beanFactory) {
-		return beanFactory.getBean(CUSTOM_CONVERSIONS_BEAN_NAME_TEMPLATE.formatted(name), MongoCustomConversions.class);
 	}
 
 	/**
@@ -259,30 +138,6 @@ public class DynamicMongoUtils {
 	 */
 	public static MongoDatabaseFactory getMongoDatabaseFactory(String name, BeanFactory beanFactory) {
 		return beanFactory.getBean(DATABASE_FACTORY_BEAN_NAME_TEMPLATE.formatted(name), MongoDatabaseFactory.class);
-	}
-
-	/**
-	 * 根据数据源名称获取MongoDB数据转换器Bean名称
-	 *
-	 * @param name 数据源名称
-	 * @return MongoDB数据转换器Bean名称
-	 * @since 1.0.0
-	 */
-	public static String getMongoConverterBeanName(String name) {
-		return MONGO_CONVERTER_BEAN_NAME_TEMPLATE.formatted(name);
-	}
-
-	/**
-	 * 从Bean工厂中获取指定名称的MongoDB数据转换器
-	 *
-	 * @param name        数据源名称
-	 * @param beanFactory Spring Bean工厂
-	 * @return MongoDB数据转换器实例
-	 * @throws NoSuchBeanDefinitionException 当指定名称的Bean不存在时抛出
-	 * @since 1.0.0
-	 */
-	public static MongoConverter getMongoConverter(String name, BeanFactory beanFactory) {
-		return beanFactory.getBean(MONGO_CONVERTER_BEAN_NAME_TEMPLATE.formatted(name), MongoConverter.class);
 	}
 
 	/**
