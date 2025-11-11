@@ -16,8 +16,7 @@
 
 package io.github.pangju666.framework.boot.data.dynamic.mongo.annotation;
 
-import io.github.pangju666.framework.boot.data.dynamic.mongo.processor.DynamicMongoBeanPostProcessor;
-import io.github.pangju666.framework.data.mongodb.repository.BaseRepository;
+import io.github.pangju666.framework.data.mybatisplus.repository.BaseRepository;
 import org.springframework.data.mongodb.core.MongoTemplate;
 
 import java.lang.annotation.*;
