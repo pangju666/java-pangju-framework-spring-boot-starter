@@ -39,7 +39,7 @@ import javax.net.ssl.SSLParameters;
 /**
  * Redis connection configuration using Jedis.
  *
- * <p>copy from {@link org.springframework.boot.autoconfigure.data.redis.JedisConnectionConfiguration}</p>
+ * <p>copy from org.springframework.boot.autoconfigure.data.redis.JedisConnectionConfiguration</p>
  *
  * @author Mark Paluch
  * @author Stephane Nicoll

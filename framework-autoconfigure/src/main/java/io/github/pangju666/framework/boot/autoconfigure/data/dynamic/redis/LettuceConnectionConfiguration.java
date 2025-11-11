@@ -48,7 +48,7 @@ import java.time.Duration;
 /**
  * Redis connection configuration using Lettuce.
  *
- * <p>copy from {@link org.springframework.boot.autoconfigure.data.redis.LettuceConnectionConfiguration}</p>
+ * <p>copy from org.springframework.boot.autoconfigure.data.redis.LettuceConnectionConfiguration</p>
  *
  * @author Mark Paluch
  * @author Andy Wilkinson

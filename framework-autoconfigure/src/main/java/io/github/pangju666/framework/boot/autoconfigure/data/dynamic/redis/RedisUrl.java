@@ -24,7 +24,7 @@ import java.net.URISyntaxException;
 /**
  * A parsed URL used to connect to Redis.
  *
- * <p>copy from {@link org.springframework.boot.autoconfigure.data.redis.RedisUrl}</p>
+ * <p>copy from org.springframework.boot.autoconfigure.data.redis.RedisUrl</p>
  *
  * @param uri         the source URI
  * @param useSsl      if SSL is used to connect

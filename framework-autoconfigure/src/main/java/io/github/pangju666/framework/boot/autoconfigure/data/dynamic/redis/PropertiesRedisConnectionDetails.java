@@ -28,7 +28,7 @@ import java.util.List;
 /**
  * Adapts {@link RedisProperties} to {@link RedisConnectionDetails}.
  *
- * <p>copy from {@link org.springframework.boot.autoconfigure.data.redis.PropertiesRedisConnectionDetails}</p>
+ * <p>copy from org.springframework.boot.autoconfigure.data.redis.PropertiesRedisConnectionDetails</p>
  *
  * @author Moritz Halbritter
  * @author Andy Wilkinson

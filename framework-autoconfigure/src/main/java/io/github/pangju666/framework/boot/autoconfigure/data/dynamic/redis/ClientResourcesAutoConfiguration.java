@@ -30,7 +30,7 @@ import org.springframework.context.annotation.Bean;
 /**
  * Lettuce客户端资源自动配置类
  *
- * <p>copy from {@link org.springframework.boot.autoconfigure.data.redis.LettuceConnectionConfiguration#lettuceClientResources}</p>
+ * <p>copy from org.springframework.boot.autoconfigure.data.redis.LettuceConnectionConfiguration#lettuceClientResources</p>
  *
  * @author pangju666
  * @see ClientResources

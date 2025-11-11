@@ -33,7 +33,7 @@ import java.util.List;
 /**
  * Base Redis connection configuration.
  *
- * <p>copy from {@link org.springframework.boot.autoconfigure.data.redis.RedisConnectionConfiguration}</p>
+ * <p>copy from org.springframework.boot.autoconfigure.data.redis.RedisConnectionConfiguration</p>
  * 
  * @author Mark Paluch
  * @author Stephane Nicoll

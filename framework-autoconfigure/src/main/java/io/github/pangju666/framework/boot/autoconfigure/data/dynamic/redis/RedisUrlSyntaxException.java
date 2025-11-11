@@ -19,7 +19,7 @@ package io.github.pangju666.framework.boot.autoconfigure.data.dynamic.redis;
 /**
  * Exception thrown when a Redis URL is malformed or invalid.
  *
- * <p>copy from {@link org.springframework.boot.autoconfigure.data.redis.RedisUrlSyntaxException}</p>
+ * <p>copy from org.springframework.boot.autoconfigure.data.redis.RedisUrlSyntaxException</p>
  *
  * @author Scott Frederick
  */
