@@ -48,7 +48,7 @@ import java.lang.annotation.Target;
 @JsonDeserialize(using = DecryptJsonDeserializer.class)
 public @interface DecryptFormat {
 	/**
-	 * 用于解密的密钥，只有算法需要密钥时才生效
+	 * 用于解密的密钥
 	 *
 	 * @return 解密密钥
 	 * @since 1.0.0
@@ -69,12 +69,26 @@ public @interface DecryptFormat {
 	/**
 	 * 加密内容的编码方式
 	 * <p>
-	 * 默认使用BASE64编码
+	 * 默认使用BASE64编码。
+	 * </p>
+	 * <p>
+	 * 注意：仅在解密字符串时生效，对二进制与数值类型不适用。
 	 * </p>
 	 *
 	 * @return 编码方式
 	 * @since 1.0.0
 	 */
 	Encoding encoding() default Encoding.BASE64;
+
+	/**
+	 * 自定义解密工厂
+	 * <p>
+	 * 当 {@link Algorithm#CUSTOM} 被指定为算法时，使用该工厂提供的实现进行解密；
+	 * 其他算法将忽略此配置并使用预设工厂。
+	 * </p>
+	 *
+	 * @return 自定义解密工厂类型
+	 * @since 1.0.0
+	 */
 	Class<? extends CryptoFactory> factory() default AES256CryptoFactory.class;
 }
