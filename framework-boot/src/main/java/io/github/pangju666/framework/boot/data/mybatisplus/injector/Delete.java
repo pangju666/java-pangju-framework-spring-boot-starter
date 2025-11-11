@@ -14,19 +14,18 @@
  *    limitations under the License.
  */
 
-package io.github.pangju666.framework.boot.data.mybatisplus.injector.methods;
+package io.github.pangju666.framework.boot.data.mybatisplus.injector;
 
 import com.baomidou.mybatisplus.core.enums.SqlMethod;
 import com.baomidou.mybatisplus.core.injector.AbstractMethod;
 import com.baomidou.mybatisplus.core.metadata.TableInfo;
-import com.baomidou.mybatisplus.core.toolkit.sql.SqlScriptUtils;
 import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.mapping.SqlSource;
 
 /**
- * 自定义根据ID批量删除方法实现类
+ * 自定义删除方法实现类
  * <p>
- * 重写了MyBatis-Plus的根据ID批量删除方法，支持在逻辑删除时进行字段自动填充。
+ * 重写了MyBatis-Plus的删除方法，支持在逻辑删除时进行字段自动填充。
  * 当表配置了逻辑删除时，会使用{@link TableLogicFillUtils#logicDeleteSetSql(TableInfo)}
  * 生成包含自定义填充字段的SQL语句。
  * </p>
@@ -34,12 +33,12 @@ import org.apache.ibatis.mapping.SqlSource;
  * @author pangju666
  * @since 1.0.0
  */
-public final class DeleteByIds extends AbstractMethod {
-	public DeleteByIds() {
-		this(SqlMethod.DELETE_BY_IDS.getMethod());
+final class Delete extends AbstractMethod {
+	public Delete() {
+		this(SqlMethod.DELETE.getMethod());
 	}
 
-	public DeleteByIds(String name) {
+	public Delete(String name) {
 		super(name);
 	}
 
@@ -51,7 +50,6 @@ public final class DeleteByIds extends AbstractMethod {
 	 *     <li>如果配置了逻辑删除，则生成带有自定义字段填充的UPDATE语句</li>
 	 *     <li>如果没有配置逻辑删除，则生成标准的DELETE语句</li>
 	 * </ul>
-	 * 使用SqlScriptUtils.convertForeach生成批量处理的SQL片段
 	 * </p>
 	 *
 	 * @param mapperClass Mapper接口类
@@ -63,19 +61,19 @@ public final class DeleteByIds extends AbstractMethod {
 	@Override
 	public MappedStatement injectMappedStatement(Class<?> mapperClass, Class<?> modelClass, TableInfo tableInfo) {
 		String sql;
-		SqlMethod sqlMethod = SqlMethod.LOGIC_DELETE_BY_IDS;
+		SqlMethod sqlMethod = SqlMethod.LOGIC_DELETE;
 		if (tableInfo.isWithLogicDelete()) {
 			String sqlSet = TableLogicFillUtils.logicDeleteSetSql(tableInfo);
-			sql = String.format(sqlMethod.getSql(), tableInfo.getTableName(), sqlSet, tableInfo.getKeyColumn(),
-				SqlScriptUtils.convertForeach("#{item}", COLL, null, "item", COMMA),
-				tableInfo.getLogicDeleteSql(true, true));
-			SqlSource sqlSource = languageDriver.createSqlSource(configuration, sql, Object.class);
-			return addUpdateMappedStatement(mapperClass, modelClass, methodName, sqlSource);
+			sql = String.format(sqlMethod.getSql(), tableInfo.getTableName(), sqlSet,
+				sqlWhereEntityWrapper(true, tableInfo), sqlComment());
+			SqlSource sqlSource = languageDriver.createSqlSource(configuration, sql, modelClass);
+			return this.addUpdateMappedStatement(mapperClass, modelClass, methodName, sqlSource);
 		} else {
-			sqlMethod = SqlMethod.DELETE_BY_IDS;
-			sql = String.format(sqlMethod.getSql(), tableInfo.getTableName(), tableInfo.getKeyColumn(),
-				SqlScriptUtils.convertForeach("#{item}", COLL, null, "item", COMMA));
-			SqlSource sqlSource = languageDriver.createSqlSource(configuration, sql, Object.class);
+			sqlMethod = SqlMethod.DELETE;
+			sql = String.format(sqlMethod.getSql(), tableInfo.getTableName(),
+				sqlWhereEntityWrapper(true, tableInfo),
+				sqlComment());
+			SqlSource sqlSource = languageDriver.createSqlSource(configuration, sql, modelClass);
 			return this.addDeleteMappedStatement(mapperClass, methodName, sqlSource);
 		}
 	}

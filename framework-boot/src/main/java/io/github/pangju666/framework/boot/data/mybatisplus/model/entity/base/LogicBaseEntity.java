@@ -48,8 +48,8 @@ public abstract class LogicBaseEntity<ID> extends BaseEntity {
 	 *
 	 * @since 1.0.0
 	 */
+	@TableLogic(value = "null", delval = "id")
 	@TableField("delete_status")
-	@TableLogic(value = "0", delval = "id")
 	protected ID deleteStatus;
 
 	public Date getDeleteTime() {

@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package io.github.pangju666.framework.boot.data.mybatisplus.injector.methods;
+package io.github.pangju666.framework.boot.data.mybatisplus.injector;
 
 import com.baomidou.mybatisplus.core.enums.SqlMethod;
 import com.baomidou.mybatisplus.core.injector.AbstractMethod;
@@ -33,7 +33,7 @@ import org.apache.ibatis.mapping.SqlSource;
  * @author pangju666
  * @since 1.0.0
  */
-public final class DeleteById extends AbstractMethod {
+final class DeleteById extends AbstractMethod {
 	public DeleteById() {
 		this(SqlMethod.DELETE_BY_ID.getMethod());
 	}
