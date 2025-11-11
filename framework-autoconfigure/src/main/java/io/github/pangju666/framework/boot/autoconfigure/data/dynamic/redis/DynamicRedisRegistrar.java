@@ -17,7 +17,6 @@
 package io.github.pangju666.framework.boot.autoconfigure.data.dynamic.redis;
 
 import io.github.pangju666.framework.boot.data.dynamic.redis.utils.DynamicRedisUtils;
-import io.github.pangju666.framework.data.redis.core.ScanRedisTemplate;
 import io.lettuce.core.resource.ClientResources;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -28,6 +27,7 @@ import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.beans.factory.support.GenericBeanDefinition;
 import org.springframework.boot.autoconfigure.data.redis.JedisClientConfigurationBuilderCustomizer;
 import org.springframework.boot.autoconfigure.data.redis.LettuceClientConfigurationBuilderCustomizer;
 import org.springframework.boot.autoconfigure.data.redis.LettuceClientOptionsBuilderCustomizer;
@@ -42,6 +42,8 @@ import org.springframework.data.redis.connection.RedisClusterConfiguration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisSentinelConfiguration;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
+import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
+import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
@@ -154,7 +156,7 @@ public class DynamicRedisRegistrar implements EnvironmentAware, BeanFactoryAware
 	 *         <ul>
 	 *             <li>注册{@link RedisConnectionDetails} Bean</li>
 	 *             <li>根据客户端类型选择Jedis或Lettuce创建{@link RedisConnectionFactory} Bean</li>
-	 *             <li>根据序列化器配置创建{@link ScanRedisTemplate} Bean</li>
+	 *             <li>根据序列化器配置创建{@link RedisTemplate} Bean</li>
 	 *         </ul>
 	 *     </li>
 	 *     <li>为主数据源的Bean设置primary标志
@@ -194,14 +196,16 @@ public class DynamicRedisRegistrar implements EnvironmentAware, BeanFactoryAware
 				String connectionDetailsBeanName = CONNECTION_DETAILS_BEAN_NAME_TEMPLATE.formatted(name);
 				BeanDefinitionBuilder connectionDetailsBeanBuilder = BeanDefinitionBuilder.genericBeanDefinition(
 					RedisConnectionDetails.class, connectionDetailsSupplier);
-				AbstractBeanDefinition connectionDetailsBeanDefinition = connectionDetailsBeanBuilder.getRawBeanDefinition();
+				AbstractBeanDefinition connectionDetailsBeanDefinition = connectionDetailsBeanBuilder.getBeanDefinition();
 				beanDefinitionRegistry.registerBeanDefinition(connectionDetailsBeanName, connectionDetailsBeanDefinition);
 
 				// 注册 RedisConnectionFactory
-				Supplier<RedisConnectionFactory> connectionFactorySupplier = () -> {
-					RedisConnectionFactory connectionFactory;
-					// JedisConnectionFactory
-					if (redisProperties.getClientType() == DynamicRedisProperties.RedisProperties.ClientType.JEDIS) {
+				String connectionFactoryBeanName = DynamicRedisUtils.getConnectionFactoryBeanName(name);
+				BeanDefinitionBuilder connectionFactoryBeanBuilder;
+				// JedisConnectionFactory
+				if (redisProperties.getClientType() == DynamicRedisProperties.RedisProperties.ClientType.JEDIS) {
+					Supplier<JedisConnectionFactory> connectionFactorySupplier = () -> {
+						JedisConnectionFactory connectionFactory;
 						JedisConnectionConfiguration connectionConfiguration = new JedisConnectionConfiguration(redisProperties,
 							beanFactory.getBeanProvider(RedisStandaloneConfiguration.class),
 							beanFactory.getBeanProvider(RedisSentinelConfiguration.class),
@@ -214,8 +218,13 @@ public class DynamicRedisRegistrar implements EnvironmentAware, BeanFactoryAware
 							connectionFactory = connectionConfiguration.redisConnectionFactory(
 								beanFactory.getBeanProvider(JedisClientConfigurationBuilderCustomizer.class));
 						}
-					} else {
-						// LettuceConnectionFactory
+						return connectionFactory;
+					};
+					connectionFactoryBeanBuilder = BeanDefinitionBuilder.genericBeanDefinition(
+						JedisConnectionFactory.class, connectionFactorySupplier);
+				} else { // LettuceConnectionFactory
+					Supplier<LettuceConnectionFactory> connectionFactorySupplier = () -> {
+						LettuceConnectionFactory connectionFactory;
 						ClientResources clientResources = beanFactory.getBean(ClientResources.class);
 						LettuceConnectionConfiguration connectionConfiguration = new LettuceConnectionConfiguration(redisProperties,
 							beanFactory.getBeanProvider(RedisStandaloneConfiguration.class),
@@ -233,14 +242,13 @@ public class DynamicRedisRegistrar implements EnvironmentAware, BeanFactoryAware
 								beanFactory.getBeanProvider(LettuceClientOptionsBuilderCustomizer.class),
 								clientResources);
 						}
-					}
-					return connectionFactory;
-				};
-				String connectionFactoryBeanName = DynamicRedisUtils.getConnectionFactoryBeanName(name);
-				BeanDefinitionBuilder connectionFactoryBeanBuilder = BeanDefinitionBuilder.genericBeanDefinition(
-					RedisConnectionFactory.class, connectionFactorySupplier);
+						return connectionFactory;
+					};
+					connectionFactoryBeanBuilder = BeanDefinitionBuilder.genericBeanDefinition(
+						LettuceConnectionFactory.class, connectionFactorySupplier);
+				}
 				connectionFactoryBeanBuilder.addDependsOn(connectionDetailsBeanName);
-				AbstractBeanDefinition connectionFactoryBeanDefinition = connectionFactoryBeanBuilder.getRawBeanDefinition();
+				AbstractBeanDefinition connectionFactoryBeanDefinition = connectionFactoryBeanBuilder.getBeanDefinition();
 				beanDefinitionRegistry.registerBeanDefinition(connectionFactoryBeanName, connectionFactoryBeanDefinition);
 
 				// 注册 RedisTemplate
@@ -256,12 +264,16 @@ public class DynamicRedisRegistrar implements EnvironmentAware, BeanFactoryAware
 				BeanDefinitionBuilder redisTemplateBeanBuilder = BeanDefinitionBuilder.genericBeanDefinition(
 					RedisTemplate.class, redisTemplateSupplier);
 				redisTemplateBeanBuilder.addDependsOn(connectionFactoryBeanName);
-				AbstractBeanDefinition redisTemplateBeanDefinition = redisTemplateBeanBuilder.getRawBeanDefinition();
+				AbstractBeanDefinition redisTemplateBeanDefinition = redisTemplateBeanBuilder.getBeanDefinition();
 				beanDefinitionRegistry.registerBeanDefinition(DynamicRedisUtils.getTemplateBeanName(name), redisTemplateBeanDefinition);
 
 				if (dynamicRedisProperties.getPrimary().equals(name)) {
 					connectionDetailsBeanDefinition.setPrimary(true);
 					connectionFactoryBeanDefinition.setPrimary(true);
+
+					GenericBeanDefinition primaryRedisTemplateBeanDefinition = new GenericBeanDefinition(redisTemplateBeanDefinition);
+					primaryRedisTemplateBeanDefinition.setPrimary(true);
+					beanDefinitionRegistry.registerBeanDefinition("redisTemplate", primaryRedisTemplateBeanDefinition);
 				}
 
 				log.info("dynamic-redis - add a database named [{}] success", name);

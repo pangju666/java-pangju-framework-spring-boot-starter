@@ -27,6 +27,20 @@ import org.springframework.data.redis.core.RedisTemplate;
  * 提供用于生成和获取动态Redis Bean名称的工具方法。
  * 用于在运行时动态注册和访问多个Redis连接相关的Bean。
  * </p>
+ * <p>
+ * 支持的Bean类型：
+ * <ul>
+ *     <li>{@link RedisConnectionFactory} - Redis连接工厂</li>
+ *     <li>{@link RedisTemplate} - Redis操作模板</li>
+ * </ul>
+ * </p>
+ * <p>
+ * Bean命名规则：{name}{BeanType}
+ * <ul>
+ *     <li>{name}RedisConnectionFactory</li>
+ *     <li>{name}RedisTemplate</li>
+ * </ul>
+ * </p>
  *
  * @author pangju666
  * @since 1.0.0
