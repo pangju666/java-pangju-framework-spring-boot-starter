@@ -29,7 +29,6 @@ import io.github.pangju666.framework.boot.enums.Encoding;
 import io.github.pangju666.framework.boot.jackson.annotation.EncryptFormat;
 import io.github.pangju666.framework.boot.spring.StaticSpringContext;
 import io.github.pangju666.framework.boot.utils.CryptoUtils;
-import io.github.pangju666.framework.web.exception.base.ServerException;
 import org.apache.commons.lang3.StringUtils;
 import org.jasypt.exceptions.EncryptionOperationNotPossibleException;
 import org.slf4j.Logger;
@@ -44,145 +43,246 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * JSON字段加密序列化器
+ * 数据加密的JSON序列化器
  * <p>
- * 该序列化器用于处理使用{@link EncryptFormat}注解标记的JSON字段，将内容加密后再序列化。
- * 支持处理字节数组、字符串、集合和Map类型的数据，对不同类型的数据采用不同的加密策略。
- * 实现了{@link ContextualSerializer}接口，可根据上下文自动确定处理方式。
+ * 基于属性上的 {@link io.github.pangju666.framework.boot.jackson.annotation.EncryptFormat} 注解，
+ * 按算法、编码和密钥对输出内容进行加密。实现了 {@link com.fasterxml.jackson.databind.ser.ContextualSerializer}
+ * 接口，可根据序列化上下文动态创建或复用序列化器实例。
+ * </p>
+ * <p>
+ * 为提升性能，内部使用静态缓存（按算法或自定义工厂维度）存储已创建的序列化器实例；同时在加密失败或密钥非法时，
+ * 序列化器会记录日志并输出 JSON null，避免抛出异常影响整体序列化流程。
  * </p>
  *
  * @author pangju666
- * @see EncryptFormat
- * @see ContextualSerializer
- * @see CryptoUtils
+ * @see io.github.pangju666.framework.boot.jackson.annotation.EncryptFormat
+ * @see io.github.pangju666.framework.boot.crypto.factory.CryptoFactory
+ * @see io.github.pangju666.framework.boot.enums.Algorithm
+ * @see io.github.pangju666.framework.boot.enums.Encoding
+ * @see com.fasterxml.jackson.databind.ser.ContextualSerializer
+ * @see com.fasterxml.jackson.databind.ser.std.NullSerializer
+ * @see io.github.pangju666.framework.boot.utils.CryptoUtils
  * @since 1.0.0
  */
 public class EncryptJsonSerializer extends JsonSerializer<Object> implements ContextualSerializer {
-	protected static final Logger LOGGER = LoggerFactory.getLogger(EncryptJsonSerializer.class);
+    /**
+     * 日志记录器
+     *
+     * @since 1.0.0
+     */
+    protected static final Logger LOGGER = LoggerFactory.getLogger(EncryptJsonSerializer.class);
 
-	private static final Map<String, EncryptJsonSerializer> ALGORITHM_SERIALIZER_MAP = new ConcurrentHashMap<>();
-	private static final Map<String, EncryptJsonSerializer> CUSTOM_SERIALIZER_MAP = new ConcurrentHashMap<>();
+    /**
+     * 按算法与编码缓存的序列化器映射
+     * <p>
+     * 键格式：<code>key-encoding-algorithm</code>，值为对应的 {@link EncryptJsonSerializer} 实例。
+     * </p>
+     *
+     * @since 1.0.0
+     */
+    private static final Map<String, EncryptJsonSerializer> ALGORITHM_SERIALIZER_MAP = new ConcurrentHashMap<>();
+    /**
+     * 按自定义工厂维度缓存的序列化器映射
+     * <p>
+     * 键格式：<code>key-encoding-factoryClass</code>，值为对应的 {@link EncryptJsonSerializer} 实例。
+     * </p>
+     *
+     * @since 1.0.0
+     */
+    private static final Map<String, EncryptJsonSerializer> CUSTOM_SERIALIZER_MAP = new ConcurrentHashMap<>();
 
-	private final String key;
-	private final Encoding encoding;
-	private final CryptoFactory cryptoFactory;
+    /**
+     * 加密密钥（已解析后的实际密钥值）
+     *
+     * @since 1.0.0
+     */
+    private final String key;
+    /**
+     * 字符串加密输出使用的编码方式
+     *
+     * @since 1.0.0
+     */
+    private final Encoding encoding;
+    /**
+     * 加密工厂，用于执行具体的加密实现
+     *
+     * @since 1.0.0
+     */
+    private final CryptoFactory cryptoFactory;
 
-	/**
-	 * 默认构造方法，创建一个没有指定加密注解的序列化器
-	 * <p>
-	 * 该构造方法主要用于Jackson初始化，实际使用时会通过{@link #createContextual}方法创建具体配置的序列化器
-	 * </p>
-	 *
-	 * @since 1.0.0
-	 */
-	public EncryptJsonSerializer() {
-		this.cryptoFactory = null;
-		this.encoding = null;
-		this.key = null;
-	}
+    /**
+     * 默认构造方法
+     * <p>
+     * 供 Jackson 初始化使用，不直接携带上下文字段；实际序列化时会通过 {@link #createContextual} 生成带上下文的实例。
+     * </p>
+     *
+     * @since 1.0.0
+     */
+    public EncryptJsonSerializer() {
+        this.cryptoFactory = null;
+        this.encoding = null;
+        this.key = null;
+    }
 
-	/**
-	 * 构造方法，创建一个指定加密注解的序列化器
-	 *
-	 * @param annotation 加密格式注解
-	 * @since 1.0.0
-	 */
-	public EncryptJsonSerializer(String key, Encoding encoding, CryptoFactory cryptoFactory) {
-		this.key = key;
-		this.cryptoFactory = cryptoFactory;
-		this.encoding = encoding;
-	}
+    /**
+     * 指定密钥、编码与加密工厂的构造方法
+     *
+     * @param key           加密密钥（使用前已通过工具解析为实际密钥值）
+     * @param encoding      字符串加密输出的编码方式
+     * @param cryptoFactory 加密工厂实例
+     * @since 1.0.0
+     */
+    public EncryptJsonSerializer(String key, Encoding encoding, CryptoFactory cryptoFactory) {
+        this.key = key;
+        this.cryptoFactory = cryptoFactory;
+        this.encoding = encoding;
+    }
 
-	/**
-	 * 将对象加密后序列化为JSON内容
-	 * <p>
-	 * 根据对象的类型，采用不同的加密策略：
-	 * <ul>
-	 *     <li>对于字节数组，直接加密后输出为二进制</li>
-	 *     <li>对于字符串，将其转换为字节数组加密后输出</li>
-	 *     <li>对于集合类型，遍历集合中的字符串元素进行加密</li>
-	 *     <li>对于Map类型，遍历Map中的字符串值进行加密</li>
-	 * </ul>
-	 * </p>
-	 *
-	 * @param value       要序列化的对象
-	 * @param gen         用于生成JSON内容的生成器
-	 * @param serializers 序列化器提供者
-	 * @throws IOException     如果写入JSON内容时发生I/O错误
-	 * @throws ServerException 如果加密过程中发生错误
-	 */
-	@Override
-	public void serialize(Object value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
-		try {
-			writeValue(value, gen);
-		} catch (EncryptionOperationNotPossibleException e) {
-			LOGGER.error("数据加密失败", e);
-			gen.writeNull();
-		} catch (InvalidKeySpecException e) {
-			LOGGER.error("无效的密钥", e);
-			gen.writeNull();
-		}
-	}
+    /**
+     * 将输入对象加密并写入 JSON
+     * <p>
+     * 根据对象的运行时类型进行分派处理并加密输出。若加密过程中发生异常（如密钥非法或操作不可执行），
+     * 记录错误日志并写入 JSON null，以保证序列化流程不中断。
+     * </p>
+     *
+     * @param value       待序列化的对象
+     * @param gen         JSON 输出生成器
+     * @param serializers 序列化器提供者
+     * @throws IOException 写入 JSON 内容时发生 I/O 错误
+     * @since 1.0.0
+     */
+    @Override
+    public void serialize(Object value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+        try {
+            writeValue(value, gen);
+        } catch (EncryptionOperationNotPossibleException e) {
+            LOGGER.error("数据加密失败", e);
+            gen.writeNull();
+        } catch (InvalidKeySpecException e) {
+            LOGGER.error("无效的密钥", e);
+            gen.writeNull();
+        }
+    }
 
-	/**
-	 * 创建上下文相关的序列化器
-	 * <p>
-	 * 检查当前处理的属性是否标记了{@link EncryptFormat}注解，以及属性类型是否为支持的类型（字节数组、字符串、集合或Map）。
-	 * 如果符合条件，则创建或复用适当的序列化器实例；否则使用上下文中的默认序列化器。
-	 * </p>
-	 *
-	 * @param prov     序列化器提供者
-	 * @param property 当前处理的Bean属性
-	 * @return 上下文相关的序列化器实例
-	 * @throws JsonMappingException 如果创建序列化器时发生错误
-	 */
-	@Override
-	public JsonSerializer<?> createContextual(SerializerProvider prov, BeanProperty property) throws JsonMappingException {
-		if (Objects.isNull(property)) {
-			return NullSerializer.instance;
-		}
+    /**
+     * 创建与属性上下文相关的序列化器实例
+     * <p>
+     * 当属性缺失（<code>property == null</code>）时，返回 {@link com.fasterxml.jackson.databind.ser.std.NullSerializer#instance}，
+     * 使序列化结果为 null；当属性标注了 {@link io.github.pangju666.framework.boot.jackson.annotation.EncryptFormat} 注解时，
+     * 根据注解配置获取或创建对应的加密序列化器；否则退回 Jackson 默认的值序列化器。
+     * </p>
+     *
+     * @param prov     序列化器提供者
+     * @param property 当前处理的 Bean 属性
+     * @return 上下文相关的序列化器实例
+     * @throws JsonMappingException 当初始化或查找序列化器失败时抛出
+     * @since 1.0.0
+     */
+    @Override
+    public JsonSerializer<?> createContextual(SerializerProvider prov, BeanProperty property) throws JsonMappingException {
+        if (Objects.isNull(property)) {
+            return NullSerializer.instance;
+        }
 
 		EncryptFormat annotation = property.getAnnotation(EncryptFormat.class);
 		if (Objects.nonNull(annotation)) {
 			return getSerializer(annotation, prov);
 		}
 
-		return prov.findValueSerializer(property.getType(), property);
-	}
+        return prov.findValueSerializer(property.getType(), property);
+    }
 
-	protected void writeBytes(byte[] value, JsonGenerator gen) throws InvalidKeySpecException, IOException {
-		gen.writeBinary(CryptoUtils.encrypt(cryptoFactory, value, key));
-	}
+    /**
+     * 加密字节数组并以二进制形式写入 JSON
+     *
+     * @param value 字节数组值
+     * @param gen   JSON 输出生成器
+     * @throws InvalidKeySpecException 当密钥规格无效时抛出
+     * @throws IOException             写入 JSON 内容时发生 I/O 错误
+     * @since 1.0.0
+     */
+    protected void writeBytes(byte[] value, JsonGenerator gen) throws InvalidKeySpecException, IOException {
+        gen.writeBinary(CryptoUtils.encrypt(cryptoFactory, value, key));
+    }
 
-	protected void writeString(CharSequence value, JsonGenerator gen) throws InvalidKeySpecException, IOException {
-		if (StringUtils.isBlank(value)) {
-			gen.writeString(value.toString());
-		} else {
-			gen.writeString(CryptoUtils.encryptString(cryptoFactory, value.toString(), key, encoding));
-		}
-	}
+    /**
+     * 加密字符串并写入 JSON
+     * <p>
+     * 当字符串为空白时（空或仅空白字符），直接原样输出；否则按配置加密并按指定编码写入。
+     * </p>
+     *
+     * @param value 字符串值
+     * @param gen   JSON 输出生成器
+     * @throws InvalidKeySpecException 当密钥规格无效时抛出
+     * @throws IOException             写入 JSON 内容时发生 I/O 错误
+     * @since 1.0.0
+     */
+    protected void writeString(CharSequence value, JsonGenerator gen) throws InvalidKeySpecException, IOException {
+        if (StringUtils.isBlank(value)) {
+            gen.writeString(value.toString());
+        } else {
+            gen.writeString(CryptoUtils.encryptString(cryptoFactory, value.toString(), key, encoding));
+        }
+    }
 
-	protected void writeBigInteger(BigInteger value, JsonGenerator gen) throws InvalidKeySpecException, IOException {
-		if (Objects.isNull(value)) {
-			gen.writeNull();
-		} else {
-			gen.writeNumber(CryptoUtils.encryptBigInteger(cryptoFactory, value, key));
-		}
-	}
+    /**
+     * 加密 {@link java.math.BigInteger} 并写入 JSON 数值
+     * <p>
+     * 当值为 null 时输出 JSON null；非空时加密后写入数值。
+     * </p>
+     *
+     * @param value BigInteger 值
+     * @param gen   JSON 输出生成器
+     * @throws InvalidKeySpecException 当密钥规格无效时抛出
+     * @throws IOException             写入 JSON 内容时发生 I/O 错误
+     * @since 1.0.0
+     */
+    protected void writeBigInteger(BigInteger value, JsonGenerator gen) throws InvalidKeySpecException, IOException {
+        if (Objects.isNull(value)) {
+            gen.writeNull();
+        } else {
+            gen.writeNumber(CryptoUtils.encryptBigInteger(cryptoFactory, value, key));
+        }
+    }
 
-	protected void writeBigDecimal(BigDecimal value, JsonGenerator gen) throws InvalidKeySpecException, IOException {
-		if (Objects.isNull(value)) {
-			gen.writeNull();
-		} else {
-			gen.writeNumber(CryptoUtils.encryptBigDecimal(cryptoFactory, value, key));
-		}
-	}
+    /**
+     * 加密 {@link java.math.BigDecimal} 并写入 JSON 数值
+     * <p>
+     * 当值为 null 时输出 JSON null；非空时加密后写入数值。
+     * </p>
+     *
+     * @param value BigDecimal 值
+     * @param gen   JSON 输出生成器
+     * @throws InvalidKeySpecException 当密钥规格无效时抛出
+     * @throws IOException             写入 JSON 内容时发生 I/O 错误
+     * @since 1.0.0
+     */
+    protected void writeBigDecimal(BigDecimal value, JsonGenerator gen) throws InvalidKeySpecException, IOException {
+        if (Objects.isNull(value)) {
+            gen.writeNull();
+        } else {
+            gen.writeNumber(CryptoUtils.encryptBigDecimal(cryptoFactory, value, key));
+        }
+    }
 
-	protected void writeValue(Object value, JsonGenerator gen) throws InvalidKeySpecException, IOException {
-		if (value instanceof byte[] bytes) {
-			writeBytes(bytes, gen);
-		} else if (value instanceof CharSequence charSequence) {
-			writeString(charSequence, gen);
+    /**
+     * 根据运行时类型分派加密写出
+     * <p>
+     * 支持的类型包括：<code>byte[]</code>、{@link CharSequence}、{@link Iterable}、{@link Map}、
+     * {@link BigDecimal}、{@link BigInteger}；不在列表中的类型通过 {@link JsonGenerator#writePOJO(Object)} 原样输出。
+     * </p>
+     *
+     * @param value 待写出的值
+     * @param gen   JSON 输出生成器
+     * @throws InvalidKeySpecException 当密钥规格无效时抛出
+     * @throws IOException             写入 JSON 内容时发生 I/O 错误
+     * @since 1.0.0
+     */
+    protected void writeValue(Object value, JsonGenerator gen) throws InvalidKeySpecException, IOException {
+        if (value instanceof byte[] bytes) {
+            writeBytes(bytes, gen);
+        } else if (value instanceof CharSequence charSequence) {
+            writeString(charSequence, gen);
 		} else if (value instanceof Iterable<?> iterable) {
 			writeIterable(iterable, gen);
 		} else if (value instanceof Map<?, ?> map) {
@@ -193,22 +293,46 @@ public class EncryptJsonSerializer extends JsonSerializer<Object> implements Con
 			writeBigInteger(bigInteger, gen);
 		} else {
 			gen.writePOJO(value);
-		}
-	}
+        }
+    }
 
-	protected void writeIterable(Iterable<?> values, JsonGenerator gen) throws InvalidKeySpecException, IOException {
-		gen.writeStartArray();
-		for (Object value : values) {
-			writeValue(value, gen);
-		}
-		gen.writeEndArray();
-	}
+    /**
+     * 加密并写出集合类型
+     * <p>
+     * 以 JSON 数组的形式输出集合内容，并对其中的每个元素进行递归分派加密。
+     * </p>
+     *
+     * @param values 集合内容
+     * @param gen    JSON 输出生成器
+     * @throws InvalidKeySpecException 当密钥规格无效时抛出
+     * @throws IOException             写入 JSON 内容时发生 I/O 错误
+     * @since 1.0.0
+     */
+    protected void writeIterable(Iterable<?> values, JsonGenerator gen) throws InvalidKeySpecException, IOException {
+        gen.writeStartArray();
+        for (Object value : values) {
+            writeValue(value, gen);
+        }
+        gen.writeEndArray();
+    }
 
-	protected void writeMap(Map<?, ?> value, JsonGenerator gen) throws InvalidKeySpecException, IOException {
-		gen.writeStartObject();
-		for (var entry : value.entrySet()) {
-			if (Objects.isNull(entry.getKey())) {
-				continue;
+    /**
+     * 加密并写出映射类型
+     * <p>
+     * 以 JSON 对象形式输出映射内容。若键为 null 则跳过该条目；根据值的类型进行分派加密后写出。
+     * </p>
+     *
+     * @param value 映射内容
+     * @param gen   JSON 输出生成器
+     * @throws InvalidKeySpecException 当密钥规格无效时抛出
+     * @throws IOException             写入 JSON 内容时发生 I/O 错误
+     * @since 1.0.0
+     */
+    protected void writeMap(Map<?, ?> value, JsonGenerator gen) throws InvalidKeySpecException, IOException {
+        gen.writeStartObject();
+        for (var entry : value.entrySet()) {
+            if (Objects.isNull(entry.getKey())) {
+                continue;
 			}
 			if (entry.getValue() instanceof byte[] bytes) {
 				gen.writeFieldName(entry.getKey().toString());
@@ -231,15 +355,27 @@ public class EncryptJsonSerializer extends JsonSerializer<Object> implements Con
 			} else {
 				gen.writePOJOField(entry.getKey().toString(), entry.getValue());
 			}
-		}
-		gen.writeEndObject();
-	}
+        }
+        gen.writeEndObject();
+    }
 
-	protected EncryptJsonSerializer getSerializer(EncryptFormat annotation, SerializerProvider prov) throws JsonMappingException {
-		String key = annotation.key() + "-" + annotation.encoding().name();
-		EncryptJsonSerializer serializer;
-		if (annotation.algorithm() == Algorithm.CUSTOM) {
-			key += "-" + annotation.factory().getName();
+    /**
+     * 基于注解配置和上下文，获取或创建加密序列化器实例
+     * <p>
+     * 构建缓存键以复用已存在的序列化器；当密钥解析失败或容器中无法获取加密工厂时，抛出 {@link JsonMappingException}。
+     * </p>
+     *
+     * @param annotation 加密格式注解
+     * @param prov       序列化器提供者
+     * @return 对应的加密序列化器实例
+     * @throws JsonMappingException 初始化失败时抛出
+     * @since 1.0.0
+     */
+    protected EncryptJsonSerializer getSerializer(EncryptFormat annotation, SerializerProvider prov) throws JsonMappingException {
+        String key = annotation.key() + "-" + annotation.encoding().name();
+        EncryptJsonSerializer serializer;
+        if (annotation.algorithm() == Algorithm.CUSTOM) {
+            key += "-" + annotation.factory().getName();
 			serializer = CUSTOM_SERIALIZER_MAP.get(key);
 			if (Objects.isNull(serializer)) {
 				String cryptoKey = CryptoUtils.getKey(annotation.key());

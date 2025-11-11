@@ -47,6 +47,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @see EnumUtils
  * @since 1.0.0
  */
+@SuppressWarnings("rawtypes")
 public class EnumJsonDeserializer extends JsonDeserializer<Enum> implements ContextualDeserializer {
 	/**
 	 * 枚举类型反序列化器的缓存，用于存储已创建的反序列化器实例
@@ -100,7 +101,7 @@ public class EnumJsonDeserializer extends JsonDeserializer<Enum> implements Cont
      * @throws IOException     如果读取JSON内容时发生I/O错误
      * @since 1.0.0
      */
-    @SuppressWarnings("unchecked")
+	@SuppressWarnings({"rawtypes", "unchecked"})
     @Override
     public Enum deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
         if (p.currentToken() != JsonToken.VALUE_STRING) {
@@ -122,7 +123,7 @@ public class EnumJsonDeserializer extends JsonDeserializer<Enum> implements Cont
      * @return 上下文相关的反序列化器实例
      * @since 1.0.0
      */
-    @SuppressWarnings("unchecked")
+	@SuppressWarnings("unchecked")
     @Override
     public JsonDeserializer<?> createContextual(DeserializationContext ctxt, BeanProperty property) throws JsonMappingException {
         if (Objects.isNull(property)) {

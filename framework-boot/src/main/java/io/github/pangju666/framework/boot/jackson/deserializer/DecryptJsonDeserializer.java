@@ -29,8 +29,6 @@ import io.github.pangju666.framework.boot.enums.Encoding;
 import io.github.pangju666.framework.boot.jackson.annotation.DecryptFormat;
 import io.github.pangju666.framework.boot.spring.StaticSpringContext;
 import io.github.pangju666.framework.boot.utils.CryptoUtils;
-import io.github.pangju666.framework.web.exception.base.ServerException;
-import io.github.pangju666.framework.web.exception.base.ServiceException;
 import org.apache.commons.codec.DecoderException;
 import org.jasypt.exceptions.EncryptionOperationNotPossibleException;
 import org.slf4j.Logger;
@@ -44,82 +42,137 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * JSON字段解密反序列化器
+ * 数据解密的JSON反序列化器
  * <p>
- * 该反序列化器用于处理使用{@link DecryptFormat}注解标记的JSON字段，将加密的内容解密后再反序列化。
- * 支持处理字符串、集合和Map类型的数据，对不同类型的数据采用不同的解密策略。
- * 实现了{@link ContextualDeserializer}接口，可根据上下文自动确定处理方式。
+ * 基于属性上的 {@link io.github.pangju666.framework.boot.jackson.annotation.DecryptFormat} 注解，
+ * 按算法、编码和密钥对输入内容进行解密并转换为目标类型。实现了 {@link com.fasterxml.jackson.databind.deser.ContextualDeserializer}
+ * 接口，可根据反序列化上下文动态创建或复用反序列化器实例。
+ * </p>
+ * <p>
+ * 为提升性能，内部使用静态缓存（按算法或自定义工厂维度）存储已创建的反序列化器实例；同时在解密失败、密钥非法或解码异常时，
+ * 反序列化器会记录日志并返回 null，避免抛出异常影响整体反序列化流程。
  * </p>
  *
  * @author pangju666
- * @see DecryptFormat
- * @see ContextualDeserializer
- * @see CryptoUtils
+ * @see io.github.pangju666.framework.boot.jackson.annotation.DecryptFormat
+ * @see io.github.pangju666.framework.boot.crypto.factory.CryptoFactory
+ * @see io.github.pangju666.framework.boot.enums.Algorithm
+ * @see io.github.pangju666.framework.boot.enums.Encoding
+ * @see com.fasterxml.jackson.databind.deser.ContextualDeserializer
+ * @see com.fasterxml.jackson.databind.deser.std.NullifyingDeserializer
+ * @see io.github.pangju666.framework.boot.utils.CryptoUtils
  * @since 1.0.0
  */
 public class DecryptJsonDeserializer extends JsonDeserializer<Object> implements ContextualDeserializer {
-	protected static final Logger LOGGER = LoggerFactory.getLogger(DecryptJsonDeserializer.class);
+    /**
+     * 日志记录器
+     *
+     * @since 1.0.0
+     */
+    protected static final Logger LOGGER = LoggerFactory.getLogger(DecryptJsonDeserializer.class);
 
-	private static final Map<String, DecryptJsonDeserializer> ALGORITHM_DESERIALIZER_MAP = new ConcurrentHashMap<>();
-	private static final Map<String, DecryptJsonDeserializer> CUSTOM_DESERIALIZER_MAP = new ConcurrentHashMap<>();
+    /**
+     * 按算法与编码缓存的反序列化器映射
+     * <p>
+     * 键格式：<code>key-encoding-targetType-algorithm</code>（如果存在元素类型则追加其类名），值为对应的
+     * {@link DecryptJsonDeserializer} 实例。
+     * </p>
+     *
+     * @since 1.0.0
+     */
+    private static final Map<String, DecryptJsonDeserializer> ALGORITHM_DESERIALIZER_MAP = new ConcurrentHashMap<>();
+    /**
+     * 按自定义工厂维度缓存的反序列化器映射
+     * <p>
+     * 键格式：<code>key-encoding-targetType-factoryClass</code>（如果存在元素类型则追加其类名），值为对应的
+     * {@link DecryptJsonDeserializer} 实例。
+     * </p>
+     *
+     * @since 1.0.0
+     */
+    private static final Map<String, DecryptJsonDeserializer> CUSTOM_DESERIALIZER_MAP = new ConcurrentHashMap<>();
 
-	private final String key;
-	private final Encoding encoding;
-	private final CryptoFactory cryptoFactory;
-	private final Class<?> targetType;
-	private final Class<?> elementType;
+    /**
+     * 解密密钥（已解析后的实际密钥值）
+     *
+     * @since 1.0.0
+     */
+    private final String key;
+    /**
+     * 字符串解密输入使用的编码方式
+     *
+     * @since 1.0.0
+     */
+    private final Encoding encoding;
+    /**
+     * 加密工厂，用于执行具体的解密实现
+     *
+     * @since 1.0.0
+     */
+    private final CryptoFactory cryptoFactory;
+    /**
+     * 目标类型（当前属性的原始类型），用于在反序列化时进行类型分派
+     *
+     * @since 1.0.0
+     */
+    private final Class<?> targetType;
+    /**
+     * 元素类型（集合或映射的元素/值类型），用于在容器类型解密时进行元素级分派
+     *
+     * @since 1.0.0
+     */
+    private final Class<?> elementType;
 
-	/**
-	 * 默认构造方法，创建一个没有指定解密注解的反序列化器
-	 * <p>
-	 * 该构造方法主要用于Jackson初始化，实际使用时会通过{@link #createContextual}方法创建具体配置的反序列化器
-	 * </p>
-	 *
-	 * @since 1.0.0
-	 */
-	public DecryptJsonDeserializer() {
-		this.cryptoFactory = null;
-		this.encoding = null;
-		this.key = null;
-		this.targetType = null;
-		this.elementType = null;
-	}
+    /**
+     * 默认构造方法
+     * <p>
+     * 供 Jackson 初始化使用，不直接携带上下文字段；实际反序列化时会通过 {@link #createContextual} 生成带上下文的实例。
+     * </p>
+     *
+     * @since 1.0.0
+     */
+    public DecryptJsonDeserializer() {
+        this.cryptoFactory = null;
+        this.encoding = null;
+        this.key = null;
+        this.targetType = null;
+        this.elementType = null;
+    }
 
-	/**
-	 * 构造方法，创建一个指定解密注解的反序列化器
-	 *
-	 * @param annotation 解密格式注解
-	 * @since 1.0.0
-	 */
-	public DecryptJsonDeserializer(String key, CryptoFactory factory, Encoding encoding, Class<?> targetType, Class<?> elementType) {
-		this.key = key;
-		this.cryptoFactory = factory;
-		this.encoding = encoding;
-		this.targetType = targetType;
-		this.elementType = elementType;
-	}
+    /**
+     * 指定密钥、工厂、编码及目标/元素类型的构造方法
+     *
+     * @param key         解密密钥（使用前已通过工具解析为实际密钥值）
+     * @param factory     加密工厂实例
+     * @param encoding    字符串解密使用的编码方式
+     * @param targetType  当前属性的目标类型
+     * @param elementType 集合或映射的元素/值类型（非容器类型时为 null）
+     * @since 1.0.0
+     */
+    public DecryptJsonDeserializer(String key, CryptoFactory factory, Encoding encoding, Class<?> targetType, Class<?> elementType) {
+        this.key = key;
+        this.cryptoFactory = factory;
+        this.encoding = encoding;
+        this.targetType = targetType;
+        this.elementType = elementType;
+    }
 
-	/**
-	 * 将加密的JSON内容解密并反序列化
-	 * <p>
-	 * 根据JSON内容的类型，采用不同的解密策略：
-	 * <ul>
-	 *     <li>对于数组类型，解析为Collection后对每个字符串元素进行解密</li>
-	 *     <li>对于对象类型，解析为Map后对每个字符串值进行解密</li>
-	 *     <li>对于字符串类型，直接解密字符串值</li>
-	 *     <li>对于其他类型，直接返回当前值</li>
-	 * </ul>
-	 * </p>
-	 *
-	 * @param p    用于读取JSON内容的解析器
-	 * @param ctxt 反序列化上下文
-	 * @return 解密后的对象
-	 * @throws IOException      如果读取JSON内容时发生I/O错误
-	 * @throws ServerException  如果解密过程中发生错误
-	 * @throws ServiceException 如果十六进制解码失败
-	 */
-	@Override
-	public Object deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
+    /**
+     * 将输入内容按目标类型解密并反序列化
+     * <p>
+     * 根据 {@link #targetType} 进行类型分派；当当前 token 为 JSON null 时直接返回 null；
+     * 对于 {@link java.math.BigDecimal} 和 {@link java.math.BigInteger}，兼容字符串输入与数值输入。
+     * 解密失败、密钥非法或十六进制解码失败时，记录错误日志并返回 null。
+     * </p>
+     *
+     * @param p    JSON 输入解析器
+     * @param ctxt 反序列化上下文
+     * @return 反序列化后的目标类型实例；失败或不匹配时返回 null
+     * @throws IOException 读取 JSON 内容时发生 I/O 错误
+     * @since 1.0.0
+     */
+    @Override
+    public Object deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
 		try {
 			if (p.currentToken() == JsonToken.VALUE_NULL) {
 				return null;
@@ -157,23 +210,25 @@ public class DecryptJsonDeserializer extends JsonDeserializer<Object> implements
 		} catch (DecoderException e) {
 			LOGGER.error("十六进制解码失败", e);
 			return null;
-		}
-	}
+        }
+    }
 
-	/**
-	 * 创建上下文相关的反序列化器
-	 * <p>
-	 * 检查当前处理的属性是否标记了{@link DecryptFormat}注解，以及属性类型是否为支持的类型（字符串、集合或Map）。
-	 * 如果符合条件，则创建或复用适当的反序列化器实例；否则使用上下文中的默认反序列化器。
-	 * </p>
-	 *
-	 * @param ctxt     反序列化上下文
-	 * @param property 当前处理的Bean属性
-	 * @return 上下文相关的反序列化器实例
-	 * @throws JsonMappingException 如果创建反序列化器时发生错误
-	 */
-	@Override
-	public JsonDeserializer<?> createContextual(DeserializationContext ctxt, BeanProperty property) throws JsonMappingException {
+    /**
+     * 创建与属性上下文相关的反序列化器实例
+     * <p>
+     * 当属性缺失（<code>property == null</code>）时，返回 {@link com.fasterxml.jackson.databind.deser.std.NullifyingDeserializer#instance}，
+     * 使反序列化结果为 null；当属性标注了 {@link io.github.pangju666.framework.boot.jackson.annotation.DecryptFormat} 注解时，
+     * 根据注解配置与类型信息（包括集合/映射的元素类型）获取或创建对应的解密反序列化器；否则退回 Jackson 默认的值反序列化器。
+     * </p>
+     *
+     * @param ctxt     反序列化上下文
+     * @param property 当前处理的 Bean 属性
+     * @return 上下文相关的反序列化器实例
+     * @throws JsonMappingException 当初始化或查找反序列化器失败时抛出
+     * @since 1.0.0
+     */
+    @Override
+    public JsonDeserializer<?> createContextual(DeserializationContext ctxt, BeanProperty property) throws JsonMappingException {
 		if (Objects.isNull(property)) {
 			return NullifyingDeserializer.instance;
 		}
@@ -203,26 +258,73 @@ public class DecryptJsonDeserializer extends JsonDeserializer<Object> implements
 			return getDeserializer(annotation, targetType, null, ctxt);
 		} else {
 			return ctxt.findContextualValueDeserializer(property.getType(), property);
-		}
-	}
+        }
+    }
 
-	protected byte[] readBytes(byte[] value) throws InvalidKeySpecException, DecoderException {
-		return CryptoUtils.decrypt(cryptoFactory, value, key);
-	}
+    /**
+     * 解密字节数组
+     *
+     * @param value 字节数组值
+     * @return 解密后的字节数组
+     * @throws InvalidKeySpecException 当密钥规格无效时抛出
+     * @throws DecoderException        当十六进制解码失败时抛出
+     * @since 1.0.0
+     */
+    protected byte[] readBytes(byte[] value) throws InvalidKeySpecException, DecoderException {
+        return CryptoUtils.decrypt(cryptoFactory, value, key);
+    }
 
-	protected String readString(String value) throws InvalidKeySpecException, DecoderException {
-		return CryptoUtils.decryptString(cryptoFactory, value, key, encoding);
-	}
+    /**
+     * 解密字符串
+     *
+     * @param value 字符串值
+     * @return 解密后的字符串
+     * @throws InvalidKeySpecException 当密钥规格无效时抛出
+     * @throws DecoderException        当十六进制解码失败时抛出
+     * @since 1.0.0
+     */
+    protected String readString(String value) throws InvalidKeySpecException, DecoderException {
+        return CryptoUtils.decryptString(cryptoFactory, value, key, encoding);
+    }
 
-	protected BigInteger readBigInteger(BigInteger value) throws InvalidKeySpecException {
-		return CryptoUtils.decryptBigInteger(cryptoFactory, value, key);
-	}
+    /**
+     * 解密 {@link java.math.BigInteger}
+     *
+     * @param value 加密的 BigInteger 值
+     * @return 解密后的 BigInteger 值
+     * @throws InvalidKeySpecException 当密钥规格无效时抛出
+     * @since 1.0.0
+     */
+    protected BigInteger readBigInteger(BigInteger value) throws InvalidKeySpecException {
+        return CryptoUtils.decryptBigInteger(cryptoFactory, value, key);
+    }
 
-	protected BigDecimal readBigDecimal(BigDecimal value) throws InvalidKeySpecException {
-		return CryptoUtils.decryptBigDecimal(cryptoFactory, value, key);
-	}
+    /**
+     * 解密 {@link java.math.BigDecimal}
+     *
+     * @param value 加密的 BigDecimal 值
+     * @return 解密后的 BigDecimal 值
+     * @throws InvalidKeySpecException 当密钥规格无效时抛出
+     * @since 1.0.0
+     */
+    protected BigDecimal readBigDecimal(BigDecimal value) throws InvalidKeySpecException {
+        return CryptoUtils.decryptBigDecimal(cryptoFactory, value, key);
+    }
 
-	protected Object readValue(Object value) throws DecoderException, InvalidKeySpecException {
+    /**
+     * 根据元素类型分派解密
+     * <p>
+     * 当值为 null 时直接返回 null；支持的元素类型包括：<code>byte[]</code>、{@link String}、{@link BigDecimal}、{@link BigInteger}。
+     * 对于数值类型，如果输入为字符串则先转换后解密。
+     * </p>
+     *
+     * @param value 元素值
+     * @return 解密后的元素值
+     * @throws DecoderException        当十六进制解码失败时抛出
+     * @throws InvalidKeySpecException 当密钥规格无效时抛出
+     * @since 1.0.0
+     */
+    protected Object readValue(Object value) throws DecoderException, InvalidKeySpecException {
 		if (Objects.isNull(value)) {
 			return null;
 		} else if (byte[].class.equals(elementType)) {
@@ -241,39 +343,86 @@ public class DecryptJsonDeserializer extends JsonDeserializer<Object> implements
 			return readBigInteger((BigInteger) value);
 		} else {
 			return value;
-		}
-	}
+        }
+    }
 
-	protected List readList(Collection values) throws InvalidKeySpecException, DecoderException {
-		List result = new ArrayList<>(values.size());
-		for (Object value : values) {
-			result.add(readValue(value));
-		}
-		return result;
-	}
+    /**
+     * 解密集合并返回列表
+     *
+     * @param values 集合内容
+     * @return 解密后的列表
+     * @throws InvalidKeySpecException 当密钥规格无效时抛出
+     * @throws DecoderException        当十六进制解码失败时抛出
+     * @since 1.0.0
+     */
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    protected List readList(Collection values) throws InvalidKeySpecException, DecoderException {
+        List result = new ArrayList<>(values.size());
+        for (Object value : values) {
+            result.add(readValue(value));
+        }
+        return result;
+    }
 
-	protected Set readSet(Collection values) throws InvalidKeySpecException, DecoderException {
-		Set result = new HashSet(values.size());
-		for (Object value : values) {
-			result.add(readValue(value));
-		}
-		return result;
-	}
+    /**
+     * 解密集合并返回集合（Set）
+     *
+     * @param values 集合内容
+     * @return 解密后的集合
+     * @throws InvalidKeySpecException 当密钥规格无效时抛出
+     * @throws DecoderException        当十六进制解码失败时抛出
+     * @since 1.0.0
+     */
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    protected Set readSet(Collection values) throws InvalidKeySpecException, DecoderException {
+        Set result = new HashSet(values.size());
+        for (Object value : values) {
+            result.add(readValue(value));
+        }
+        return result;
+    }
 
-	protected Map readMap(Map value) throws InvalidKeySpecException, DecoderException {
-		Map result = new HashMap<>(value.size());
-		for (Object o : value.entrySet()) {
-			Map.Entry entry = (Map.Entry) o;
+    /**
+     * 解密映射并返回新的映射
+     * <p>
+     * 若键为 null 则跳过该条目；根据值的类型进行分派解密后写入新映射。
+     * </p>
+     *
+     * @param value 原映射内容
+     * @return 解密后的映射
+     * @throws InvalidKeySpecException 当密钥规格无效时抛出
+     * @throws DecoderException        当十六进制解码失败时抛出
+     * @since 1.0.0
+     */
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    protected Map readMap(Map value) throws InvalidKeySpecException, DecoderException {
+        Map result = new HashMap<>(value.size());
+        for (Object o : value.entrySet()) {
+            Map.Entry entry = (Map.Entry) o;
 			if (Objects.isNull(entry.getKey())) {
 				continue;
 			}
 			result.put(entry.getKey(), readValue(entry.getValue()));
 		}
-		return result;
-	}
+        return result;
+    }
 
-	protected DecryptJsonDeserializer getDeserializer(DecryptFormat annotation, Class<?> targetType, Class<?> elementType,
-													  DeserializationContext ctxt) throws JsonMappingException {
+    /**
+     * 基于注解配置和上下文类型信息，获取或创建解密反序列化器实例
+     * <p>
+     * 构建缓存键以复用已存在的反序列化器；当密钥解析失败或容器中无法获取加密工厂时，抛出 {@link JsonMappingException}。
+     * </p>
+     *
+     * @param annotation  解密格式注解
+     * @param targetType  当前属性的目标类型
+     * @param elementType 集合或映射的元素/值类型（非容器类型时为 null）
+     * @param ctxt        反序列化上下文
+     * @return 对应的解密反序列化器实例
+     * @throws JsonMappingException 初始化失败时抛出
+     * @since 1.0.0
+     */
+    protected DecryptJsonDeserializer getDeserializer(DecryptFormat annotation, Class<?> targetType, Class<?> elementType,
+                                                      DeserializationContext ctxt) throws JsonMappingException {
 		String key = annotation.key() + "-" + annotation.encoding().name() + "-" + targetType.getName();
 		if (Objects.nonNull(elementType)) {
 			key += elementType.getName();
@@ -304,11 +453,18 @@ public class DecryptJsonDeserializer extends JsonDeserializer<Object> implements
 				ALGORITHM_DESERIALIZER_MAP.put(key, deserializer);
 			}
 		}
-		return deserializer;
-	}
+        return deserializer;
+    }
 
-	protected boolean isSupportType(Class<?> valueType) {
-		return String.class.equals(valueType) || byte[].class.equals(valueType) ||
-			BigInteger.class.equals(valueType) || BigDecimal.class.equals(valueType);
-	}
+    /**
+     * 判断类型是否受支持（用于元素或值类型判定）
+     *
+     * @param valueType 类型
+     * @return 当类型为 {@link String}、<code>byte[]</code>、{@link BigInteger} 或 {@link BigDecimal} 时返回 true；否则返回 false
+     * @since 1.0.0
+     */
+    protected boolean isSupportType(Class<?> valueType) {
+        return String.class.equals(valueType) || byte[].class.equals(valueType) ||
+            BigInteger.class.equals(valueType) || BigDecimal.class.equals(valueType);
+    }
 }

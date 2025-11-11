@@ -33,6 +33,7 @@ import java.io.IOException;
  * @author pangju666
  * @since 1.0.0
  */
+@SuppressWarnings("rawtypes")
 public class ClassJsonDeserializer extends JsonDeserializer<Class> {
 	/**
 	 * 将JSON中的类名字符串反序列化为Class对象
