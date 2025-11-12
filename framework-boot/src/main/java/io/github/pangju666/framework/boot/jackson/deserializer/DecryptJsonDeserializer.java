@@ -24,7 +24,7 @@ import com.fasterxml.jackson.databind.deser.std.NullifyingDeserializer;
 import com.fasterxml.jackson.databind.type.CollectionType;
 import com.fasterxml.jackson.databind.type.MapType;
 import io.github.pangju666.framework.boot.crypto.factory.CryptoFactory;
-import io.github.pangju666.framework.boot.enums.Algorithm;
+import io.github.pangju666.framework.boot.enums.CryptoAlgorithm;
 import io.github.pangju666.framework.boot.enums.Encoding;
 import io.github.pangju666.framework.boot.jackson.annotation.DecryptFormat;
 import io.github.pangju666.framework.boot.spring.StaticSpringContext;
@@ -56,7 +56,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author pangju666
  * @see io.github.pangju666.framework.boot.jackson.annotation.DecryptFormat
  * @see io.github.pangju666.framework.boot.crypto.factory.CryptoFactory
- * @see io.github.pangju666.framework.boot.enums.Algorithm
+ * @see CryptoAlgorithm
  * @see io.github.pangju666.framework.boot.enums.Encoding
  * @see com.fasterxml.jackson.databind.deser.ContextualDeserializer
  * @see com.fasterxml.jackson.databind.deser.std.NullifyingDeserializer
@@ -428,7 +428,7 @@ public class DecryptJsonDeserializer extends JsonDeserializer<Object> implements
 			key += elementType.getName();
 		}
 		DecryptJsonDeserializer deserializer;
-		if (annotation.algorithm() == Algorithm.CUSTOM) {
+		if (annotation.algorithm() == CryptoAlgorithm.CUSTOM) {
 			key += "-" + annotation.factory().getName();
 			deserializer = CUSTOM_DESERIALIZER_MAP.get(key);
 			if (Objects.isNull(deserializer)) {

@@ -19,16 +19,16 @@ package io.github.pangju666.framework.boot.web.signature.interceptor;
 import io.github.pangju666.commons.lang.utils.DateUtils;
 import io.github.pangju666.framework.boot.web.signature.annotation.Signature;
 import io.github.pangju666.framework.boot.web.signature.configuration.SignatureConfiguration;
-import io.github.pangju666.framework.boot.web.signature.enums.SignatureAlgorithm;
 import io.github.pangju666.framework.boot.web.signature.storer.SignatureSecretKeyStorer;
 import io.github.pangju666.framework.web.exception.base.ValidationException;
-import io.github.pangju666.framework.web.servlet.builder.HttpResponseBuilder;
-import io.github.pangju666.framework.web.servlet.interceptor.BaseHttpInterceptor;
+import io.github.pangju666.framework.web.lang.WebConstants;
+import io.github.pangju666.framework.web.servlet.BaseHttpInterceptor;
+import io.github.pangju666.framework.web.servlet.HttpResponseBuilder;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.web.bind.MissingRequestValueException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.method.HandlerMethod;
@@ -109,12 +109,12 @@ public class SignatureInterceptor extends BaseHttpInterceptor {
 	 * 构建签名校验拦截器实例。
 	 * </p>
 	 *
-	 * @param configuration 签名相关配置类，定义如签名字段名称及位置等信息。
+	 * @param configuration   签名相关配置类，定义如签名字段名称及位置等信息。
 	 * @param secretKeyStorer 签名密钥存储器，用于根据 appId 动态加载签名密钥。
 	 * @since 1.0.0
 	 */
 	public SignatureInterceptor(SignatureConfiguration configuration, SignatureSecretKeyStorer secretKeyStorer) {
-		super(Collections.singleton("/**"), Collections.emptySet());
+		super(Collections.singleton(WebConstants.ANT_ANY_PATH_PATTERN), Collections.emptySet());
 		this.configuration = configuration;
 		this.secretKeyStorer = secretKeyStorer;
 	}
@@ -126,9 +126,9 @@ public class SignatureInterceptor extends BaseHttpInterceptor {
 	 * 根据注解配置的签名校验类型，选择从请求头或请求参数中提取签名进行验证。
 	 * </p>
 	 *
-	 * @param request 当前的 HTTP 请求。
+	 * @param request  当前的 HTTP 请求。
 	 * @param response 当前的 HTTP 响应。
-	 * @param handler 请求处理器（例如控制器方法）。
+	 * @param handler  请求处理器（例如控制器方法）。
 	 * @return 如果签名校验通过，返回 {@code true}，否则返回 {@code false}。
 	 * @throws MissingRequestValueException 当缺少必要的签名字段（如 appId、签名值等）时抛出。
 	 * @since 1.0.0
@@ -168,8 +168,8 @@ public class SignatureInterceptor extends BaseHttpInterceptor {
 	 * 从请求参数中提取签名信息，并与计算出的签名值比较。
 	 * </p>
 	 *
-	 * @param request HTTP 请求。
-	 * @param response HTTP 响应。
+	 * @param request    HTTP 请求。
+	 * @param response   HTTP 响应。
 	 * @param annotation 签名注解实例。
 	 * @return 如果签名校验通过，返回 {@code true}，否则返回 {@code false}。
 	 * @throws MissingServletRequestParameterException 当缺少必要的请求参数时抛出。
@@ -182,7 +182,7 @@ public class SignatureInterceptor extends BaseHttpInterceptor {
 			throw new MissingServletRequestParameterException(configuration.getAppIdParamName(), "string");
 		}
 		if (ArrayUtils.isNotEmpty(annotation.appId()) && !ArrayUtils.contains(annotation.appId(), appId)) {
-			HttpResponseBuilder.from(response).buffer(false).writeHttpException(new ValidationException("不是指定的appId"));
+			HttpResponseBuilder.from(response).writeHttpException(new ValidationException("不是指定的appId"));
 			return false;
 		}
 
@@ -193,16 +193,16 @@ public class SignatureInterceptor extends BaseHttpInterceptor {
 
 		String secretKey = secretKeyStorer.loadSecretKey(appId);
 		if (StringUtils.isBlank(secretKey)) {
-			HttpResponseBuilder.from(response).buffer(false).writeHttpException(new ValidationException("应用标识符不存在"));
+			HttpResponseBuilder.from(response).writeHttpException(new ValidationException("应用标识符不存在"));
 			return false;
 		}
 
 		String requestUrl = getRequestUrl(request);
 		String signStr = StringUtils.joinWith("&", appId, secretKey, requestUrl);
-		String expectSignature = computeSignature(signStr, annotation.algorithm());
+		String expectSignature = annotation.algorithm().computeDigest(signStr);
 
-		if (!StringUtils.equals(expectSignature, signature)) {
-			HttpResponseBuilder.from(response).buffer(false).writeHttpException(new ValidationException("签名错误"));
+		if (!Strings.CS.equals(expectSignature, signature)) {
+			HttpResponseBuilder.from(response).writeHttpException(new ValidationException("签名错误"));
 			return false;
 		}
 		return true;
@@ -214,8 +214,8 @@ public class SignatureInterceptor extends BaseHttpInterceptor {
 	 * 从请求头中提取签名信息，并与计算出的签名值比较。
 	 * </p>
 	 *
-	 * @param request HTTP 请求。
-	 * @param response HTTP 响应。
+	 * @param request    HTTP 请求。
+	 * @param response   HTTP 响应。
 	 * @param annotation 签名注解实例。
 	 * @return 如果签名校验通过，返回 {@code true}，否则返回 {@code false}。
 	 * @throws MissingRequestValueException 当缺少必要的请求头时抛出。
@@ -229,7 +229,7 @@ public class SignatureInterceptor extends BaseHttpInterceptor {
 				throw new MissingRequestValueException("缺少请求头：" + configuration.getAppIdHeaderName());
 			}
 			if (ArrayUtils.isNotEmpty(annotation.appId()) && !ArrayUtils.contains(annotation.appId(), appId)) {
-				HttpResponseBuilder.from(response).buffer(false).writeHttpException(new ValidationException("不是指定的appId"));
+				HttpResponseBuilder.from(response).writeHttpException(new ValidationException("不是指定的appId"));
 				return false;
 			}
 
@@ -245,27 +245,27 @@ public class SignatureInterceptor extends BaseHttpInterceptor {
 			Long requestTimestamp = Long.parseLong(timestamp);
 			Long nowTimestamp = DateUtils.nowDate().getTime();
 			if (nowTimestamp - requestTimestamp > annotation.timeUnit().toMillis(annotation.timeout())) {
-				HttpResponseBuilder.from(response).buffer(false).writeHttpException(new ValidationException("签名已过期"));
+				HttpResponseBuilder.from(response).writeHttpException(new ValidationException("签名已过期"));
 				return false;
 			}
 
 			String secretKey = secretKeyStorer.loadSecretKey(appId);
 			if (StringUtils.isBlank(secretKey)) {
-				HttpResponseBuilder.from(response).buffer(false).writeHttpException(new ValidationException("应用标识符不存在"));
+				HttpResponseBuilder.from(response).writeHttpException(new ValidationException("应用标识符不存在"));
 				return false;
 			}
 
 			String requestUrl = URLEncoder.encode(request.getRequestURL().toString(), StandardCharsets.UTF_8);
 			String signStr = StringUtils.joinWith("&", appId, secretKey, requestUrl, timestamp);
-			String expectSignature = computeSignature(signStr, annotation.algorithm());
+			String expectSignature = annotation.algorithm().computeDigest(signStr);
 
-			if (!StringUtils.equals(expectSignature, signature)) {
-				HttpResponseBuilder.from(response).buffer(false).writeHttpException(new ValidationException("签名错误"));
+			if (!Strings.CS.equals(expectSignature, signature)) {
+				HttpResponseBuilder.from(response).writeHttpException(new ValidationException("签名错误"));
 				return false;
 			}
 			return true;
 		} catch (NumberFormatException e) {
-			HttpResponseBuilder.from(response).buffer(false).writeHttpException(new ValidationException("无效的时间戳"));
+			HttpResponseBuilder.from(response).writeHttpException(new ValidationException("无效的时间戳"));
 			return false;
 		}
 	}
@@ -294,33 +294,15 @@ public class SignatureInterceptor extends BaseHttpInterceptor {
 		String queryString = request.getQueryString();
 		List<String> queryParams = new ArrayList<>();
 		for (String queryParam : queryString.split("&")) {
-			if (!StringUtils.startsWithAny(queryParam, configuration.getSignatureParamName(), configuration.getAppIdParamName())) {
+			if (!Strings.CS.startsWithAny(queryParam, configuration.getSignatureParamName(),
+				configuration.getAppIdParamName())) {
 				queryParams.add(queryParam);
 			}
 		}
 		if (queryParams.isEmpty()) {
 			return URLEncoder.encode(requestUrl, StandardCharsets.UTF_8);
 		}
-		return URLEncoder.encode(requestUrl + "?" + StringUtils.join(queryParams, "&"), StandardCharsets.UTF_8);
-	}
-
-	/**
-	 * 计算签名值。
-	 * <p>
-	 * 根据传入的字符串和签名算法，计算签名值。
-	 * </p>
-	 *
-	 * @param str 签名前的原始字符串。
-	 * @param algorithm 签名算法。
-	 * @return 计算出的签名值。
-	 * @since 1.0.0
-	 */
-	private String computeSignature(String str, SignatureAlgorithm algorithm) {
-		return switch (algorithm) {
-			case MD5 -> DigestUtils.md5Hex(str);
-			case SHA1 -> DigestUtils.sha1Hex(str);
-			case SHA256 -> DigestUtils.sha256Hex(str);
-			case SHA512 -> DigestUtils.sha512Hex(str);
-		};
+		return URLEncoder.encode(requestUrl + "?" + StringUtils.join(queryParams, "&"),
+			StandardCharsets.UTF_8);
 	}
 }

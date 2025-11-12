@@ -18,7 +18,7 @@ package io.github.pangju666.framework.boot.web.advice;
 
 import io.github.pangju666.framework.boot.crypto.factory.CryptoFactory;
 import io.github.pangju666.framework.boot.crypto.factory.impl.AES256CryptoFactory;
-import io.github.pangju666.framework.boot.enums.Algorithm;
+import io.github.pangju666.framework.boot.enums.CryptoAlgorithm;
 import io.github.pangju666.framework.boot.enums.Encoding;
 import io.github.pangju666.framework.web.exception.base.ServerException;
 import io.github.pangju666.framework.web.model.Result;
@@ -95,7 +95,7 @@ import java.lang.annotation.*;
  * </pre>
  *
  * @author pangju666
- * @see Algorithm
+ * @see CryptoAlgorithm
  * @see Encoding
  * @see DecryptRequestBody
  * @since 1.0.0
@@ -127,7 +127,7 @@ public @interface EncryptResponseBody {
 	 * @return 解密算法
 	 * @since 1.0.0
 	 */
-	Algorithm algorithm() default Algorithm.AES256;
+	CryptoAlgorithm algorithm() default CryptoAlgorithm.AES256;
 
 	/**
 	 * 加密内容的编码方式
@@ -146,7 +146,7 @@ public @interface EncryptResponseBody {
 	/**
 	 * 自定义加密工厂
 	 * <p>
-	 * 当 {@link Algorithm#CUSTOM} 被指定为算法时，使用该工厂提供的实现进行加密；
+	 * 当 {@link CryptoAlgorithm#CUSTOM} 被指定为算法时，使用该工厂提供的实现进行加密；
 	 * 其他算法将忽略此配置并使用预设工厂。
 	 * </p>
 	 *

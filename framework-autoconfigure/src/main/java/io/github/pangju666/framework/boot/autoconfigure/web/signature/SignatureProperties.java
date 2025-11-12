@@ -29,11 +29,11 @@ import java.util.Map;
  *
  * <p>配置项包括：</p>
  * <ul>
- *     <li>{@code signatureHeaderName}：HTTP 请求头中签名字段的名称，默认值为 {@code Api-Signature}。</li>
- *     <li>{@code appIdHeaderName}：HTTP 请求头中应用 ID 字段的名称，默认值为 {@code Api-App-Id}。</li>
- *     <li>{@code timestampHeaderName}：HTTP 请求头中时间戳字段的名称，默认值为 {@code Api-Timestamp}。</li>
- *     <li>{@code signatureParamName}：HTTP 请求参数中的签名字段名称，默认值为 {@code ApiSignature}。</li>
- *     <li>{@code appIdParamName}：HTTP 请求参数中的应用 ID 字段名称，默认值为 {@code ApiAppId}。</li>
+ *     <li>{@code signatureHeaderName}：HTTP 请求头中签名字段的名称，默认值为 {@code X-Signature}。</li>
+ *     <li>{@code appIdHeaderName}：HTTP 请求头中应用 ID 字段的名称，默认值为 {@code X-App-Id}。</li>
+ *     <li>{@code timestampHeaderName}：HTTP 请求头中时间戳字段的名称，默认值为 {@code X-Timestamp}。</li>
+ *     <li>{@code signatureParamName}：HTTP 请求参数中的签名字段名称，默认值为 {@code apiSignature}。</li>
+ *     <li>{@code appIdParamName}：HTTP 请求参数中的应用 ID 字段名称，默认值为 {@code apiAppId}。</li>
  *     <li>{@code secretKeys}：应用 ID 及对应密钥的配置。</li>
  * </ul>
  *
@@ -43,16 +43,20 @@ import java.util.Map;
  *     <li>配置应用 ID 与其对应密钥，用于校验请求签名的正确性。</li>
  * </ul>
  *
- * <p>配置示例：</p>
- * <pre>
- * pangju.web.signature.signature-header-name=Api-Signature
- * pangju.web.signature.app-id-header-name=Api-App-Id
- * pangju.web.signature.timestamp-header-name=Api-Timestamp
- * pangju.web.signature.signature-param-name=ApiSignature
- * pangju.web.signature.app-id-param-name=ApiAppId
- * pangju.web.signature.secret-keys.app1=secretKey1
- * pangju.web.signature.secret-keys.app2=secretKey2
- * </pre>
+ * <p>配置示例（YAML）：</p>
+ * <pre><code>
+ * pangju:
+ *   web:
+ *     signature:
+ *       signature-header-name: X-Signature
+ *       app-id-header-name: X-App-Id
+ *       timestamp-header-name: X-Timestamp
+ *       signature-param-name: apiSignature
+ *       app-id-param-name: apiAppId
+ *       secret-keys:
+ *         app1: secretKey1
+ *         app2: secretKey2
+ * </code></pre>
  *
  * @author pangju666
  * @since 1.0.0
@@ -61,47 +65,51 @@ import java.util.Map;
 public class SignatureProperties {
 	/**
 	 * HTTP 请求头中签名字段的名称。
-	 * <p>默认值为 {@code Api-Signature}。</p>
+	 * <p>默认值为 {@code X-Signature}。</p>
 	 *
 	 * @since 1.0.0
 	 */
-	private String signatureHeaderName = "Api-Signature";
+	private String signatureHeaderName = "X-Signature";
 	/**
 	 * HTTP 请求头中应用 ID 字段的名称。
-	 * <p>默认值为 {@code Api-App-Id}。</p>
+	 * <p>默认值为 {@code X-App-Id}。</p>
 	 *
 	 * @since 1.0.0
 	 */
-	private String appIdHeaderName = "Api-App-Id";
+	private String appIdHeaderName = "X-App-Id";
 	/**
 	 * HTTP 请求头中时间戳字段的名称。
-	 * <p>默认值为 {@code Api-Timestamp}。</p>
+	 * <p>默认值为 {@code X-Timestamp}。</p>
 	 *
 	 * @since 1.0.0
 	 */
-	private String timestampHeaderName = "Api-Timestamp";
+	private String timestampHeaderName = "X-Timestamp";
 	/**
 	 * HTTP 请求参数中的签名字段名称。
-	 * <p>默认值为 {@code ApiSignature}。</p>
+	 * <p>默认值为 {@code apiSignature}。</p>
 	 *
 	 * @since 1.0.0
 	 */
-	private String signatureParamName = "ApiSignature";
+	private String signatureParamName = "apiSignature";
 	/**
 	 * HTTP 请求参数中的应用 ID 字段名称。
-	 * <p>默认值为 {@code ApiAppId}。</p>
+	 * <p>默认值为 {@code apiAppId}。</p>
 	 *
 	 * @since 1.0.0
 	 */
-	private String appIdParamName = "ApiAppId";
+	private String appIdParamName = "apiAppId";
 	/**
 	 * 配置应用 ID 及对应的密钥信息。
 	 * <p>
-	 * 例如：
-	 * <pre>
-	 * pangju.web.signature.secret-keys.app1=secretKey1
-	 * pangju.web.signature.secret-keys.app2=secretKey2
-	 * </pre>
+	 * 例如（YAML）：
+	 * <pre><code>
+	 * pangju:
+	 *   web:
+	 *     signature:
+	 *       secret-keys:
+	 *         app1: secretKey1
+	 *         app2: secretKey2
+	 * </code></pre>
 	 * </p>
 	 *
 	 * @since 1.0.0

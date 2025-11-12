@@ -24,7 +24,7 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.ContextualSerializer;
 import com.fasterxml.jackson.databind.ser.std.NullSerializer;
 import io.github.pangju666.framework.boot.crypto.factory.CryptoFactory;
-import io.github.pangju666.framework.boot.enums.Algorithm;
+import io.github.pangju666.framework.boot.enums.CryptoAlgorithm;
 import io.github.pangju666.framework.boot.enums.Encoding;
 import io.github.pangju666.framework.boot.jackson.annotation.EncryptFormat;
 import io.github.pangju666.framework.boot.spring.StaticSpringContext;
@@ -57,7 +57,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author pangju666
  * @see io.github.pangju666.framework.boot.jackson.annotation.EncryptFormat
  * @see io.github.pangju666.framework.boot.crypto.factory.CryptoFactory
- * @see io.github.pangju666.framework.boot.enums.Algorithm
+ * @see CryptoAlgorithm
  * @see io.github.pangju666.framework.boot.enums.Encoding
  * @see com.fasterxml.jackson.databind.ser.ContextualSerializer
  * @see com.fasterxml.jackson.databind.ser.std.NullSerializer
@@ -374,7 +374,7 @@ public class EncryptJsonSerializer extends JsonSerializer<Object> implements Con
     protected EncryptJsonSerializer getSerializer(EncryptFormat annotation, SerializerProvider prov) throws JsonMappingException {
         String key = annotation.key() + "-" + annotation.encoding().name();
         EncryptJsonSerializer serializer;
-        if (annotation.algorithm() == Algorithm.CUSTOM) {
+        if (annotation.algorithm() == CryptoAlgorithm.CUSTOM) {
             key += "-" + annotation.factory().getName();
 			serializer = CUSTOM_SERIALIZER_MAP.get(key);
 			if (Objects.isNull(serializer)) {

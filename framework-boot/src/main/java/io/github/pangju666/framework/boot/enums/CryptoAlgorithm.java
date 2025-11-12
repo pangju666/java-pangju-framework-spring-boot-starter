@@ -28,7 +28,7 @@ import io.github.pangju666.framework.boot.crypto.factory.impl.StrongCryptoFactor
  * @author pangju666
  * @since 1.0.0
  */
-public enum Algorithm {
+public enum CryptoAlgorithm {
 	/**
 	 * RSA 非对称加密算法。
 	 * <p>
@@ -113,7 +113,7 @@ public enum Algorithm {
 	 * @param cryptoFactoryClass 对应的工厂实现类
 	 * @since 1.0.0
 	 */
-	Algorithm(Class<? extends CryptoFactory> cryptoFactoryClass) {
+	CryptoAlgorithm(Class<? extends CryptoFactory> cryptoFactoryClass) {
 		this.factoryClass = cryptoFactoryClass;
 	}
 

@@ -19,7 +19,7 @@ package io.github.pangju666.framework.boot.autoconfigure.web.advice.crypto;
 import io.github.pangju666.commons.lang.pool.Constants;
 import io.github.pangju666.framework.boot.crypto.factory.CryptoFactory;
 import io.github.pangju666.framework.boot.crypto.utils.CryptoUtils;
-import io.github.pangju666.framework.boot.enums.Algorithm;
+import io.github.pangju666.framework.boot.enums.CryptoAlgorithm;
 import io.github.pangju666.framework.boot.spring.StaticSpringContext;
 import io.github.pangju666.framework.boot.web.advice.DecryptRequestBody;
 import io.github.pangju666.framework.web.exception.base.ServerException;
@@ -85,7 +85,7 @@ import java.util.Objects;
  * <p>
  * 执行顺序：
  * <ul>
- *     <li>优先级为 {@link Ordered#HIGHEST_PRECEDENCE} + 1。</li>
+ *     <li>优先级为 {@link Ordered#HIGHEST_PRECEDENCE} + 2。</li>
  * </ul>
  * </p>
  *
@@ -96,7 +96,7 @@ import java.util.Objects;
  * @see RestControllerAdvice
  * @since 1.0.0
  */
-@Order(Ordered.HIGHEST_PRECEDENCE + 1)
+@Order(Ordered.HIGHEST_PRECEDENCE + 2)
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @ConditionalOnClass({Servlet.class, DispatcherServlet.class, RSAKey.class})
 @RestControllerAdvice
@@ -237,7 +237,7 @@ public class RequestBodyDecryptAdvice implements RequestBodyAdvice {
 	}
 
 	protected CryptoFactory getCryptoFactory(DecryptRequestBody annotation) {
-		if (annotation.algorithm() == Algorithm.CUSTOM) {
+		if (annotation.algorithm() == CryptoAlgorithm.CUSTOM) {
 			return StaticSpringContext.getBeanFactory().getBean(annotation.factory());
 		} else {
 			return StaticSpringContext.getBeanFactory().getBean(annotation.algorithm().getFactoryClass());

@@ -47,16 +47,6 @@ import org.springframework.web.servlet.DispatcherServlet;
  *     <li>注册默认签名密钥存储器 {@link DefaultSignatureSecretKeyStorer}，用于根据应用 ID 动态加载签名密钥。</li>
  * </ul>
  *
- * <p>配置示例：</p>
- * <pre>
- * pangju:
- *   web:
- *     signature:
- *       secret-keys:
- *         app1: secretKey1
- *         app2: secretKey2
- * </pre>
- *
  * @author pangju666
  * @see SignatureProperties
  * @see DefaultSignatureSecretKeyStorer

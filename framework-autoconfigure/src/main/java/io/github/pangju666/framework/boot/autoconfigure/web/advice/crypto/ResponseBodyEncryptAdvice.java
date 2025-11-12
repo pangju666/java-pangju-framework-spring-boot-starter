@@ -20,7 +20,7 @@ import io.github.pangju666.commons.crypto.key.RSAKey;
 import io.github.pangju666.commons.lang.utils.JsonUtils;
 import io.github.pangju666.framework.boot.crypto.factory.CryptoFactory;
 import io.github.pangju666.framework.boot.crypto.utils.CryptoUtils;
-import io.github.pangju666.framework.boot.enums.Algorithm;
+import io.github.pangju666.framework.boot.enums.CryptoAlgorithm;
 import io.github.pangju666.framework.boot.enums.Encoding;
 import io.github.pangju666.framework.boot.spring.StaticSpringContext;
 import io.github.pangju666.framework.boot.web.advice.EncryptResponseBody;
@@ -137,7 +137,7 @@ public class ResponseBodyEncryptAdvice implements ResponseBodyAdvice<Object> {
 	 * <ul>
 	 *     <li>获取注解（方法级优先）。未标注时直接返回原始响应。</li>
 	 *     <li>解析密钥：支持明文或占位符（如 {@code ${app.encryption.key}}）。解析失败（为空）时返回 {@code null}。</li>
-	 *     <li>选择工厂：当算法为 {@link Algorithm#CUSTOM} 使用注解 {@code factory}；否则按算法使用默认工厂。</li>
+	 *     <li>选择工厂：当算法为 {@link CryptoAlgorithm#CUSTOM} 使用注解 {@code factory}；否则按算法使用默认工厂。</li>
 	 *     <li>加密策略：
 	 *         <ul>
 	 *             <li>{@code String}：{@link CryptoUtils#encryptString(CryptoFactory, String, String, Encoding)}。</li>
@@ -171,7 +171,7 @@ public class ResponseBodyEncryptAdvice implements ResponseBodyAdvice<Object> {
 		String key = CryptoUtils.getKey(annotation.key(), true);
 
 		CryptoFactory factory;
-		if (annotation.algorithm() == Algorithm.CUSTOM) {
+		if (annotation.algorithm() == CryptoAlgorithm.CUSTOM) {
 			factory = StaticSpringContext.getBeanFactory().getBean(annotation.factory());
 		} else {
 			factory = StaticSpringContext.getBeanFactory().getBean(annotation.algorithm().getFactoryClass());

@@ -16,8 +16,7 @@
 
 package io.github.pangju666.framework.boot.web.signature.annotation;
 
-import io.github.pangju666.framework.boot.web.signature.enums.SignatureAlgorithm;
-import io.github.pangju666.framework.boot.web.signature.enums.SignatureType;
+import io.github.pangju666.framework.boot.enums.DigestAlgorithm;
 import io.github.pangju666.framework.boot.web.signature.interceptor.SignatureInterceptor;
 
 import java.lang.annotation.*;
@@ -34,7 +33,7 @@ import java.util.concurrent.TimeUnit;
  * <ul>
  *     <li>指定应用 ID（{@code appId}）列表，用于匹配请求的合法调用方。</li>
  *     <li>配置签名字段的存在位置（参数或请求头）。</li>
- *     <li>支持多种哈希算法生成签名，如 {@link SignatureAlgorithm#SHA256}。</li>
+ *     <li>支持多种哈希算法生成签名，如 {@link DigestAlgorithm#SHA256}。</li>
  *     <li>设置请求的签名校验有效期，避免重复请求或时效性攻击。</li>
  * </ul>
  *
@@ -62,7 +61,7 @@ import java.util.concurrent.TimeUnit;
  *
  * @author pangju666
  * @see SignatureType
- * @see SignatureAlgorithm
+ * @see DigestAlgorithm
  * @see SignatureInterceptor
  * @since 1.0.0
  */
@@ -101,14 +100,14 @@ public @interface Signature {
 	/**
 	 * 签名算法。
 	 * <p>
-	 * 指定用于生成校验签名的哈希算法，例如 SHA256 或 MD5。推荐使用 {@link SignatureAlgorithm#SHA256}。
-	 * 默认值为 {@link SignatureAlgorithm#SHA256}。
+	 * 指定用于生成校验签名的哈希算法，例如 SHA256 或 MD5。推荐使用 {@link DigestAlgorithm#SHA256}。
+	 * 默认值为 {@link DigestAlgorithm#SHA256}。
 	 * </p>
 	 *
 	 * @return 签名校验算法。
 	 * @since 1.0.0
 	 */
-	SignatureAlgorithm algorithm() default SignatureAlgorithm.SHA256;
+	DigestAlgorithm algorithm() default DigestAlgorithm.SHA256;
 
 	/**
 	 * 签名超时时间。
@@ -132,4 +131,37 @@ public @interface Signature {
 	 * @since 1.0.0
 	 */
 	TimeUnit timeUnit() default TimeUnit.MINUTES;
+
+	/**
+	 * 签名校验类型枚举。
+	 *
+	 * <p>
+	 * 定义了签名字段在 HTTP 请求中的存在位置，用于对签名信息的提取和校验。
+	 * </p>
+	 *
+	 * @since 1.0.0
+	 */
+	enum SignatureType {
+		/**
+		 * 签名信息位于请求参数中。
+		 * <p>适合以查询参数或表单提交参数方式发送签名。</p>
+		 *
+		 * @since 1.0.0
+		 */
+		PARAMS,
+		/**
+		 * 签名信息存储在请求头中。
+		 * <p>适用于高安全性环境，避免签名信息暴露在请求参数中。</p>
+		 *
+		 * @since 1.0.0
+		 */
+		HEADER,
+		/**
+		 * 签名信息可从请求参数或请求头中获取。
+		 * <p>灵活适配请求，允许使用多种方式传递签名信息。</p>
+		 *
+		 * @since 1.0.0
+		 */
+		ANY
+	}
 }

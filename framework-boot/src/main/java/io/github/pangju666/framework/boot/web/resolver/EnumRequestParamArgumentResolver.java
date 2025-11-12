@@ -102,7 +102,7 @@ public class EnumRequestParamArgumentResolver implements HandlerMethodArgumentRe
 	 * @throws ValidationException                     当请求参数值无法转换为有效的枚举值时抛出
 	 * @throws Exception                               其他处理过程中发生的异常
 	 */
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({"unchecked", "rawtypes"})
 	@Override
 	public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
 								  NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {

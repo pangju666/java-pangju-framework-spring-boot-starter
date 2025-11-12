@@ -18,7 +18,7 @@ package io.github.pangju666.framework.boot.web.resolver;
 
 import io.github.pangju666.framework.boot.crypto.factory.CryptoFactory;
 import io.github.pangju666.framework.boot.crypto.utils.CryptoUtils;
-import io.github.pangju666.framework.boot.enums.Algorithm;
+import io.github.pangju666.framework.boot.enums.CryptoAlgorithm;
 import io.github.pangju666.framework.boot.spring.StaticSpringContext;
 import io.github.pangju666.framework.web.exception.base.ServerException;
 import io.github.pangju666.framework.web.exception.base.ServiceException;
@@ -119,7 +119,7 @@ public class EncryptRequestParamArgumentResolver implements HandlerMethodArgumen
 		String key = CryptoUtils.getKey(annotation.key(), true);
 
 		CryptoFactory factory;
-		if (annotation.algorithm() == Algorithm.CUSTOM) {
+		if (annotation.algorithm() == CryptoAlgorithm.CUSTOM) {
 			factory = StaticSpringContext.getBeanFactory().getBean(annotation.factory());
 		} else {
 			factory = StaticSpringContext.getBeanFactory().getBean(annotation.algorithm().getFactoryClass());
