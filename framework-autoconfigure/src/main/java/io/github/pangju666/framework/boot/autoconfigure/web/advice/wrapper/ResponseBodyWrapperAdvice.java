@@ -65,7 +65,6 @@ import java.util.Objects;
  * 包装规则：
  * <ul>
  *   <li>String：设置Content-Type为application/json，返回{@code Result.ok(body).toString()}内容</li>
- *   <li>byte[]：直接原样返回，不参与统一包装</li>
  *   <li>Result：原样返回</li>
  *   <li>其他类型：包装为{@code Result.ok(body)}</li>
  * </ul>
@@ -120,7 +119,6 @@ public class ResponseBodyWrapperAdvice implements ResponseBodyAdvice<Object> {
 	 * 根据响应体类型与所选消息转换器应用不同策略：
 	 * </p>
 	 * <ul>
-	 *   <li>byte[]：直接原样返回</li>
 	 *   <li>String：设置Content-Type为application/json，返回包装后字符串</li>
 	 *   <li>Result：直接返回</li>
 	 *   <li>其他类型：统一包装为{@link Result#ok(Object)}</li>
