@@ -60,6 +60,40 @@ import java.lang.annotation.*;
  *   <li>建议将密钥存储在外部配置中，避免硬编码</li>
  * </ul>
  *
+ * <p><strong>使用示例</strong></p>
+ * <pre>
+ * {@code
+ * // 方法级使用：仅对当前接口的响应进行加密
+ * @PostMapping("/echo")
+ * @EncryptResponseBody(
+ *     key = "${app.encryption.key}",
+ *     algorithm = Algorithm.AES256,
+ *     encoding = Encoding.BASE64
+ * )
+ * public String echo() {
+ *     return "sensitive-text"; // 输出将被加密
+ * }
+ *
+ * // 类级使用：对控制器内所有处理方法的响应进行加密
+ * @RestController
+ * @RequestMapping("/api")
+ * @EncryptResponseBody(key = "${app.encryption.key}")
+ * class DemoController {
+ *     @GetMapping("/text")
+ *     public String text() { return "hello"; }
+ *
+ *     @GetMapping("/bytes")
+ *     public byte[] bytes() { return "hello".getBytes(); }
+ *
+ *     @GetMapping("/wrap")
+ *     public Result<String> wrap() { return Result.success("data"); }
+ *
+ *     @GetMapping("/obj")
+ *     public User obj() { return new User("tom"); } // 将先序列化为 JSON 再加密
+ * }
+ * }
+ * </pre>
+ *
  * @author pangju666
  * @see Algorithm
  * @see Encoding

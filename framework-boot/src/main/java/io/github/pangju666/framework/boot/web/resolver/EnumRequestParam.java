@@ -16,6 +16,8 @@
 
 package io.github.pangju666.framework.boot.web.resolver;
 
+import org.springframework.web.bind.MissingServletRequestParameterException;
+
 import java.lang.annotation.*;
 
 /**
@@ -61,7 +63,7 @@ public @interface EnumRequestParam {
 	 * 参数是否为必需
 	 * <p>
 	 * 当设置为true时，如果请求中缺少该参数且未配置默认值，则抛出
-	 * {@link org.springframework.web.bind.MissingServletRequestParameterException}异常。
+	 * {@link MissingServletRequestParameterException}异常。
 	 * 当设置为false时，缺失的参数返回null。
 	 * </p>
 	 *

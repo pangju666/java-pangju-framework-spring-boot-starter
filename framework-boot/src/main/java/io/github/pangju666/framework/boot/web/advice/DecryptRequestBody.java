@@ -56,6 +56,31 @@ import java.lang.annotation.*;
  *   <li>建议将密钥外置配置，避免硬编码</li>
  * </ul>
  *
+ * <p><strong>使用示例</strong></p>
+ * <pre>
+ * {@code
+ * @PostMapping("/submit")
+ * public User submit(
+ *     @DecryptRequestBody(
+ *         key = "${app.encryption.key}",
+ *         algorithm = Algorithm.AES256,
+ *         encoding = Encoding.BASE64
+ *     ) @RequestBody String string
+ * ) {
+ *     // string 为已解密的明文字符串
+ *     return string;
+ * }
+ *
+ * @PostMapping("/create")
+ * public User create(
+ *     @DecryptRequestBody(key = "${app.encryption.key}") @RequestBody User user
+ * ) {
+ *  	// user 为已解密的JSON字符串反序列化后的对象
+ *     return user;
+ * }
+ * }
+ * </pre>
+ *
  * @author pangju666
  * @see Algorithm
  * @see Encoding

@@ -93,14 +93,14 @@ public class EnumRequestParamArgumentResolver implements HandlerMethodArgumentRe
 	 * </ol>
 	 * </p>
 	 *
-	 * @param parameter        要解析的方法参数
-	 * @param mavContainer     模型和视图容器，用于存储解析后的属性
-	 * @param webRequest       当前HTTP请求对象
-	 * @param binderFactory    数据绑定工厂（此解析器未使用）
+	 * @param parameter     要解析的方法参数
+	 * @param mavContainer  模型和视图容器，用于存储解析后的属性
+	 * @param webRequest    当前HTTP请求对象
+	 * @param binderFactory 数据绑定工厂（此解析器未使用）
 	 * @return 解析后的枚举实例，若参数为可选且缺失则返回null
 	 * @throws MissingServletRequestParameterException 当必需参数缺失且未配置默认值时抛出
-	 * @throws ValidationException 当请求参数值无法转换为有效的枚举值时抛出
-	 * @throws Exception 其他处理过程中发生的异常
+	 * @throws ValidationException                     当请求参数值无法转换为有效的枚举值时抛出
+	 * @throws Exception                               其他处理过程中发生的异常
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
