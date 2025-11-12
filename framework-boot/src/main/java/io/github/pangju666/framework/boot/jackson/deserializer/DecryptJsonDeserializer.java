@@ -432,7 +432,7 @@ public class DecryptJsonDeserializer extends JsonDeserializer<Object> implements
 			key += "-" + annotation.factory().getName();
 			deserializer = CUSTOM_DESERIALIZER_MAP.get(key);
 			if (Objects.isNull(deserializer)) {
-				String cryptoKey = CryptoUtils.getKey(annotation.key());
+				String cryptoKey = CryptoUtils.getKey(annotation.key(), false);
 				if (Objects.isNull(cryptoKey)) {
 					throw JsonMappingException.from(ctxt, "解密Jackson反序列化器初始化失败");
 				}
@@ -444,7 +444,7 @@ public class DecryptJsonDeserializer extends JsonDeserializer<Object> implements
 			key += "-" + annotation.algorithm().name();
 			deserializer = ALGORITHM_DESERIALIZER_MAP.get(key);
 			if (Objects.isNull(deserializer)) {
-				String cryptoKey = CryptoUtils.getKey(annotation.key());
+				String cryptoKey = CryptoUtils.getKey(annotation.key(), false);
 				if (Objects.isNull(cryptoKey)) {
 					throw JsonMappingException.from(ctxt, "解密Jackson反序列化器初始化失败");
 				}

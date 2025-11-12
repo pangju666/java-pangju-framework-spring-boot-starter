@@ -23,8 +23,6 @@ import java.lang.annotation.*;
 /**
  * 响应体统一包装忽略注解
  * <p>
- * 标注在方法上以跳过全局响应体统一包装逻辑（见
- * {@link io.github.pangju666.framework.boot.autoconfigure.web.advice.wrapper.ResponseBodyWrapperAdvice}）。
  * 被标注的方法直接返回原始响应内容，不再包装为统一结构。
  * </p>
  * <p>
@@ -40,7 +38,6 @@ import java.lang.annotation.*;
  * </p>
  *
  * @author pangju666
- * @see io.github.pangju666.framework.boot.autoconfigure.web.advice.wrapper.ResponseBodyWrapperAdvice
  * @see ResponseEntity
  * @since 1.0.0
  */

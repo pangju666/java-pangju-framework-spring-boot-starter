@@ -19,6 +19,7 @@ package io.github.pangju666.framework.boot.crypto.utils;
 import io.github.pangju666.framework.boot.crypto.factory.CryptoFactory;
 import io.github.pangju666.framework.boot.enums.Encoding;
 import io.github.pangju666.framework.boot.spring.StaticSpringContext;
+import io.github.pangju666.framework.web.exception.base.ServerException;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
@@ -206,24 +207,48 @@ public class CryptoUtils {
     /**
      * 解析密钥字符串。
      * <p>
-     * 支持直接传入明文密钥，也支持占位符形式（如 <code>${crypto.key}</code>），
-     * 当为占位符时将尝试从 Spring 环境中读取对应属性值。
-     * 若未找到或入参为空白，将记录错误日志并返回 {@code null}。
+     * 支持以下两种形式：
+     * <ul>
+     *     <li>明文密钥：直接返回入参。</li>
+     *     <li>占位符密钥：形如 <code>${crypto.key}</code>，从 Spring 环境解析实际值。</li>
+     * </ul>
+     * </p>
+     * <p>
+     * 行为说明：
+     * <ul>
+     *     <li>入参为空白：<code>throwsException == true</code> 时抛出 {@link ServerException}，否则记录错误日志并返回 {@code null}。</li>
+     *     <li>占位符未解析到值：<code>throwsException == true</code> 时抛出 {@link ServerException}，否则记录错误日志并返回 {@code null}。</li>
+     * </ul>
+     * </p>
+     * <p>
+     * 注意事项：
+     * <ul>
+     *     <li>占位符解析通过 {@link StaticSpringContext#getProperty(String)}。</li>
+     *     <li>调用方可通过 <code>throwsException</code> 控制失败时的处理策略。</li>
+     * </ul>
      * </p>
      *
-     * @param key 明文密钥或占位符
-     * @return 解析后的明文密钥；失败时返回 {@code null}
+     * @param key 明文密钥或占位符（如 <code>${crypto.key}</code>）
+     * @param throwsException 解析失败时是否抛出异常；true 抛出异常，false 返回 {@code null}
+     * @return 解析后的明文密钥；当 <code>throwsException == false</code> 且失败时返回 {@code null}
+	 * @throws ServerException 当 <code>throwsException == true</code> 且入参为空或未解析到值时抛出
 	 * @since 1.0.0
 	 */
-    public static String getKey(final String key) {
+    public static String getKey(final String key, boolean throwsException) {
         if (StringUtils.isBlank(key)) {
-            LOGGER.error("密钥属性不可为空");
+            if (throwsException) {
+				throw new ServerException("密钥属性为空");
+			}
+			LOGGER.error("密钥属性不可为空");
             return null;
         }
 
         if (Strings.CS.startsWith(key, "${") && Strings.CS.endsWith(key, "}")) {
             String cryptoKey = StaticSpringContext.getProperty(key);
             if (StringUtils.isBlank(cryptoKey)) {
+				if (throwsException) {
+					throw new ServerException("未找到密钥，属性：" + key);
+				}
                 LOGGER.error("未找到密钥，属性：{}", key);
                 return null;
             }

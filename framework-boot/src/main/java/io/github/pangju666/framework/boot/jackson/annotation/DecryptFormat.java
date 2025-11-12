@@ -48,9 +48,15 @@ import java.lang.annotation.Target;
 @JsonDeserialize(using = DecryptJsonDeserializer.class)
 public @interface DecryptFormat {
 	/**
-	 * 用于解密的密钥
+	 * 明文密钥或占位符。
 	 *
-	 * @return 解密密钥
+	 * <p>支持两种形式：</p>
+	 * <ul>
+	 *   <li>明文密钥：直接传入密钥字符串，例如 {@code @DecryptFormat(key = "my-secret-key")}</li>
+	 *   <li>占位符：使用 {@code ${property.name}} 格式，框架将从 Spring 配置读取实际密钥值，例如 {@code @DecryptFormat(key = "${app.encryption.key}")}</li>
+	 * </ul>
+	 *
+	 * @return 密钥或占位符字符串
 	 * @since 1.0.0
 	 */
 	String key();

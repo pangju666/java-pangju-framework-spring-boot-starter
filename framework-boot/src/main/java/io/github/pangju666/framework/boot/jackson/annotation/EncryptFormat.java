@@ -18,10 +18,10 @@ package io.github.pangju666.framework.boot.jackson.annotation;
 
 import com.fasterxml.jackson.annotation.JacksonAnnotationsInside;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import io.github.pangju666.framework.boot.crypto.factory.CryptoFactory;
 import io.github.pangju666.framework.boot.crypto.factory.impl.AES256CryptoFactory;
 import io.github.pangju666.framework.boot.enums.Algorithm;
 import io.github.pangju666.framework.boot.enums.Encoding;
-import io.github.pangju666.framework.boot.crypto.factory.CryptoFactory;
 import io.github.pangju666.framework.boot.jackson.serializer.EncryptJsonSerializer;
 
 import java.lang.annotation.ElementType;
@@ -48,9 +48,15 @@ import java.lang.annotation.Target;
 @JsonSerialize(using = EncryptJsonSerializer.class)
 public @interface EncryptFormat {
 	/**
-	 * 用于加密的密钥
+	 * 明文密钥或占位符。
 	 *
-	 * @return 加密密钥
+	 * <p>支持两种形式：</p>
+	 * <ul>
+	 *   <li>明文密钥：直接传入密钥字符串，例如 {@code @EncryptFormat(key = "my-secret-key")}</li>
+	 *   <li>占位符：使用 {@code ${property.name}} 格式，框架将从 Spring 配置读取实际密钥值，例如 {@code @EncryptFormat(key = "${app.encryption.key}")}</li>
+	 * </ul>
+	 *
+	 * @return 密钥或占位符字符串
 	 * @since 1.0.0
 	 */
 	String key();

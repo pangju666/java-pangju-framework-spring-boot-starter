@@ -378,7 +378,7 @@ public class EncryptJsonSerializer extends JsonSerializer<Object> implements Con
             key += "-" + annotation.factory().getName();
 			serializer = CUSTOM_SERIALIZER_MAP.get(key);
 			if (Objects.isNull(serializer)) {
-				String cryptoKey = CryptoUtils.getKey(annotation.key());
+				String cryptoKey = CryptoUtils.getKey(annotation.key(), false);
 				if (Objects.isNull(cryptoKey)) {
 					throw JsonMappingException.from(prov, "加密Jackson序列化器初始化失败");
 				}
@@ -390,7 +390,7 @@ public class EncryptJsonSerializer extends JsonSerializer<Object> implements Con
 			key += "-" + annotation.algorithm().name();
 			serializer = ALGORITHM_SERIALIZER_MAP.get(key);
 			if (Objects.isNull(serializer)) {
-				String cryptoKey = CryptoUtils.getKey(annotation.key());
+				String cryptoKey = CryptoUtils.getKey(annotation.key(), false);
 				if (Objects.isNull(cryptoKey)) {
 					throw JsonMappingException.from(prov, "加密Jackson序列化器初始化失败");
 				}
