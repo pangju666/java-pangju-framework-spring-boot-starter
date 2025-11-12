@@ -16,17 +16,7 @@
 
 package io.github.pangju666.framework.boot.autoconfigure.web.advice.wrapper;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
-import io.github.pangju666.commons.lang.utils.JsonUtils;
 import io.github.pangju666.framework.boot.web.advice.ResponseBodyWrapperIgnore;
-import io.github.pangju666.framework.web.lang.WebConstants;
 import io.github.pangju666.framework.web.model.Result;
 import jakarta.servlet.Servlet;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty;
@@ -38,7 +28,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.ByteArrayHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.StringHttpMessageConverter;
-import org.springframework.http.converter.json.GsonHttpMessageConverter;
+import org.springframework.http.converter.json.AbstractJsonHttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
@@ -67,24 +57,18 @@ import java.util.Objects;
  * 支持的消息转换器：
  * <ul>
  *   <li>{@link MappingJackson2HttpMessageConverter}</li>
- *   <li>{@link GsonHttpMessageConverter}</li>
+ *   <li>{@link AbstractJsonHttpMessageConverter}</li>
  *   <li>{@link StringHttpMessageConverter}</li>
  * </ul>
  * </p>
  * <p>
  * 包装规则：
  * <ul>
- *   <li>String：设置Content-Type为application/json，返回{@link Result#toString()}内容</li>
+ *   <li>String：设置Content-Type为application/json，返回{@code Result.ok(body).toString()}内容</li>
  *   <li>byte[]：直接原样返回，不参与统一包装</li>
  *   <li>Result：原样返回</li>
- *   <li>Gson {@link JsonElement}：返回含code、message、data的{@link JsonObject}</li>
- *   <li>Jackson {@link JsonNode}：返回含code、message、data的{@link ObjectNode}</li>
- *   <li>其他类型：包装为{@link Result#ok(Object)}</li>
+ *   <li>其他类型：包装为{@code Result.ok(body)}</li>
  * </ul>
- * </p>
- * <p>
- * 异常处理：当JSON解析失败时，返回{@link Result#fail(int, String)}，错误码为
- * {@link WebConstants#BASE_ERROR_CODE}，消息为“JSON响应体解析失败”。不抛出异常。
  * </p>
  *
  * @author pangju666
@@ -99,47 +83,12 @@ import java.util.Objects;
 @RestControllerAdvice
 public class ResponseBodyWrapperAdvice implements ResponseBodyAdvice<Object> {
 	/**
-	 * Jackson ObjectMapper实例
-	 * <p>
-	 * 用于Jackson序列化和反序列化操作，包括JSON字符串和Jackson JsonNode之间的转换。
-	 * 该实例由Spring容器自动注入。
-	 * </p>
-	 *
-	 * @since 1.0.0
-	 */
-	private final ObjectMapper objectMapper;
-	/**
-	 * Jackson ObjectReader实例
-	 * <p>
-	 * 用于高效地读取和解析JSON内容，基于{@link #objectMapper}创建。
-	 * 主要用于将JSON字符串转换为Jackson JsonNode对象。
-	 * </p>
-	 *
-	 * @since 1.0.0
-	 */
-	private final ObjectReader objectReader;
-
-	/**
-	 * 构造方法
-	 * <p>
-	 * 初始化响应体包装处理器，创建ObjectReader实例供后续JSON处理使用。
-	 * </p>
-	 *
-	 * @param objectMapper Spring容器注入的ObjectMapper Bean实例
-	 * @since 1.0.0
-	 */
-	public ResponseBodyWrapperAdvice(ObjectMapper objectMapper) {
-		this.objectMapper = objectMapper;
-		this.objectReader = objectMapper.reader();
-	}
-
-	/**
 	 * 判断是否对当前方法返回值启用统一包装
 	 * <p>
 	 * 规则：
 	 * </p>
 	 * <ul>
-	 *   <li>支持的转换器：{@link MappingJackson2HttpMessageConverter}、{@link GsonHttpMessageConverter}、{@link StringHttpMessageConverter}</li>
+	 *   <li>支持的转换器：{@link MappingJackson2HttpMessageConverter}、{@link AbstractJsonHttpMessageConverter}、{@link StringHttpMessageConverter}</li>
 	 *   <li>不支持的转换器：{@link ByteArrayHttpMessageConverter}（原样返回字节，不参与包装）</li>
 	 *   <li>排除条件：返回类型为{@link ResponseEntity}，或方法标注{@link ResponseBodyWrapperIgnore}</li>
 	 * </ul>
@@ -157,7 +106,7 @@ public class ResponseBodyWrapperAdvice implements ResponseBodyAdvice<Object> {
 			return false;
 		}
 		if (MappingJackson2HttpMessageConverter.class.isAssignableFrom(converterType) ||
-			GsonHttpMessageConverter.class.isAssignableFrom(converterType) ||
+			AbstractJsonHttpMessageConverter.class.isAssignableFrom(converterType) ||
 			StringHttpMessageConverter.class.isAssignableFrom(converterType)) {
 			return !returnType.getNestedParameterType().isAssignableFrom(ResponseEntity.class) &&
 				Objects.isNull(returnType.getMethodAnnotation(ResponseBodyWrapperIgnore.class));
@@ -174,14 +123,8 @@ public class ResponseBodyWrapperAdvice implements ResponseBodyAdvice<Object> {
 	 *   <li>byte[]：直接原样返回</li>
 	 *   <li>String：设置Content-Type为application/json，返回包装后字符串</li>
 	 *   <li>Result：直接返回</li>
-	 *   <li>Gson {@link JsonElement}：构造包含code、message、data的{@link JsonObject}</li>
-	 *   <li>Jackson {@link JsonNode}：构造包含code、message、data的{@link ObjectNode}</li>
 	 *   <li>其他类型：统一包装为{@link Result#ok(Object)}</li>
 	 * </ul>
-	 * <p>
-	 * 解析异常处理：返回{@link Result#fail(int, String)}，错误码为
-	 * {@link WebConstants#BASE_ERROR_CODE}，消息为“JSON响应体解析失败”。
-	 * </p>
 	 *
 	 * @param body                  原始响应体，可能为null
 	 * @param returnType            方法返回类型参数
@@ -195,50 +138,11 @@ public class ResponseBodyWrapperAdvice implements ResponseBodyAdvice<Object> {
 	public Object beforeBodyWrite(@Nullable Object body, MethodParameter returnType, MediaType selectedContentType,
 								  Class<? extends HttpMessageConverter<?>> selectedConverterType,
 								  ServerHttpRequest request, ServerHttpResponse response) {
-		if (body instanceof byte[]) {
-			return body;
-		}
 		if (StringHttpMessageConverter.class.isAssignableFrom(selectedConverterType)) {
 			response.getHeaders().setContentType(MediaType.APPLICATION_JSON);
 			return Result.ok(body).toString();
 		} else if (body instanceof Result<?>) {
 			return body;
-		} else if (body instanceof JsonElement element) {
-			if (GsonHttpMessageConverter.class.isAssignableFrom(selectedConverterType)) {
-				JsonObject result = new JsonObject();
-				result.addProperty("code", WebConstants.SUCCESS_CODE);
-				result.addProperty("message", WebConstants.DEFAULT_SUCCESS_MESSAGE);
-				result.add("data", element);
-				return result;
-			} else {
-				ObjectNode result = objectMapper.createObjectNode();
-				result.put("code", WebConstants.SUCCESS_CODE);
-				result.put("message", WebConstants.DEFAULT_SUCCESS_MESSAGE);
-				try {
-					result.set("data", objectReader.readTree(element.toString()));
-				} catch (JsonProcessingException e) {
-					return Result.fail(WebConstants.BASE_ERROR_CODE, "JSON响应体解析失败");
-				}
-				return result;
-			}
-		} else if (body instanceof JsonNode node) {
-			if (GsonHttpMessageConverter.class.isAssignableFrom(selectedConverterType)) {
-				JsonObject result = new JsonObject();
-				result.addProperty("code", WebConstants.SUCCESS_CODE);
-				result.addProperty("message", WebConstants.DEFAULT_SUCCESS_MESSAGE);
-				try {
-					result.add("data", JsonUtils.parseString(node.toString()));
-				} catch (JsonParseException e) {
-					return Result.fail(WebConstants.BASE_ERROR_CODE, "JSON响应体解析失败");
-				}
-				return result;
-			} else {
-				ObjectNode result = objectMapper.createObjectNode();
-				result.put("code", WebConstants.SUCCESS_CODE);
-				result.put("message", WebConstants.DEFAULT_SUCCESS_MESSAGE);
-				result.set("data", node);
-				return result;
-			}
 		} else {
 			return Result.ok(body);
 		}
