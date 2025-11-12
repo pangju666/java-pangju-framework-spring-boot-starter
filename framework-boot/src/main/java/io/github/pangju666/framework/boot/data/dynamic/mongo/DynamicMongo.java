@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package io.github.pangju666.framework.boot.data.dynamic.mongo.annotation;
+package io.github.pangju666.framework.boot.data.dynamic.mongo;
 
 import java.lang.annotation.*;
 

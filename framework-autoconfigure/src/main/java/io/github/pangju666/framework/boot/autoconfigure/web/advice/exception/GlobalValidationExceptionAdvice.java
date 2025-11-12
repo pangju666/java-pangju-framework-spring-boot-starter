@@ -16,7 +16,7 @@
 
 package io.github.pangju666.framework.boot.autoconfigure.web.advice.exception;
 
-import io.github.pangju666.framework.web.model.common.Result;
+import io.github.pangju666.framework.web.model.Result;
 import jakarta.servlet.Servlet;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
@@ -35,83 +35,58 @@ import org.springframework.web.servlet.DispatcherServlet;
 import java.util.Set;
 
 /**
- * 全局参数验证异常处理器
- * <p>
- * 该类用于统一处理Web应用中抛出的各种异常。
- * 通过{@link RestControllerAdvice}和{@link ExceptionHandler}注解，
- * 为应用中的异常提供统一的错误响应格式和HTTP状态码映射。
- * </p>
- * <p>
- * 主要功能：
- * <ul>
- *     <li>处理参数验证异常</li>
- * </ul>
- * </p>
- * <p>
- * 配置条件：
- * <ul>
- *     <li>应用必须是Servlet类型的Web应用</li>
- *     <li>Classpath中必须存在Servlet、DispatcherServlet和ConstraintViolationException类</li>
- *     <li>配置属性{@code pangju.web.advice.exception}必须为true（默认为true）</li>
- * </ul>
- * </p>
- * <p>
- * 支持的异常类型和HTTP状态码映射：
- * <ul>
- *     <li>
- *         <strong>ConstraintViolationException</strong> - 400 Bad Request
- *         <p>请求参数约束验证失败</p>
- *     </li>
- * </ul>
- * </p>
- * <p>
- * 配置示例：
- * <pre>
- * pangju:
- *   web:
- *     advice:
- *       exception: true  # 默认为true，启用全局异常处理
- * </pre>
- * </p>
- * <p>
- * 响应格式：
- * <p>
- * 所有异常处理方法都返回统一的错误响应格式：
- * <pre>
- * {
- *   "code": "错误代码",
- *   "message": "错误描述信息",
- *   "data": null
- * }
- * </pre>
- * </p>
- * </p>
- * <p>
- * 日志记录：
- * <p>
- * 该类会对某些异常进行日志记录，便于问题排查和监控。
- * 记录级别为ERROR，可通过日志系统进行追踪。
- * </p>
- * </p>
+ * 全局处理参数验证失败异常。
  *
- * @author pangju666
+ * <p><strong>启用条件</strong></p>
+ * <ul>
+ *   <li>Servlet Web 应用，类路径存在 {@code Servlet}、{@code DispatcherServlet}、{@code ConstraintViolationException}</li>
+ *   <li>配置项 {@code pangju.web.advice.exception=true}（默认启用）</li>
+ * </ul>
+ *
+ * <p><strong>行为说明</strong></p>
+ * <ul>
+ *   <li>捕获 {@link ConstraintViolationException} 并返回 HTTP 400</li>
+ *   <li>优先取第一个约束违例的 {@code message} 作为提示；无可用提示时返回“请求参数验证不合法”</li>
+ *   <li>返回 {@link Result#fail(String)} 作为统一错误响应</li>
+ * </ul>
+ *
+ * <p><strong>优先级</strong></p>
+ * <ul>
+ *   <li>{@link Ordered#HIGHEST_PRECEDENCE} + 2</li>
+ * </ul>
+ *
+ * <p><strong>相关说明</strong></p>
+ * <ul>
+ *   <li>适用于 Bean Validation 方法参数校验（如 {@code @Validated}、{@code @Valid}）抛出的约束违例</li>
+ * </ul>
+ *
  * @see RestControllerAdvice
  * @see ExceptionHandler
+ * @see ConstraintViolationException
+ * @see HttpStatus#BAD_REQUEST
+ * @see Result
  * @since 1.0.0
  */
-@Order(Ordered.LOWEST_PRECEDENCE - 1)
+@Order(Ordered.HIGHEST_PRECEDENCE + 2)
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @ConditionalOnClass({Servlet.class, DispatcherServlet.class, ConstraintViolationException.class})
 @ConditionalOnBooleanProperty(prefix = "pangju.web.advice", value = "exception", matchIfMissing = true)
 @RestControllerAdvice
 public class GlobalValidationExceptionAdvice {
-	/**
-	 * 处理参数验证异常
-	 *
-	 * @param e 异常实例
-	 * @return 错误响应，HTTP状态码400
-	 * @since 1.0.0
-	 */
+    /**
+     * 处理参数验证异常。
+     *
+     * <p><strong>行为</strong></p>
+     * <ul>
+     *   <li>返回统一失败响应，HTTP 400（{@link HttpStatus#BAD_REQUEST}）</li>
+     *   <li>若存在约束违例，优先选择第一个违例的 {@code message} 作为提示</li>
+     *   <li>若无可用提示，返回“请求参数验证不合法”</li>
+     * </ul>
+     *
+     * @param e 参数验证异常
+     * @return 统一失败响应，状态码 400
+     * @since 1.0.0
+     */
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	@ExceptionHandler(value = ConstraintViolationException.class)
 	public Result<Void> handleConstraintViolationException(ConstraintViolationException e) {

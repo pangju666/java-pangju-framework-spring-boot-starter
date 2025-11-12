@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package io.github.pangju666.framework.boot.data.mybatisplus.model.entity.base;
+package io.github.pangju666.framework.boot.data.mybatisplus.model.entity;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.Version;

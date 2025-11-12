@@ -16,7 +16,7 @@
 
 package io.github.pangju666.framework.boot.autoconfigure.data.dynamic.redis;
 
-import io.github.pangju666.framework.boot.data.dynamic.redis.utils.DynamicRedisUtils;
+import io.github.pangju666.framework.boot.data.dynamic.redis.DynamicRedisUtils;
 import io.lettuce.core.resource.ClientResources;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;

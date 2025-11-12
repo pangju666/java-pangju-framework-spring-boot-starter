@@ -17,95 +17,77 @@
 package io.github.pangju666.framework.boot.autoconfigure.web.advice;
 
 import io.github.pangju666.framework.boot.autoconfigure.web.advice.bind.RequestParamBindingAdvice;
-import io.github.pangju666.framework.boot.autoconfigure.web.advice.exception.GlobalExceptionAdvice;
+import io.github.pangju666.framework.boot.autoconfigure.web.advice.exception.GlobalSpringExceptionAdvice;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
- * Web增强功能配置属性类
+ * Web增强功能配置属性
  * <p>
- * 用于配置Web层面的各种增强功能。配置前缀为{@code pangju.web.advice}。
- * 通过该配置类可以控制请求参数绑定、全局异常处理等功能的启用或禁用。
+ * 配置前缀：{@code pangju.web.advice}。用于启用或禁用Web层的增强功能。
  * </p>
  * <p>
- * 支持的配置项：
+ * 支持的配置项与默认值：
  * <ul>
- *     <li>binding - 请求参数绑定增强功能</li>
- *     <li>exception - 全局异常处理功能</li>
+ *   <li>binder（默认：true）- 请求参数绑定增强，自动将毫秒时间戳绑定为日期/时间类型</li>
+ *   <li>exception（默认：true）- 全局异常处理，统一异常响应结构</li>
+ *   <li>wrapper（默认：true）- 响应体统一包装，输出一致的API结构</li>
  * </ul>
  * </p>
  * <p>
- * 配置示例：
+ * 使用示例：
  * <pre>
  * pangju:
  *   web:
  *     advice:
- *       binding: true    # 启用请求参数绑定增强（默认为true）
- *       exception: true  # 启用全局异常处理（默认为true）
+ *       binder: true
+ *       exception: true
+ *       wrapper: true
  * </pre>
- * </p>
- * <p>
- * 功能说明：
- * <ul>
- *     <li>
- *         <strong>binding配置</strong>
- *         <p>
- *         用于控制是否启用请求参数自动绑定增强功能。
- *         启用后，会自动将请求参数中的时间戳转换为Date、LocalDate、LocalDateTime对象。
- *         由{@link RequestParamBindingAdvice}处理。
- *         </p>
- *     </li>
- *     <li>
- *         <strong>exception配置</strong>
- *         <p>
- *         用于控制是否启用全局异常处理功能。
- *         启用后，会统一处理应用中抛出的各种异常，并返回统一的错误响应格式。
- *         由{@link GlobalExceptionAdvice}处理。
- *         </p>
- *     </li>
- * </ul>
  * </p>
  *
  * @author pangju666
- * @see RequestParamBindingAdvice
- * @see GlobalExceptionAdvice
  * @see AdviceAutoConfiguration
  * @since 1.0.0
  */
 @ConfigurationProperties(prefix = "pangju.web.advice")
 public class AdviceProperties {
 	/**
-	 * 请求参数绑定增强功能开关
+	 * 是否启用请求参数绑定增强（默认：true）
 	 * <p>
-	 * 默认值为true，表示启用请求参数的自动绑定增强。
-	 * 启用后，会自动将请求参数中的时间戳（毫秒级）转换为Date、LocalDate、LocalDateTime对象。
-	 * </p>
-	 * <p>
-	 * 配置该功能需依赖{@link RequestParamBindingAdvice}的实现。
+	 * 启用后自动将毫秒时间戳绑定为 {@code Date}、{@code LocalDate}、{@code LocalDateTime}。
+	 * 由 {@link RequestParamBindingAdvice} 生效。
 	 * </p>
 	 *
 	 * @since 1.0.0
 	 */
-	private boolean binding = true;
+	private boolean binder = true;
 	/**
-	 * 全局异常处理增强功能开关
+	 * 是否启用全局异常处理（默认：true）
 	 * <p>
-	 * 默认值为true，表示启用全局异常处理。
-	 * 启用后，会统一处理应用中抛出的各种异常，并返回统一格式的错误响应。
-	 * </p>
-	 * <p>
-	 * 配置该功能需依赖{@link GlobalExceptionAdvice}的实现。
+	 * 启用后统一处理应用异常并返回一致的错误响应结构。
+	 * 由 {@link GlobalSpringExceptionAdvice} 生效。
 	 * </p>
 	 *
 	 * @since 1.0.0
 	 */
 	private boolean exception = true;
+	/**
+	 * 是否启用响应体统一包装（默认：true）
+	 * <p>
+	 * 控制 {@link io.github.pangju666.framework.boot.autoconfigure.web.advice.wrapper.ResponseBodyWrapperAdvice}
+	 * 是否生效，统一输出含 code、message、data 的响应结构。
+	 * </p>
+	 *
+	 * @since 1.0.0
+	 */
+	private boolean wrapper = true;
 
-	public boolean isBinding() {
-		return binding;
+	public boolean isBinder() {
+		return binder;
 	}
 
-	public void setBinding(boolean binding) {
-		this.binding = binding;
+	public void setBinder(boolean binder) {
+		this.binder = binder;
 	}
 
 	public boolean isException() {
@@ -114,5 +96,13 @@ public class AdviceProperties {
 
 	public void setException(boolean exception) {
 		this.exception = exception;
+	}
+
+	public boolean isWrapper() {
+		return wrapper;
+	}
+
+	public void setWrapper(boolean wrapper) {
+		this.wrapper = wrapper;
 	}
 }

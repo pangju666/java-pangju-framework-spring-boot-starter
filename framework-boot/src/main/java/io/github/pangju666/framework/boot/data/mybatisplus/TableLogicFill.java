@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package io.github.pangju666.framework.boot.data.mybatisplus.annotation;
+package io.github.pangju666.framework.boot.data.mybatisplus;
 
 import java.lang.annotation.*;
 

@@ -17,7 +17,7 @@
 package io.github.pangju666.framework.boot.autoconfigure.web.advice;
 
 import io.github.pangju666.framework.boot.autoconfigure.web.advice.bind.RequestParamBindingAdvice;
-import io.github.pangju666.framework.boot.autoconfigure.web.advice.exception.GlobalExceptionAdvice;
+import io.github.pangju666.framework.boot.autoconfigure.web.advice.exception.*;
 import jakarta.servlet.Servlet;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -26,60 +26,37 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.web.servlet.DispatcherServlet;
 
 /**
- * Web增强功能自动配置类
- * <p>
- * 该类用于在Spring Boot应用启动时自动配置Web层面的各种增强功能。
- * 包括请求参数绑定增强、全局异常处理等功能的自动配置。
- * </p>
- * <p>
- * 配置的主要功能：
+ * Web 增强自动配置。
+ *
+ * <p><strong>启用条件</strong></p>
  * <ul>
- *     <li>启用Web增强功能配置属性的支持</li>
- *     <li>根据配置动态启用或禁用各种增强功能</li>
- *     <li>提供统一的Web层面的增强处理</li>
+ *   <li>Servlet Web 应用，类路径存在 {@code Servlet}、{@code DispatcherServlet}</li>
  * </ul>
- * </p>
- * <p>
- * 配置条件：
+ *
+ * <p><strong>配置项（{@code pangju.web.advice.*}）</strong></p>
  * <ul>
- *     <li>应用必须是Servlet类型的Web应用</li>
- *     <li>Classpath中必须存在Servlet和DispatcherServlet类</li>
+ *   <li>{@code binder}（默认启用）：请求参数绑定增强</li>
+ *   <li>{@code exception}（默认启用）：全局异常处理</li>
+ *   <li>{@code wrapper}（默认启用）：统一响应包装</li>
  * </ul>
- * </p>
- * <p>
- * 配置示例：
- * <pre>
- * pangju:
- *   web:
- *     advice:
- *       binding: true    # 启用请求参数绑定增强（默认为true）
- *       exception: true  # 启用全局异常处理（默认为true）
- * </pre>
- * </p>
- * <p>
- * 支持的增强功能：
+ *
+ * <p><strong>行为说明</strong></p>
  * <ul>
- *     <li>
- *         <strong>请求参数绑定增强</strong>
- *         <p>
- *         启用后，会自动将请求参数中的时间戳（毫秒级）转换为Date、LocalDate、LocalDateTime对象。
- *         由{@link RequestParamBindingAdvice}处理。配置属性：{@code pangju.web.advice.binding}
- *         </p>
- *     </li>
- *     <li>
- *         <strong>全局异常处理</strong>
- *         <p>
- *         启用后，会统一处理应用中抛出的各种异常，并返回统一的错误响应格式。
- *         由{@link GlobalExceptionAdvice}处理。配置属性：{@code pangju.web.advice.exception}
- *         </p>
- *     </li>
+ *   <li>启用配置属性绑定：{@link AdviceProperties}</li>
+ *   <li>各增强组件通过自身的条件注解生效：
+ *     <ul>
+ *       <li>请求参数绑定增强：{@link RequestParamBindingAdvice}</li>
+ *       <li>全局异常处理：{@link GlobalTomcatFileUploadExceptionAdvice}、{@link GlobalValidationExceptionAdvice}、{@link GlobalDataExceptionAdvice}、{@link GlobalSpringExceptionAdvice}、{@link GlobalInternalExceptionAdvice}</li>
+ *       <li>统一响应包装：{@link io.github.pangju666.framework.boot.autoconfigure.web.advice.wrapper.ResponseBodyWrapperAdvice}</li>
+ *     </ul>
+ *   </li>
  * </ul>
- * </p>
  *
  * @author pangju666
  * @see AdviceProperties
  * @see RequestParamBindingAdvice
- * @see GlobalExceptionAdvice
+ * @see GlobalSpringExceptionAdvice
+ * @see io.github.pangju666.framework.boot.autoconfigure.web.advice.wrapper.ResponseBodyWrapperAdvice
  * @since 1.0.0
  */
 @AutoConfiguration

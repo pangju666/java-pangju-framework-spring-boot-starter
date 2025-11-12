@@ -61,7 +61,7 @@ import java.util.Date;
  * <ul>
  *     <li>应用必须是Servlet类型的Web应用</li>
  *     <li>Classpath中必须存在Servlet和DispatcherServlet类</li>
- *     <li>配置属性{@code pangju.web.advice.binding}必须为true（默认为true）</li>
+ *     <li>配置属性{@code pangju.web.advice.binder}必须为true（默认为true）</li>
  * </ul>
  * </p>
  * <p>
@@ -70,7 +70,7 @@ import java.util.Date;
  * pangju:
  *   web:
  *     advice:
- *       binding: true  # 默认为true，可选配置
+ *       binder: true  # 默认为true，可选配置
  * </pre>
  * </p>
  * <p>
@@ -127,7 +127,7 @@ import java.util.Date;
  */
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @ConditionalOnClass({Servlet.class, DispatcherServlet.class})
-@ConditionalOnBooleanProperty(prefix = "pangju.web.advice", value = "binding", matchIfMissing = true)
+@ConditionalOnBooleanProperty(prefix = "pangju.web.advice", value = "binder", matchIfMissing = true)
 @RestControllerAdvice
 public class RequestParamBindingAdvice {
 	@InitBinder

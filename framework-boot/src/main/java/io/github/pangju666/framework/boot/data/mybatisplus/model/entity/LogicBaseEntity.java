@@ -14,11 +14,11 @@
  *    limitations under the License.
  */
 
-package io.github.pangju666.framework.boot.data.mybatisplus.model.entity.base;
+package io.github.pangju666.framework.boot.data.mybatisplus.model.entity;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableLogic;
-import io.github.pangju666.framework.boot.data.mybatisplus.annotation.TableLogicFill;
+import io.github.pangju666.framework.boot.data.mybatisplus.TableLogicFill;
 import io.github.pangju666.framework.data.mybatisplus.model.entity.BaseEntity;
 
 import java.util.Date;

@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package io.github.pangju666.framework.boot.data.dynamic.mongo.utils;
+package io.github.pangju666.framework.boot.data.dynamic.mongo;
 
 import com.mongodb.client.MongoClient;
 import org.springframework.beans.factory.BeanFactory;

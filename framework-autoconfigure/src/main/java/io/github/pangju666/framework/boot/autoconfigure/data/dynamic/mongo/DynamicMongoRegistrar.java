@@ -21,7 +21,7 @@ import com.mongodb.MongoClientSettings;
 import com.mongodb.client.ClientSession;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoDatabase;
-import io.github.pangju666.framework.boot.data.dynamic.mongo.utils.DynamicMongoUtils;
+import io.github.pangju666.framework.boot.data.dynamic.mongo.DynamicMongoUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;

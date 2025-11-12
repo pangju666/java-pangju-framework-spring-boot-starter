@@ -17,8 +17,8 @@
 package io.github.pangju666.framework.boot.autoconfigure.web.advice.exception;
 
 import io.github.pangju666.framework.web.exception.base.BaseHttpException;
-import io.github.pangju666.framework.web.model.common.Result;
-import io.github.pangju666.framework.web.servlet.builder.HttpResponseBuilder;
+import io.github.pangju666.framework.web.model.Result;
+import io.github.pangju666.framework.web.servlet.HttpResponseBuilder;
 import jakarta.servlet.Servlet;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
@@ -51,193 +51,82 @@ import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
-import java.io.IOException;
 import java.util.List;
 
 /**
- * 全局异常处理器
- * <p>
- * 该类用于统一处理Web应用中抛出的各种异常。
- * 通过{@link RestControllerAdvice}和{@link ExceptionHandler}注解，
- * 为应用中的异常提供统一的错误响应格式和HTTP状态码映射。
- * </p>
- * <p>
- * 主要功能：
- * <ul>
- *     <li>处理HTTP请求相关的异常</li>
- *     <li>处理参数验证异常</li>
- *     <li>处理文件上传异常</li>
- *     <li>处理系统级异常</li>
- *     <li>返回统一格式的错误响应</li>
- * </ul>
- * </p>
- * <p>
- * 配置条件：
- * <ul>
- *     <li>应用必须是Servlet类型的Web应用</li>
- *     <li>Classpath中必须存在Servlet和DispatcherServlet类</li>
- *     <li>配置属性{@code pangju.web.advice.exception}必须为true（默认为true）</li>
- * </ul>
- * </p>
- * <p>
- * 支持的异常类型和HTTP状态码映射：
- * <ul>
- *     <li>
- *         <strong>BaseHttpException</strong> - 自定义HTTP异常
- *         <p>直接返回异常中指定的HTTP状态码和错误信息</p>
- *     </li>
- *     <li>
- *         <strong>HttpRequestMethodNotSupportedException</strong> - 405 Method Not Allowed
- *         <p>请求使用了不支持的HTTP方法</p>
- *     </li>
- *     <li>
- *         <strong>HttpMediaTypeNotSupportedException</strong> - 415 Unsupported Media Type
- *         <p>请求的Content-Type不被支持</p>
- *     </li>
- *     <li>
- *         <strong>HttpMediaTypeNotAcceptableException</strong> - 406 Not Acceptable
- *         <p>Accept头指定的响应类型不被支持</p>
- *     </li>
- *     <li>
- *         <strong>MissingPathVariableException</strong> - 404 Not Found
- *         <p>路径中缺少必需的路径变量</p>
- *     </li>
- *     <li>
- *         <strong>MissingRequestHeaderException</strong> - 400 Bad Request
- *         <p>请求中缺少必需的请求头</p>
- *     </li>
- *     <li>
- *         <strong>MissingServletRequestParameterException</strong> - 400 Bad Request
- *         <p>请求中缺少必需的请求参数</p>
- *     </li>
- *     <li>
- *         <strong>MissingServletRequestPartException</strong> - 400 Bad Request
- *         <p>文件上传请求中缺少必需的文件</p>
- *     </li>
- *     <li>
- *         <strong>ServletRequestBindingException</strong> - 400 Bad Request
- *         <p>请求参数绑定异常</p>
- *     </li>
- *     <li>
- *         <strong>ConversionNotSupportedException</strong> - 400 Bad Request
- *         <p>请求参数类型转换失败</p>
- *     </li>
- *     <li>
- *         <strong>MethodArgumentTypeMismatchException</strong> - 400 Bad Request
- *         <p>方法参数类型不匹配</p>
- *     </li>
- *     <li>
- *         <strong>HttpMessageNotReadableException</strong> - 400 Bad Request
- *         <p>请求体内容读取失败</p>
- *     </li>
- *     <li>
- *         <strong>MultipartException</strong> - 400 Bad Request
- *         <p>文件上传处理失败</p>
- *     </li>
- *     <li>
- *         <strong>MethodArgumentNotValidException</strong> - 400 Bad Request
- *         <p>请求参数验证不合法（Bean Validation）</p>
- *     </li>
- *     <li>
- *         <strong>NoHandlerFoundException</strong> - 404 Not Found
- *         <p>请求路径对应的处理器不存在</p>
- *     </li>
- *     <li>
- *         <strong>NoResourceFoundException</strong> - 404 Not Found
- *         <p>请求资源不存在</p>
- *     </li>
- *     <li>
- *         <strong>AsyncRequestTimeoutException</strong> - 503 Service Unavailable
- *         <p>异步请求超时</p>
- *     </li>
- *     <li>
- *         <strong>HttpMessageNotWritableException</strong> - 500 Internal Server Error
- *         <p>响应体内容写入失败</p>
- *     </li>
- *     <li>
- *         <strong>IOException</strong> - 500 Internal Server Error
- *         <p>IO操作异常</p>
- *     </li>
- *     <li>
- *         <strong>RuntimeException</strong> - 500 Internal Server Error
- *         <p>运行时异常</p>
- *     </li>
- *     <li>
- *         <strong>Exception</strong> - 500 Internal Server Error
- *         <p>所有其他异常的兜底处理</p>
- *     </li>
- * </ul>
- * </p>
- * <p>
- * 配置示例：
- * <pre>
- * pangju:
- *   web:
- *     advice:
- *       exception: true  # 默认为true，启用全局异常处理
- * </pre>
- * </p>
- * <p>
- * 响应格式：
- * <p>
- * 所有异常处理方法都返回统一的错误响应格式：
- * <pre>
- * {
- *   "code": "错误代码",
- *   "message": "错误描述信息",
- *   "data": null
- * }
- * </pre>
- * 其中BaseHttpException会返回自定义的HTTP状态码。
- * </p>
- * </p>
- * <p>
- * 日志记录：
- * <p>
- * 该类会对某些异常进行日志记录，便于问题排查和监控。
- * 记录级别为ERROR，可通过日志系统进行追踪。
- * </p>
- * </p>
+ * 全局处理通用 HTTP 与系统异常。
  *
- * @author pangju666
+ * <p><strong>启用条件</strong></p>
+ * <ul>
+ *   <li>Servlet Web 应用，类路径存在 {@code Servlet}、{@code DispatcherServlet}</li>
+ *   <li>配置项 {@code pangju.web.advice.exception=true}（默认启用）</li>
+ * </ul>
+ *
+ * <p><strong>行为说明</strong></p>
+ * <ul>
+ *   <li>自定义 {@link BaseHttpException}：通过 {@link HttpResponseBuilder} 写入异常中的 HTTP 状态码与消息</li>
+ *   <li>常见 Web 异常：返回对应的 HTTP 状态（如 400/404/415/503/500），消息来源于异常或统一文案</li>
+ *   <li>统一错误响应结构：{@link Result#fail(String)}，不向客户端暴露服务端堆栈</li>
+ * </ul>
+ *
+ * <p><strong>优先级</strong></p>
+ * <ul>
+ *   <li>{@link Ordered#HIGHEST_PRECEDENCE} + 3</li>
+ * </ul>
+ *
+ * <p><strong>相关说明</strong></p>
+ * <ul>
+ *   <li>此处理器与其他专用异常处理器（如参数验证、文件上传）协同工作，提供兜底与通用映射</li>
+ * </ul>
+ *
  * @see RestControllerAdvice
  * @see ExceptionHandler
+ * @see BaseHttpException
+ * @see Result
  * @since 1.0.0
  */
-@Order(Ordered.LOWEST_PRECEDENCE - 2)
+@Order(Ordered.HIGHEST_PRECEDENCE + 3)
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @ConditionalOnClass({Servlet.class, DispatcherServlet.class})
 @ConditionalOnBooleanProperty(prefix = "pangju.web.advice", value = "exception", matchIfMissing = true)
 @RestControllerAdvice
-public class GlobalExceptionAdvice {
+public class GlobalSpringExceptionAdvice {
 	/**
-	 * 日志记录器
+	 * 日志记录器。
 	 *
 	 * @since 1.0.0
 	 */
-	private static final Logger LOGGER = LoggerFactory.getLogger(GlobalExceptionAdvice.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(GlobalSpringExceptionAdvice.class);
 
 	/**
-	 * 处理自定义HTTP异常
-	 * <p>
-	 * 该方法处理应用中抛出的自定义HTTP异常。
-	 * 异常中包含具体的HTTP状态码和错误信息，直接写入响应中。
-	 * </p>
+	 * 处理自定义 HTTP 异常。
 	 *
-	 * @param e 自定义HTTP异常
-	 * @param response HTTP响应对象
+	 * <p><strong>行为</strong></p>
+	 * <ul>
+	 *   <li>通过 {@link HttpResponseBuilder} 将异常的 HTTP 状态码与消息写入响应</li>
+	 *   <li>不返回统一结构；直接输出自定义异常格式</li>
+	 * </ul>
+	 *
+	 * @param e        自定义 HTTP 异常
+	 * @param response HTTP 响应对象
 	 * @since 1.0.0
 	 */
 	@ExceptionHandler(value = BaseHttpException.class)
 	public void handleBaseHttpException(BaseHttpException e, HttpServletResponse response) {
-		HttpResponseBuilder.from(response).buffer(false).writeHttpException(e);
+		HttpResponseBuilder.from(response).writeHttpException(e);
 	}
 
 	/**
-	 * 处理HTTP请求方法不支持异常
+	 * 处理请求方法不支持异常。
+	 *
+	 * <p><strong>行为</strong></p>
+	 * <ul>
+	 *   <li>返回统一失败响应，HTTP 405（{@link HttpStatus#METHOD_NOT_ALLOWED}）</li>
+	 *   <li>提示期望的请求方法集合</li>
+	 * </ul>
 	 *
 	 * @param e 异常实例
-	 * @return 错误响应，HTTP状态码405
+	 * @return 统一失败响应
 	 * @since 1.0.0
 	 */
 	@ResponseStatus(HttpStatus.METHOD_NOT_ALLOWED)
@@ -247,10 +136,16 @@ public class GlobalExceptionAdvice {
 	}
 
 	/**
-	 * 处理请求的Content-Type不支持异常
+	 * 处理请求的 Content-Type 不支持异常。
+	 *
+	 * <p><strong>行为</strong></p>
+	 * <ul>
+	 *   <li>返回统一失败响应，HTTP 415（{@link HttpStatus#UNSUPPORTED_MEDIA_TYPE}）</li>
+	 *   <li>提示期望的媒体类型集合</li>
+	 * </ul>
 	 *
 	 * @param e 异常实例
-	 * @return 错误响应，HTTP状态码415
+	 * @return 统一失败响应
 	 * @since 1.0.0
 	 */
 	@ResponseStatus(HttpStatus.UNSUPPORTED_MEDIA_TYPE)
@@ -260,10 +155,16 @@ public class GlobalExceptionAdvice {
 	}
 
 	/**
-	 * 处理Accept响应类型不支持异常
+	 * 处理 Accept 响应类型不支持异常。
+	 *
+	 * <p><strong>行为</strong></p>
+	 * <ul>
+	 *   <li>返回统一失败响应，HTTP 406（{@link HttpStatus#NOT_ACCEPTABLE}）</li>
+	 *   <li>提示期望的媒体类型集合</li>
+	 * </ul>
 	 *
 	 * @param e 异常实例
-	 * @return 错误响应，HTTP状态码406
+	 * @return 统一失败响应
 	 * @since 1.0.0
 	 */
 	@ResponseStatus(HttpStatus.NOT_ACCEPTABLE)
@@ -273,10 +174,16 @@ public class GlobalExceptionAdvice {
 	}
 
 	/**
-	 * 处理缺少路径变量异常
+	 * 处理缺少路径变量异常。
+	 *
+	 * <p><strong>行为</strong></p>
+	 * <ul>
+	 *   <li>记录 ERROR 级别日志</li>
+	 *   <li>返回统一失败响应，HTTP 404（{@link HttpStatus#NOT_FOUND}）</li>
+	 * </ul>
 	 *
 	 * @param e 异常实例
-	 * @return 错误响应，HTTP状态码404
+	 * @return 统一失败响应
 	 * @since 1.0.0
 	 */
 	@ResponseStatus(HttpStatus.NOT_FOUND)
@@ -287,10 +194,16 @@ public class GlobalExceptionAdvice {
 	}
 
 	/**
-	 * 处理缺少请求头异常
+	 * 处理缺少请求头异常。
+	 *
+	 * <p><strong>行为</strong></p>
+	 * <ul>
+	 *   <li>返回统一失败响应，HTTP 400（{@link HttpStatus#BAD_REQUEST}）</li>
+	 *   <li>提示缺少的请求头名称</li>
+	 * </ul>
 	 *
 	 * @param e 异常实例
-	 * @return 错误响应，HTTP状态码400
+	 * @return 统一失败响应
 	 * @since 1.0.0
 	 */
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -300,10 +213,16 @@ public class GlobalExceptionAdvice {
 	}
 
 	/**
-	 * 处理缺少请求参数异常
+	 * 处理缺少请求参数异常。
+	 *
+	 * <p><strong>行为</strong></p>
+	 * <ul>
+	 *   <li>返回统一失败响应，HTTP 400（{@link HttpStatus#BAD_REQUEST}）</li>
+	 *   <li>提示缺少的请求参数名称</li>
+	 * </ul>
 	 *
 	 * @param e 异常实例
-	 * @return 错误响应，HTTP状态码400
+	 * @return 统一失败响应
 	 * @since 1.0.0
 	 */
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -313,10 +232,16 @@ public class GlobalExceptionAdvice {
 	}
 
 	/**
-	 * 处理缺少请求值异常
+	 * 处理缺少请求值异常。
+	 *
+	 * <p><strong>行为</strong></p>
+	 * <ul>
+	 *   <li>返回统一失败响应，HTTP 400（{@link HttpStatus#BAD_REQUEST}）</li>
+	 *   <li>直接使用异常消息作为提示</li>
+	 * </ul>
 	 *
 	 * @param e 异常实例
-	 * @return 错误响应，HTTP状态码400
+	 * @return 统一失败响应
 	 * @since 1.0.0
 	 */
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -326,10 +251,16 @@ public class GlobalExceptionAdvice {
 	}
 
 	/**
-	 * 处理缺少请求文件异常
+	 * 处理缺少请求文件异常。
+	 *
+	 * <p><strong>行为</strong></p>
+	 * <ul>
+	 *   <li>返回统一失败响应，HTTP 400（{@link HttpStatus#BAD_REQUEST}）</li>
+	 *   <li>提示缺少的文件部件名称</li>
+	 * </ul>
 	 *
 	 * @param e 异常实例
-	 * @return 错误响应，HTTP状态码400
+	 * @return 统一失败响应
 	 * @since 1.0.0
 	 */
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -339,10 +270,16 @@ public class GlobalExceptionAdvice {
 	}
 
 	/**
-	 * 处理请求参数绑定异常
+	 * 处理请求参数绑定异常。
+	 *
+	 * <p><strong>行为</strong></p>
+	 * <ul>
+	 *   <li>记录 ERROR 级别日志</li>
+	 *   <li>返回统一失败响应，HTTP 400（{@link HttpStatus#BAD_REQUEST}）</li>
+	 * </ul>
 	 *
 	 * @param e 异常实例
-	 * @return 错误响应，HTTP状态码400
+	 * @return 统一失败响应
 	 * @since 1.0.0
 	 */
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -353,10 +290,16 @@ public class GlobalExceptionAdvice {
 	}
 
 	/**
-	 * 处理请求参数转换不支持异常
+	 * 处理请求参数转换不支持异常。
+	 *
+	 * <p><strong>行为</strong></p>
+	 * <ul>
+	 *   <li>记录 ERROR 级别日志</li>
+	 *   <li>返回统一失败响应，HTTP 400（{@link HttpStatus#BAD_REQUEST}）</li>
+	 * </ul>
 	 *
 	 * @param e 异常实例
-	 * @return 错误响应，HTTP状态码400
+	 * @return 统一失败响应
 	 * @since 1.0.0
 	 */
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -367,10 +310,16 @@ public class GlobalExceptionAdvice {
 	}
 
 	/**
-	 * 处理方法参数类型不匹配异常
+	 * 处理方法参数类型不匹配异常。
+	 *
+	 * <p><strong>行为</strong></p>
+	 * <ul>
+	 *   <li>返回统一失败响应，HTTP 400（{@link HttpStatus#BAD_REQUEST}）</li>
+	 *   <li>提示不匹配的参数名称</li>
+	 * </ul>
 	 *
 	 * @param e 异常实例
-	 * @return 错误响应，HTTP状态码400
+	 * @return 统一失败响应
 	 * @since 1.0.0
 	 */
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -380,10 +329,16 @@ public class GlobalExceptionAdvice {
 	}
 
 	/**
-	 * 处理HTTP请求内容不可读异常
+	 * 处理请求内容不可读异常。
+	 *
+	 * <p><strong>行为</strong></p>
+	 * <ul>
+	 *   <li>记录 ERROR 级别日志</li>
+	 *   <li>返回统一失败响应，HTTP 400（{@link HttpStatus#BAD_REQUEST}）</li>
+	 * </ul>
 	 *
 	 * @param e 异常实例
-	 * @return 错误响应，HTTP状态码400
+	 * @return 统一失败响应
 	 * @since 1.0.0
 	 */
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -394,10 +349,16 @@ public class GlobalExceptionAdvice {
 	}
 
 	/**
-	 * 处理文件上传失败异常
+	 * 处理文件上传失败异常。
+	 *
+	 * <p><strong>行为</strong></p>
+	 * <ul>
+	 *   <li>记录 ERROR 级别日志</li>
+	 *   <li>返回统一失败响应，HTTP 400（{@link HttpStatus#BAD_REQUEST}）</li>
+	 * </ul>
 	 *
 	 * @param e 异常实例
-	 * @return 错误响应，HTTP状态码400
+	 * @return 统一失败响应
 	 * @since 1.0.0
 	 */
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -408,10 +369,16 @@ public class GlobalExceptionAdvice {
 	}
 
 	/**
-	 * 处理HTTP响应内容不可写异常
+	 * 处理响应内容不可写异常。
+	 *
+	 * <p><strong>行为</strong></p>
+	 * <ul>
+	 *   <li>记录 ERROR 级别日志</li>
+	 *   <li>返回统一失败响应，HTTP 500（{@link HttpStatus#INTERNAL_SERVER_ERROR}）</li>
+	 * </ul>
 	 *
 	 * @param e 异常实例
-	 * @return 错误响应，HTTP状态码500
+	 * @return 统一失败响应
 	 * @since 1.0.0
 	 */
 	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -422,10 +389,17 @@ public class GlobalExceptionAdvice {
 	}
 
 	/**
-	 * 处理方法参数验证异常（Bean Validation）
+	 * 处理方法参数验证异常（Bean Validation）。
+	 *
+	 * <p><strong>行为</strong></p>
+	 * <ul>
+	 *   <li>返回统一失败响应，HTTP 400（{@link HttpStatus#BAD_REQUEST}）</li>
+	 *   <li>优先返回第一个字段错误的默认消息</li>
+	 *   <li>无可用提示时返回“请求参数验证不合法”</li>
+	 * </ul>
 	 *
 	 * @param e 异常实例
-	 * @return 错误响应，HTTP状态码400
+	 * @return 统一失败响应
 	 * @since 1.0.0
 	 */
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -441,10 +415,16 @@ public class GlobalExceptionAdvice {
 	}
 
 	/**
-	 * 处理请求路径不存在异常
+	 * 处理请求路径不存在异常。
+	 *
+	 * <p><strong>行为</strong></p>
+	 * <ul>
+	 *   <li>返回统一失败响应，HTTP 404（{@link HttpStatus#NOT_FOUND}）</li>
+	 *   <li>提示不存在的请求路径</li>
+	 * </ul>
 	 *
 	 * @param e 异常实例
-	 * @return 错误响应，HTTP状态码404
+	 * @return 统一失败响应
 	 * @since 1.0.0
 	 */
 	@ResponseStatus(HttpStatus.NOT_FOUND)
@@ -454,10 +434,16 @@ public class GlobalExceptionAdvice {
 	}
 
 	/**
-	 * 处理请求路径不存在异常
+	 * 处理请求资源不存在异常。
+	 *
+	 * <p><strong>行为</strong></p>
+	 * <ul>
+	 *   <li>返回统一失败响应，HTTP 404（{@link HttpStatus#NOT_FOUND}）</li>
+	 *   <li>提示不存在的资源路径</li>
+	 * </ul>
 	 *
 	 * @param e 异常实例
-	 * @return 错误响应，HTTP状态码404
+	 * @return 统一失败响应
 	 * @since 1.0.0
 	 */
 	@ResponseStatus(HttpStatus.NOT_FOUND)
@@ -467,10 +453,16 @@ public class GlobalExceptionAdvice {
 	}
 
 	/**
-	 * 处理异步请求超时异常
+	 * 处理异步请求超时异常。
+	 *
+	 * <p><strong>行为</strong></p>
+	 * <ul>
+	 *   <li>记录 ERROR 级别日志</li>
+	 *   <li>返回统一失败响应，HTTP 503（{@link HttpStatus#SERVICE_UNAVAILABLE}）</li>
+	 * </ul>
 	 *
 	 * @param e 异常实例
-	 * @return 错误响应，HTTP状态码503
+	 * @return 统一失败响应
 	 * @since 1.0.0
 	 */
 	@ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
@@ -478,47 +470,5 @@ public class GlobalExceptionAdvice {
 	public Result<Void> handleAsyncRequestTimeoutException(AsyncRequestTimeoutException e) {
 		LOGGER.error("异步请求超时", e);
 		return Result.fail("异步请求超时");
-	}
-
-	/**
-	 * 处理IO异常
-	 *
-	 * @param e 异常实例
-	 * @return 错误响应，HTTP状态码500
-	 * @since 1.0.0
-	 */
-	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-	@ExceptionHandler(value = IOException.class)
-	public Result<Void> handleIOException(IOException e) {
-		LOGGER.error("IO异常", e);
-		return Result.fail("服务器内部错误");
-	}
-
-	/**
-	 * 处理运行时异常
-	 *
-	 * @param e 异常实例
-	 * @return 错误响应，HTTP状态码500
-	 * @since 1.0.0
-	 */
-	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-	@ExceptionHandler(value = RuntimeException.class)
-	public Result<Void> handleRuntimeException(RuntimeException e) {
-		LOGGER.error("运行时异常", e);
-		return Result.fail("服务器内部错误");
-	}
-
-	/**
-	 * 处理所有其他异常（兜底处理）
-	 *
-	 * @param e 异常实例
-	 * @return 错误响应，HTTP状态码500
-	 * @since 1.0.0
-	 */
-	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-	@ExceptionHandler(value = Exception.class)
-	public Result<Void> handleException(Exception e) {
-		LOGGER.error("系统级异常", e);
-		return Result.fail("服务器内部错误");
 	}
 }

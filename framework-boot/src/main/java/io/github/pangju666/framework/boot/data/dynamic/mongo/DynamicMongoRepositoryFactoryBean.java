@@ -16,8 +16,6 @@
 
 package io.github.pangju666.framework.boot.data.dynamic.mongo;
 
-import io.github.pangju666.framework.boot.data.dynamic.mongo.annotation.DynamicMongo;
-import io.github.pangju666.framework.boot.data.dynamic.mongo.utils.DynamicMongoUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;

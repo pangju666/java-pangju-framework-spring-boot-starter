@@ -16,7 +16,7 @@
 
 package io.github.pangju666.framework.boot.autoconfigure.data.dynamic.redis;
 
-import io.github.pangju666.framework.boot.data.dynamic.redis.utils.DynamicRedisUtils;
+import io.github.pangju666.framework.boot.data.dynamic.redis.DynamicRedisUtils;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration;
