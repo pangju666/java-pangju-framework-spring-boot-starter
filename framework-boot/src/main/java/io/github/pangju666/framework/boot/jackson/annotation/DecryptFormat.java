@@ -35,9 +35,21 @@ import java.lang.annotation.Target;
  * 该注解可以应用于类的字段上，指定字段在JSON反序列化时将使用{@link DecryptJsonDeserializer}
  * 进行解密处理。解密过程将根据配置的密钥、算法和编码方式进行。
  * </p>
+ * <p>
+ * 支持的字段类型（依据 {@link DecryptJsonDeserializer} 的类型分派）：
+ * </p>
+ * <ul>
+ *   <li>标量类型：{@link String}、<code>byte[]</code>、{@link java.math.BigInteger}、{@link java.math.BigDecimal}</li>
+ *   <li>集合类型：{@link java.util.List}&lt;T&gt;、{@link java.util.Set}&lt;T&gt;、{@link java.util.Collection}&lt;T&gt;，其中 T 为上述受支持类型</li>
+ *   <li>映射类型：{@link java.util.Map}&lt;String, T&gt;（键为字符串），其中 T 为上述受支持类型</li>
+ * </ul>
+ * <p>
+ * 说明：对于 {@link java.math.BigInteger} 与 {@link java.math.BigDecimal}，既支持字符串输入也支持数值输入；
+ * 当 JSON 值为 <code>null</code> 时反序列化结果为 <code>null</code>。
+ * </p>
  *
  * @author pangju666
- * @see DecryptJsonDeserializer
+ * @see EncryptFormat
  * @see Algorithm
  * @see Encoding
  * @since 1.0.0

@@ -35,9 +35,21 @@ import java.lang.annotation.Target;
  * 该注解可以应用于类的字段上，指定字段在JSON序列化时将使用{@link EncryptJsonSerializer}
  * 进行加密处理。加密过程将根据配置的密钥、算法和编码方式进行。
  * </p>
+ * <p>
+ * 支持的字段类型（依据 {@link EncryptJsonSerializer} 的类型分派）：
+ * </p>
+ * <ul>
+ *   <li>标量类型：{@link String}、<code>byte[]</code>、{@link java.math.BigInteger}、{@link java.math.BigDecimal}</li>
+ *   <li>集合类型：{@link java.util.List}&lt;T&gt;、{@link java.util.Set}&lt;T&gt;、{@link java.util.Collection}&lt;T&gt; 以及其他 {@link Iterable}&lt;T&gt;，其中 T 为上述受支持类型</li>
+ *   <li>映射类型：{@link java.util.Map}&lt;?, T&gt; 其中 T 为上述受支持类型</li>
+ * </ul>
+ * <p>
+ * 说明：不在列表中的类型将按 POJO 原样输出（不加密）；当值为 <code>null</code> 时输出 JSON null；
+ * 字符串为空白（空或仅空白字符）时原样输出不加密。
+ * </p>
  *
  * @author pangju666
- * @see EncryptJsonSerializer
+ * @see DecryptFormat
  * @see Algorithm
  * @see Encoding
  * @since 1.0.0

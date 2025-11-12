@@ -87,7 +87,6 @@ import java.util.Objects;
  * 注意事项：
  * <ul>
  *     <li>空响应体不加密；{@link Result} 的 {@code code} 与 {@code message} 不加密，仅加密 {@code data}。</li>
- *     <li>当密钥解析失败（为空）时，本通知返回 {@code null} 作为响应体。</li>
  * </ul>
  * </p>
  *
@@ -167,9 +166,6 @@ public class ResponseBodyEncryptAdvice implements ResponseBodyAdvice<Object> {
 		EncryptResponseBody annotation = returnType.getMethodAnnotation(EncryptResponseBody.class);
 		if (Objects.isNull(annotation)) {
 			annotation = returnType.getDeclaringClass().getAnnotation(EncryptResponseBody.class);
-		}
-		if (Objects.isNull(annotation)) {
-			return body;
 		}
 
 		String key = CryptoUtils.getKey(annotation.key(), true);

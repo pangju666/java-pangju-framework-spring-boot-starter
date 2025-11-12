@@ -21,62 +21,59 @@ import io.github.pangju666.framework.boot.crypto.factory.impl.AES256CryptoFactor
 import io.github.pangju666.framework.boot.enums.Algorithm;
 import io.github.pangju666.framework.boot.enums.Encoding;
 import io.github.pangju666.framework.web.exception.base.ServerException;
-import io.github.pangju666.framework.web.model.Result;
+import io.github.pangju666.framework.web.exception.base.ServiceException;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.lang.annotation.*;
 
 /**
- * 响应体加密注解。
+ * 请求体解密注解。
  *
  * <p><strong>适用范围</strong></p>
  * <ul>
- *   <li>用于标注在控制器类或方法上，配合响应体处理器在序列化 HTTP 响应时进行加密</li>
- *   <li>仅在 Servlet Web 环境中、响应加密处理器启用时生效</li>
+ *   <li>标注在控制器方法参数上（通常与 {@link org.springframework.web.bind.annotation.RequestBody} 联合使用）。</li>
+ *   <li>仅在 Servlet Web 环境中、请求解密处理器启用时生效。</li>
  * </ul>
  *
  * <p><strong>行为说明</strong></p>
  * <ul>
- *   <li>按照注解配置选择加密算法与编码方式，对响应体进行加密</li>
- *   <li>支持的响应类型：
- *     <ul>
- *       <li>{@code String}：直接加密字符串</li>
- *       <li>{@code byte[]}：直接加密字节数组</li>
- *       <li>{@link Result}：仅加密 {@code data} 字段，保留 {@code code} 与 {@code msg}</li>
- *       <li>其他对象：先序列化为 JSON 字符串后加密</li>
- *     </ul>
- *   </li>
- *   <li>空响应体不加密</li>
+ *   <li>按注解配置选择解密算法与编码方式，对请求体解密。</li>
+ *   <li>支持请求体类型：String、JSON 字符串（空体保留为空或替换为空 JSON）。</li>
+ *   <li>密钥支持明文或占位符（如 {@code ${app.encryption.key}}），占位符从 Spring 配置解析。</li>
  * </ul>
  *
  * <p><strong>异常说明</strong></p>
  * <ul>
- *   <li>密钥配置缺失或无效、占位符解析失败、加密失败等，将抛出 {@link ServerException}</li>
+ *   <li>密钥为空或占位符解析失败：抛出 {@link ServerException}。</li>
+ *   <li>解密失败或编码解码失败：抛出 {@link ServiceException}。</li>
+ *   <li>请求体读取异常或密钥格式非法：抛出 {@link ServerException}。</li>
  * </ul>
  *
  * <p><strong>注意事项</strong></p>
  * <ul>
- *   <li>类或方法上均可使用；标注在类上时，作用于该类的所有处理方法</li>
- *   <li>客户端需使用与服务端一致的算法与编码进行解密</li>
- *   <li>建议将密钥存储在外部配置中，避免硬编码</li>
+ *   <li>仅支持 JSON 和 String 请求体。</li>
+ *   <li>客户端需与服务端保持算法与编码一致。</li>
+ *   <li>建议将密钥外置配置，避免硬编码</li>
  * </ul>
  *
  * @author pangju666
  * @see Algorithm
  * @see Encoding
- * @see DecryptRequestBody
+ * @see RequestBody
+ * @see EncryptResponseBody
  * @since 1.0.0
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE, ElementType.METHOD})
-public @interface EncryptResponseBody {
+@Target({ElementType.PARAMETER})
+public @interface DecryptRequestBody {
 	/**
 	 * 明文密钥或占位符。
 	 *
 	 * <p>支持两种形式：</p>
 	 * <ul>
-	 *   <li>明文密钥：直接传入密钥字符串，例如 {@code @EncryptResponseBody(key = "my-secret-key")}</li>
-	 *   <li>占位符：使用 {@code ${property.name}} 格式，框架将从 Spring 配置读取实际密钥值，例如 {@code @EncryptResponseBody(key = "${app.encryption.key}")}</li>
+	 *   <li>明文密钥：直接传入密钥字符串，例如 {@code @DecryptRequestBody(key = "my-secret-key")}</li>
+	 *   <li>占位符：使用 {@code ${property.name}} 格式，框架将从 Spring 配置读取实际密钥值，例如 {@code @DecryptRequestBody(key = "${app.encryption.key}")}</li>
 	 * </ul>
 	 *
 	 * @return 密钥或占位符字符串
@@ -85,7 +82,7 @@ public @interface EncryptResponseBody {
 	String key();
 
 	/**
-	 * 用于加密的算法
+	 * 用于解密的算法
 	 * <p>
 	 * 默认使用AES256算法
 	 * </p>
@@ -96,12 +93,9 @@ public @interface EncryptResponseBody {
 	Algorithm algorithm() default Algorithm.AES256;
 
 	/**
-	 * 加密内容的编码方式
+	 * 解密内容的编码方式
 	 * <p>
 	 * 默认使用BASE64编码。
-	 * </p>
-	 * <p>
-	 * 注意：仅在加密字符串时生效，对二进制类型不适用。
 	 * </p>
 	 *
 	 * @return 编码方式
@@ -110,13 +104,13 @@ public @interface EncryptResponseBody {
 	Encoding encoding() default Encoding.BASE64;
 
 	/**
-	 * 自定义加密工厂
+	 * 自定义解密工厂
 	 * <p>
-	 * 当 {@link Algorithm#CUSTOM} 被指定为算法时，使用该工厂提供的实现进行加密；
+	 * 当 {@link Algorithm#CUSTOM} 被指定为算法时，使用该工厂提供的实现进行解密；
 	 * 其他算法将忽略此配置并使用预设工厂。
 	 * </p>
 	 *
-	 * @return 自定义加密工厂类型
+	 * @return 自定义解密工厂类型
 	 * @since 1.0.0
 	 */
 	Class<? extends CryptoFactory> factory() default AES256CryptoFactory.class;
