@@ -91,7 +91,7 @@ public class RedisIdempotentValidator implements IdempotentValidator {
 	 * </ul>
 	 * </p>
 	 *
-	 * @param key 请求的唯一标识，作为幂等性校验的关键字段。
+	 * @param key    请求的唯一标识，作为幂等性校验的关键字段。
 	 * @param repeat {@link Idempotent} 注解，提供幂等相关的配置信息（如过期时间等）。
 	 * @return 如果请求未重复且验证成功，返回 {@code true}；否则返回 {@code false}。
 	 */
@@ -101,8 +101,11 @@ public class RedisIdempotentValidator implements IdempotentValidator {
 		if (StringUtils.isNotBlank(keyPrefix)) {
 			repeatKey = keyPrefix + REDIS_PATH_DELIMITER + repeatKey;
 		}
-		Boolean acquired = redisTemplate.opsForValue().setIfAbsent(repeatKey, true, repeat.interval(), repeat.timeUnit());
-		return !Boolean.FALSE.equals(acquired);
+		if (redisTemplate.hasKey(repeatKey)) {
+			return false;
+		}
+		redisTemplate.opsForValue().setIfAbsent(repeatKey, true, repeat.interval(), repeat.timeUnit());
+		return true;
 	}
 
 	/**
@@ -112,7 +115,7 @@ public class RedisIdempotentValidator implements IdempotentValidator {
 	 * 适用于未完成有效期就被特殊情况要求手动清理记录的场景。
 	 * </p>
 	 *
-	 * @param key 请求的唯一标识。
+	 * @param key    请求的唯一标识。
 	 * @param repeat {@link Idempotent} 注解，提供幂等性相关的配置信息。
 	 */
 	@Override

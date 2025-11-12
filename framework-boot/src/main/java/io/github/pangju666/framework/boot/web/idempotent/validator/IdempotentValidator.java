@@ -64,7 +64,7 @@ public interface IdempotentValidator {
 	 * 可通过此方法移除已保存的幂等记录。
 	 * </p>
 	 *
-	 * @param key 唯一标识的请求键值。
+	 * @param key    唯一标识的请求键值。
 	 * @param repeat 包含幂等性配置的 {@link Idempotent} 注解信息。
 	 * @since 1.0.0
 	 */

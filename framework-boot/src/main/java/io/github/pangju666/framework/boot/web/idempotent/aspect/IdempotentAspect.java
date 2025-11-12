@@ -134,7 +134,7 @@ public class IdempotentAspect {
 	 *
 	 * @param point AOP 切点，包含拦截方法的上下文信息（如方法签名和参数）。
 	 * @throws IdempotentException 当请求为重复时抛出此异常。
-	 * @throws ServerException 当校验过程中发生异常时抛出此异常。
+	 * @throws ServerException     当校验过程中发生异常时抛出此异常。
 	 * @since 1.0.0
 	 */
 	@Before("(@within(org.springframework.web.bind.annotation.RestController) || " +

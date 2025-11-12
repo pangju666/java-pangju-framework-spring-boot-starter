@@ -30,31 +30,38 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.util.StringUtils;
 
 /**
- * 基于 Redis 的幂等性校验配置类。
+ * 基于 Redis 的幂等校验自动配置
  * <p>
- * 当幂等性校验的类型配置为 {@code REDIS} 时（即 {@code pangju.web.idempotent.type=REDIS}），
- * 自动配置一个基于 Redis 的 {@link RedisIdempotentValidator} 幂等性校验器实例。
- * 该实现利用 Redis 的分布式存储特性，在分布式环境下提供幂等性支持。
+ * 当选择 {@code REDIS} 实现时自动注册 {@link RedisIdempotentValidator}，
+ * 依赖 {@link RedisOperations}，在分布式环境下提供幂等校验能力。
  * </p>
- *
- * <p>配置特性：</p>
+ * <p><b>生效条件</b></p>
  * <ul>
- *     <li>仅在类路径中存在 {@link RedisOperations} 时生效，确保 Redis 相关依赖已加载。</li>
- *     <li>当 {@code pangju.web.idempotent.type} 配置为 {@code REDIS} 时激活。</li>
- *     <li>避免重复注册：当上下文中不存在 {@link IdempotentValidator} Bean 时才会注册。</li>
+ *   <li>类路径存在 {@link RedisOperations}（{@link ConditionalOnClass}）。</li>
+ *   <li>属性 {@code pangju.web.idempotent.type} 为 {@code REDIS}（{@link ConditionalOnProperty}）。</li>
+ *   <li>上下文中不存在 {@link IdempotentValidator} Bean（{@link ConditionalOnMissingBean}）。</li>
  * </ul>
- *
- * <p>适用场景：</p>
+ * <p><b>行为说明</b></p>
  * <ul>
- *     <li>分布式系统：适用于需要分布式幂等性校验的场景。</li>
- *     <li>高并发环境：利用 Redis 的高性能特点提供快速响应。</li>
+ *   <li>根据 {@link IdempotentProperties.Redis#getRedisTemplateRef()} 指定的 Bean 名称选择 {@link RedisTemplate}，未配置则回退到默认 Bean。</li>
+ *   <li>使用 {@link IdempotentProperties.Redis#getKeyPrefix()} 作为键前缀进行幂等键生成。</li>
  * </ul>
- *
- * <p>配置示例：</p>
+ * <p><b>注意事项</b></p>
+ * <ul>
+ *   <li>与 {@link io.github.pangju666.framework.boot.autoconfigure.web.idempotent.IdempotentProperties.Type#REDIS} 配置配合使用。</li>
+ *   <li>确保应用中存在可用的 {@link RedisTemplate} Bean；否则将无法创建验证器。</li>
+ * </ul>
+ * <p><b>配置示例（YAML）</b></p>
  * <pre>
- * pangju.web.idempotent.type=REDIS
- * pangju.web.idempotent.redis.key-prefix=idempotent
- * pangju.web.idempotent.redis.redis-template-bean-name=customRedisTemplate
+ * {@code
+ * pangju:
+ *   web:
+ *     idempotent:
+ *       type: REDIS
+ *       redis:
+ *         redis-template-ref: customRedisTemplate
+ *         key-prefix: idempotent
+ * }
  * </pre>
  *
  * @author pangju666
@@ -66,31 +73,25 @@ import org.springframework.util.StringUtils;
 @ConditionalOnClass(RedisOperations.class)
 @ConditionalOnProperty(prefix = "pangju.web.idempotent", value = "type", havingValue = "REDIS")
 public class RedisRequestRepeaterConfiguration {
-	/**
-	 * 创建基于 Redis 的幂等性校验器。
-	 * <p>
-	 * 当上下文中没有已定义的 {@link IdempotentValidator} Bean 时，自动注册
-	 * {@link RedisIdempotentValidator} 实例。
-	 * </p>
-	 *
-	 * <p>校验器的核心功能：</p>
-	 * <ul>
-	 *     <li>基于 Redis 的键值存储实现分布式幂等性校验。</li>
-	 *     <li>支持动态配置 Redis 键的前缀和使用的 RedisTemplate。</li>
-	 * </ul>
-	 *
-	 * @param properties  幂等性配置属性 {@link IdempotentProperties}，包含 Redis 相关配置。
-	 * @param beanFactory Spring 的 {@link BeanFactory}，用于动态获取 RedisTemplate 实例。
-	 * @return {@link RedisIdempotentValidator} 实例，用于幂等性校验。
-	 * @since 1.0.0
-	 */
+    /**
+     * 注册基于 Redis 的幂等验证器。
+     * <p>
+     * 优先使用配置的 {@code redis-template-ref} 指定的 {@link RedisTemplate} Bean；
+     * 未配置时回退到默认 {@link RedisTemplate}。
+     * </p>
+     *
+     * @param properties  幂等属性（包含 {@link IdempotentProperties.Redis} 配置）
+     * @param beanFactory 用于按名称或类型获取 {@link RedisTemplate} Bean
+     * @return {@link RedisIdempotentValidator} 实例
+     * @since 1.0.0
+     */
 	@SuppressWarnings("unchecked")
 	@ConditionalOnMissingBean(IdempotentValidator.class)
 	@Bean
 	public RedisIdempotentValidator redisIdempotentValidator(IdempotentProperties properties, BeanFactory beanFactory) {
 		RedisTemplate<String, Object> redisTemplate;
-		if (StringUtils.hasText(properties.getRedis().getRedisTemplateBeanName())) {
-			redisTemplate = beanFactory.getBean(properties.getRedis().getRedisTemplateBeanName(), RedisTemplate.class);
+		if (StringUtils.hasText(properties.getRedis().getRedisTemplateRef())) {
+			redisTemplate = beanFactory.getBean(properties.getRedis().getRedisTemplateRef(), RedisTemplate.class);
 		} else {
 			redisTemplate = beanFactory.getBean(RedisTemplate.class);
 		}

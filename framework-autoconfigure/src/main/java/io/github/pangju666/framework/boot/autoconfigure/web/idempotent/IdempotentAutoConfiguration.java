@@ -31,36 +31,44 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 
 /**
- * 幂等性功能的自动配置类。
- * <p>
- * 用于自动化配置幂等性校验相关的组件，适配不同的幂等性校验实现（如基于本地内存或 Redis），
- * 并注入相应的幂等校验切面 {@link IdempotentAspect}。
- * 配置生效需要满足以下条件：
- * <ul>
- *     <li>启用了 Spring AOP（默认开启）。</li>
- *     <li>类路径中存在 {@link Advice}。</li>
- *     <li>配置了必要的 {@link IdempotentValidator} 实现。</li>
- * </ul>
- * </p>
+ * 幂等性自动配置。
  *
- * <p>主要功能：</p>
+ * <p><b>概述</b></p>
  * <ul>
- *     <li>基于 {@code pangju.web.idempotent.type} 配置选择幂等校验实现（支持 {@code EXPIRE_MAP} 和 {@code REDIS}）。</li>
- *     <li>将幂等校验切面 {@link IdempotentAspect} 注册为 Spring Bean，用于拦截目标方法并实现幂等性校验逻辑。</li>
- *     <li>加载幂等性相关的配置属性 {@link IdempotentProperties}。</li>
+ *   <li>根据配置自动装配幂等性校验组件（本地内存或 Redis）。</li>
+ *   <li>注册切面 {@link IdempotentAspect} 以拦截业务方法。</li>
  * </ul>
  *
- * <p>配置示例：</p>
+ * <p><b>激活条件</b></p>
+ * <ul>
+ *   <li>启用 Spring AOP（配置项 {@code spring.aop.auto}，默认开启）。</li>
+ *   <li>类路径存在 {@link Advice}。</li>
+ *   <li>应用上下文可创建或已存在 {@link IdempotentValidator} 实现。</li>
+ * </ul>
+ *
+ * <p><b>行为</b></p>
+ * <ul>
+ *   <li>读取 {@link IdempotentProperties} 并按 {@code pangju.web.idempotent.type} 选择实现（{@code EXPIRE_MAP} 或 {@code REDIS}）。</li>
+ *   <li>导入 {@link ExpireMapRequestRepeaterConfiguration} 与 {@link RedisRequestRepeaterConfiguration}，由各自条件决定是否生效。</li>
+ *   <li>存在 {@link IdempotentValidator} 时注册 {@link IdempotentAspect}，拦截带有 {@code @Idempotent} 的方法并执行校验。</li>
+ * </ul>
+ *
+ * <p><b>注意事项</b></p>
+ * <ul>
+ *   <li>未配置 {@code pangju.web.idempotent.type} 时，默认使用本地内存（{@code EXPIRE_MAP}）。</li>
+ *   <li>禁用 AOP（{@code spring.aop.auto=false}）将使切面不生效，但属性与配置类仍可加载。</li>
+ * </ul>
+ *
+ * <p><b>示例（YAML）</b></p>
  * <pre>
- * pangju.web.idempotent.type=REDIS
- * spring.aop.auto=true
+ * pangju:
+ *   web:
+ *     idempotent:
+ *       type: REDIS
+ * spring:
+ *   aop:
+ *     auto: true
  * </pre>
- *
- * <p>默认行为：</p>
- * <ul>
- *     <li>如果未配置 {@code pangju.web.idempotent.type}，默认为 {@code EXPIRE_MAP}（本地内存校验）。</li>
- *     <li>如果未禁用 Spring AOP（即 {@code spring.aop.auto=true} 或未配置），切面自动生效。</li>
- * </ul>
  *
  * @author pangju666
  * @see IdempotentAspect
@@ -77,18 +85,19 @@ import org.springframework.context.annotation.Import;
 public class IdempotentAutoConfiguration {
 	/**
 	 * 注册幂等性校验切面。
-	 * <p>
-	 * 当上下文中存在 {@link IdempotentValidator} 实例时，将自动注册 {@link IdempotentAspect}。
-	 * </p>
 	 *
-	 * <p>校验器的主要功能：</p>
+	 * <p><b>激活</b></p>
 	 * <ul>
-	 *     <li>动态校验请求是否为重复提交。</li>
-	 *     <li>基于注解 {@link io.github.pangju666.framework.autoconfigure.web.idempotent.annotation.Idempotent} 的逻辑配置。</li>
+	 *   <li>当上下文存在 {@link IdempotentValidator} Bean 时注册。</li>
 	 * </ul>
 	 *
-	 * @param idempotentValidator 幂等性校验器接口的实现（如基于 Redis 或内存的实现）。
-	 * @return {@link IdempotentAspect} 实例，用于 AOP 拦截目标方法并执行幂等性逻辑。
+	 * <p><b>行为</b></p>
+	 * <ul>
+	 *   <li>拦截标注 {@link io.github.pangju666.framework.boot.web.idempotent.annotation.Idempotent} 的方法，委托校验器执行幂等校验。</li>
+	 * </ul>
+	 *
+	 * @param idempotentValidator 幂等校验器实现（如内存/Redis）。
+	 * @return {@link IdempotentAspect}，用于 AOP 拦截并执行业务幂等校验。
 	 * @see IdempotentAspect
 	 * @see IdempotentValidator
 	 * @since 1.0.0

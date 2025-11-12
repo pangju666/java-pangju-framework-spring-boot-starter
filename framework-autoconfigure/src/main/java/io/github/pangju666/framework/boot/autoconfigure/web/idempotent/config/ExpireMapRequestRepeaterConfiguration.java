@@ -26,27 +26,35 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * 基于本地内存过期映射的幂等性校验配置类。
+ * 基于本地内存的幂等校验自动配置
  * <p>
- * 当幂等性校验的类型为 {@code EXPIRE_MAP} 时（默认类型），将自动配置用于幂等性校验的
- * {@link ExpireMapIdempotentValidator} 实例，该实现基于本地内存提供幂等性支持。
+ * 在选择 {@code EXPIRE_MAP} 实现时自动注册 {@link ExpireMapIdempotentValidator}，
+ * 基于本地内存的 {@link ExpiringMap} 提供轻量幂等校验。
  * </p>
- *
- * <p>配置特性：</p>
+ * <p><b>生效条件</b></p>
  * <ul>
- *     <li>仅当 {@code pangju.web.idempotent.type} 配置为 {@code EXPIRE_MAP} 或未设置时生效。</li>
- *     <li>避免重复注册：当上下文中不存在 {@link IdempotentValidator} Bean 时才会注册。</li>
+ *   <li>类路径存在 {@link ExpiringMap}（{@link ConditionalOnClass}）。</li>
+ *   <li>属性 {@code pangju.web.idempotent.type} 为 {@code EXPIRE_MAP} 或未设置（{@link ConditionalOnProperty} 且 {@code matchIfMissing=true}）。</li>
+ *   <li>上下文中不存在 {@link IdempotentValidator} Bean（{@link ConditionalOnMissingBean}）。</li>
  * </ul>
- *
- * <p>适用场景：</p>
+ * <p><b>行为说明</b></p>
  * <ul>
- *     <li>适用于单节点场景：本地内存校验方式更轻量，但不支持分布式环境。</li>
- *     <li>无需外部依赖的幂等性校验需求。</li>
+ *   <li>注册单个 {@link ExpireMapIdempotentValidator} Bean，供幂等验证使用。</li>
+ *   <li>默认适用于单节点环境；分布式场景请改用 {@code REDIS} 实现。</li>
  * </ul>
- *
- * <p>配置示例：</p>
+ * <p><b>注意事项</b></p>
+ * <ul>
+ *   <li>并发语义详见验证器类 Javadoc；本地实现不保证跨进程强一致性。</li>
+ *   <li>选择类型参考 {@link io.github.pangju666.framework.boot.autoconfigure.web.idempotent.IdempotentProperties.Type#EXPIRE_MAP}。</li>
+ * </ul>
+ * <p><b>配置示例（YAML）</b></p>
  * <pre>
- * pangju.web.idempotent.type=EXPIRE_MAP
+ * {@code
+ * pangju:
+ *   web:
+ *     idempotent:
+ *       type: EXPIRE_MAP
+ * }
  * </pre>
  *
  * @author pangju666
@@ -59,13 +67,12 @@ import org.springframework.context.annotation.Configuration;
 @ConditionalOnProperty(prefix = "pangju.web.idempotent", value = "type", havingValue = "EXPIRE_MAP", matchIfMissing = true)
 public class ExpireMapRequestRepeaterConfiguration {
 	/**
-	 * 创建基于本地内存的幂等性校验器。
+	 * 注册基于本地内存的幂等验证器。
 	 * <p>
-	 * 当上下文中没有已定义的 {@link IdempotentValidator} Bean 时，自动注册
-	 * {@link ExpireMapIdempotentValidator} 实例。
+	 * 仅在上下文缺少 {@link IdempotentValidator} Bean 时生效，避免重复注册。
 	 * </p>
 	 *
-	 * @return {@link ExpireMapIdempotentValidator} 实例，用于幂等性校验。
+	 * @return {@link ExpireMapIdempotentValidator} 实例
 	 * @since 1.0.0
 	 */
 	@ConditionalOnMissingBean(IdempotentValidator.class)
