@@ -21,7 +21,6 @@ import io.github.pangju666.framework.boot.web.signature.annotation.Signature;
 import io.github.pangju666.framework.boot.web.signature.configuration.SignatureConfiguration;
 import io.github.pangju666.framework.boot.web.signature.storer.SignatureSecretKeyStorer;
 import io.github.pangju666.framework.web.exception.base.ValidationException;
-import io.github.pangju666.framework.web.lang.WebConstants;
 import io.github.pangju666.framework.web.servlet.BaseHttpInterceptor;
 import io.github.pangju666.framework.web.servlet.HttpResponseBuilder;
 import jakarta.servlet.http.HttpServletRequest;
@@ -114,7 +113,7 @@ public class SignatureInterceptor extends BaseHttpInterceptor {
 	 * @since 1.0.0
 	 */
 	public SignatureInterceptor(SignatureConfiguration configuration, SignatureSecretKeyStorer secretKeyStorer) {
-		super(Collections.singleton(WebConstants.ANT_ANY_PATH_PATTERN), Collections.emptySet());
+		super(Collections.emptySet());
 		this.configuration = configuration;
 		this.secretKeyStorer = secretKeyStorer;
 	}

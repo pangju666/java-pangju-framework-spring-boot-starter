@@ -17,7 +17,7 @@
 package io.github.pangju666.framework.boot.web.log.revceiver.impl;
 
 import io.github.pangju666.framework.boot.web.log.model.WebLog;
-import io.github.pangju666.framework.data.mongodb.pool.MongoConstants;
+import io.github.pangju666.framework.data.mongodb.lang.MongoConstants;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 import org.springframework.data.mongodb.core.mapping.FieldType;
@@ -30,19 +30,6 @@ import org.springframework.data.mongodb.core.mapping.MongoId;
  * 并通过 Spring Data MongoDB 提供的注解映射为 MongoDB 的集合文档。
  * 该类添加了 MongoDB 的 `_id` 字段作为主键标识。
  * </p>
- *
- * <p>功能说明：</p>
- * <ul>
- *     <li>继承自 {@link WebLog}，包含完整的 Web 日志记录信息。</li>
- *     <li>使用 {@code @Document} 注解标识为 MongoDB 集合文档。</li>
- *     <li>添加了用于标识的主键字段 {@code id}，使用 {@code @MongoId} 注解进行主键映射。</li>
- * </ul>
- *
- * <p>使用场景：</p>
- * <ul>
- *     <li>需要将日志记录持久化存储到 MongoDB。</li>
- *     <li>结合 Spring Data MongoDB 提供的功能完成文档的操作，例如查询、插入等。</li>
- * </ul>
  *
  * @author pangju666
  * @see WebLog
@@ -62,4 +49,12 @@ public class WebLogDocument extends WebLog {
 	@MongoId(value = FieldType.STRING)
 	@Field(name = MongoConstants.ID_FIELD_NAME)
 	private String id;
+
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
 }

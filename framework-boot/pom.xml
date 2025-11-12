@@ -26,6 +26,14 @@
 			<groupId>io.github.pangju666.commons</groupId>
 			<artifactId>commons-lang</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>io.github.pangju666.framework</groupId>
+			<artifactId>framework-spring</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+		</dependency>
 
 		<!-- Mybatis Plus -->
 		<dependency>
@@ -112,6 +120,23 @@
 		<dependency>
 			<groupId>com.lmax</groupId>
 			<artifactId>disruptor</artifactId>
+			<optional>true</optional>
+		</dependency>
+
+		<!-- IO Image -->
+		<dependency>
+			<groupId>io.github.pangju666.commons</groupId>
+			<artifactId>commons-image</artifactId>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>org.im4java</groupId>
+			<artifactId>im4java</artifactId>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>com.sharneng</groupId>
+			<artifactId>gm4java</artifactId>
 			<optional>true</optional>
 		</dependency>
 	</dependencies>

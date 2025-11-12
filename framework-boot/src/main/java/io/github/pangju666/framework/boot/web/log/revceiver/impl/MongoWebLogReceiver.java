@@ -27,30 +27,24 @@ import org.springframework.lang.Nullable;
 import java.util.Date;
 
 /**
- * MongoDB Web 日志接收器
- * <p>
- * 该类是 {@link WebLogReceiver} 的实现，用于将接收到的 {@link WebLog} 日志数据存储到 MongoDB。
- * 通过动态创建集合名称和将日志映射为文档对象 {@link WebLogDocument}，实现对日志的持久化存储。
- * </p>
+ * MongoDB Web 日志接收器。
  *
- * <p>功能说明：</p>
+ * <p><b>概述</b></p>
  * <ul>
- *     <li>从配置中动态获取或创建 MongoTemplate，用于操作 MongoDB 数据库。</li>
- *     <li>支持根据当前日期动态生成集合名称，结构化存储日志数据。</li>
- *     <li>将接收到的 {@link WebLog} 数据映射为 MongoDB 文档对象并存储。</li>
+ *   <li>{@link WebLogReceiver} 的实现，将接收到的 {@link WebLog} 持久化到 MongoDB。</li>
+ *   <li>按日期动态命名集合，并将日志映射为文档对象 {@link WebLogDocument} 后保存。</li>
  * </ul>
  *
- * <p>使用场景：</p>
+ * <p><b>行为</b></p>
  * <ul>
- *     <li>需要将 Web 日志数据持久化至 MongoDB，用于后续分析或归档。</li>
- *     <li>日志集合按日期分组存储，便于分类管理和查询。</li>
+ *   <li>基于当前日期生成集合名；可选集合前缀通过构造参数提供。</li>
+ *   <li>在集合不存在时自动创建集合；随后将日志保存至该集合。</li>
  * </ul>
  *
- * <p>实现逻辑：</p>
+ * <p><b>注意事项</b></p>
  * <ul>
- *     <li>根据 {@link WebLogProperties.Mongo} 动态确定目标集合的前缀和名称。</li>
- *     <li>检测目标集合是否存在，若不存在则自动创建集合。</li>
- *     <li>将日志从 {@link WebLog} 转换为 {@link WebLogDocument}，并存入目标集合。</li>
+ *   <li>本实现不负责索引管理或写入可靠性策略（例如重复写入、事务）；如需这些能力请在外部进行配置。</li>
+ *   <li>集合命名规则为：{@code [prefix-]yyyy-MM-dd}；确保命名与归档策略符合运维规范。</li>
  * </ul>
  *
  * @author pangju666
@@ -61,40 +55,47 @@ import java.util.Date;
  * @since 1.0.0
  */
 public class MongoWebLogReceiver implements WebLogReceiver {
-	/**
-	 * MongoTemplate 实例
-	 * <p>
-	 * 用于执行与 MongoDB 相关的操作，例如插入日志文档、创建集合等。
-	 * </p>
-	 *
-	 * @since 1.0.0
-	 */
-	private final MongoTemplate mongoTemplate;
-	private final String collectionPrefix;
+    /**
+     * MongoTemplate 实例。
+     *
+     * <p><b>说明</b></p>
+     * <ul>
+     *   <li>用于执行 MongoDB 操作（如集合检测/创建、文档保存）。</li>
+     *   <li>应在配置中预先完成连接参数与映射转换器设置。</li>
+     * </ul>
+     *
+     * @since 1.0.0
+     */
+    private final MongoTemplate mongoTemplate;
+    /**
+     * 集合名前缀。
+     *
+     * <p><b>说明</b></p>
+     * <ul>
+     *   <li>用于生成按日归档的集合名称，最终格式为 {@code [prefix-]yyyy-MM-dd}。</li>
+     *   <li>可为空；为空时仅使用日期作为集合名。</li>
+     * </ul>
+     */
+    private final String collectionPrefix;
 
 	public MongoWebLogReceiver(MongoTemplate mongoTemplate, @Nullable String collectionPrefix) {
 		this.mongoTemplate = mongoTemplate;
 		this.collectionPrefix = collectionPrefix;
 	}
 
-	/**
-	 * 接收并存储 Web 日志
-	 * <p>
-	 * 将传入的 {@link WebLog} 数据转换为 MongoDB 集合文档 {@link WebLogDocument} 并存储。
-	 * 集合名称根据日期动态生成，并在集合不存在时自动创建。
-	 * </p>
-	 *
-	 * <p>具体流程：</p>
-	 * <ol>
-	 *     <li>根据当前日期生成日志集合名称，集合前缀可由配置指定。</li>
-	 *     <li>检测集合是否存在，若不存在则创建。</li>
-	 *     <li>将日志数据转换为 {@link WebLogDocument} 并存储至集合。</li>
-	 * </ol>
-	 *
-	 * @param webLog 接收到的日志数据 {@link WebLog}
-	 */
-	@Override
-	public void receive(WebLog webLog) {
+    /**
+     * 接收并存储 Web 日志。
+     *
+     * <p><b>行为</b></p>
+     * <ul>
+     *   <li>生成集合名（含可选前缀与当前日期），若集合不存在则创建。</li>
+     *   <li>将 {@link WebLog} 映射为 {@link WebLogDocument} 并保存至目标集合。</li>
+     * </ul>
+     *
+     * @param webLog 接收到的日志数据
+     */
+    @Override
+    public void receive(WebLog webLog) {
 		String date = DateFormatUtils.formatDate(new Date());
 		String collectionName = StringUtils.isNotBlank(collectionPrefix) ? collectionPrefix + "-" + date : date;
 		if (!mongoTemplate.collectionExists(collectionName)) {

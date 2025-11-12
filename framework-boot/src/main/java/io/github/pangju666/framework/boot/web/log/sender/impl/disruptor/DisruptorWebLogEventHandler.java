@@ -88,8 +88,8 @@ public class DisruptorWebLogEventHandler implements EventHandler<WebLogEvent> {
 	 * 从事件中提取日志数据 {@link WebLog} 并交由接收器 {@link WebLogReceiver} 进行处理。
 	 * </p>
 	 *
-	 * @param event 当前被消费的日志事件 {@link WebLogEvent}
-	 * @param sequence 当前事件在 RingBuffer 中的序号
+	 * @param event      当前被消费的日志事件 {@link WebLogEvent}
+	 * @param sequence   当前事件在 RingBuffer 中的序号
 	 * @param endOfBatch 是否为当前批次中的最后一个事件
 	 */
 	@Override

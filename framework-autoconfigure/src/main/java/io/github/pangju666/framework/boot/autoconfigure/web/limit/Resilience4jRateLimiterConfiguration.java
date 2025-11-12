@@ -14,9 +14,8 @@
  *    limitations under the License.
  */
 
-package io.github.pangju666.framework.boot.autoconfigure.web.limit.config;
+package io.github.pangju666.framework.boot.autoconfigure.web.limit;
 
-import io.github.pangju666.framework.boot.autoconfigure.web.limit.RateLimitProperties;
 import io.github.pangju666.framework.boot.web.limit.limiter.RateLimiter;
 import io.github.pangju666.framework.boot.web.limit.limiter.impl.Resilience4JRateLimiter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;

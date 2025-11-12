@@ -23,6 +23,7 @@ import jakarta.servlet.Servlet;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -69,6 +70,7 @@ public class SignatureAutoConfiguration {
 	 * @return 默认签名密钥存储器 {@link DefaultSignatureSecretKeyStorer} 实例。
 	 * @since 1.0.0
 	 */
+	@ConditionalOnProperty(prefix = "pangju.web.signature", name = "secretKeys")
 	@ConditionalOnMissingBean(SignatureSecretKeyStorer.class)
 	@Bean
 	public DefaultSignatureSecretKeyStorer defaultSignatureSecretKeyStorer(SignatureProperties properties) {

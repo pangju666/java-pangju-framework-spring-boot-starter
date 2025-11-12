@@ -14,9 +14,8 @@
  *    limitations under the License.
  */
 
-package io.github.pangju666.framework.boot.autoconfigure.web.limit.config;
+package io.github.pangju666.framework.boot.autoconfigure.web.limit;
 
-import io.github.pangju666.framework.boot.autoconfigure.web.limit.RateLimitProperties;
 import io.github.pangju666.framework.boot.web.limit.limiter.RateLimiter;
 import io.github.pangju666.framework.boot.web.limit.limiter.impl.RedissonRateLimiter;
 import org.redisson.api.RedissonClient;
@@ -67,7 +66,7 @@ import org.springframework.util.StringUtils;
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnClass({RedissonClient.class})
 @ConditionalOnProperty(prefix = "pangju.web.rate-limit", value = "type", havingValue = "REDISSON")
-public class RedissonRateLimiterConfiguration {
+class RedissonRateLimiterConfiguration {
     /**
      * 创建并注册 {@link RedissonRateLimiter} Bean。
      *

@@ -16,80 +16,64 @@
 
 package io.github.pangju666.framework.boot.web.log.filter;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonSyntaxException;
+import io.github.pangju666.commons.lang.concurrent.SystemClock;
 import io.github.pangju666.commons.lang.utils.DateFormatUtils;
-import io.github.pangju666.commons.lang.utils.JsonUtils;
-import io.github.pangju666.framework.boot.web.log.annotation.WebLogIgnore;
-import io.github.pangju666.framework.boot.web.log.annotation.WebLogOperation;
 import io.github.pangju666.framework.boot.web.log.configuration.WebLogConfiguration;
 import io.github.pangju666.framework.boot.web.log.handler.WebLogHandler;
 import io.github.pangju666.framework.boot.web.log.model.WebLog;
 import io.github.pangju666.framework.boot.web.log.sender.WebLogSender;
-import io.github.pangju666.framework.web.exception.base.BaseHttpException;
-import io.github.pangju666.framework.web.servlet.filter.BaseHttpRequestFilter;
+import io.github.pangju666.framework.boot.web.log.utils.WebLogUtils;
+import io.github.pangju666.framework.web.servlet.BaseHttpRequestFilter;
 import io.github.pangju666.framework.web.servlet.utils.HttpRequestUtils;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.Part;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.event.Level;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.util.StopWatch;
-import org.springframework.web.method.HandlerMethod;
-import org.springframework.web.servlet.HandlerExecutionChain;
-import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.util.ContentCachingRequestWrapper;
 import org.springframework.web.util.ContentCachingResponseWrapper;
 
 import java.io.IOException;
-import java.lang.reflect.Method;
-import java.nio.charset.StandardCharsets;
 import java.util.Date;
-import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 
 /**
- * Web 日志过滤器
- * <p>
- * 该过滤器用于对每次 HTTP 请求和响应的日志进行拦截、记录和处理。
- * 它基于 `Filter` 的机制，在请求和响应处理流水线中捕获 HTTP 数据，
- * 并将日志以统一的结构发送给指定的日志存储介质（如 Kafka、MongoDB 或内存）。
- * </p>
+ * Web 日志过滤器。
  *
- * <p>功能简介：</p>
+ * <p><b>概述</b></p>
  * <ul>
- *     <li>拦截每次 HTTP 请求和响应。</li>
- *     <li>对请求与响应数据进行采集、封装为 {@link WebLog}。</li>
- *     <li>支持根据注解 {@link WebLogIgnore} 忽略特定接口。</li>
- *     <li>支持对日志的扩展处理，通过 {@link WebLogHandler} 自定义逻辑。</li>
- *     <li>将日志通过 {@link WebLogSender} 发送到目标存储介质。</li>
+ *   <li>拦截每次 HTTP 请求与响应，采集并封装为 {@link WebLog}。</li>
+ *   <li>通过 {@link WebLogSender} 将日志发送到外部存储或处理管道。</li>
+ *   <li>支持通过 {@link WebLogHandler} 扩展日志处理。</li>
  * </ul>
  *
- * <p>适用场景：</p>
+ * <p><b>使用约束</b></p>
  * <ul>
- *     <li>需要全面记录应用中接口请求-响应的运行情况。</li>
- *     <li>需要动态扩展日志的处理逻辑或日志存储方式。</li>
+ *   <li>为保证可读取请求/响应体，内部自动包裹为 {@link ContentCachingRequestWrapper} 与 {@link ContentCachingResponseWrapper}。</li>
+ *   <li>响应体被读取后，必须调用 {@link ContentCachingResponseWrapper#copyBodyToResponse()} 以写回到真实响应。</li>
+ * </ul>
+ *
+ * <p><b>执行流程</b></p>
+ * <ul>
+ *   <li>记录请求到达时间与起始时间戳。</li>
+ *   <li>包裹请求与响应对象为内容缓存包装器。</li>
+ *   <li>将 {@link WebLog} 放入请求作用域，继续执行过滤链。</li>
+ *   <li>出栈后构建请求/响应日志、计算耗时并发送。</li>
+ *   <li>清理作用域属性并将响应体写回。</li>
+ * </ul>
+ *
+ * <p><b>注意事项</b></p>
+ * <ul>
+ *   <li>日志发送失败时仅记录错误，不影响请求处理流程。</li>
  * </ul>
  *
  * @author pangju666
  * @since 1.0.0
  */
 public class WebLogFilter extends BaseHttpRequestFilter {
-	/**
-	 * 日志记录器
-	 *
-	 * @since 1.0.0
-	 */
 	private static final Logger logger = LoggerFactory.getLogger(WebLogFilter.class);
 
 	/**
@@ -112,177 +96,79 @@ public class WebLogFilter extends BaseHttpRequestFilter {
 	 * @since 1.0.0
 	 */
 	private final WebLogConfiguration configuration;
-	/**
-	 * 请求映射处理器
-	 * <p>
-	 * 用于获取请求对应的目标控制器类及方法。
-	 * 支持通过注解 {@link WebLogIgnore}
-	 * 或 {@link WebLogOperation}
-	 * 对方法/类级别的日志行为进行控制。
-	 * </p>
-	 *
-	 * @since 1.0.0
-	 */
-	private final RequestMappingHandlerMapping requestMappingHandlerMapping;
-	/**
-	 * Web 日志处理器列表
-	 * <p>
-	 * 用于处理日志的扩展逻辑，支持对日志数据进行增强或自定义处理。
-	 * 开发者可以实现 {@link WebLogHandler} 接口并在容器中进行注册。
-	 * </p>
-	 *
-	 * @since 1.0.0
-	 */
-	private final List<WebLogHandler> webLogHandlers;
 
 	/**
 	 * 构造方法
 	 *
-	 * @param configuration 日志配置对象
-	 * @param sender 日志发送器
+	 * @param configuration       日志配置对象
+	 * @param sender              日志发送器
 	 * @param excludePathPatterns 需要排除的路径匹配规则
-	 * @param webLogHandlers Web 日志处理器列表
-	 * @param requestMappingHandlerMapping 请求映射处理器
 	 * @since 1.0.0
 	 */
-	public WebLogFilter(WebLogConfiguration configuration,
-						WebLogSender sender,
-						Set<String> excludePathPatterns,
-						List<WebLogHandler> webLogHandlers,
-						RequestMappingHandlerMapping requestMappingHandlerMapping) {
+	public WebLogFilter(WebLogConfiguration configuration, WebLogSender sender, Set<String> excludePathPatterns) {
 		super(excludePathPatterns);
 		this.configuration = configuration;
 		this.sender = sender;
-		this.requestMappingHandlerMapping = requestMappingHandlerMapping;
-		this.webLogHandlers = webLogHandlers;
 	}
 
 	/**
-	 * 过滤器处理方法
-	 * <p>
-	 * 拦截每次 HTTP 请求，采集请求与响应数据并生成日志。
-	 * </p>
+	 * 过滤器处理方法。
 	 *
-	 * @param request 当前的 HTTP 请求
-	 * @param response 当前的 HTTP 响应
-	 * @param filterChain 过滤器链
-	 * @throws ServletException 处理过程中发生 servlet 异常
-	 * @throws IOException 输入输出异常
+	 * <p><b>行为</b></p>
+	 * <ul>
+	 *   <li>包裹请求与响应以支持内容读取。</li>
+	 *   <li>执行过滤链，随后构建并发送 {@link WebLog}。</li>
+	 *   <li>最后将缓存的响应体写回真实响应。</li>
+	 * </ul>
+	 *
+	 * <p><b>参数</b></p>
+	 * <ul>
+	 *   <li>{@code request} 当前 HTTP 请求。</li>
+	 *   <li>{@code response} 当前 HTTP 响应。</li>
+	 *   <li>{@code filterChain} 过滤器链。</li>
+	 * </ul>
+	 *
+	 * @throws ServletException 过滤链或请求体解析过程中发生的 servlet 异常
+	 * @throws IOException I/O 异常（例如读取/写回响应体）
 	 */
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 		Date requestDate = new Date();
+		long start = SystemClock.now();
 
-		WebLogOperation operation = null;
-		Class<?> targetClass = null;
-		Method targetMethod = null;
+		ContentCachingRequestWrapper requestWrapper;
+		ContentCachingResponseWrapper responseWrapper;
+		if (request instanceof ContentCachingRequestWrapper) {
+			requestWrapper = (ContentCachingRequestWrapper) request;
+		} else {
+			requestWrapper = new ContentCachingRequestWrapper(request);
+		}
+		if (request instanceof ContentCachingResponseWrapper) {
+			responseWrapper = (ContentCachingResponseWrapper) response;
+		} else {
+			responseWrapper = new ContentCachingResponseWrapper(response);
+		}
+
+		WebLog webLog = new WebLog();
+		RequestContextHolder.currentRequestAttributes().setAttribute("webLog", webLog, RequestAttributes.SCOPE_REQUEST);
+		filterChain.doFilter(requestWrapper, responseWrapper);
+		long end = SystemClock.now();
+		RequestContextHolder.currentRequestAttributes().removeAttribute("webLog", RequestAttributes.SCOPE_REQUEST);
+
+		webLog.setIp(HttpRequestUtils.getIpAddress(request));
+		webLog.setMethod(request.getMethod());
+		webLog.setUrl(request.getRequestURI());
+		webLog.setRequest(WebLogUtils.getRequestLog(request, configuration));
+		webLog.setResponse(WebLogUtils.getResponseLog(response, configuration));
+		webLog.setCostMillis(end - start);
+		webLog.setDate(DateFormatUtils.formatDatetime(requestDate));
+
 		try {
-			HandlerExecutionChain handlerMappingHandler = requestMappingHandlerMapping.getHandler(request);
-			if (Objects.nonNull(handlerMappingHandler) && (handlerMappingHandler.getHandler() instanceof HandlerMethod handlerMethod)) {
-				targetClass = handlerMethod.getBeanType();
-				targetMethod = handlerMethod.getMethod();
-				if (Objects.nonNull(targetMethod.getAnnotation(WebLogIgnore.class)) || Objects.nonNull(targetClass.getAnnotation(WebLogIgnore.class))) {
-					filterChain.doFilter(request, response);
-					return;
-				}
-				operation = targetMethod.getAnnotation(WebLogOperation.class);
-			}
-		} catch (Exception e) {
-			filterChain.doFilter(request, response);
-			return;
-		}
-
-		if (request instanceof ContentCachingRequestWrapper requestWrapper &&
-			response instanceof ContentCachingResponseWrapper responseWrapper) {
-			StopWatch stopWatch = new StopWatch();
-			stopWatch.start();
-			filterChain.doFilter(request, response);
-			stopWatch.stop();
-
-			WebLog webLog = new WebLog();
-			if (Objects.nonNull(operation)) {
-				webLog.setOperation(operation.value());
-			}
-			webLog.setIp(HttpRequestUtils.getIpAddress(requestWrapper));
-			webLog.setMethod(requestWrapper.getMethod());
-			webLog.setDate(DateFormatUtils.formatDatetime(requestDate));
-			webLog.setUrl(requestWrapper.getRequestURI());
-			webLog.setCostMillis(stopWatch.lastTaskInfo().getTimeMillis());
-
-			WebLog.Request requestLog = new WebLog.Request();
-			requestLog.setCharacterEncoding(requestWrapper.getCharacterEncoding());
-			requestLog.setContentLength(requestWrapper.getContentLength());
-			requestLog.setContentType(requestWrapper.getContentType());
-
-			if (configuration.getRequest().isHeaders()) {
-				requestLog.setHeaders(HttpRequestUtils.getHeaders(requestWrapper));
-			}
-			if (configuration.getRequest().isQueryParams()) {
-				requestLog.setQueryParams(HttpRequestUtils.getParameters(requestWrapper));
-			}
-			if (configuration.getRequest().isMultipart() &&
-				Strings.CI.startsWith(requestWrapper.getContentType(), MediaType.MULTIPART_FORM_DATA_VALUE)) {
-				requestLog.setContentType(MediaType.MULTIPART_FORM_DATA_VALUE);
-				try {
-					requestLog.setFormData(HttpRequestUtils.getParts(requestWrapper));
-					requestWrapper.getParts().stream()
-						.map(Part::getName)
-						.forEach(fieldName -> requestLog.getQueryParams().remove(fieldName));
-				} catch (IllegalStateException ignored) {
-				}
-			} else if (configuration.getRequest().isBody()) {
-				requestLog.setBody(HttpRequestUtils.getJsonRequestBody(requestWrapper, Object.class));
-			}
-			webLog.setRequest(requestLog);
-
-			WebLog.Response responseLog = new WebLog.Response();
-			responseLog.setStatus(responseWrapper.getStatus());
-			if (configuration.getResponse().isHeaders()) {
-				HttpHeaders headers = new HttpHeaders();
-				for (String headerName : responseWrapper.getHeaderNames()) {
-					headers.add(headerName, responseWrapper.getHeader(headerName));
-				}
-				responseLog.setHeaders(headers);
-			}
-			responseLog.setContentType(responseWrapper.getContentType());
-			responseLog.setCharacterEncoding(responseWrapper.getCharacterEncoding());
-
-			if (MediaType.APPLICATION_JSON_VALUE.equals(responseWrapper.getContentType()) ||
-				MediaType.APPLICATION_JSON_UTF8_VALUE.equals(responseWrapper.getContentType())) {
-				if (response.getStatus() != HttpStatus.FOUND.value() && configuration.getResponse().isBody()) {
-					String responseBodyStr = new String(responseWrapper.getContentAsByteArray(), StandardCharsets.UTF_8);
-					if (StringUtils.isNotBlank(responseBodyStr)) {
-						try {
-							JsonElement responseBodyJson = JsonUtils.parseString(responseBodyStr);
-							if (responseBodyJson.isJsonObject()) {
-								JsonObject responseBodyJsonObject = responseBodyJson.getAsJsonObject();
-								if (responseBodyJsonObject.has("code") &&
-									responseBodyJsonObject.has("message") &&
-									!configuration.getResponse().isResultData()) {
-									responseBodyJsonObject.remove("data");
-								}
-							}
-							responseLog.setBody(JsonUtils.fromJson(responseBodyJson, Object.class));
-						} catch (JsonSyntaxException e) {
-							logger.error("响应结果解析失败", e);
-						}
-					}
-				}
-			}
-			webLog.setResponse(responseLog);
-
-			try {
-				for (WebLogHandler webLogHandler : webLogHandlers) {
-					webLogHandler.handle(webLog, requestWrapper, responseWrapper, targetClass, targetMethod);
-				}
-			} catch (Exception e) {
-				if (e instanceof BaseHttpException baseHttpException) {
-					baseHttpException.log(logger, Level.ERROR);
-				} else {
-					logger.error("自定义网络日志收集处理器错误", e);
-				}
-			}
 			sender.send(webLog);
+		} catch (Exception e) {
+			logger.error("网络日志发送失败", e);
 		}
+
+		responseWrapper.copyBodyToResponse();
 	}
 }

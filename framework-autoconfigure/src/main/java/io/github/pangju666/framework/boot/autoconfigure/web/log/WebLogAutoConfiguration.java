@@ -16,15 +16,11 @@
 
 package io.github.pangju666.framework.boot.autoconfigure.web.log;
 
-import io.github.pangju666.framework.boot.autoconfigure.web.log.config.DisruptorSenderConfiguration;
-import io.github.pangju666.framework.boot.autoconfigure.web.log.config.KafkaSenderConfiguration;
-import io.github.pangju666.framework.boot.autoconfigure.web.log.config.MongoReceiverConfiguration;
 import io.github.pangju666.framework.boot.web.log.configuration.WebLogConfiguration;
 import io.github.pangju666.framework.boot.web.log.filter.WebLogFilter;
-import io.github.pangju666.framework.boot.web.log.handler.WebLogHandler;
+import io.github.pangju666.framework.boot.web.log.interceptor.WebLogInterceptor;
 import io.github.pangju666.framework.boot.web.log.sender.WebLogSender;
-import io.github.pangju666.framework.boot.web.log.sender.impl.disruptor.DisruptorWebLogEventHandler;
-import io.github.pangju666.framework.boot.web.log.sender.impl.disruptor.DisruptorWebLogSender;
+import io.github.pangju666.framework.web.lang.WebConstants;
 import jakarta.servlet.Servlet;
 import org.springframework.beans.BeanUtils;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -40,108 +36,101 @@ import org.springframework.context.annotation.Import;
 import org.springframework.core.Ordered;
 import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
-
-import java.util.Collections;
-import java.util.List;
 
 /**
- * WebLogAutoConfiguration
- * <p>
- * 该类为 Web 日志功能的核心自动配置类，主要用于自动装配 Web 日志相关的组件，简化日志收集与处理的配置流程。
- * 它支持多种日志处理方案，如基于 Disruptor 的高性能处理、发送到 Kafka 或存储到 MongoDB。
- * </p>
+ * Web 日志自动配置。
  *
- * <h3>核心功能</h3>
+ * <p><b>概述</b></p>
  * <ul>
- *     <li>自动注册日志事件处理器与发送器，例如：
- *         <ul>
- *             <li>Disruptor 日志事件处理器 {@link DisruptorWebLogEventHandler} 和发送器 {@link DisruptorWebLogSender}。</li>
- *             <li>Kafka 日志发送处理器。</li>
- *             <li>MongoDB 日志接收处理器。</li>
- *         </ul>
- *     </li>
- *     <li>注册全局日志拦截过滤器 {@link WebLogFilter}，实现统一 HTTP 请求与响应日志的采集。</li>
- *     <li>支持条件化装配，通过 Spring 的条件注解动态注入所需组件。</li>
+ *   <li>装配 Web 日志相关组件，统一采集 HTTP 请求/响应日志并通过所选通道发送或落库。</li>
+ *   <li>在满足条件时注册全局日志过滤器 {@link WebLogFilter}；引入各通道的自动配置。</li>
  * </ul>
  *
- * <h3>常见使用场景</h3>
+ * <p><b>条件</b></p>
  * <ul>
- *     <li>需要统一日志集中采集和分析的 Web 项目。</li>
- *     <li>需要高吞吐量日志处理能力的项目（如使用 Disruptor 实现低延迟的日志传递）。</li>
- *     <li>支持分布式日志传递，借助 Kafka 或 MongoDB 实现日志的持久化与异步处理。</li>
+ *   <li>仅在 Servlet Web 环境下：{@link ConditionalOnWebApplication @ConditionalOnWebApplication(type = SERVLET)}。</li>
+ *   <li>必须存在核心 Web 相关类：{@link Servlet}、{@link DispatcherServlet}、{@link WebMvcConfigurer}。</li>
+ *   <li>功能开关：{@code pangju.web.log.enabled=true}。</li>
  * </ul>
  *
- * <h3>核心配置说明</h3>
- * <p>通过以下配置项定义日志功能：</p>
+ * <p><b>行为</b></p>
+ * <ul>
+ *   <li>导入通道自动配置：{@link DisruptorSenderConfiguration}、{@link KafkaSenderConfiguration}、{@link MongoReceiverConfiguration}。</li>
+ *   <li>在存在 {@link WebLogSender} 且未注册其他日志过滤器时，注册 {@link WebLogFilter}。</li>
+ *   <li>过滤器应用所有 URL（{@link WebConstants#FILTER_ANY_URL_PATTERN}），优先级为最高优先级 + 2。</li>
+ *   <li>支持按路径模式排除采集：读取 {@link WebLogProperties#getExcludePathPatterns()}。</li>
+ * </ul>
+ *
+ * <p><b>配置</b></p>
+ * <ul>
+ *   <li>属性前缀：{@code pangju.web.log}。</li>
+ *   <li>关键项：{@code enabled}、{@code sender-type}、Kafka/Mongo 目标配置、{@code exclude-path-patterns}。</li>
+ * </ul>
+ *
+ * <p><b>示例（application.yml）</b></p>
  * <pre>
  * pangju:
  *   web:
  *     log:
- *       enabled: true                 # 是否启用 Web 日志功能，默认启用
- *       sender-type: DISRUPTOR        # 日志发送模式，可选值为 "DISRUPTOR"、"KAFKA"、"MONGO"，默认使用 Disruptor
- *       kafka:
- *         topic: web-log-topic        # Kafka 日志主题配置
- *       mongo:
- *         collection-prefix: web_log  # MongoDB 日志集合前缀配置
+ *       enabled: true
+ *       sender-type: DISRUPTOR
+ *       exclude-path-patterns:
+ *         - /actuator/**
+ *         - /swagger-ui/**
+ *         - /v3/api-docs/**
  * </pre>
  *
- * <h3>装配逻辑</h3>
+ * <p><b>备注</b></p>
  * <ul>
- *     <li>通过 {@link ConditionalOnWebApplication} 注解确保仅在 Web 环境中生效。</li>
- *     <li>基于配置动态注册特定类型的日志组件，如 Disruptor、Kafka 或 MongoDB。</li>
- *     <li>通过 {@link ConditionalOnBooleanProperty} 注解判断日志功能是否启用。</li>
- * </ul>
- *
- * <h3>依赖自动装配的相关组件</h3>
- * 包含以下依赖模块的自动配置逻辑：
- * <ul>
- *     <li>{@link DisruptorSenderConfiguration}：基于 Disruptor 的日志发送器配置。</li>
- *     <li>{@link KafkaSenderConfiguration}：Kafka 日志发送配置。</li>
- *     <li>{@link MongoReceiverConfiguration}：MongoDB 日志接收配置。</li>
+ *   <li>此类本身不创建具体的发送/接收实现，相关 Bean 由被导入的自动配置提供。</li>
+ *   <li>属性键采用 kebab-case（如 {@code exclude-path-patterns}）。</li>
  * </ul>
  *
  * @author pangju666
  * @see WebLogProperties
- * @see WebLogFilter
+ * @see WebLogInterceptor
  * @since 1.0.0
  */
 @AutoConfiguration
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @ConditionalOnClass({Servlet.class, DispatcherServlet.class, WebMvcConfigurer.class})
-@ConditionalOnBooleanProperty(prefix = "pangju.web.log", name = "enabled", matchIfMissing = true)
+@ConditionalOnBooleanProperty(prefix = "pangju.web.log", name = "enabled")
 @Import({DisruptorSenderConfiguration.class, KafkaSenderConfiguration.class, MongoReceiverConfiguration.class})
 @EnableConfigurationProperties(WebLogProperties.class)
 public class WebLogAutoConfiguration {
 	/**
-	 * 注册全局 Web 日志过滤器
-	 * <p>
-	 * 注册 {@link WebLogFilter}，用于拦截 HTTP 请求并采集请求和响应日志。
-	 * 仅当存在日志发送器 {@link WebLogSender} 且尚未注册其他日志过滤器时生效。
-	 * </p>
+	 * 注册全局 Web 日志过滤器。
 	 *
-	 * @param properties                  Web 日志属性配置 {@link WebLogProperties}
-	 * @param webLogSender                日志发送器 {@link WebLogSender}
-	 * @param webLogHandlers              日志处理器列表 {@link WebLogHandler}
-	 * @param requestMappingHandlerMapping 请求映射处理器 {@link RequestMappingHandlerMapping}
-	 * @return 用于注册日志过滤器的 {@link FilterRegistrationBean}
+	 * <p><b>条件</b></p>
+	 * <ul>
+	 *   <li>存在日志发送器 {@link WebLogSender}。</li>
+	 *   <li>当前应用尚未注册其他 {@link WebLogFilter}。</li>
+	 * </ul>
+	 *
+	 * <p><b>行为</b></p>
+	 * <ul>
+	 *   <li>将 {@link WebLogProperties} 拷贝为 {@link WebLogConfiguration}。</li>
+	 *   <li>创建 {@link WebLogFilter}，传入配置、发送器与 {@code excludePathPatterns}。</li>
+	 *   <li>注册为 {@link FilterRegistrationBean}，应用所有 URL，设置优先级。</li>
+	 * </ul>
+	 *
+	 * @param properties   Web 日志属性配置
+	 * @param webLogSender 日志发送器
+	 * @return 用于注册日志过滤器的注册 Bean
 	 * @since 1.0.0
 	 */
 	@ConditionalOnBean({WebLogSender.class})
 	@ConditionalOnMissingFilterBean
 	@Bean
 	public FilterRegistrationBean<WebLogFilter> webLogFilterRegistrationBean(WebLogProperties properties,
-																			 WebLogSender webLogSender,
-																			 List<WebLogHandler> webLogHandlers,
-																			 RequestMappingHandlerMapping requestMappingHandlerMapping) {
+																			 WebLogSender webLogSender) {
 		WebLogConfiguration configuration = new WebLogConfiguration();
 		BeanUtils.copyProperties(properties, configuration);
 
-		WebLogFilter webLogFilter = new WebLogFilter(configuration, webLogSender, Collections.emptySet(),
-			webLogHandlers, requestMappingHandlerMapping);
+		WebLogFilter webLogFilter = new WebLogFilter(configuration, webLogSender, properties.getExcludePathPatterns());
 		FilterRegistrationBean<WebLogFilter> filterRegistrationBean = new FilterRegistrationBean<>(webLogFilter);
-		filterRegistrationBean.addUrlPatterns("/*");
-		filterRegistrationBean.setOrder(Ordered.HIGHEST_PRECEDENCE + 4);
+		filterRegistrationBean.addUrlPatterns(WebConstants.FILTER_ANY_URL_PATTERN);
+		filterRegistrationBean.setOrder(Ordered.HIGHEST_PRECEDENCE + 2);
 		return filterRegistrationBean;
 	}
 }

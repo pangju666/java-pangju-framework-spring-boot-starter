@@ -17,22 +17,58 @@
 package io.github.pangju666.framework.boot.autoconfigure.web.log;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.http.MediaType;
+
+import java.util.Collections;
+import java.util.Set;
 
 /**
- * Web 日志配置属性类
- * <p>
- * 该配置类用于定义和控制 Web 日志功能的具体行为，包括日志的处理方式、
- * 日志传输的目标、以及需要记录的请求和响应数据的范围。
- * 配置前缀：{@code pangju.web.log}
- * </p>
- * <p>
- * 主要功能：
+ * Web 日志配置属性。
+ *
+ * <p><b>概述</b></p>
  * <ul>
- *     <li>支持多种日志传递方式（Kafka、Disruptor）。</li>
- *     <li>灵活配置要记录的请求头、请求体和响应数据。</li>
- *     <li>支持 MongoDB 和 Kafka 的日志存储。</li>
+ *   <li>定义 Web 日志的整体行为，包括发送通道、持久化参数与请求/响应记录范围。</li>
+ *   <li>配置前缀：{@code pangju.web.log}。</li>
  * </ul>
- * </p>
+ *
+ * <p><b>能力</b></p>
+ * <ul>
+ *   <li>发送通道：支持 {@code kafka} 与 {@code disruptor} 两种模式。</li>
+ *   <li>记录范围：请求（头/查询参数/体/multipart）与响应（头/体/附加数据）。</li>
+ *   <li>目标参数：提供 Kafka 与 MongoDB 的目标配置。</li>
+ *   <li>路径排除：通过 {@link #excludePathPatterns} 排除无需记录的请求路径。</li>
+ * </ul>
+ *
+ * <p><b>示例（application.yml）</b></p>
+ * <pre>
+ * pangju:
+ *   web:
+ *     log:
+ *       enabled: true
+ *       sender-type: kafka
+ *       kafka:
+ *         kafka-template-ref: myKafkaTemplate
+ *         topic: web-log
+ *       mongo:
+ *         mongo-template-ref: myMongoTemplate
+ *         collection-prefix: web_log
+ *       disruptor:
+ *         buffer-size: 1024
+ *       request:
+ *         headers: true
+ *         query-params: true
+ *         body: true
+ *         multipart: true
+ *       response:
+ *         headers: true
+ *         body: true
+ *         result-data: false
+ *       exclude-path-patterns:
+ *         - /actuator/**
+ *         - /swagger-ui/**
+ *         - /v3/api-docs/**
+ *         - /favicon.ico
+ * </pre>
  *
  * @author pangju666
  * @since 1.0.0
@@ -84,13 +120,13 @@ public class WebLogProperties {
 	/**
 	 * Web 日志功能开关
 	 * <p>
-	 * 是否启用 Web 日志功能。默认为 {@code true}。
+	 * 是否启用 Web 日志功能。默认为 {@code false}。
 	 * 如果设置为 {@code false}，则不记录任何 Web 日志数据。
 	 * </p>
 	 *
 	 * @since 1.0.0
 	 */
-	private boolean enabled = true;
+	private boolean enabled = false;
 	/**
 	 * 请求记录配置
 	 * <p>
@@ -109,6 +145,36 @@ public class WebLogProperties {
 	 * @since 1.0.0
 	 */
 	private Response response = new Response();
+	/**
+	 * 日志采集排除路径模式集合。
+	 *
+	 * <p><b>用途</b></p>
+	 * <ul>
+	 *   <li>用于排除不需要记录的请求路径（如健康检查、监控与文档访问）。</li>
+	 *   <li>当请求路径匹配任一模式时，该请求的 Web 日志将不会被采集。</li>
+	 * </ul>
+	 *
+	 * <p><b>格式</b></p>
+	 * <ul>
+	 *   <li>支持常见通配符路径模式，例如 {@code /actuator/**}、{@code /static/*}。</li>
+	 *   <li>配置示例（application.yml）：
+	 *   <pre>
+	 *   pangju:
+	 *     web:
+	 *       log:
+	 *         exclude-path-patterns:
+	 *           - /actuator/**
+	 *           - /swagger-ui/**
+	 *           - /v3/api-docs/**
+	 *           - /favicon.ico
+	 *   </pre>
+	 *   </li>
+	 *   <li>默认值为空集合，表示不过滤任何路径。</li>
+	 * </ul>
+	 *
+	 * @since 1.0.0
+	 */
+	private Set<String> excludePathPatterns = Collections.emptySet();
 
 	public SenderType getSenderType() {
 		return senderType;
@@ -166,6 +232,14 @@ public class WebLogProperties {
 		this.enabled = enabled;
 	}
 
+	public Set<String> getExcludePathPatterns() {
+		return excludePathPatterns;
+	}
+
+	public void setExcludePathPatterns(Set<String> excludePathPatterns) {
+		this.excludePathPatterns = excludePathPatterns;
+	}
+
 	/**
 	 * 日志传递方式枚举
 	 * <p>
@@ -184,20 +258,29 @@ public class WebLogProperties {
 		DISRUPTOR
 	}
 
-	/**
-	 * MongoDB 配置内部类
-	 * <p>
-	 * 定义使用 MongoDB 存储日志时的相关配置信息。
-	 * </p>
-	 * <ul>
-	 *     <li>{@link #mongoTemplateBeanName}：指定使用的 MongoTemplate Bean 名称。</li>
-	 *     <li>{@link #collectionPrefix}：日志集合名称的前缀。</li>
-	 * </ul>
-	 *
-	 * @author pangju666
-	 * @since 1.0.0
-	 */
-	public static class Mongo {
+    /**
+     * MongoDB 配置。
+     *
+     * <p><b>字段</b></p>
+     * <ul>
+     *   <li>{@link #mongoTemplateRef} 指定使用的 {@code MongoTemplate} Bean 名称。</li>
+     *   <li>{@link #collectionPrefix} 集合名前缀，用于按日归档命名。</li>
+     * </ul>
+     *
+     * <p><b>示例（application.yml）</b></p>
+     * <pre>
+     * pangju:
+     *   web:
+     *     log:
+     *       mongo:
+     *         mongo-template-ref: myMongoTemplate
+     *         collection-prefix: web_log
+     * </pre>
+     *
+     * @author pangju666
+     * @since 1.0.0
+     */
+    public static class Mongo {
 		/**
 		 * MongoTemplate Bean 名称
 		 * <p>
@@ -207,7 +290,7 @@ public class WebLogProperties {
 		 *
 		 * @since 1.0.0
 		 */
-		private String mongoTemplateBeanName;
+		private String mongoTemplateRef;
 		/**
 		 * 集合名称前缀
 		 * <p>
@@ -219,12 +302,12 @@ public class WebLogProperties {
 		 */
 		private String collectionPrefix = "web_log";
 
-		public String getMongoTemplateBeanName() {
-			return mongoTemplateBeanName;
+		public String getMongoTemplateRef() {
+			return mongoTemplateRef;
 		}
 
-		public void setMongoTemplateBeanName(String mongoTemplateBeanName) {
-			this.mongoTemplateBeanName = mongoTemplateBeanName;
+		public void setMongoTemplateRef(String mongoTemplateRef) {
+			this.mongoTemplateRef = mongoTemplateRef;
 		}
 
 		public String getCollectionPrefix() {
@@ -236,20 +319,30 @@ public class WebLogProperties {
 		}
 	}
 
-	/**
-	 * Kafka 配置内部类
-	 * <p>
-	 * 当选择 Kafka 作为日志传递方式时，配置 Kafka 相关参数。
-	 * </p>
-	 * <ul>
-	 *     <li>{@link #kafkaTemplateBeanName}：KafkaTemplate Bean 名称。</li>
-	 *     <li>{@link #topic}：Kafka Topic 名称，日志将发送到指定的 Topic。</li>
-	 * </ul>
-	 *
-	 * @author pangju666
-	 * @since 1.0.0
-	 */
-	public static class Kafka {
+    /**
+     * Kafka 配置。
+     *
+     * <p><b>字段</b></p>
+     * <ul>
+     *   <li>{@link #kafkaTemplateRef} 指定 {@code KafkaTemplate} Bean 名称。</li>
+     *   <li>{@link #topic} 发送目标 Topic 名称。</li>
+     * </ul>
+     *
+     * <p><b>示例（application.yml）</b></p>
+     * <pre>
+     * pangju:
+     *   web:
+     *     log:
+     *       sender-type: kafka
+     *       kafka:
+     *         kafka-template-ref: myKafkaTemplate
+     *         topic: web-log
+     * </pre>
+     *
+     * @author pangju666
+     * @since 1.0.0
+     */
+    public static class Kafka {
 		/**
 		 * KafkaTemplate Bean 名称
 		 * <p>
@@ -259,7 +352,7 @@ public class WebLogProperties {
 		 *
 		 * @since 1.0.0
 		 */
-		private String kafkaTemplateBeanName;
+		private String kafkaTemplateRef;
 		/**
 		 * 日志发送目标 Topic
 		 * <p>
@@ -270,12 +363,12 @@ public class WebLogProperties {
 		 */
 		private String topic;
 
-		public String getKafkaTemplateBeanName() {
-			return kafkaTemplateBeanName;
+		public String getKafkaTemplateRef() {
+			return kafkaTemplateRef;
 		}
 
-		public void setKafkaTemplateBeanName(String kafkaTemplateBeanName) {
-			this.kafkaTemplateBeanName = kafkaTemplateBeanName;
+		public void setKafkaTemplateRef(String kafkaTemplateRef) {
+			this.kafkaTemplateRef = kafkaTemplateRef;
 		}
 
 		public String getTopic() {
@@ -373,6 +466,36 @@ public class WebLogProperties {
 		 * @since 1.0.0
 		 */
 		private boolean multipart = true;
+		/**
+		 * 允许采集的请求体媒体类型集合。
+		 *
+		 * <p>仅当请求的 {@code Content-Type} 属于该集合，且 {@link #body} 开关为真时，才记录请求体。</p>
+		 *
+		 * <p><b>默认值</b></p>
+		 * <ul>
+		 *   <li>{@code multipart/form-data}（{@link MediaType#MULTIPART_FORM_DATA_VALUE}）</li>
+		 *   <li>{@code text/plain}（{@link MediaType#TEXT_PLAIN_VALUE}）</li>
+		 *   <li>{@code application/json}（{@link MediaType#APPLICATION_JSON_VALUE}）</li>
+		 *   <li>{@code - application/json;charset=UTF-8}（{@link MediaType#APPLICATION_JSON_UTF8_VALUE}）</li>
+		 * </ul>
+		 *
+		 * <p><b>示例（application.yml）</b></p>
+		 * <pre>
+		 * pangju:
+		 *   web:
+		 *     log:
+		 *       request:
+		 *         acceptable-media-types:
+		 *           - application/json
+		 *           - application/json;charset=UTF-8
+		 *           - text/plain
+		 *           - multipart/form-data
+		 * </pre>
+		 *
+		 * @since 1.0.0
+		 */
+		private Set<String> acceptableMediaTypes = Set.of(MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.TEXT_PLAIN_VALUE,
+			MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_UTF8_VALUE);
 
 		public boolean isHeaders() {
 			return headers;
@@ -405,17 +528,24 @@ public class WebLogProperties {
 		public void setMultipart(boolean multipart) {
 			this.multipart = multipart;
 		}
+
+		public Set<String> getAcceptableMediaTypes() {
+			return acceptableMediaTypes;
+		}
+
+		public void setAcceptableMediaTypes(Set<String> acceptableMediaTypes) {
+			this.acceptableMediaTypes = acceptableMediaTypes;
+		}
 	}
 
 	/**
-	 * 响应记录配置内部类
-	 * <p>
-	 * 配置需要记录的 HTTP 响应数据范围。
-	 * </p>
+	 * 响应记录配置。
+	 *
+	 * <p><b>范围</b></p>
 	 * <ul>
-	 *     <li>{@link #headers}：是否记录响应头信息。</li>
-	 *     <li>{@link #body}：是否记录响应体内容。</li>
-	 *     <li>{@link #resultData}：是否记录 Result 类型的附加数据。</li>
+	 *   <li>{@link #headers} 记录响应头。</li>
+	 *   <li>{@link #body} 记录响应体。</li>
+	 *   <li>{@link #resultData} 记录统一结果附加数据。</li>
 	 * </ul>
 	 *
 	 * @author pangju666
@@ -451,6 +581,34 @@ public class WebLogProperties {
 		 * @since 1.0.0
 		 */
 		private boolean resultData = false;
+		/**
+		 * 允许采集的响应体媒体类型集合。
+		 *
+		 * <p>仅当响应的 {@code Content-Type} 属于该集合，且 {@link #body} 开关为真时，才记录响应体。</p>
+		 *
+		 * <p><b>默认值</b></p>
+		 * <ul>
+		 *   <li>{@code text/plain}（{@link MediaType#TEXT_PLAIN_VALUE}）</li>
+		 *   <li>{@code application/json}（{@link MediaType#APPLICATION_JSON_VALUE}）</li>
+		 *    <li>{@code - application/json;charset=UTF-8}（{@link MediaType#APPLICATION_JSON_UTF8_VALUE}）</li>
+		 * </ul>
+		 *
+		 * <p><b>示例（application.yml）</b></p>
+		 * <pre>
+		 * pangju:
+		 *   web:
+		 *     log:
+		 *       response:
+		 *         acceptable-media-types:
+		 *           - application/json
+		 *           - application/json;charset=UTF-8
+		 *           - text/plain
+		 * </pre>
+		 *
+		 * @since 1.0.0
+		 */
+		private Set<String> acceptableMediaTypes = Set.of(MediaType.TEXT_PLAIN_VALUE, MediaType.APPLICATION_JSON_VALUE,
+			MediaType.APPLICATION_JSON_UTF8_VALUE);
 
 		public boolean isHeaders() {
 			return headers;
@@ -474,6 +632,14 @@ public class WebLogProperties {
 
 		public void setResultData(boolean resultData) {
 			this.resultData = resultData;
+		}
+
+		public Set<String> getAcceptableMediaTypes() {
+			return acceptableMediaTypes;
+		}
+
+		public void setAcceptableMediaTypes(Set<String> acceptableMediaTypes) {
+			this.acceptableMediaTypes = acceptableMediaTypes;
 		}
 	}
 }

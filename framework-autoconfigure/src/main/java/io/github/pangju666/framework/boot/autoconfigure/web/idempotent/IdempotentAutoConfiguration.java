@@ -16,8 +16,6 @@
 
 package io.github.pangju666.framework.boot.autoconfigure.web.idempotent;
 
-import io.github.pangju666.framework.boot.autoconfigure.web.idempotent.config.ExpireMapRequestRepeaterConfiguration;
-import io.github.pangju666.framework.boot.autoconfigure.web.idempotent.config.RedisRequestRepeaterConfiguration;
 import io.github.pangju666.framework.boot.web.idempotent.aspect.IdempotentAspect;
 import io.github.pangju666.framework.boot.web.idempotent.validator.IdempotentValidator;
 import org.aspectj.weaver.Advice;

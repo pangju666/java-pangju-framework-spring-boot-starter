@@ -22,8 +22,6 @@ import com.lmax.disruptor.dsl.Disruptor;
 import com.lmax.disruptor.dsl.ProducerType;
 import io.github.pangju666.framework.boot.web.log.model.WebLog;
 import io.github.pangju666.framework.boot.web.log.sender.WebLogSender;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.Executors;
 
@@ -62,13 +60,6 @@ import java.util.concurrent.Executors;
  */
 public class DisruptorWebLogSender implements WebLogSender {
 	/**
-	 * 日志记录器
-	 *
-	 * @since 1.0.0
-	 */
-	private static final Logger log = LoggerFactory.getLogger(DisruptorWebLogSender.class);
-
-	/**
 	 * Disruptor 实例
 	 * <p>
 	 * 持有 RingBuffer 的核心组件，管理事件的生产和消费。
@@ -84,8 +75,8 @@ public class DisruptorWebLogSender implements WebLogSender {
 	 * 初始化 Disruptor 对象，配置事件工厂、环形缓冲区大小、事件处理器等。
 	 * </p>
 	 *
-	 * @param bufferSize    环形缓冲区大小
-	 * @param eventHandler  事件处理器，用于消费 RingBuffer 中的 {@link WebLogEvent}
+	 * @param bufferSize   环形缓冲区大小
+	 * @param eventHandler 事件处理器，用于消费 RingBuffer 中的 {@link WebLogEvent}
 	 * @since 1.0.0
 	 */
 	public DisruptorWebLogSender(int bufferSize, DisruptorWebLogEventHandler eventHandler) {
@@ -111,14 +102,10 @@ public class DisruptorWebLogSender implements WebLogSender {
 	 */
 	@Override
 	public void send(WebLog webLog) {
-		try {
-			RingBuffer<WebLogEvent> ringBuffer = disruptor.getRingBuffer();
-			long sequence = ringBuffer.next();
-			WebLogEvent event = ringBuffer.get(sequence);
-			event.setWebLog(webLog);
-			ringBuffer.publish(sequence);
-		} catch (RuntimeException e) {
-			log.error("接口请求信息发送至Disruptor队列失败", e);
-		}
+		RingBuffer<WebLogEvent> ringBuffer = disruptor.getRingBuffer();
+		long sequence = ringBuffer.next();
+		WebLogEvent event = ringBuffer.get(sequence);
+		event.setWebLog(webLog);
+		ringBuffer.publish(sequence);
 	}
 }

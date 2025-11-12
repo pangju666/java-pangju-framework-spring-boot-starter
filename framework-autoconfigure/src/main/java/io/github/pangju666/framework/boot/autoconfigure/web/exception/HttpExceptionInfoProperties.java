@@ -21,20 +21,46 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import java.util.List;
 
 /**
- * 用于配置 HTTP 异常信息的属性类。
- * <p>
- * 该类定义了与 HTTP 异常统计相关的配置项，包括是否启用功能、请求路径的配置，以及需要统计的包范围等。
- * 同时支持通过嵌套类 {@link Path} 配置异常统计的路径类型和路径列表。
- * </p>
- * <p>
- * 配置前缀：{@code pangju.web.exception.info}
- * </p>
+ * HTTP 异常信息属性配置。
  *
- * <h3>主要配置项：</h3>
+ * <p><b>概述</b></p>
  * <ul>
- *     <li>{@code enabled}：是否启用异常统计功能（默认启用）。</li>
- *     <li>{@code packages}：要扫描的自定义异常所在包的路径列表（如果配置为空，则只扫描框架内置的异常）。</li>
- *     <li>{@code requestPath}：请求路径相关的子配置，由 {@link Path} 类描述。</li>
+ *   <li>定义异常统计/查询相关的开关、接口路径与自定义异常扫描包。</li>
+ *   <li>配合异常信息组件，提供“异常类型汇总”和“异常列表”接口地址配置。</li>
+ * </ul>
+ *
+ * <p><b>前缀</b></p>
+ * <ul>
+ *   <li>配置前缀：{@code pangju.web.exception.info}。</li>
+ *   <li>属性键采用 kebab-case（如 {@code request-path.types}）。</li>
+ * </ul>
+ *
+ * <p><b>字段</b></p>
+ * <ul>
+ *   <li>{@link #enabled} 是否启用异常统计功能。</li>
+ *   <li>{@link #requestPath} 异常统计接口路径配置（类型汇总/列表）。</li>
+ *   <li>{@link #packages} 自定义异常类的扫描包列表，用于扩展统计范围。</li>
+ * </ul>
+ *
+ * <p><b>示例（application.yml）</b></p>
+ * <pre>
+ * pangju:
+ *   web:
+ *     exception:
+ *       info:
+ *         enabled: true
+ *         request-path:
+ *           types: /exception/types
+ *           list: /exception/list
+ *         packages:
+ *           - com.example.app.common.exception
+ *           - com.example.app.feature.exception
+ * </pre>
+ *
+ * <p><b>备注</b></p>
+ * <ul>
+ *   <li>当 {@link #packages} 为空或未配置时，默认仅统计框架内置异常类型。</li>
+ *   <li>{@link #requestPath} 的路径值应避免与现有接口冲突，建议置于统一命名空间（如 {@code /exception/**}）。</li>
  * </ul>
  *
  * @author pangju666
@@ -43,19 +69,25 @@ import java.util.List;
 @ConfigurationProperties(prefix = "pangju.web.exception.info")
 public class HttpExceptionInfoProperties {
 	/**
-	 * 是否启用 HTTP 异常统计功能，默认为 {@code true}。
+	 * 是否启用异常统计功能。
+	 *
+	 * <p>默认值为 {@code true}。关闭后相关异常统计接口将不工作或不暴露。</p>
 	 *
 	 * @since 1.0.0
 	 */
 	private boolean enabled = true;
 	/**
-	 * HTTP 请求路径相关配置，包括异常路径类型和值。
+	 * 异常统计接口路径配置。
+	 *
+	 * <p>包含异常类型汇总与异常列表查询的路径设置，详见 {@link Path}。</p>
 	 *
 	 * @since 1.0.0
 	 */
 	private Path requestPath = new Path();
 	/**
-	 * 要扫描的自定义异常所在包的路径列表。
+	 * 自定义异常类的扫描包列表。
+	 *
+	 * <p>用于扩展统计范围到业务自定义异常。当为空时，仅统计框架内置异常。</p>
 	 *
 	 * @since 1.0.0
 	 */
@@ -85,27 +117,45 @@ public class HttpExceptionInfoProperties {
 		this.packages = packages;
 	}
 
-	/**
-	 * HTTP 请求路径配置内部类。
-	 * <p>
-	 * 用于定义统计目标的路径类型和路径值列表。
-	 * </p>
-	 *
-	 * @since 1.0.0
-	 */
-	public static class Path {
-		/**
-		 * 需要统计的路径类型，默认为 {@code "/exception/types"}。
-		 *
-		 * @since 1.0.0
-		 */
-		private String types = "/exception/types";
-		/**
-		 * 需要统计的路径列表，默认为 {@code "/exception/list"}。
-		 *
-		 * @since 1.0.0
-		 */
-		private String list = "/exception/list";
+    /**
+     * 异常统计接口路径配置。
+     *
+     * <p><b>概述</b></p>
+     * <ul>
+     *   <li>配置两个 HTTP 接口路径：异常类型汇总与异常列表查询。</li>
+     *   <li>默认路径分别为 {@code /exception/types} 与 {@code /exception/list}。</li>
+     * </ul>
+     *
+     * <p><b>示例（application.yml）</b></p>
+     * <pre>
+     * pangju:
+     *   web:
+     *     exception:
+     *       info:
+     *         request-path:
+     *           types: /exception/types
+     *           list: /exception/list
+     * </pre>
+     *
+     * @since 1.0.0
+     */
+    public static class Path {
+        /**
+         * 异常类型汇总接口路径。
+         *
+         * <p>默认值：{@code "/exception/types"}。</p>
+         *
+         * @since 1.0.0
+         */
+        private String types = "/exception/types";
+        /**
+         * 异常列表查询接口路径。
+         *
+         * <p>默认值：{@code "/exception/list"}。</p>
+         *
+         * @since 1.0.0
+         */
+        private String list = "/exception/list";
 
 		public String getTypes() {
 			return types;

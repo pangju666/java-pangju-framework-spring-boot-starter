@@ -176,6 +176,18 @@
 			<artifactId>disruptor</artifactId>
 			<optional>true</optional>
 		</dependency>
+
+		<!-- IO Image -->
+		<dependency>
+			<groupId>org.im4java</groupId>
+			<artifactId>im4java</artifactId>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>com.sharneng</groupId>
+			<artifactId>gm4java</artifactId>
+			<optional>true</optional>
+		</dependency>
 	</dependencies>
 
 	<build>

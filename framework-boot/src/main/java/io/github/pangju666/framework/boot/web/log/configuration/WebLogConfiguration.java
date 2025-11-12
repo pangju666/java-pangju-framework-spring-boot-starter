@@ -1,5 +1,22 @@
 package io.github.pangju666.framework.boot.web.log.configuration;
 
+import java.util.Set;
+
+/**
+ * Web 日志采集配置。
+ *
+ * <p>用于定义请求与响应日志采集的范围与策略，包括是否记录头、查询参数、
+ * 请求/响应体，以及可接受的媒体类型集合。</p>
+ *
+ * <p><b>结构</b></p>
+ * <ul>
+ *   <li>{@link #request}：请求采集配置。</li>
+ *   <li>{@link #response}：响应采集配置。</li>
+ * </ul>
+ *
+ * @author pangju666
+ * @since 1.0.0
+ */
 public class WebLogConfiguration {
 	/**
 	 * 请求记录配置
@@ -92,6 +109,14 @@ public class WebLogConfiguration {
 		 * @since 1.0.0
 		 */
 		private boolean multipart = true;
+		/**
+		 * 允许采集的请求体媒体类型集合。
+		 *
+		 * <p>仅当请求的 {@code Content-Type} 属于该集合，且 {@link #body} 开关为真时，才记录请求体。</p>
+		 *
+		 * @since 1.0.0
+		 */
+		private Set<String> acceptableMediaTypes;
 
 		public boolean isHeaders() {
 			return headers;
@@ -123,6 +148,14 @@ public class WebLogConfiguration {
 
 		public void setMultipart(boolean multipart) {
 			this.multipart = multipart;
+		}
+
+		public Set<String> getAcceptableMediaTypes() {
+			return acceptableMediaTypes;
+		}
+
+		public void setAcceptableMediaTypes(Set<String> acceptableMediaTypes) {
+			this.acceptableMediaTypes = acceptableMediaTypes;
 		}
 	}
 
@@ -170,6 +203,14 @@ public class WebLogConfiguration {
 		 * @since 1.0.0
 		 */
 		private boolean resultData = false;
+		/**
+		 * 允许采集的响应体媒体类型集合。
+		 *
+		 * <p>仅当响应的 {@code Content-Type} 属于该集合，且 {@link #body} 开关为真时，才记录响应体。</p>
+		 *
+		 * @since 1.0.0
+		 */
+		private Set<String> acceptableMediaTypes;
 
 		public boolean isHeaders() {
 			return headers;
@@ -193,6 +234,14 @@ public class WebLogConfiguration {
 
 		public void setResultData(boolean resultData) {
 			this.resultData = resultData;
+		}
+
+		public Set<String> getAcceptableMediaTypes() {
+			return acceptableMediaTypes;
+		}
+
+		public void setAcceptableMediaTypes(Set<String> acceptableMediaTypes) {
+			this.acceptableMediaTypes = acceptableMediaTypes;
 		}
 	}
 }

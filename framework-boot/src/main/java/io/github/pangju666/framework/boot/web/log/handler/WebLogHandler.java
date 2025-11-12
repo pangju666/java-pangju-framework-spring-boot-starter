@@ -16,75 +16,76 @@
 
 package io.github.pangju666.framework.boot.web.log.handler;
 
-import io.github.pangju666.framework.boot.web.log.filter.WebLogFilter;
 import io.github.pangju666.framework.boot.web.log.model.WebLog;
-import org.springframework.lang.Nullable;
 import org.springframework.web.util.ContentCachingRequestWrapper;
 import org.springframework.web.util.ContentCachingResponseWrapper;
 
 import java.lang.reflect.Method;
 
 /**
- * Web 日志处理器接口
- * <p>
- * 该接口用于定义扩展 Web 日志处理逻辑的标准方法。实现此接口的类可以对采集到的
- * {@link WebLog} 日志数据进行修改、
- * 增强或自定义处理，并在日志发送之前完成相关操作。
- * </p>
+ * Web 日志处理器接口。
  *
- * <p>功能说明：</p>
+ * <p><b>概述</b></p>
  * <ul>
- *     <li>允许对 Web 日志数据进行自定义的处理或增强。</li>
- *     <li>通过实现多个处理器类，可以在日志生成后以责任链的形式链式增强日志数据。</li>
- *     <li>该接口通常被日志过滤器 {@link WebLogFilter} 调用。</li>
+ *   <li>定义扩展 Web 日志处理的标准契约，用于在日志采集后进行增强、修改或自定义处理。</li>
+ *   <li>在日志发送前执行，适用于追加业务上下文、脱敏、格式化或过滤等场景。</li>
  * </ul>
  *
- * <p>使用场景：</p>
+ * <p><b>行为</b></p>
  * <ul>
- *     <li>需要为日志添加额外的业务字段或上下文信息。</li>
- *     <li>对日志数据进行过滤、格式化或转换（如敏感数据脱敏）。</li>
- *     <li>自定义日志的持久化或异步处理逻辑。</li>
+ *   <li>接收已构建的 {@link WebLog} 以及内容缓存包装的请求/响应对象。</li>
+ *   <li>支持链式处理：多个处理器将按顺序依次执行。</li>
+ *   <li>通常由拦截器 {@link io.github.pangju666.framework.boot.web.log.interceptor.WebLogInterceptor} 或过滤器 {@link io.github.pangju666.framework.boot.web.log.filter.WebLogFilter} 调用。</li>
  * </ul>
  *
- * <p>实现示例：</p>
- * <pre>
- * // 自定义日志处理器，用于脱敏日志中的某些字段
- * &#64;Component
+ * <p><b>注意事项</b></p>
+ * <ul>
+ *   <li>{@code targetClass}/{@code targetMethod} 可能为 {@code null}（例如由过滤器调用时），实现时需进行空值判断。</li>
+ *   <li>响应体的写回由调用方负责；处理器无需操作底层输出流。</li>
+ * </ul>
+ *
+ * <p><b>实现示例</b></p>
+ * <pre>{@code
+ * // 自定义日志处理器：脱敏查询参数中的敏感字段
+ * @Component
  * public class SensitiveDataMaskingHandler implements WebLogHandler {
- *     &#64;Override
+ *     @Override
  *     public void handle(WebLog webLog, ContentCachingRequestWrapper request,
- *                        ContentCachingResponseWrapper response, Class&lt;?&gt; targetClass, Method targetMethod) {
- *         if (webLog.getRequest() != null &amp;&amp; webLog.getRequest().getQueryParams() != null) {
+ *                        ContentCachingResponseWrapper response, Class<?> targetClass, Method targetMethod) {
+ *         if (webLog.getRequest() != null && webLog.getRequest().getQueryParams() != null) {
  *             webLog.getRequest().getQueryParams().forEach((key, value) -> {
  *                 if ("password".equals(key)) {
- *                     value.replaceAll(v -> "****"); // 脱敏处理
+ *                     value.replaceAll(v -> "****");
  *                 }
  *             });
  *         }
  *     }
  * }
- * </pre>
+ * }</pre>
  *
  * @author pangju666
- * @see WebLogFilter
+ * @see io.github.pangju666.framework.boot.web.log.interceptor.WebLogInterceptor
+ * @see io.github.pangju666.framework.boot.web.log.filter.WebLogFilter
  * @see WebLog
  * @since 1.0.0
  */
 public interface WebLogHandler {
 	/**
-	 * 自定义日志处理方法
-	 * <p>
-	 * 定义日志增强或处理逻辑的方法，在生成 {@link WebLog} 日志对象后调用该方法。
-	 * 可通过此方法对日志数据进行修改、添加额外信息或执行特定处理逻辑。
-	 * </p>
+	 * 处理日志数据。
 	 *
-	 * @param webLog       当前生成的 Web 日志对象，包含请求和响应的详细信息
-	 * @param request      包装的请求对象 {@link ContentCachingRequestWrapper}
-	 * @param response     包装的响应对象 {@link ContentCachingResponseWrapper}
-	 * @param targetClass  被请求处理的目标类（可为空）
-	 * @param targetMethod 被请求处理的目标方法（可为空）
+	 * <p><b>行为</b></p>
+	 * <ul>
+	 *   <li>在 {@link WebLog} 构建后调用，用于增强或修改日志内容。</li>
+	 *   <li>建议保持无副作用、快速执行，以保证整体请求性能。</li>
+	 * </ul>
+	 *
+	 * @param webLog        当前采集的 Web 日志对象，包含请求与响应信息
+	 * @param request       内容缓存的请求包装器 {@link ContentCachingRequestWrapper}
+	 * @param response      内容缓存的响应包装器 {@link ContentCachingResponseWrapper}
+	 * @param targetClass   目标类（通常为控制器类）
+	 * @param targetMethod  目标方法（通常为控制器方法）
 	 * @since 1.0.0
 	 */
 	void handle(WebLog webLog, ContentCachingRequestWrapper request, ContentCachingResponseWrapper response,
-				@Nullable Class<?> targetClass, @Nullable Method targetMethod);
+				Class<?> targetClass, Method targetMethod);
 }

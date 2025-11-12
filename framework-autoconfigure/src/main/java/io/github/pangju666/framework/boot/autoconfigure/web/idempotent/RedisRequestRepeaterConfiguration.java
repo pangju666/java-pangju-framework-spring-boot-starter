@@ -14,9 +14,8 @@
  *    limitations under the License.
  */
 
-package io.github.pangju666.framework.boot.autoconfigure.web.idempotent.config;
+package io.github.pangju666.framework.boot.autoconfigure.web.idempotent;
 
-import io.github.pangju666.framework.boot.autoconfigure.web.idempotent.IdempotentProperties;
 import io.github.pangju666.framework.boot.web.idempotent.validator.IdempotentValidator;
 import io.github.pangju666.framework.boot.web.idempotent.validator.impl.RedisIdempotentValidator;
 import org.springframework.beans.factory.BeanFactory;
@@ -72,7 +71,7 @@ import org.springframework.util.StringUtils;
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnClass(RedisOperations.class)
 @ConditionalOnProperty(prefix = "pangju.web.idempotent", value = "type", havingValue = "REDIS")
-public class RedisRequestRepeaterConfiguration {
+class RedisRequestRepeaterConfiguration {
     /**
      * 注册基于 Redis 的幂等验证器。
      * <p>

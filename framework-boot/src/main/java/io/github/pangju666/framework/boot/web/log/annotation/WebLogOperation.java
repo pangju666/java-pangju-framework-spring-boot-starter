@@ -16,37 +16,33 @@
 
 package io.github.pangju666.framework.boot.web.log.annotation;
 
-import io.github.pangju666.framework.boot.web.log.filter.WebLogFilter;
+import io.github.pangju666.framework.boot.web.log.interceptor.WebLogInterceptor;
 import io.github.pangju666.framework.boot.web.log.model.WebLog;
 
 import java.lang.annotation.*;
 
 /**
- * Web 日志操作描述注解
- * <p>
- * 该注解用于标记在记录 Web 请求日志时，对操作的功能进行描述。
- * 它可以应用于控制器的方法，为该方法的日志附加操作说明，便于日志检索与分析。
- * </p>
+ * Web 日志操作描述注解。
  *
- * <p>功能说明：</p>
+ * <p><b>概述</b></p>
  * <ul>
- *     <li>为控制器方法配置操作描述，用于标明该方法的功能或用途。</li>
- *     <li>操作描述将记录在 {@link WebLog#getOperation()} 字段中。</li>
- *     <li>结合 {@link WebLogFilter} 使用，在日志中显示操作说明。</li>
+ *   <li>用于在记录 Web 请求日志时，标注接口方法的业务操作描述。</li>
+ *   <li>增强日志可读性与可检索性，便于统计与分析。</li>
  * </ul>
  *
- * <p>使用场景：</p>
+ * <p><b>行为</b></p>
  * <ul>
- *     <li>在方法级别为接口标识功能描述，例如 "查询用户信息"、"更新订单状态"。</li>
- *     <li>配合日志分析工具便于快速定位和统计操作类型。</li>
+ *   <li>在拦截过程中由 {@link WebLogInterceptor} 读取注解值，并填充到 {@link WebLog#getOperation()}。</li>
+ *   <li>若未标注，则操作描述可为空，不影响日志采集与发送。</li>
  * </ul>
  *
- * <p>适用范围：</p>
+ * <p><b>约束</b></p>
  * <ul>
- *     <li>仅能标注在方法上。</li>
+ *   <li>仅可标注在方法级别（{@link java.lang.annotation.ElementType#METHOD}）。</li>
+ *   <li>保留到运行时（{@link java.lang.annotation.RetentionPolicy#RUNTIME}），以便运行时读取。</li>
  * </ul>
  *
- * <p>示例代码：</p>
+ * <p><b>示例</b></p>
  * <pre>
  * &#64;RestController
  * &#64;RequestMapping("/api/users")
@@ -67,7 +63,7 @@ import java.lang.annotation.*;
  * </pre>
  *
  * @author pangju666
- * @see WebLogFilter
+ * @see WebLogInterceptor
  * @see WebLog
  * @since 1.0.0
  */
@@ -76,16 +72,13 @@ import java.lang.annotation.*;
 @Documented
 public @interface WebLogOperation {
 	/**
-	 * 操作描述
-	 * <p>
-	 * 设置当前方法的操作功能描述，用于日志记录中标识该方法的具体用途或操作。
-	 * </p>
+	 * 操作描述。
 	 *
-	 * <p>示例：</p>
-	 * <pre>
-	 * &#64;WebLogOperation("查询用户信息")
-	 * public User getUserById(Long id);
-	 * </pre>
+	 * <p><b>说明</b></p>
+	 * <ul>
+	 *   <li>用于标识控制器方法的业务功能描述。</li>
+	 *   <li>在拦截器中被读取并赋值到 {@link WebLog#getOperation()}。</li>
+	 * </ul>
 	 *
 	 * @return 操作描述字符串
 	 * @since 1.0.0

@@ -17,8 +17,6 @@
 package io.github.pangju666.framework.boot.autoconfigure.web.limit;
 
 import io.github.pangju666.framework.boot.autoconfigure.web.WebMvcAutoConfiguration;
-import io.github.pangju666.framework.boot.autoconfigure.web.limit.config.RedissonRateLimiterConfiguration;
-import io.github.pangju666.framework.boot.autoconfigure.web.limit.config.Resilience4jRateLimiterConfiguration;
 import io.github.pangju666.framework.boot.web.limit.interceptor.RateLimitInterceptor;
 import io.github.pangju666.framework.boot.web.limit.limiter.RateLimiter;
 import io.github.pangju666.framework.boot.web.limit.source.impl.IpRateLimitSourceExtractor;
@@ -70,7 +68,7 @@ import org.springframework.web.servlet.DispatcherServlet;
 @ConditionalOnClass({Servlet.class, DispatcherServlet.class})
 @EnableConfigurationProperties(RateLimitProperties.class)
 @Import({Resilience4jRateLimiterConfiguration.class, RedissonRateLimiterConfiguration.class})
-public class RateLimiterAutoConfiguration {
+class RateLimiterAutoConfiguration {
 	/**
 	 * 注册基于 IP 的限流源提取器
 	 *

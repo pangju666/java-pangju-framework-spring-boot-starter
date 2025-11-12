@@ -17,24 +17,22 @@
 package io.github.pangju666.framework.boot.web.log.model;
 
 import io.github.pangju666.framework.boot.web.log.annotation.WebLogOperation;
-import jakarta.servlet.http.Part;
 import org.springframework.http.HttpHeaders;
 
 import java.util.List;
 import java.util.Map;
 
 /**
- * Web 请求日志实体类
- * <p>
- * 表示一次 Web 请求的完整日志记录，包括请求的基本信息、请求内容、响应内容、
- * 以及自定义的扩展日志数据。此类用于统一记录和存储 HTTP 请求与响应的信息。
- * </p>
+ * Web 请求日志实体类。
  *
- * <p>关键功能：</p>
+ * <p>表示一次 Web 请求的完整日志记录，包括请求的基本信息、请求内容、响应内容，
+ * 以及自定义的扩展日志数据。此类用于统一记录和存储 HTTP 请求与响应的信息。</p>
+ *
+ * <p><b>关键功能</b></p>
  * <ul>
- *     <li>记录 Web 请求的来源 IP、URL、HTTP 方法及耗时。</li>
- *     <li>存储请求和响应的详细数据（如头信息、体内容等）。</li>
- *     <li>支持自定义扩展字段。</li>
+ *   <li>记录请求来源 IP、URL、HTTP 方法及耗时。</li>
+ *   <li>存储请求与响应的详细数据（如头信息、体内容等）。</li>
+ *   <li>支持自定义扩展字段。</li>
  * </ul>
  *
  * @author pangju666
@@ -244,7 +242,7 @@ public class WebLog {
 		 *
 		 * @since 1.0.0
 		 */
-		private Map<String, Part> formData;
+		private Map<String, FilePart> fileParts;
 		/**
 		 * 请求体的长度
 		 * <p>
@@ -273,12 +271,12 @@ public class WebLog {
 		 */
 		private Object body;
 
-		public Map<String, Part> getFormData() {
-			return formData;
+		public Map<String, FilePart> getFileParts() {
+			return fileParts;
 		}
 
-		public void setFormData(Map<String, Part> formData) {
-			this.formData = formData;
+		public void setFileParts(Map<String, FilePart> fileParts) {
+			this.fileParts = fileParts;
 		}
 
 		public int getContentLength() {
@@ -385,6 +383,22 @@ public class WebLog {
 		 * @since 1.0.0
 		 */
 		private Object body;
+		/**
+		 * 重定向地址。
+		 *
+		 * <p>当响应状态码为 3xx 时，记录响应头中的 {@code Location}。</p>
+		 *
+		 * @since 1.0.0
+		 */
+		private String location;
+
+		public String getLocation() {
+			return location;
+		}
+
+		public void setLocation(String location) {
+			this.location = location;
+		}
 
 		public String getCharacterEncoding() {
 			return characterEncoding;
@@ -424,6 +438,58 @@ public class WebLog {
 
 		public void setBody(Object body) {
 			this.body = body;
+		}
+	}
+
+	/**
+	 * Multipart 文件部分信息。
+	 *
+	 * <p>表示 {@code multipart/form-data} 请求中的单个文件字段的摘要信息。</p>
+	 *
+	 * @since 1.0.0
+	 */
+	public static class FilePart {
+		/**
+		 * 文件内容类型（Content-Type）。
+		 *
+		 * @since 1.0.0
+		 */
+		private String contentType;
+		/**
+		 * 客户端提交的原始文件名。
+		 *
+		 * @since 1.0.0
+		 */
+		private String submittedFileName;
+		/**
+		 * 文件大小（字节）。
+		 *
+		 * @since 1.0.0
+		 */
+		private long size;
+
+		public String getContentType() {
+			return contentType;
+		}
+
+		public void setContentType(String contentType) {
+			this.contentType = contentType;
+		}
+
+		public String getSubmittedFileName() {
+			return submittedFileName;
+		}
+
+		public void setSubmittedFileName(String submittedFileName) {
+			this.submittedFileName = submittedFileName;
+		}
+
+		public long getSize() {
+			return size;
+		}
+
+		public void setSize(long size) {
+			this.size = size;
 		}
 	}
 }

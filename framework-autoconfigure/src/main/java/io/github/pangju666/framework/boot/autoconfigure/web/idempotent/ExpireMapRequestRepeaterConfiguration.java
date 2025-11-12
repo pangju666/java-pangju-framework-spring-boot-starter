@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package io.github.pangju666.framework.boot.autoconfigure.web.idempotent.config;
+package io.github.pangju666.framework.boot.autoconfigure.web.idempotent;
 
 import io.github.pangju666.framework.boot.web.idempotent.validator.IdempotentValidator;
 import io.github.pangju666.framework.boot.web.idempotent.validator.impl.ExpireMapIdempotentValidator;
@@ -65,7 +65,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnClass(ExpiringMap.class)
 @ConditionalOnProperty(prefix = "pangju.web.idempotent", value = "type", havingValue = "EXPIRE_MAP", matchIfMissing = true)
-public class ExpireMapRequestRepeaterConfiguration {
+class ExpireMapRequestRepeaterConfiguration {
 	/**
 	 * 注册基于本地内存的幂等验证器。
 	 * <p>

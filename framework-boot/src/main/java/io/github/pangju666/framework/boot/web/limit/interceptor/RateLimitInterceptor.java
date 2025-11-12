@@ -22,7 +22,6 @@ import io.github.pangju666.framework.boot.web.limit.exception.RateLimitException
 import io.github.pangju666.framework.boot.web.limit.limiter.RateLimiter;
 import io.github.pangju666.framework.boot.web.limit.source.RateLimitSourceExtractor;
 import io.github.pangju666.framework.web.exception.base.ServerException;
-import io.github.pangju666.framework.web.lang.WebConstants;
 import io.github.pangju666.framework.web.servlet.BaseHttpInterceptor;
 import io.github.pangju666.framework.web.servlet.HttpResponseBuilder;
 import jakarta.servlet.http.HttpServletRequest;
@@ -82,7 +81,7 @@ public class RateLimitInterceptor extends BaseHttpInterceptor {
      * @since 1.0.0
      */
     public RateLimitInterceptor(RateLimiter requestLimiter) {
-        super(Collections.singleton(WebConstants.ANT_ANY_PATH_PATTERN), Collections.emptySet());
+        super(Collections.emptySet());
         this.rateLimiter = requestLimiter;
         this.parser = new SpelExpressionParser();
     }
