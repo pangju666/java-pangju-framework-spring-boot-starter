@@ -26,10 +26,6 @@
 			<groupId>io.github.pangju666.framework</groupId>
 			<artifactId>framework-web</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>io.github.pangju666.commons</groupId>
-			<artifactId>commons-lang</artifactId>
-		</dependency>
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
