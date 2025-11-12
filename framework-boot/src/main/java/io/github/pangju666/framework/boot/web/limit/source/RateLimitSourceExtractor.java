@@ -17,7 +17,6 @@
 package io.github.pangju666.framework.boot.web.limit.source;
 
 import io.github.pangju666.framework.boot.web.limit.annotation.RateLimit;
-import io.github.pangju666.framework.boot.web.limit.enums.RateLimitScope;
 import io.github.pangju666.framework.boot.web.limit.interceptor.RateLimitInterceptor;
 import io.github.pangju666.framework.boot.web.limit.source.impl.IpRateLimitSourceExtractor;
 import jakarta.servlet.http.HttpServletRequest;
@@ -26,8 +25,6 @@ import jakarta.servlet.http.HttpServletRequest;
  * 速率限制源提取器接口
  * <p>
  * 该接口定义了从HTTP请求中提取源标识信息的契约。
- * 在基于源的限流（{@link RateLimitScope#SOURCE}）中，
- * 需要根据请求的源信息为不同的源维护独立的限流计数。
  * </p>
  * <p>
  * 主要用途：
@@ -87,27 +84,9 @@ import jakarta.servlet.http.HttpServletRequest;
  * </ul>
  * </p>
  * <p>
- * 工作流程：
- * <ol>
- *     <li>{@link RateLimitInterceptor}在拦截到标记了{@link RateLimit}注解的请求时</li>
- *     <li>如果{@link RateLimit#scope()}为{@link RateLimitScope#SOURCE}</li>
- *     <li>使用{@link RateLimit#source()}指定的源提取器实现</li>
- *     <li>调用本接口的{@link #getSource}方法提取源标识</li>
- *     <li>将源标识组合到限流键中，为不同的源维护独立计数</li>
- * </ol>
- * </p>
- * <p>
- * 与其他组件的关系：
- * <ul>
- *     <li>由{@link RateLimitInterceptor}在生成限流键时调用</li>
- *     <li>由{@link RateLimit#source()}指定具体的实现类</li>
- *     <li>与{@link RateLimitScope#SOURCE}一起工作</li>
- * </ul>
- * </p>
- * <p>
  * 最佳实践：
  * <ul>
- *     <li>源提取器应该能被Spring容器管理，或能通过无参构造器实例化</li>
+ *     <li>源提取器应该能被Spring容器管理</li>
  *     <li>源提取器应该是线程安全的，因为会被多个请求线程并发调用</li>
  *     <li>源提取器应该返回非空、稳定的标识字符串</li>
  *     <li>源提取器应该性能高效，避免复杂的计算或I/O操作</li>
@@ -117,7 +96,6 @@ import jakarta.servlet.http.HttpServletRequest;
  *
  * @author pangju666
  * @see RateLimit
- * @see RateLimitScope
  * @see RateLimitInterceptor
  * @see IpRateLimitSourceExtractor
  * @since 1.0.0

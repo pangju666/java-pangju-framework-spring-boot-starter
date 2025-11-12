@@ -16,9 +16,7 @@
 
 package io.github.pangju666.framework.boot.web.limit.annotation;
 
-import io.github.pangju666.framework.boot.web.limit.enums.RateLimitScope;
 import io.github.pangju666.framework.boot.web.limit.exception.RateLimitException;
-import io.github.pangju666.framework.boot.web.limit.interceptor.RateLimitInterceptor;
 import io.github.pangju666.framework.boot.web.limit.source.RateLimitSourceExtractor;
 import io.github.pangju666.framework.boot.web.limit.source.impl.IpRateLimitSourceExtractor;
 
@@ -104,19 +102,6 @@ import java.util.concurrent.TimeUnit;
  * </pre>
  * </p>
  * <p>
- * 配置详解：
- * <ul>
- *     <li><strong>prefix</strong> - Redis键的前缀，用于区分不同应用或模块的限流数据。不指定时使用默认前缀</li>
- *     <li><strong>key</strong> - 限流的业务键，支持使用SpEL表达式动态获取。不指定时使用方法名或类名+方法名</li>
- *     <li><strong>interval</strong> - 时间窗口的数值，结合timeUnit确定完整的时间窗口</li>
- *     <li><strong>timeUnit</strong> - 时间单位，支持SECONDS、MINUTES、HOURS等</li>
- *     <li><strong>rate</strong> - 时间窗口内允许的最大请求数，必需参数</li>
- *     <li><strong>scope</strong> - 限流作用域，决定限流是全局还是按源隔离</li>
- *     <li><strong>source</strong> - 请求源提取器类，用于提取请求标识（如IP地址），在scope为SOURCE时使用</li>
- *     <li><strong>message</strong> - 限流时返回的错误消息，会作为异常信息返回给客户端</li>
- * </ul>
- * </p>
- * <p>
  * 异常处理：
  * <p>
  * 当请求超过限流阈值时，框架会抛出{@link RateLimitException}异常，
@@ -124,21 +109,10 @@ import java.util.concurrent.TimeUnit;
  * </p>
  * </p>
  * <p>
- * 与其他组件的关系：
- * <ul>
- *     <li>由{@link RateLimitInterceptor}识别和处理</li>
- *     <li>使用配置中的限流实现类型（Resilience4j或Redisson）进行计数</li>
- *     <li>使用{@link RateLimitSourceExtractor}提取请求源信息</li>
- *     <li>触发限流时抛出{@link RateLimitException}</li>
- * </ul>
- * </p>
- * <p>
  * 性能考虑：
  * <ul>
  *     <li>全局限流（GLOBAL）性能最好，仅需单个计数器</li>
  *     <li>基于源的限流（SOURCE）需要为每个源维护一个计数器，性能取决于源的数量</li>
- *     <li>使用Redisson实现的分布式限流支持高并发场景</li>
- *     <li>使用Resilience4j实现的内存限流适合单机应用</li>
  * </ul>
  * </p>
  *
@@ -147,7 +121,6 @@ import java.util.concurrent.TimeUnit;
  * @see RateLimitException
  * @see RateLimitSourceExtractor
  * @see IpRateLimitSourceExtractor
- * @see RateLimitInterceptor
  * @since 1.0.0
  */
 @Documented
@@ -179,9 +152,8 @@ public @interface RateLimit {
 	 * <p>
 	 * 支持使用SpEL表达式动态生成键，如：
 	 * <ul>
-	 *     <li>#{#userId} - 从请求参数或JWT中提取用户ID</li>
 	 *     <li>#{T(java.lang.System).currentTimeMillis()} - 使用系统时间戳</li>
-	 *     <li>#request.getParameter('param') - 使用系统时间戳</li>
+	 *     <li>#request.getParameter('param') - 使用请求参数</li>
 	 * </ul>
 	 * </p>
 	 * <p>
@@ -272,7 +244,7 @@ public @interface RateLimit {
 	 * 当选择SOURCE时，需要通过{@link #source()}指定源提取器。
 	 * </p>
 	 *
-	 * @return 限流作用域，默认为{@link RateLimitScope#GLOBAL}
+	 * @return 限流作用域
 	 * @see RateLimitScope
 	 * @since 1.0.0
 	 */
@@ -286,30 +258,13 @@ public @interface RateLimit {
 	 * 框架会根据提取的源标识为每个源维护独立的限流计数。
 	 * </p>
 	 * <p>
-	 * 内置的源提取器实现：
-	 * <ul>
-	 *     <li>{@link IpRateLimitSourceExtractor} - 基于请求IP地址的限流</li>
-	 * </ul>
-	 * </p>
-	 * <p>
-	 * 可以实现{@link RateLimitSourceExtractor}接口自定义源提取逻辑，例如：
-	 * <pre>
-	 * {@code
-	 * public class UserIdRateLimitSourceExtractor implements RateLimitSourceExtractor {
-	 *     @Override
-	 *     public String extract(HttpServletRequest request) {
-	 *         String userId = (String) request.getAttribute("userId");
-	 *         return userId != null ? userId : request.getRemoteAddr();
-	 *     }
-	 * }
-	 * }
-	 * </pre>
+	 * <strong>要求：</strong>指定的类必须是 Spring Bean（已注册到容器中）
 	 * </p>
 	 * <p>
 	 * 默认使用{@link IpRateLimitSourceExtractor}，基于请求的IP地址进行限流。
 	 * </p>
 	 *
-	 * @return 请求源提取器类，默认为{@link IpRateLimitSourceExtractor}
+	 * @return 请求源提取器类
 	 * @see RateLimitSourceExtractor
 	 * @see IpRateLimitSourceExtractor
 	 * @since 1.0.0
@@ -323,23 +278,40 @@ public @interface RateLimit {
 	 * 该异常会被转换为HTTP 429响应，并包含此消息。
 	 * 该消息会返回给客户端，建议提供清晰、友好的提示信息。
 	 * </p>
+	 *
 	 * <p>
 	 * 默认消息为："请求次数已达上限，请稍候再试"。
 	 * </p>
-	 * <p>
-	 * 自定义消息示例：
-	 * <pre>
-	 * {@code
-	 * @RateLimit(
-	 *     rate = 100,
-	 *     message = "您的请求过于频繁，请在${waitTime}毫秒后重试"
-	 * )
-	 * }
-	 * </pre>
-	 * </p>
 	 *
-	 * @return 限流时的错误消息，默认为"请求次数已达上限，请稍候再试"
+	 * @return 限流时的错误消息
 	 * @since 1.0.0
 	 */
 	String message() default "请求次数已达上限，请稍候再试";
+
+	/**
+	 * 请求限流作用域枚举
+	 * <p>
+	 * 该枚举定义了速率限制的应用范围，用于控制速率限制的生效粒度。
+	 * </p>
+	 */
+	enum RateLimitScope {
+		/**
+		 * 全局速率限制
+		 * <p>
+		 * 所有客户端共享同一限流配额，对整个应用进行全局限流控制。
+		 * </p>
+		 *
+		 * @since 1.0.0
+		 */
+		GLOBAL,
+		/**
+		 * 基于请求源的速率限制
+		 * <p>
+		 * 按请求源（IP、用户ID等）分别计算限流配额，不同源独立计数。
+		 * </p>
+		 *
+		 * @since 1.0.0
+		 */
+		SOURCE
+	}
 }

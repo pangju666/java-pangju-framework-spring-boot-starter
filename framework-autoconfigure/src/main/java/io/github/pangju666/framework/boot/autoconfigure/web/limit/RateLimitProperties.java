@@ -16,7 +16,6 @@
 
 package io.github.pangju666.framework.boot.autoconfigure.web.limit;
 
-import io.github.pangju666.framework.boot.web.limit.enums.RateLimitScope;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
@@ -36,15 +35,13 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  *       # Redisson相关配置（当type为REDISSON时）
  *       redisson:
  *         # Redisson客户端Bean名称
- *         redisson-client-bean-name: redissonClient
+ *         redisson-client-ref: redissonClient
  *         # Redis键前缀
  *         key-prefix: rate-limit
  * </pre>
  * </p>
  *
  * @author pangju666
- * @see RateLimitScope
- * @see RateLimiterAutoConfiguration
  * @since 1.0.0
  */
 @ConfigurationProperties(prefix = "pangju.web.rate-limit")
@@ -141,7 +138,7 @@ public class RateLimitProperties {
 		 *
 		 * @since 1.0.0
 		 */
-		private String redissonClientBeanName;
+		private String redissonClientRef;
 		/**
 		 * Redis键前缀
 		 * <p>
@@ -154,12 +151,12 @@ public class RateLimitProperties {
 		 */
 		private String keyPrefix = "rate-limit";
 
-		public String getRedissonClientBeanName() {
-			return redissonClientBeanName;
+		public String getRedissonClientRef() {
+			return redissonClientRef;
 		}
 
-		public void setRedissonClientBeanName(String redissonClientBeanName) {
-			this.redissonClientBeanName = redissonClientBeanName;
+		public void setRedissonClientRef(String redissonClientRef) {
+			this.redissonClientRef = redissonClientRef;
 		}
 
 		public String getKeyPrefix() {

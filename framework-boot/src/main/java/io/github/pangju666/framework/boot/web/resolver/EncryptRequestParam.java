@@ -158,6 +158,9 @@ public @interface EncryptRequestParam {
 	 * 当 {@link CryptoAlgorithm#CUSTOM} 被指定为算法时，使用该工厂提供的实现进行解密；
 	 * 其他算法将忽略此配置并使用预设工厂。
 	 * </p>
+	 * <p>
+	 * <strong>要求：</strong>指定的类必须是 Spring Bean（已注册到容器中）
+	 * </p>
 	 *
 	 * @return 自定义解密工厂类型
 	 * @since 1.0.0
