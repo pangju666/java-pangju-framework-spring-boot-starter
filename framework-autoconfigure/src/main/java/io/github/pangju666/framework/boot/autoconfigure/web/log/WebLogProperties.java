@@ -34,6 +34,7 @@ import java.util.Set;
  * <p><b>能力</b></p>
  * <ul>
  *   <li>发送通道：支持 {@code kafka} 与 {@code disruptor} 两种模式。</li>
+ *   <li>接收器类型：支持 {@code DISK}、{@code MONGODB} 等接收器，用于持久化或转发。</li>
  *   <li>记录范围：请求（头/查询参数/体/multipart）与响应（头/体/附加数据）。</li>
  *   <li>目标参数：提供 Kafka 与 MongoDB 的目标配置。</li>
  *   <li>路径排除：通过 {@link #excludePathPatterns} 排除无需记录的请求路径。</li>
@@ -46,14 +47,21 @@ import java.util.Set;
  *     log:
  *       enabled: true
  *       sender-type: kafka
+ *       receiver-type: DISK
  *       kafka:
  *         kafka-template-ref: myKafkaTemplate
  *         topic: web-log
  *       mongo:
  *         mongo-template-ref: myMongoTemplate
- *         collection-prefix: web_log
+ *         base-collection-name: web-log
  *       disruptor:
  *         buffer-size: 1024
+ *       disk:
+ *         directory: logs/web
+ *         base-filename: web-log
+ *         writer-buffer-size: 8192
+ *         queue-size: 10000
+ *         write-thread-destroy-wait-mills: 5000
  *       request:
  *         headers: true
  *         query-params: true
@@ -65,7 +73,7 @@ import java.util.Set;
  *       response:
  *         headers: true
  *         body: true
- *         result-data: false
+ *         result-data: true
  *         acceptable-media-types:
  *           - application/json
  *           - text/plain
@@ -94,6 +102,15 @@ public class WebLogProperties {
 	 * @since 1.0.0
 	 */
 	private SenderType senderType = SenderType.DISRUPTOR;
+    /**
+     * 日志接收器类型
+     * <p>
+     * 指定 Web 日志的落地或转发目标。默认值为 {@link ReceiverType#DISK}。
+     * 当选择不同类型时，分别使用对应的配置段（如 {@link #disk}、{@link #mongo}）。
+     * </p>
+     *
+     * @since 1.0.0
+     */
 	private ReceiverType receiverType = ReceiverType.DISK;
 	/**
 	 * Kafka 配置
@@ -124,6 +141,15 @@ public class WebLogProperties {
 	 * @since 1.0.0
 	 */
 	private Disruptor disruptor = new Disruptor();
+    /**
+     * 磁盘接收器配置
+     * <p>
+     * 当 {@link #receiverType} 为 {@link ReceiverType#DISK} 时生效，用于控制日志写入目录、
+     * 文件命名、写缓冲大小、队列容量以及关闭等待时长等参数。
+     * </p>
+     *
+     * @since 1.0.0
+     */
 	private Disk disk = new Disk();
 	/**
 	 * Web 日志功能开关
@@ -282,10 +308,23 @@ public class WebLogProperties {
 		DISRUPTOR
 	}
 
-	public enum ReceiverType {
-		DISK,
-		MONGODB
-	}
+    /**
+     * 日志接收器类型枚举
+     * <p>
+     * 用于指定 Web 日志的最终处理位置或介质。
+     * </p>
+     * <ul>
+     *   <li>{@link #DISK}：写入本地或挂载磁盘文件，适用于简单归档。</li>
+     *   <li>{@link #MONGODB}：写入 MongoDB 集合，适用于检索与分析。</li>
+     * </ul>
+     *
+     * @author pangju666
+     * @since 1.0.0
+     */
+    public enum ReceiverType {
+        DISK,
+        MONGODB
+    }
 
     /**
      * MongoDB 配置。
@@ -293,7 +332,7 @@ public class WebLogProperties {
      * <p><b>字段</b></p>
      * <ul>
      *   <li>{@link #mongoTemplateRef} 指定使用的 {@code MongoTemplate} Bean 名称。</li>
-     *   <li>{@link #collectionPrefix} 集合名前缀，用于按日归档命名。</li>
+     *   <li>{@link #baseCollectionName} 集合名称基础前缀，用于生成实际集合名。</li>
      * </ul>
      *
      * <p><b>示例（application.yml）</b></p>
@@ -303,7 +342,7 @@ public class WebLogProperties {
      *     log:
      *       mongo:
      *         mongo-template-ref: myMongoTemplate
-     *         collection-prefix: web_log
+     *         base-collection-name: web-log
      * </pre>
      *
      * @author pangju666
@@ -320,15 +359,14 @@ public class WebLogProperties {
 		 * @since 1.0.0
 		 */
 		private String mongoTemplateRef;
-		/**
-		 * 集合名称前缀
-		 * <p>
-		 * MongoDB 日志数据集合的名称前缀。默认值为 {@code web-log}。
-		 * 实际的集合名称可以根据模块或业务动态生成。
-		 * </p>
-		 *
-		 * @since 1.0.0
-		 */
+        /**
+         * 集合名称基础前缀。
+         * <p>
+         * MongoDB 日志集合的基础名称，默认 {@code web-log}。实际集合名可据模块或业务在此基础上扩展。
+         * </p>
+         *
+         * @since 1.0.0
+         */
 		private String baseCollectionName = "web-log";
 
 		public String getMongoTemplateRef() {
@@ -439,12 +477,59 @@ public class WebLogProperties {
 		}
 	}
 
-	public static class Disk {
-		private String directory;
-		private String baseFilename = "web-log";
-		private int writerBufferSize = 8192;
-		private int queueSize = 10000;
-		private int writeThreadDestroyWaitMills = 5000;
+    /**
+     * 磁盘接收器配置。
+     *
+     * <p><b>概述</b></p>
+     * <ul>
+     *   <li>配置日志写入目录与文件命名规则。</li>
+     *   <li>控制写入缓冲区与队列容量以平衡性能与内存占用。</li>
+     *   <li>关闭时的线程等待时长用于尽量写完残留消息。</li>
+     * </ul>
+     *
+     * @author pangju666
+     * @since 1.0.0
+     */
+    public static class Disk {
+        /**
+         * 日志文件目录路径。
+         * <p>
+         * 若目录不存在将自动创建；需确保应用对该目录具有写权限。
+         * </p>
+         */
+        private String directory;
+        /**
+         * 基础文件名后缀。
+         * <p>
+         * 用于区分不同来源或类型的日志，会与日期与扩展名组合生成最终文件名。
+         * 默认值为 {@code "web-log"}。
+         * </p>
+         */
+        private String baseFilename = "web-log";
+        /**
+         * 写入缓冲区大小（字节）。
+         * <p>
+         * 控制文件写入时的缓冲大小，增大可减少 IO 次数但会提高内存占用。
+         * 默认值为 {@code 8192}。
+         * </p>
+         */
+        private int writerBufferSize = 8192;
+        /**
+         * 背压队列容量（条）。
+         * <p>
+         * 接收器在入队时使用阻塞队列，队列满时生产方将阻塞形成背压。
+         * 默认值为 {@code 10000}。
+         * </p>
+         */
+        private int queueSize = 10000;
+        /**
+         * 写线程销毁等待时长（毫秒）。
+         * <p>
+         * 应用关闭时，等待写线程处理完剩余消息的最长时间。
+         * 默认值为 {@code 5000} 毫秒。
+         * </p>
+         */
+        private int writeThreadDestroyWaitMills = 5000;
 
 		public String getDirectory() {
 			return directory;
