@@ -69,7 +69,7 @@ public class DecryptJsonDeserializer extends JsonDeserializer<Object> implements
      *
      * @since 1.0.0
      */
-    protected static final Logger LOGGER = LoggerFactory.getLogger(DecryptJsonDeserializer.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DecryptJsonDeserializer.class);
 
     /**
      * 按算法与编码缓存的反序列化器映射
@@ -270,7 +270,7 @@ public class DecryptJsonDeserializer extends JsonDeserializer<Object> implements
      * @throws DecoderException        当十六进制解码失败时抛出
      * @since 1.0.0
      */
-    protected byte[] readBytes(byte[] value) throws InvalidKeySpecException, DecoderException {
+    private byte[] readBytes(byte[] value) throws InvalidKeySpecException, DecoderException {
         return CryptoUtils.decrypt(cryptoFactory, value, key);
     }
 
@@ -283,7 +283,7 @@ public class DecryptJsonDeserializer extends JsonDeserializer<Object> implements
      * @throws DecoderException        当十六进制解码失败时抛出
      * @since 1.0.0
      */
-    protected String readString(String value) throws InvalidKeySpecException, DecoderException {
+    private String readString(String value) throws InvalidKeySpecException, DecoderException {
         return CryptoUtils.decryptString(cryptoFactory, value, key, encoding);
     }
 
@@ -295,7 +295,7 @@ public class DecryptJsonDeserializer extends JsonDeserializer<Object> implements
      * @throws InvalidKeySpecException 当密钥规格无效时抛出
      * @since 1.0.0
      */
-    protected BigInteger readBigInteger(BigInteger value) throws InvalidKeySpecException {
+    private BigInteger readBigInteger(BigInteger value) throws InvalidKeySpecException {
         return CryptoUtils.decryptBigInteger(cryptoFactory, value, key);
     }
 
@@ -307,7 +307,7 @@ public class DecryptJsonDeserializer extends JsonDeserializer<Object> implements
      * @throws InvalidKeySpecException 当密钥规格无效时抛出
      * @since 1.0.0
      */
-    protected BigDecimal readBigDecimal(BigDecimal value) throws InvalidKeySpecException {
+    private BigDecimal readBigDecimal(BigDecimal value) throws InvalidKeySpecException {
         return CryptoUtils.decryptBigDecimal(cryptoFactory, value, key);
     }
 
@@ -324,7 +324,7 @@ public class DecryptJsonDeserializer extends JsonDeserializer<Object> implements
      * @throws InvalidKeySpecException 当密钥规格无效时抛出
      * @since 1.0.0
      */
-    protected Object readValue(Object value) throws DecoderException, InvalidKeySpecException {
+    private Object readValue(Object value) throws DecoderException, InvalidKeySpecException {
 		if (Objects.isNull(value)) {
 			return null;
 		} else if (byte[].class.equals(elementType)) {
@@ -356,7 +356,7 @@ public class DecryptJsonDeserializer extends JsonDeserializer<Object> implements
      * @since 1.0.0
      */
     @SuppressWarnings({"rawtypes", "unchecked"})
-    protected List readList(Collection values) throws InvalidKeySpecException, DecoderException {
+    private List readList(Collection values) throws InvalidKeySpecException, DecoderException {
         List result = new ArrayList<>(values.size());
         for (Object value : values) {
             result.add(readValue(value));
@@ -374,7 +374,7 @@ public class DecryptJsonDeserializer extends JsonDeserializer<Object> implements
      * @since 1.0.0
      */
     @SuppressWarnings({"rawtypes", "unchecked"})
-    protected Set readSet(Collection values) throws InvalidKeySpecException, DecoderException {
+    private Set readSet(Collection values) throws InvalidKeySpecException, DecoderException {
         Set result = new HashSet(values.size());
         for (Object value : values) {
             result.add(readValue(value));
@@ -395,7 +395,7 @@ public class DecryptJsonDeserializer extends JsonDeserializer<Object> implements
      * @since 1.0.0
      */
     @SuppressWarnings({"rawtypes", "unchecked"})
-    protected Map readMap(Map value) throws InvalidKeySpecException, DecoderException {
+    private Map readMap(Map value) throws InvalidKeySpecException, DecoderException {
         Map result = new HashMap<>(value.size());
         for (Object o : value.entrySet()) {
             Map.Entry entry = (Map.Entry) o;
@@ -421,7 +421,7 @@ public class DecryptJsonDeserializer extends JsonDeserializer<Object> implements
      * @throws JsonMappingException 初始化失败时抛出
      * @since 1.0.0
      */
-    protected DecryptJsonDeserializer getDeserializer(DecryptFormat annotation, Class<?> targetType, Class<?> elementType,
+    private DecryptJsonDeserializer getDeserializer(DecryptFormat annotation, Class<?> targetType, Class<?> elementType,
                                                       DeserializationContext ctxt) throws JsonMappingException {
 		String key = annotation.key() + "-" + annotation.encoding().name() + "-" + targetType.getName();
 		if (Objects.nonNull(elementType)) {
@@ -463,7 +463,7 @@ public class DecryptJsonDeserializer extends JsonDeserializer<Object> implements
      * @return 当类型为 {@link String}、<code>byte[]</code>、{@link BigInteger} 或 {@link BigDecimal} 时返回 true；否则返回 false
      * @since 1.0.0
      */
-    protected boolean isSupportType(Class<?> valueType) {
+    private boolean isSupportType(Class<?> valueType) {
         return String.class.equals(valueType) || byte[].class.equals(valueType) ||
             BigInteger.class.equals(valueType) || BigDecimal.class.equals(valueType);
     }

@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package io.github.pangju666.framework.boot.web.log.revceiver;
+package io.github.pangju666.framework.boot.web.log.receiver;
 
 import io.github.pangju666.framework.boot.web.log.model.WebLog;
 

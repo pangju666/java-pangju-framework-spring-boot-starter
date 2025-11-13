@@ -14,17 +14,19 @@
  *    limitations under the License.
  */
 
-package io.github.pangju666.framework.boot.web.log.revceiver.impl.mongo;
+package io.github.pangju666.framework.boot.web.log.receiver.impl.mongo;
 
-import io.github.pangju666.commons.lang.utils.DateFormatUtils;
+import io.github.pangju666.commons.lang.pool.Constants;
 import io.github.pangju666.framework.boot.web.log.model.WebLog;
-import io.github.pangju666.framework.boot.web.log.revceiver.WebLogReceiver;
+import io.github.pangju666.framework.boot.web.log.receiver.WebLogReceiver;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.lang.Nullable;
 
-import java.util.Date;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Objects;
 
 /**
  * MongoDB Web 日志接收器。
@@ -55,6 +57,8 @@ import java.util.Date;
  * @since 1.0.0
  */
 public class MongoWebLogReceiver implements WebLogReceiver {
+	private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern(Constants.DATE_FORMAT);
+
     /**
      * MongoTemplate 实例。
      *
@@ -68,19 +72,19 @@ public class MongoWebLogReceiver implements WebLogReceiver {
      */
     private final MongoTemplate mongoTemplate;
     /**
-     * 集合名前缀。
+     * 基础集合名。
      *
      * <p><b>说明</b></p>
      * <ul>
-     *   <li>用于生成按日归档的集合名称，最终格式为 {@code [prefix-]yyyy-MM-dd}。</li>
+     *   <li>用于生成按日归档的集合名称，最终格式为 {@code [prefix]-yyyy-MM-dd}。</li>
      *   <li>可为空；为空时仅使用日期作为集合名。</li>
      * </ul>
      */
-    private final String collectionPrefix;
+    private final String baseCollectionName;
 
-	public MongoWebLogReceiver(MongoTemplate mongoTemplate, @Nullable String collectionPrefix) {
+	public MongoWebLogReceiver(MongoTemplate mongoTemplate, @Nullable String baseCollectionName) {
 		this.mongoTemplate = mongoTemplate;
-		this.collectionPrefix = collectionPrefix;
+		this.baseCollectionName = baseCollectionName;
 	}
 
     /**
@@ -96,13 +100,15 @@ public class MongoWebLogReceiver implements WebLogReceiver {
      */
     @Override
     public void receive(WebLog webLog) {
-		String date = DateFormatUtils.formatDate(new Date());
-		String collectionName = StringUtils.isNotBlank(collectionPrefix) ? collectionPrefix + "-" + date : date;
+		String date = LocalDateTime.now().format(DATE_FORMAT);
+		String collectionName = StringUtils.isNotBlank(baseCollectionName) ? baseCollectionName + "-" + date : date;
 		if (!mongoTemplate.collectionExists(collectionName)) {
 			mongoTemplate.createCollection(collectionName);
 		}
-		WebLogDocument document = new WebLogDocument();
-		BeanUtils.copyProperties(webLog, document);
-		mongoTemplate.save(document, collectionName);
+		if (Objects.nonNull(webLog)) {
+			WebLogDocument document = new WebLogDocument();
+			BeanUtils.copyProperties(webLog, document);
+			mongoTemplate.save(document, collectionName);
+		}
 	}
 }

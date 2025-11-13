@@ -18,7 +18,7 @@ package io.github.pangju666.framework.boot.web.log.sender.impl.disruptor;
 
 import com.lmax.disruptor.EventHandler;
 import io.github.pangju666.framework.boot.web.log.model.WebLog;
-import io.github.pangju666.framework.boot.web.log.revceiver.WebLogReceiver;
+import io.github.pangju666.framework.boot.web.log.receiver.WebLogReceiver;
 
 import java.util.Objects;
 

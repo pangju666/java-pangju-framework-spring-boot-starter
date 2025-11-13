@@ -94,6 +94,7 @@ public class WebLogProperties {
 	 * @since 1.0.0
 	 */
 	private SenderType senderType = SenderType.DISRUPTOR;
+	private ReceiverType receiverType = ReceiverType.DISK;
 	/**
 	 * Kafka 配置
 	 * <p>
@@ -123,6 +124,7 @@ public class WebLogProperties {
 	 * @since 1.0.0
 	 */
 	private Disruptor disruptor = new Disruptor();
+	private Disk disk = new Disk();
 	/**
 	 * Web 日志功能开关
 	 * <p>
@@ -181,6 +183,22 @@ public class WebLogProperties {
 	 * @since 1.0.0
 	 */
 	private Set<String> excludePathPatterns = Collections.emptySet();
+
+	public Disk getDisk() {
+		return disk;
+	}
+
+	public void setDisk(Disk disk) {
+		this.disk = disk;
+	}
+
+	public ReceiverType getReceiverType() {
+		return receiverType;
+	}
+
+	public void setReceiverType(ReceiverType receiverType) {
+		this.receiverType = receiverType;
+	}
 
 	public SenderType getSenderType() {
 		return senderType;
@@ -264,6 +282,11 @@ public class WebLogProperties {
 		DISRUPTOR
 	}
 
+	public enum ReceiverType {
+		DISK,
+		MONGODB
+	}
+
     /**
      * MongoDB 配置。
      *
@@ -300,13 +323,13 @@ public class WebLogProperties {
 		/**
 		 * 集合名称前缀
 		 * <p>
-		 * MongoDB 日志数据集合的名称前缀。默认值为 {@code web_log}。
+		 * MongoDB 日志数据集合的名称前缀。默认值为 {@code web-log}。
 		 * 实际的集合名称可以根据模块或业务动态生成。
 		 * </p>
 		 *
 		 * @since 1.0.0
 		 */
-		private String collectionPrefix = "web_log";
+		private String baseCollectionName = "web-log";
 
 		public String getMongoTemplateRef() {
 			return mongoTemplateRef;
@@ -316,12 +339,12 @@ public class WebLogProperties {
 			this.mongoTemplateRef = mongoTemplateRef;
 		}
 
-		public String getCollectionPrefix() {
-			return collectionPrefix;
+		public String getBaseCollectionName() {
+			return baseCollectionName;
 		}
 
-		public void setCollectionPrefix(String collectionPrefix) {
-			this.collectionPrefix = collectionPrefix;
+		public void setBaseCollectionName(String baseCollectionName) {
+			this.baseCollectionName = baseCollectionName;
 		}
 	}
 
@@ -413,6 +436,54 @@ public class WebLogProperties {
 
 		public void setBufferSize(int bufferSize) {
 			this.bufferSize = bufferSize;
+		}
+	}
+
+	public static class Disk {
+		private String directory;
+		private String baseFilename = "web-log";
+		private int writerBufferSize = 8192;
+		private int queueSize = 10000;
+		private int writeThreadDestroyWaitMills = 5000;
+
+		public String getDirectory() {
+			return directory;
+		}
+
+		public void setDirectory(String directory) {
+			this.directory = directory;
+		}
+
+		public String getBaseFilename() {
+			return baseFilename;
+		}
+
+		public void setBaseFilename(String baseFilename) {
+			this.baseFilename = baseFilename;
+		}
+
+		public int getWriterBufferSize() {
+			return writerBufferSize;
+		}
+
+		public void setWriterBufferSize(int writerBufferSize) {
+			this.writerBufferSize = writerBufferSize;
+		}
+
+		public int getQueueSize() {
+			return queueSize;
+		}
+
+		public void setQueueSize(int queueSize) {
+			this.queueSize = queueSize;
+		}
+
+		public int getWriteThreadDestroyWaitMills() {
+			return writeThreadDestroyWaitMills;
+		}
+
+		public void setWriteThreadDestroyWaitMills(int writeThreadDestroyWaitMills) {
+			this.writeThreadDestroyWaitMills = writeThreadDestroyWaitMills;
 		}
 	}
 

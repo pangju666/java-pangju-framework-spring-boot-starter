@@ -17,14 +17,11 @@
 package io.github.pangju666.framework.boot.autoconfigure.web.log;
 
 import com.mongodb.client.MongoClient;
-import io.github.pangju666.framework.boot.web.log.revceiver.WebLogReceiver;
-import io.github.pangju666.framework.boot.web.log.revceiver.impl.mongo.MongoWebLogReceiver;
+import io.github.pangju666.framework.boot.web.log.receiver.WebLogReceiver;
+import io.github.pangju666.framework.boot.web.log.receiver.impl.mongo.MongoWebLogReceiver;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.*;
 import org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -71,7 +68,7 @@ import org.springframework.util.StringUtils;
  * @since 1.0.0
  */
 @AutoConfiguration(after = MongoDataAutoConfiguration.class)
-@ConditionalOnBooleanProperty(prefix = "pangju.web.log", name = "enabled")
+@ConditionalOnProperty(prefix = "pangju.web.log", name = "receiver-type", havingValue = "MONGODB")
 @ConditionalOnClass({MongoClient.class, MongoTemplate.class})
 class MongoReceiverConfiguration {
     /**
@@ -97,13 +94,13 @@ class MongoReceiverConfiguration {
 	@ConditionalOnMissingBean(WebLogReceiver.class)
 	@ConditionalOnBean(MongoTemplate.class)
 	@Bean
-	public WebLogReceiver mongoWebLogReceiver(WebLogProperties properties, BeanFactory beanFactory) {
+	public MongoWebLogReceiver mongoWebLogReceiver(WebLogProperties properties, BeanFactory beanFactory) {
 		MongoTemplate mongoTemplate;
 		if (StringUtils.hasText(properties.getMongo().getMongoTemplateRef())) {
 			mongoTemplate = beanFactory.getBean(properties.getMongo().getMongoTemplateRef(), MongoTemplate.class);
 		} else {
 			mongoTemplate = beanFactory.getBean(MongoTemplate.class);
 		}
-		return new MongoWebLogReceiver(mongoTemplate, properties.getMongo().getCollectionPrefix());
+		return new MongoWebLogReceiver(mongoTemplate, properties.getMongo().getBaseCollectionName());
 	}
 }

@@ -57,7 +57,7 @@ public class RedisIdempotentValidator implements IdempotentValidator {
 	 *
 	 * @since 1.0.0
 	 */
-	private static final String REDIS_PATH_DELIMITER = ":";
+	protected static final String REDIS_PATH_DELIMITER = ":";
 
 	/**
 	 * RedisTemplate 实例，用于与 Redis 交互。

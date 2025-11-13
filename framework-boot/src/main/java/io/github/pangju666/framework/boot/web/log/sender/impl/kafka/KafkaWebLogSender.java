@@ -48,10 +48,10 @@ import org.springframework.kafka.core.KafkaTemplate;
  * @since 1.0.0
  */
 public class KafkaWebLogSender implements WebLogSender {
-	private final KafkaTemplate<String, Object> kafkaTemplate;
+	private final KafkaTemplate<Object, Object> kafkaTemplate;
 	private final String topic;
 
-	public KafkaWebLogSender(KafkaTemplate<String, Object> kafkaTemplate, String topic) {
+	public KafkaWebLogSender(KafkaTemplate<Object, Object> kafkaTemplate, String topic) {
 		this.kafkaTemplate = kafkaTemplate;
 		this.topic = topic;
 	}

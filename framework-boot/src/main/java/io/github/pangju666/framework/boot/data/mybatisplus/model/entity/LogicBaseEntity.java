@@ -42,7 +42,7 @@ public abstract class LogicBaseEntity<ID> extends BaseEntity {
 	 */
 	@TableLogicFill(value = "CURRENT_TIMESTAMP")
 	@TableField("delete_time")
-	protected Date deleteTime;
+	private Date deleteTime;
 	/**
 	 * 删除状态，0表示未删除，删除时设置为表数据行ID
 	 *
@@ -50,7 +50,7 @@ public abstract class LogicBaseEntity<ID> extends BaseEntity {
 	 */
 	@TableLogic(value = "null", delval = "id")
 	@TableField("delete_status")
-	protected ID deleteStatus;
+	private ID deleteStatus;
 
 	public Date getDeleteTime() {
 		return deleteTime;

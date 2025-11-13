@@ -70,7 +70,7 @@ public class EncryptJsonSerializer extends JsonSerializer<Object> implements Con
      *
      * @since 1.0.0
      */
-    protected static final Logger LOGGER = LoggerFactory.getLogger(EncryptJsonSerializer.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(EncryptJsonSerializer.class);
 
     /**
      * 按算法与编码缓存的序列化器映射
@@ -201,7 +201,7 @@ public class EncryptJsonSerializer extends JsonSerializer<Object> implements Con
      * @throws IOException             写入 JSON 内容时发生 I/O 错误
      * @since 1.0.0
      */
-    protected void writeBytes(byte[] value, JsonGenerator gen) throws InvalidKeySpecException, IOException {
+    private void writeBytes(byte[] value, JsonGenerator gen) throws InvalidKeySpecException, IOException {
         gen.writeBinary(CryptoUtils.encrypt(cryptoFactory, value, key));
     }
 
@@ -217,7 +217,7 @@ public class EncryptJsonSerializer extends JsonSerializer<Object> implements Con
      * @throws IOException             写入 JSON 内容时发生 I/O 错误
      * @since 1.0.0
      */
-    protected void writeString(CharSequence value, JsonGenerator gen) throws InvalidKeySpecException, IOException {
+    private void writeString(CharSequence value, JsonGenerator gen) throws InvalidKeySpecException, IOException {
         if (StringUtils.isBlank(value)) {
             gen.writeString(value.toString());
         } else {
@@ -237,7 +237,7 @@ public class EncryptJsonSerializer extends JsonSerializer<Object> implements Con
      * @throws IOException             写入 JSON 内容时发生 I/O 错误
      * @since 1.0.0
      */
-    protected void writeBigInteger(BigInteger value, JsonGenerator gen) throws InvalidKeySpecException, IOException {
+    private void writeBigInteger(BigInteger value, JsonGenerator gen) throws InvalidKeySpecException, IOException {
         if (Objects.isNull(value)) {
             gen.writeNull();
         } else {
@@ -257,7 +257,7 @@ public class EncryptJsonSerializer extends JsonSerializer<Object> implements Con
      * @throws IOException             写入 JSON 内容时发生 I/O 错误
      * @since 1.0.0
      */
-    protected void writeBigDecimal(BigDecimal value, JsonGenerator gen) throws InvalidKeySpecException, IOException {
+    private void writeBigDecimal(BigDecimal value, JsonGenerator gen) throws InvalidKeySpecException, IOException {
         if (Objects.isNull(value)) {
             gen.writeNull();
         } else {
@@ -278,7 +278,7 @@ public class EncryptJsonSerializer extends JsonSerializer<Object> implements Con
      * @throws IOException             写入 JSON 内容时发生 I/O 错误
      * @since 1.0.0
      */
-    protected void writeValue(Object value, JsonGenerator gen) throws InvalidKeySpecException, IOException {
+    private void writeValue(Object value, JsonGenerator gen) throws InvalidKeySpecException, IOException {
         if (value instanceof byte[] bytes) {
             writeBytes(bytes, gen);
         } else if (value instanceof CharSequence charSequence) {
@@ -308,7 +308,7 @@ public class EncryptJsonSerializer extends JsonSerializer<Object> implements Con
      * @throws IOException             写入 JSON 内容时发生 I/O 错误
      * @since 1.0.0
      */
-    protected void writeIterable(Iterable<?> values, JsonGenerator gen) throws InvalidKeySpecException, IOException {
+    private void writeIterable(Iterable<?> values, JsonGenerator gen) throws InvalidKeySpecException, IOException {
         gen.writeStartArray();
         for (Object value : values) {
             writeValue(value, gen);
@@ -328,7 +328,7 @@ public class EncryptJsonSerializer extends JsonSerializer<Object> implements Con
      * @throws IOException             写入 JSON 内容时发生 I/O 错误
      * @since 1.0.0
      */
-    protected void writeMap(Map<?, ?> value, JsonGenerator gen) throws InvalidKeySpecException, IOException {
+    private void writeMap(Map<?, ?> value, JsonGenerator gen) throws InvalidKeySpecException, IOException {
         gen.writeStartObject();
         for (var entry : value.entrySet()) {
             if (Objects.isNull(entry.getKey())) {
@@ -371,7 +371,7 @@ public class EncryptJsonSerializer extends JsonSerializer<Object> implements Con
      * @throws JsonMappingException 初始化失败时抛出
      * @since 1.0.0
      */
-    protected EncryptJsonSerializer getSerializer(EncryptFormat annotation, SerializerProvider prov) throws JsonMappingException {
+    private EncryptJsonSerializer getSerializer(EncryptFormat annotation, SerializerProvider prov) throws JsonMappingException {
         String key = annotation.key() + "-" + annotation.encoding().name();
         EncryptJsonSerializer serializer;
         if (annotation.algorithm() == CryptoAlgorithm.CUSTOM) {

@@ -54,5 +54,5 @@ public interface WebLogSender {
 	 * @param webLog 当前采集的 Web 日志数据
 	 * @since 1.0.0
 	 */
-	void send(WebLog webLog);
+	void send(WebLog webLog) throws Exception;
 }

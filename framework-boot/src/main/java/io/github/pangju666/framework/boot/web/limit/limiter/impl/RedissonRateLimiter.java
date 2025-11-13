@@ -63,7 +63,7 @@ public class RedissonRateLimiter implements RateLimiter {
 	 *
 	 * @since 1.0.0
 	 */
-	private static final String REDIS_PATH_DELIMITER = ":";
+	protected static final String REDIS_PATH_DELIMITER = ":";
 
 	/**
 	 * Redisson 客户端，用于与 Redis 通信并管理限流器。

@@ -17,9 +17,10 @@
 package io.github.pangju666.framework.boot.autoconfigure.web.log;
 
 import io.github.pangju666.framework.boot.web.log.model.WebLog;
-import io.github.pangju666.framework.boot.web.log.revceiver.WebLogReceiver;
+import io.github.pangju666.framework.boot.web.log.receiver.WebLogReceiver;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.listener.ContainerProperties;
 import org.springframework.kafka.support.Acknowledgment;
 
 import java.util.Objects;
@@ -36,15 +37,23 @@ import java.util.Objects;
  * <p><b>行为</b></p>
  * <ul>
  *   <li>通过 {@link KafkaListener} 注解订阅 Topic：配置键 {@code pangju.web.log.kafka.topic}。</li>
- *   <li>当消息体为 {@code null} 时跳过处理，但仍进行应答；非空时调用接收器处理。</li>
- *   <li>处理完成后调用 {@link Acknowledgment#acknowledge()} 手动应答。</li>
+ *   <li>当消息体为 {@code null} 时跳过处理；非空时交由接收器处理。</li>
+ *   <li>在容器启用了手动应答模式（{@link org.springframework.kafka.listener.ContainerProperties.AckMode#MANUAL} 或 {@link org.springframework.kafka.listener.ContainerProperties.AckMode#MANUAL_IMMEDIATE}）时，存在非空的 {@link Acknowledgment} 参数，将在处理结束后调用 {@link Acknowledgment#acknowledge()} 进行手动提交。</li>
  * </ul>
  *
  * <p><b>约束</b></p>
  * <ul>
- *   <li>容器需配置为手动应答模式（例如 {@code AckMode.MANUAL/ MANUAL_IMMEDIATE}）。</li>
  *   <li>生产端与消费端的消息序列化/反序列化需与 {@link WebLog} 类型匹配。</li>
  * </ul>
+ *
+ * <p><b>配置示例</b></p>
+ * <pre>
+ * pangju:
+ *   web:
+ *     log:
+ *       kafka:
+ *         topic: weblog-topic
+ * </pre>
  *
  * @author pangju666
  * @see WebLogReceiver
@@ -77,29 +86,30 @@ public class WebLogKafkaListener {
 		this.receiver = webLogReceiver;
 	}
 
-    /**
-     * 监听 Kafka Topic 并消费 Web 日志。
-     *
-     * <p><b>行为</b></p>
-     * <ul>
-     *   <li>从 {@link ConsumerRecord} 读取日志对象，判空后交由 {@link WebLogReceiver} 处理。</li>
-     *   <li>无论消息体是否为空，都会在末尾调用 {@link Acknowledgment#acknowledge()} 进行手动应答。</li>
-     * </ul>
-     *
-     * <p><b>参数</b></p>
-     * <ul>
-     *   <li>{@code record} Kafka 消息记录，键为 {@code String}，值为 {@link WebLog}。</li>
-     *   <li>{@code ack} 手动应答对象；需将容器 Ack 模式配置为手动。</li>
-     * </ul>
-     *
-     * @since 1.0.0
-     */
-    @KafkaListener(topics = "${pangju.web.log.kafka.topic}")
-    public void listenRequestLog(ConsumerRecord<String, WebLog> record, Acknowledgment ack) {
-        WebLog webLog = record.value();
-        if (Objects.nonNull(webLog)) {
-            receiver.receive(webLog);
-        }
-        ack.acknowledge();
-    }
+	/**
+	 * 监听 Kafka Topic 并消费 Web 日志。
+	 *
+	 * <p><b>行为</b></p>
+	 * <ul>
+	 *   <li>从 {@link ConsumerRecord} 读取日志对象，判空后交由 {@link WebLogReceiver} 处理。</li>
+	 *   <li>当容器启用了手动应答模式（{@link ContainerProperties.AckMode#MANUAL} 或 {@link ContainerProperties.AckMode#MANUAL_IMMEDIATE}）时，在末尾调用 {@link Acknowledgment#acknowledge()} 进行手动应答。</li>
+	 * </ul>
+	 *
+	 * <p><b>参数</b></p>
+	 * <ul>
+	 *   <li>{@code record} Kafka 消息记录。</li>
+	 *   <li>{@code ack} 手动应答对象。</li>
+	 * </ul>
+	 *
+	 * @since 1.0.0
+	 */
+	@KafkaListener(topics = "${pangju.web.log.kafka.topic}")
+	public void listenRequestLog(ConsumerRecord<Object, Object> record, Acknowledgment ack) {
+		if (Objects.nonNull(record.value()) && record.value() instanceof WebLog webLog) {
+			receiver.receive(webLog);
+		}
+		if (Objects.nonNull(ack)) {
+			ack.acknowledge();
+		}
+	}
 }

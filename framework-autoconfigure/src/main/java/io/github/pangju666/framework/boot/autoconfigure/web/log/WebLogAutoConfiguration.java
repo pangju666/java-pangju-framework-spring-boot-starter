@@ -18,16 +18,15 @@ package io.github.pangju666.framework.boot.autoconfigure.web.log;
 
 import io.github.pangju666.framework.boot.web.log.configuration.WebLogConfiguration;
 import io.github.pangju666.framework.boot.web.log.filter.WebLogFilter;
-import io.github.pangju666.framework.boot.web.log.handler.WebLogHandler;
-import io.github.pangju666.framework.boot.web.log.interceptor.WebLogInterceptor;
-import io.github.pangju666.framework.boot.web.log.sender.WebLogSender;
 import io.github.pangju666.framework.boot.web.log.handler.MediaTypeBodyHandler;
+import io.github.pangju666.framework.boot.web.log.handler.WebLogHandler;
 import io.github.pangju666.framework.boot.web.log.handler.impl.JsonBodyHandler;
 import io.github.pangju666.framework.boot.web.log.handler.impl.TextBodyHandler;
+import io.github.pangju666.framework.boot.web.log.interceptor.WebLogInterceptor;
+import io.github.pangju666.framework.boot.web.log.sender.WebLogSender;
 import io.github.pangju666.framework.web.lang.WebConstants;
 import jakarta.servlet.Servlet;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -72,7 +71,6 @@ import java.util.Objects;
  *   <li>将属性中的可接受媒体类型字符串安全解析为 {@link MediaType} 并去重，遇到非法值（{@link InvalidMediaTypeException}）将忽略并跳过，结果写入 {@link WebLogConfiguration}。</li>
  *   <li>过滤器解析请求/响应体时，按注入的 {@link MediaTypeBodyHandler} 列表顺序选择首个支持的处理器并在匹配后停止继续尝试（首匹配语义）。</li>
  *   <li>注入的 {@link WebLogHandler} 列表在过滤链出栈后按顺序执行以增强日志；单个处理器异常将被记录，不影响后续处理或响应。</li>
- *   <li>响应为 JSON 且内容类型允许时，仅记录符合 {@code Result} 结构的 JSON；其它 JSON 结构将被忽略。</li>
  * </ul>
  *
  * <p><b>配置</b></p>
@@ -109,7 +107,7 @@ import java.util.Objects;
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @ConditionalOnClass({Servlet.class, DispatcherServlet.class, WebMvcConfigurer.class})
 @ConditionalOnBooleanProperty(prefix = "pangju.web.log", name = "enabled")
-@Import({DisruptorSenderConfiguration.class, KafkaSenderConfiguration.class, MongoReceiverConfiguration.class})
+@Import({DisruptorSenderConfiguration.class, KafkaSenderConfiguration.class, DiskReceiverConfiguration.class, MongoReceiverConfiguration.class})
 @EnableConfigurationProperties(WebLogProperties.class)
 public class WebLogAutoConfiguration {
     /**
@@ -210,7 +208,7 @@ public class WebLogAutoConfiguration {
 		configuration.getResponse().setAcceptableMediaTypes(responseMediaTypes);
 
 		WebLogFilter webLogFilter = new WebLogFilter(configuration, webLogSender, properties.getExcludePathPatterns(),
-			ListUtils.emptyIfNull(bodyHandlers), ListUtils.emptyIfNull(webLogHandlers));
+			bodyHandlers, webLogHandlers);
 		FilterRegistrationBean<WebLogFilter> filterRegistrationBean = new FilterRegistrationBean<>(webLogFilter);
 		filterRegistrationBean.addUrlPatterns(WebConstants.FILTER_ANY_URL_PATTERN);
 		filterRegistrationBean.setOrder(Ordered.HIGHEST_PRECEDENCE + 2);

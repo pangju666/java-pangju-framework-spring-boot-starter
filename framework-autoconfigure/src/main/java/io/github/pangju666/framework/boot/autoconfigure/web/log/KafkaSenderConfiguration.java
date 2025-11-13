@@ -16,7 +16,7 @@
 
 package io.github.pangju666.framework.boot.autoconfigure.web.log;
 
-import io.github.pangju666.framework.boot.web.log.revceiver.WebLogReceiver;
+import io.github.pangju666.framework.boot.web.log.receiver.WebLogReceiver;
 import io.github.pangju666.framework.boot.web.log.sender.WebLogSender;
 import io.github.pangju666.framework.boot.web.log.sender.impl.kafka.KafkaWebLogSender;
 import org.springframework.beans.factory.BeanFactory;
@@ -75,7 +75,6 @@ import org.springframework.util.StringUtils;
  */
 @AutoConfiguration(after = KafkaAutoConfiguration.class)
 @ConditionalOnClass({KafkaTemplate.class})
-@ConditionalOnBooleanProperty(prefix = "pangju.web.log", name = "enabled")
 @ConditionalOnProperty(prefix = "pangju.web.log", name = "kafka.topic")
 @ConditionalOnProperty(prefix = "pangju.web.log", name = "sender-type", havingValue = "KAFKA")
 class KafkaSenderConfiguration {
@@ -98,7 +97,6 @@ class KafkaSenderConfiguration {
 	 * <p><b>说明</b></p>
 	 * <ul>
 	 *   <li>若未指定 {@code kafka-template-ref}，将使用容器默认的 {@link KafkaTemplate}。</li>
-	 *   <li>{@code @SuppressWarnings("unchecked")} 为按名称/类型获取泛型 Bean 时的类型擦除抑制。</li>
 	 * </ul>
 	 *
 	 * @param properties  Web 日志属性配置
@@ -111,7 +109,7 @@ class KafkaSenderConfiguration {
 	@ConditionalOnBean(KafkaTemplate.class)
 	@Bean
 	public KafkaWebLogSender kafkaWebLogSender(WebLogProperties properties, BeanFactory beanFactory) {
-		KafkaTemplate<String, Object> kafkaTemplate;
+		KafkaTemplate<Object, Object> kafkaTemplate;
 		if (StringUtils.hasText(properties.getKafka().getKafkaTemplateRef())) {
 			kafkaTemplate = beanFactory.getBean(properties.getKafka().getKafkaTemplateRef(), KafkaTemplate.class);
 		} else {
@@ -126,7 +124,7 @@ class KafkaSenderConfiguration {
      * <p><b>条件</b></p>
      * <ul>
      *   <li>配置存在有效的 Topic（{@code pangju.web.log.kafka.topic}）。</li>
-     *   <li>容器中存在 {@link WebLogReceiver}。</li>
+     *   <li>容器中存在 {@link WebLogReceiver}和{@link KafkaWebLogSender}。</li>
      * </ul>
      *
      * <p><b>行为</b></p>
@@ -138,7 +136,7 @@ class KafkaSenderConfiguration {
      * @return 监听器实例
      * @since 1.0.0
      */
-	@ConditionalOnBean(WebLogReceiver.class)
+	@ConditionalOnBean({WebLogReceiver.class, KafkaWebLogSender.class})
 	@Bean
 	public WebLogKafkaListener webLogKafkaListener(WebLogReceiver webLogReceiver) {
 		return new WebLogKafkaListener(webLogReceiver);

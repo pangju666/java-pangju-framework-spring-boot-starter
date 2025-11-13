@@ -18,7 +18,7 @@ package io.github.pangju666.framework.boot.autoconfigure.web.log;
 
 import com.lmax.disruptor.EventHandler;
 import com.lmax.disruptor.dsl.Disruptor;
-import io.github.pangju666.framework.boot.web.log.revceiver.WebLogReceiver;
+import io.github.pangju666.framework.boot.web.log.receiver.WebLogReceiver;
 import io.github.pangju666.framework.boot.web.log.sender.WebLogSender;
 import io.github.pangju666.framework.boot.web.log.sender.impl.disruptor.DisruptorWebLogEventHandler;
 import io.github.pangju666.framework.boot.web.log.sender.impl.disruptor.DisruptorWebLogSender;
@@ -70,7 +70,6 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnClass({Disruptor.class})
-@ConditionalOnBooleanProperty(prefix = "pangju.web.log", name = "enabled")
 @ConditionalOnProperty(prefix = "pangju.web.log", name = "sender-type", havingValue = "DISRUPTOR", matchIfMissing = true)
 class DisruptorSenderConfiguration {
     /**

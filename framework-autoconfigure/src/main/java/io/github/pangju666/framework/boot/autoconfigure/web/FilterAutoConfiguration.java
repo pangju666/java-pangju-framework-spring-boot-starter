@@ -29,6 +29,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.Ordered;
+import org.springframework.util.Assert;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
@@ -147,6 +148,9 @@ public class FilterAutoConfiguration {
 	@ConditionalOnMissingFilterBean
 	@Bean
 	public FilterRegistrationBean<HttpExceptionInfoFilter> httpExceptionInfoFilterFilterRegistrationBean(HttpExceptionInfoProperties properties) {
+		Assert.hasText(properties.getRequestPath().getTypes(), "异常类型汇总接口路径不可为空");
+		Assert.hasText(properties.getRequestPath().getList(), "异常列表查询接口路径不可为空");
+
 		List<String> packages = new ArrayList<>(3);
 		packages.add("io.github.pangju666.framework.boot.image.exception");
 		packages.add("io.github.pangju666.framework.boot.web.idempotent.exception");
