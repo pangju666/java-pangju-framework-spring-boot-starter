@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package io.github.pangju666.framework.boot.web.log.revceiver.impl;
+package io.github.pangju666.framework.boot.web.log.revceiver.impl.mongo;
 
 import io.github.pangju666.framework.boot.web.log.model.WebLog;
 import io.github.pangju666.framework.data.mongodb.lang.MongoConstants;

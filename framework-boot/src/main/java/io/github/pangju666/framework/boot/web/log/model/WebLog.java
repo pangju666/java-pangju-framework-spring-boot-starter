@@ -18,8 +18,8 @@ package io.github.pangju666.framework.boot.web.log.model;
 
 import io.github.pangju666.framework.boot.web.log.annotation.WebLogOperation;
 import org.springframework.http.HttpHeaders;
+import org.springframework.util.MultiValueMap;
 
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -224,7 +224,7 @@ public class WebLog {
 		 *
 		 * @since 1.0.0
 		 */
-		private Map<String, List<String>> queryParams;
+		private MultiValueMap<String, String> queryParams;
 		/**
 		 * 请求体的字符编码
 		 * <p>
@@ -311,11 +311,11 @@ public class WebLog {
 			this.headers = headers;
 		}
 
-		public Map<String, List<String>> getQueryParams() {
+		public MultiValueMap<String, String> getQueryParams() {
 			return queryParams;
 		}
 
-		public void setQueryParams(Map<String, List<String>> queryParams) {
+		public void setQueryParams(MultiValueMap<String, String> queryParams) {
 			this.queryParams = queryParams;
 		}
 

@@ -18,7 +18,7 @@ package io.github.pangju666.framework.boot.autoconfigure.web.log;
 
 import com.mongodb.client.MongoClient;
 import io.github.pangju666.framework.boot.web.log.revceiver.WebLogReceiver;
-import io.github.pangju666.framework.boot.web.log.revceiver.impl.MongoWebLogReceiver;
+import io.github.pangju666.framework.boot.web.log.revceiver.impl.mongo.MongoWebLogReceiver;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;

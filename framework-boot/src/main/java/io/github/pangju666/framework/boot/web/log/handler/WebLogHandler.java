@@ -17,8 +17,6 @@
 package io.github.pangju666.framework.boot.web.log.handler;
 
 import io.github.pangju666.framework.boot.web.log.model.WebLog;
-import org.springframework.web.util.ContentCachingRequestWrapper;
-import org.springframework.web.util.ContentCachingResponseWrapper;
 
 import java.lang.reflect.Method;
 
@@ -33,15 +31,9 @@ import java.lang.reflect.Method;
  *
  * <p><b>行为</b></p>
  * <ul>
- *   <li>接收已构建的 {@link WebLog} 以及内容缓存包装的请求/响应对象。</li>
+ *   <li>接收已构建的 {@link WebLog} 以及目标类与目标方法上下文信息。</li>
  *   <li>支持链式处理：多个处理器将按顺序依次执行。</li>
- *   <li>通常由拦截器 {@link io.github.pangju666.framework.boot.web.log.interceptor.WebLogInterceptor} 或过滤器 {@link io.github.pangju666.framework.boot.web.log.filter.WebLogFilter} 调用。</li>
- * </ul>
- *
- * <p><b>注意事项</b></p>
- * <ul>
- *   <li>{@code targetClass}/{@code targetMethod} 可能为 {@code null}（例如由过滤器调用时），实现时需进行空值判断。</li>
- *   <li>响应体的写回由调用方负责；处理器无需操作底层输出流。</li>
+ *   <li>通常由拦截器 {@link io.github.pangju666.framework.boot.web.log.interceptor.WebLogInterceptor} 调用。</li>
  * </ul>
  *
  * <p><b>实现示例</b></p>
@@ -50,8 +42,7 @@ import java.lang.reflect.Method;
  * @Component
  * public class SensitiveDataMaskingHandler implements WebLogHandler {
  *     @Override
- *     public void handle(WebLog webLog, ContentCachingRequestWrapper request,
- *                        ContentCachingResponseWrapper response, Class<?> targetClass, Method targetMethod) {
+ *     public void handle(WebLog webLog, Class<?> targetClass, Method targetMethod) {
  *         if (webLog.getRequest() != null && webLog.getRequest().getQueryParams() != null) {
  *             webLog.getRequest().getQueryParams().forEach((key, value) -> {
  *                 if ("password".equals(key)) {
@@ -65,7 +56,6 @@ import java.lang.reflect.Method;
  *
  * @author pangju666
  * @see io.github.pangju666.framework.boot.web.log.interceptor.WebLogInterceptor
- * @see io.github.pangju666.framework.boot.web.log.filter.WebLogFilter
  * @see WebLog
  * @since 1.0.0
  */
@@ -79,13 +69,10 @@ public interface WebLogHandler {
 	 *   <li>建议保持无副作用、快速执行，以保证整体请求性能。</li>
 	 * </ul>
 	 *
-	 * @param webLog        当前采集的 Web 日志对象，包含请求与响应信息
-	 * @param request       内容缓存的请求包装器 {@link ContentCachingRequestWrapper}
-	 * @param response      内容缓存的响应包装器 {@link ContentCachingResponseWrapper}
-	 * @param targetClass   目标类（通常为控制器类）
-	 * @param targetMethod  目标方法（通常为控制器方法）
-	 * @since 1.0.0
-	 */
-	void handle(WebLog webLog, ContentCachingRequestWrapper request, ContentCachingResponseWrapper response,
-				Class<?> targetClass, Method targetMethod);
+     * @param webLog        当前采集的 Web 日志对象，包含请求与响应信息
+     * @param targetClass   目标类（通常为控制器类）
+     * @param targetMethod  目标方法（通常为控制器方法）
+     * @since 1.0.0
+     */
+    void handle(WebLog webLog, Class<?> targetClass, Method targetMethod);
 }

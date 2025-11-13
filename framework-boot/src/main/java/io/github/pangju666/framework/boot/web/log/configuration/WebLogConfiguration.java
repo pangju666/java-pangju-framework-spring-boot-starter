@@ -1,6 +1,8 @@
 package io.github.pangju666.framework.boot.web.log.configuration;
 
-import java.util.Set;
+import org.springframework.http.MediaType;
+
+import java.util.List;
 
 /**
  * Web 日志采集配置。
@@ -116,7 +118,7 @@ public class WebLogConfiguration {
 		 *
 		 * @since 1.0.0
 		 */
-		private Set<String> acceptableMediaTypes;
+		private List<MediaType> acceptableMediaTypes;
 
 		public boolean isHeaders() {
 			return headers;
@@ -150,11 +152,11 @@ public class WebLogConfiguration {
 			this.multipart = multipart;
 		}
 
-		public Set<String> getAcceptableMediaTypes() {
+		public List<MediaType> getAcceptableMediaTypes() {
 			return acceptableMediaTypes;
 		}
 
-		public void setAcceptableMediaTypes(Set<String> acceptableMediaTypes) {
+		public void setAcceptableMediaTypes(List<MediaType> acceptableMediaTypes) {
 			this.acceptableMediaTypes = acceptableMediaTypes;
 		}
 	}
@@ -210,7 +212,7 @@ public class WebLogConfiguration {
 		 *
 		 * @since 1.0.0
 		 */
-		private Set<String> acceptableMediaTypes;
+		private List<MediaType> acceptableMediaTypes;
 
 		public boolean isHeaders() {
 			return headers;
@@ -236,11 +238,11 @@ public class WebLogConfiguration {
 			this.resultData = resultData;
 		}
 
-		public Set<String> getAcceptableMediaTypes() {
+		public List<MediaType> getAcceptableMediaTypes() {
 			return acceptableMediaTypes;
 		}
 
-		public void setAcceptableMediaTypes(Set<String> acceptableMediaTypes) {
+		public void setAcceptableMediaTypes(List<MediaType> acceptableMediaTypes) {
 			this.acceptableMediaTypes = acceptableMediaTypes;
 		}
 	}

@@ -473,10 +473,8 @@ public class WebLogProperties {
 		 *
 		 * <p><b>默认值</b></p>
 		 * <ul>
-		 *   <li>{@code multipart/form-data}（{@link MediaType#MULTIPART_FORM_DATA_VALUE}）</li>
 		 *   <li>{@code text/plain}（{@link MediaType#TEXT_PLAIN_VALUE}）</li>
 		 *   <li>{@code application/json}（{@link MediaType#APPLICATION_JSON_VALUE}）</li>
-		 *   <li>{@code - application/json;charset=UTF-8}（{@link MediaType#APPLICATION_JSON_UTF8_VALUE}）</li>
 		 * </ul>
 		 *
 		 * <p><b>示例（application.yml）</b></p>
@@ -487,15 +485,12 @@ public class WebLogProperties {
 		 *       request:
 		 *         acceptable-media-types:
 		 *           - application/json
-		 *           - application/json;charset=UTF-8
 		 *           - text/plain
-		 *           - multipart/form-data
 		 * </pre>
 		 *
 		 * @since 1.0.0
 		 */
-		private Set<String> acceptableMediaTypes = Set.of(MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.TEXT_PLAIN_VALUE,
-			MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_UTF8_VALUE);
+		private Set<String> acceptableMediaTypes = Set.of(MediaType.TEXT_PLAIN_VALUE, MediaType.APPLICATION_JSON_VALUE);
 
 		public boolean isHeaders() {
 			return headers;
@@ -575,12 +570,12 @@ public class WebLogProperties {
 		/**
 		 * 是否记录附加数据（Result 类型）
 		 * <p>
-		 * 默认值为 {@code false}。仅在响应内容为统一结果封装类型时可用。
+		 * 默认值为 {@code true}。仅在响应内容为统一结果封装类型时可用。
 		 * </p>
 		 *
 		 * @since 1.0.0
 		 */
-		private boolean resultData = false;
+		private boolean resultData = true;
 		/**
 		 * 允许采集的响应体媒体类型集合。
 		 *
@@ -590,7 +585,6 @@ public class WebLogProperties {
 		 * <ul>
 		 *   <li>{@code text/plain}（{@link MediaType#TEXT_PLAIN_VALUE}）</li>
 		 *   <li>{@code application/json}（{@link MediaType#APPLICATION_JSON_VALUE}）</li>
-		 *    <li>{@code - application/json;charset=UTF-8}（{@link MediaType#APPLICATION_JSON_UTF8_VALUE}）</li>
 		 * </ul>
 		 *
 		 * <p><b>示例（application.yml）</b></p>
@@ -601,14 +595,12 @@ public class WebLogProperties {
 		 *       response:
 		 *         acceptable-media-types:
 		 *           - application/json
-		 *           - application/json;charset=UTF-8
 		 *           - text/plain
 		 * </pre>
 		 *
 		 * @since 1.0.0
 		 */
-		private Set<String> acceptableMediaTypes = Set.of(MediaType.TEXT_PLAIN_VALUE, MediaType.APPLICATION_JSON_VALUE,
-			MediaType.APPLICATION_JSON_UTF8_VALUE);
+		private Set<String> acceptableMediaTypes = Set.of(MediaType.TEXT_PLAIN_VALUE, MediaType.APPLICATION_JSON_VALUE);
 
 		public boolean isHeaders() {
 			return headers;
