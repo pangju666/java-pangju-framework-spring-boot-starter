@@ -1,13 +1,11 @@
-package io.github.pangju666.framework.boot.web.log.type;
+package io.github.pangju666.framework.boot.web.log.handler;
 
 import org.springframework.http.MediaType;
 
 /**
  * 媒体类型请求/响应体解析器接口。
  *
- * <p>用于将原始字节内容依据 {@link MediaType} 解码并转换为可记录的对象。
- * 在 {@code WebLogFilter} 中，多个实现将以注入顺序参与选择，
- * 采用“首个支持即使用并停止”的语义。</p>
+ * <p>用于将原始字节内容依据 {@link MediaType} 解码并转换为可记录的对象。</p>
  *
  * <p>实现约定：</p>
  * <ul>

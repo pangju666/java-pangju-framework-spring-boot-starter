@@ -22,11 +22,13 @@ import io.github.pangju666.commons.lang.utils.ArrayUtils;
 import io.github.pangju666.commons.lang.utils.DateFormatUtils;
 import io.github.pangju666.commons.lang.utils.JsonUtils;
 import io.github.pangju666.framework.boot.web.log.configuration.WebLogConfiguration;
+import io.github.pangju666.framework.boot.web.log.handler.WebLogHandler;
 import io.github.pangju666.framework.boot.web.log.interceptor.WebLogInterceptor;
 import io.github.pangju666.framework.boot.web.log.model.WebLog;
 import io.github.pangju666.framework.boot.web.log.sender.WebLogSender;
-import io.github.pangju666.framework.boot.web.log.type.MediaTypeBodyHandler;
+import io.github.pangju666.framework.boot.web.log.handler.MediaTypeBodyHandler;
 import io.github.pangju666.framework.boot.web.log.utils.WebLogResponseWrapper;
+import io.github.pangju666.framework.web.exception.base.BaseHttpException;
 import io.github.pangju666.framework.web.model.Result;
 import io.github.pangju666.framework.web.servlet.BaseHttpRequestFilter;
 import io.github.pangju666.framework.web.servlet.utils.HttpRequestUtils;
@@ -38,6 +40,7 @@ import jakarta.servlet.http.Part;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.event.Level;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.util.InvalidMimeTypeException;
@@ -70,6 +73,7 @@ import java.util.*;
  *   <li>响应侧包裹为 {@link io.github.pangju666.framework.boot.web.log.utils.WebLogResponseWrapper}，用于携带 {@link WebLog} 并复用响应体缓存。</li>
  *   <li>后置拦截器可从 {@code WebLogResponseWrapper} 读取缓存的响应体与 {@link WebLog}，但不负责写回响应体。</li>
  *   <li>本过滤器在链路末尾调用 {@code copyBodyToResponse()} 写回响应体，确保客户端接收完整输出。</li>
+ *   <li>过滤链出栈后按顺序执行已注册的 {@link WebLogHandler} 对日志进行增强；处理器异常被捕获并记录，不影响后续处理与响应。</li>
  * </ul>
  *
  * <p><b>配置影响</b></p>
@@ -77,13 +81,14 @@ import java.util.*;
  *   <li>请求侧：是否记录头、查询参数、请求体、文件上传信息以及可接受的内容类型。</li>
  *   <li>响应侧：是否记录头、响应体、结果数据以及可接受的内容类型。</li>
  *   <li>仅在配置允许且内容类型匹配时读取/解析请求与响应体，以降低内存与解析开销。</li>
+ *   <li>媒体类型匹配规则：仅比较类型与子类型，忽略参数（例如 charset）；如 <code>application/json;charset=UTF-8</code> 与 <code>application/json</code> 视为匹配。</li>
  * </ul>
  *
  * <p><b>媒体类型处理器选择</b></p>
  * <ul>
  *   <li>按 {@code MediaType} 从已注册的 {@link MediaTypeBodyHandler} 列表中选择首个支持的处理器进行解析。</li>
  *   <li>处理器需通过构造器注入，顺序决定命中优先级；命中后即停止尝试。</li>
- *   <li>仅在配置允许且内容类型匹配时触发解析；JSON 响应仅记录符合 {@link Result} 结构的数据。</li>
+ *   <li>仅在配置允许且内容类型匹配时触发解析；匹配遵循 <code>equalsTypeAndSubtype</code> 语义（忽略参数）；JSON 响应仅记录符合 {@link Result} 结构的数据。</li>
  * </ul>
  *
  * <p><b>注意事项</b></p>
@@ -128,41 +133,55 @@ public class WebLogFilter extends BaseHttpRequestFilter {
 	 * </p>
 	 */
 	private final List<MediaTypeBodyHandler> bodyHandlers;
+ 	/**
+ 	 * Web 日志处理器列表
+ 	 * <p>
+ 	 * 用于处理日志的扩展逻辑，支持对日志数据进行增强或自定义处理。
+ 	 * 开发者可以实现 {@link WebLogHandler} 接口并在容器中进行注册。
+ 	 * 处理器按注册顺序执行；单个处理器抛出的异常会被捕获并记录，不会中断后续处理或日志发送。
+ 	 * </p>
+ 	 *
+ 	 * @since 1.0.0
+ 	 */
+ 	private final List<WebLogHandler> webLogHandlers;
 
 	/**
 	 * 构造方法
 	 *
 	 * @param configuration       日志配置对象
 	 * @param sender              日志发送器
-	 * @param bodyHandlers        已注册的媒体类型处理器列表（与内置处理器合并）
 	 * @param excludePathPatterns 需要排除的路径匹配规则
+	 * @param bodyHandlers        已注册的媒体类型处理器列表（按顺序执行）
+	 * @param webLogHandlers 日志处理器列表（按顺序执行）
 	 * @since 1.0.0
 	 */
-	public WebLogFilter(WebLogConfiguration configuration, WebLogSender sender, List<MediaTypeBodyHandler> bodyHandlers,
-						Set<String> excludePathPatterns) {
+	public WebLogFilter(WebLogConfiguration configuration, WebLogSender sender, Set<String> excludePathPatterns,
+						List<MediaTypeBodyHandler> bodyHandlers, List<WebLogHandler> webLogHandlers) {
 		super(excludePathPatterns);
 		this.configuration = configuration;
 		this.sender = sender;
 		this.bodyHandlers = bodyHandlers;
+		this.webLogHandlers = webLogHandlers;
 	}
 
-	/**
-	 * 过滤器处理方法。
-	 *
-	 * <p><b>行为</b></p>
-	 * <ul>
-	 *   <li>当请求 {@code Content-Type} 无法解析时，直接透传不过滤与采集。</li>
-	 *   <li>在需要读取请求体时包裹为 {@link ContentCachingRequestWrapper}；进入采集分支时响应包裹为 {@link io.github.pangju666.framework.boot.web.log.utils.WebLogResponseWrapper}。</li>
-	 *   <li>执行过滤链，随后构建并发送 {@link WebLog}。</li>
-	 *   <li>最后将缓存的响应体写回真实响应（调用 {@code copyBodyToResponse()}）。</li>
-	 * </ul>
-	 *
-	 * <p><b>参数</b></p>
-	 * <ul>
-	 *   <li>{@code request} 当前 HTTP 请求。</li>
-	 *   <li>{@code response} 当前 HTTP 响应（将被统一包裹为 {@code WebLogResponseWrapper}）。</li>
-	 *   <li>{@code filterChain} 过滤器链。</li>
-	 * </ul>
+ 	/**
+ 	 * 过滤器处理方法。
+ 	 *
+ 	 * <p><b>行为</b></p>
+ 	 * <ul>
+ 	 *   <li>当请求 {@code Content-Type} 无法解析时，直接透传不过滤与采集。</li>
+ 	 *   <li>在需要读取请求体时包裹为 {@link ContentCachingRequestWrapper}；进入采集分支时响应包裹为 {@link io.github.pangju666.framework.boot.web.log.utils.WebLogResponseWrapper}。</li>
+ 	 *   <li>执行过滤链，随后构建并发送 {@link WebLog}。</li>
+ 	 *   <li>过滤链出栈后，按顺序执行所有 {@link WebLogHandler} 对日志进行增强；每个处理器异常会被捕获并记录，不影响业务流程。</li>
+ 	 *   <li>最后将缓存的响应体写回真实响应（调用 {@code copyBodyToResponse()}）。</li>
+ 	 * </ul>
+ 	 *
+ 	 * <p><b>参数</b></p>
+ 	 * <ul>
+ 	 *   <li>{@code request} 当前 HTTP 请求。</li>
+ 	 *   <li>{@code response} 当前 HTTP 响应（将被统一包裹为 {@code WebLogResponseWrapper}）。</li>
+ 	 *   <li>{@code filterChain} 过滤器链。</li>
+ 	 * </ul>
 	 *
 	 * <p><b>约束与约定</b></p>
 	 * <ul>
@@ -243,6 +262,20 @@ public class WebLogFilter extends BaseHttpRequestFilter {
 			}
 		}
 
+		// 自定义处理器处理
+		try {
+			for (WebLogHandler webLogHandler : webLogHandlers) {
+				webLogHandler.handle(webLogResponseWrapper.getWebLog(), webLogResponseWrapper.getTargetClass(),
+					webLogResponseWrapper.getTargetMethod());
+			}
+		} catch (Exception e) {
+			if (e instanceof BaseHttpException baseHttpException) {
+				baseHttpException.log(logger, Level.ERROR);
+			} else {
+				logger.error("自定义网络日志处理器错误", e);
+			}
+		}
+
 		try {
 			sender.send(webLog);
 		} catch (Exception e) {
@@ -278,20 +311,21 @@ public class WebLogFilter extends BaseHttpRequestFilter {
 		return requestLog;
 	}
 
-	/**
-	 * 写入请求体信息到请求日志。
-	 *
-	 * <p><b>行为</b></p>
-	 * <ul>
-	 *   <li>根据 {@link MediaType} 选择首个支持的 {@link MediaTypeBodyHandler} 进行解析与封装。</li>
-	 *   <li>处理器由构造器注入，按照注册顺序进行匹配；命中后即停止尝试。</li>
-	 * </ul>
-	 *
-	 * @param responseBodyBytes 请求体字节数组（来源于 {@link ContentCachingRequestWrapper}）
-	 * @param requestLog       请求日志对象（写入解析后的请求体）
-	 * @param contentType      请求内容类型（已解析为 {@link MediaType}）
-	 * @since 1.0.0
-	 */
+ 	/**
+ 	 * 写入请求体信息到请求日志。
+ 	 *
+ 	 * <p><b>行为</b></p>
+ 	 * <ul>
+ 	 *   <li>根据 {@link MediaType} 选择首个支持的 {@link MediaTypeBodyHandler} 进行解析与封装。</li>
+ 	 *   <li>处理器由构造器注入，按照注册顺序进行匹配；命中后即停止尝试。</li>
+ 	 *   <li>调用方仅在内容类型允许（按类型+子类型匹配，忽略参数）且启用记录请求体时才会调用本方法。</li>
+ 	 * </ul>
+ 	 *
+ 	 * @param responseBodyBytes 请求体字节数组（来源于 {@link ContentCachingRequestWrapper}）
+ 	 * @param requestLog       请求日志对象（写入解析后的请求体）
+ 	 * @param contentType      请求内容类型（已解析为 {@link MediaType}）
+ 	 * @since 1.0.0
+ 	 */
 	protected void writeRequestBody(byte[] responseBodyBytes, WebLog.Request requestLog, MediaType contentType) {
 		for (MediaTypeBodyHandler bodyHandler : this.bodyHandlers) {
 			if (bodyHandler.supports(contentType)) {
@@ -327,21 +361,21 @@ public class WebLogFilter extends BaseHttpRequestFilter {
 		return responseLog;
 	}
 
-	/**
-	 * 写入响应体信息到响应日志。
-	 *
-	 * <p><b>行为</b></p>
-	 * <ul>
-	 *   <li>当内容类型为 JSON 时，仅记录符合 {@link Result} 结构的响应，委托 {@link #writeResultResponseBody(byte[], WebLog.Response, WebLogConfiguration)} 解析并写入；其他 JSON 不记录。</li>
-	 *   <li>当内容类型在允许列表中时，根据处理器顺序选择首个支持的处理器解析；解析成功后即停止尝试；无法解析时忽略写入。</li>
-	 * </ul>
-	 *
-	 * @param responseBodyBytes 响应体字节数组（来源于响应包装器，例如 {@link io.github.pangju666.framework.boot.web.log.utils.WebLogResponseWrapper}）
-	 * @param responseLog       响应日志对象（写入解析后的响应体或结果）
-	 * @param contentType       响应内容类型（原始字符串，将尝试解析为 {@link MediaType}）
-	 * @param configuration     日志采集配置（决定是否记录结果数据及可接受的内容类型）
-	 * @since 1.0.0
-	 */
+ 	/**
+ 	 * 写入响应体信息到响应日志。
+ 	 *
+ 	 * <p><b>行为</b></p>
+ 	 * <ul>
+ 	 *   <li>当内容类型为 JSON 时，仅记录符合 {@link Result} 结构的响应，委托 {@link #writeResultResponseBody(byte[], WebLog.Response, WebLogConfiguration)} 解析并写入；其他 JSON 不记录。</li>
+ 	 *   <li>当内容类型在允许列表中时（按类型+子类型匹配，忽略参数），根据处理器顺序选择首个支持的处理器解析；解析成功后即停止尝试；无法解析时忽略写入。</li>
+ 	 * </ul>
+ 	 *
+ 	 * @param responseBodyBytes 响应体字节数组（来源于响应包装器，例如 {@link io.github.pangju666.framework.boot.web.log.utils.WebLogResponseWrapper}）
+ 	 * @param responseLog       响应日志对象（写入解析后的响应体或结果）
+ 	 * @param contentType       响应内容类型（原始字符串，将尝试解析为 {@link MediaType}）
+ 	 * @param configuration     日志采集配置（决定是否记录结果数据及可接受的内容类型）
+ 	 * @since 1.0.0
+ 	 */
 	protected void writeResponseBody(byte[] responseBodyBytes, WebLog.Response responseLog, String contentType,
 								 	 WebLogConfiguration configuration) {
 		MediaType mediaType;

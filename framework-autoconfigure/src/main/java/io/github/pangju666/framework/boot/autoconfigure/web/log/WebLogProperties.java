@@ -59,10 +59,16 @@ import java.util.Set;
  *         query-params: true
  *         body: true
  *         multipart: true
+ *         acceptable-media-types:
+ *           - application/json
+ *           - text/plain
  *       response:
  *         headers: true
  *         body: true
  *         result-data: false
+ *         acceptable-media-types:
+ *           - application/json
+ *           - text/plain
  *       exclude-path-patterns:
  *         - /actuator/**
  *         - /swagger-ui/**
@@ -411,16 +417,25 @@ public class WebLogProperties {
 	}
 
 	/**
-	 * 请求记录配置内部类
-	 * <p>
-	 * 配置需要记录的 HTTP 请求数据范围。
-	 * </p>
-	 * <ul>
-	 *     <li>{@link #headers}：是否记录请求头信息。</li>
-	 *     <li>{@link #queryParams}：是否记录 URL 查询参数。</li>
-	 *     <li>{@link #body}：是否记录请求体内容。</li>
-	 *     <li>{@link #multipart}：是否记录 Multipart 数据（如文件上传）。</li>
-	 * </ul>
+	 * 请求记录配置。
+	 *
+	 * <p>定义需要采集的 HTTP 请求数据范围与条件，包括请求头、查询参数、请求体、
+	 * Multipart 数据，以及可接受的请求体媒体类型集合（字符串形式）。</p>
+	 *
+	 * <p><b>示例（application.yml）</b></p>
+	 * <pre>
+	 * pangju:
+	 *   web:
+	 *     log:
+	 *       request:
+	 *         headers: true
+	 *         query-params: true
+	 *         body: true
+	 *         multipart: true
+	 *         acceptable-media-types:
+	 *           - application/json
+	 *           - text/plain
+	 * </pre>
 	 *
 	 * @author pangju666
 	 * @since 1.0.0
@@ -536,12 +551,22 @@ public class WebLogProperties {
 	/**
 	 * 响应记录配置。
 	 *
-	 * <p><b>范围</b></p>
-	 * <ul>
-	 *   <li>{@link #headers} 记录响应头。</li>
-	 *   <li>{@link #body} 记录响应体。</li>
-	 *   <li>{@link #resultData} 记录统一结果附加数据。</li>
-	 * </ul>
+	 * <p>定义需要采集的 HTTP 响应数据范围与条件，包括响应头、响应体、
+	 * 统一结果结构（Result）的附加数据，以及可接受的响应体媒体类型集合（字符串形式）。</p>
+	 *
+	 * <p><b>示例（application.yml）</b></p>
+	 * <pre>
+	 * pangju:
+	 *   web:
+	 *     log:
+	 *       response:
+	 *         headers: true
+	 *         body: true
+	 *         result-data: true
+	 *         acceptable-media-types:
+	 *           - application/json
+	 *           - text/plain
+	 * </pre>
 	 *
 	 * @author pangju666
 	 * @since 1.0.0

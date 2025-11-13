@@ -9,24 +9,30 @@ import org.springframework.web.util.ContentCachingResponseWrapper;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Objects;
 
 /**
  * Web 日志响应包装器。
  *
- * <p>职责与特性：</p>
+ * <p><b>职责与特性</b></p>
  * <ul>
- *   <li>在响应链路中携带 {@link WebLog} 对象，并复用/提供 {@link ContentCachingResponseWrapper} 的缓存能力。</li>
- *   <li>若输入响应已是 {@link ContentCachingResponseWrapper}，则内部保存其引用并委托调用，避免重复包裹。</li>
- *   <li>为拦截器等后置组件提供统一入口，以读取缓存的响应体并补充日志信息。</li>
+ *   <li>为响应提供内容缓存能力（继承 {@link ContentCachingResponseWrapper}），并携带 {@link WebLog} 以供后置组件读取和补充日志。</li>
+ *   <li>若传入的响应已是 {@link ContentCachingResponseWrapper}，则仅保存其引用并委托所有 I/O 操作，避免重复包裹；同时仍承载 {@link WebLog}。</li>
+ *   <li>为过滤器、拦截器等组件提供统一入口，以读取缓存响应体并进行日志增强。</li>
  * </ul>
  *
- * <p>使用约束：</p>
+ * <p><b>使用约束</b></p>
  * <ul>
- *   <li>本类不负责日志发送，仅携带并暴露 {@link WebLog}。</li>
- *   <li>当读取了响应体缓存时，外层需在链路结束前调用 {@link #copyBodyToResponse()} 将内容写回真实响应。</li>
- *   <li>线程安全由请求上下文保证：每个请求应使用独立实例。</li>
+ *   <li>本类不负责日志派发或异常记录，仅承载 {@link WebLog} 与内容缓存。</li>
+ *   <li>当后续组件读取了响应体缓存时，必须在链路结束前调用 {@link #copyBodyToResponse()} 将内容写回真实响应，否则客户端可能无法收到正文。</li>
+ *   <li>线程安全由请求上下文保证：每个请求应使用独立实例；不保证跨线程共享安全。</li>
+ * </ul>
+ *
+ * <p><b>典型用法</b></p>
+ * <ul>
+ *   <li>由过滤器在请求进入时包裹响应并创建/携带 {@link WebLog}；拦截器在前置阶段补充操作描述；过滤器在链路结束时调用 {@link #copyBodyToResponse()}。</li>
  * </ul>
  *
  * @author pangju666
@@ -47,6 +53,20 @@ public class WebLogResponseWrapper extends ContentCachingResponseWrapper {
 	 * @since 1.0.0
      */
     private final WebLog webLog;
+	/**
+	 * 目标控制器类引用。
+	 * <p>用于记录定位信息，通常由上游组件在链路中设置；若未设置可能为 {@code null}。</p>
+	 *
+	 * @since 1.0.0
+	 */
+	private Class<?> targetClass;
+	/**
+	 * 目标控制器方法引用。
+	 * <p>用于记录定位信息，通常由上游组件在链路中设置；若未设置可能为 {@code null}。</p>
+	 *
+	 * @since 1.0.0
+	 */
+	private Method targetMethod;
 
     /**
      * 构造方法。
@@ -69,12 +89,22 @@ public class WebLogResponseWrapper extends ContentCachingResponseWrapper {
 		this.webLog = webLog;
 	}
 
-    /**
-     * 获取携带的 Web 日志对象。
-     *
-     * @return 当前请求的 {@link WebLog} 实例
-	 * @since 1.0.0
-     */
+	public void setTargetClass(Class<?> targetClass) {
+		this.targetClass = targetClass;
+	}
+
+	public void setTargetMethod(Method targetMethod) {
+		this.targetMethod = targetMethod;
+	}
+
+	public Class<?> getTargetClass() {
+		return targetClass;
+	}
+
+	public Method getTargetMethod() {
+		return targetMethod;
+	}
+
     public WebLog getWebLog() {
 		return webLog;
 	}

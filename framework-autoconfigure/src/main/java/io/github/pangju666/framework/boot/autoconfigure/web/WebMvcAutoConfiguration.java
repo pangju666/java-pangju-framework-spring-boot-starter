@@ -20,7 +20,6 @@ import io.github.pangju666.framework.boot.autoconfigure.web.log.WebLogProperties
 import io.github.pangju666.framework.boot.autoconfigure.web.signature.SignatureProperties;
 import io.github.pangju666.framework.boot.web.limit.interceptor.RateLimitInterceptor;
 import io.github.pangju666.framework.boot.web.limit.limiter.RateLimiter;
-import io.github.pangju666.framework.boot.web.log.handler.WebLogHandler;
 import io.github.pangju666.framework.boot.web.log.interceptor.WebLogInterceptor;
 import io.github.pangju666.framework.boot.web.resolver.EncryptRequestParamArgumentResolver;
 import io.github.pangju666.framework.boot.web.resolver.EnumRequestParamArgumentResolver;
@@ -61,7 +60,7 @@ import java.util.Objects;
  * <p><b>行为</b></p>
  * <ul>
  *   <li>参数解析：注册枚举解析器与（按需）加密参数解析器。</li>
- *   <li>拦截器：在具备依赖时注册签名校验与限流拦截器；注册 Web 日志拦截器并应用排除路径。</li>
+ *   <li>拦截器：在具备依赖时注册签名校验与限流拦截器；仅当启用 Web 日志功能时注册 Web 日志拦截器并应用排除路径（拦截器构造不携带排除路径，统一由注册表的 {@code excludePathPatterns} 应用）。</li>
  *   <li>自定义：遍历并注册用户扩展的 {@link BaseHttpInterceptor}，按其定义的顺序执行。</li>
  * </ul>
  *
@@ -74,6 +73,7 @@ import java.util.Objects;
  *         app1: secretKey1
  *         app2: secretKey2
  *     log:
+ *       enabled: true
  *       exclude-path-patterns:
  *         - /actuator/**
  *         - /swagger-ui/**
@@ -82,7 +82,7 @@ import java.util.Objects;
  * <p><b>备注</b></p>
  * <ul>
  *   <li>加密参数解析器按需注册：仅当类路径存在所需加密 Key 类型时才启用。</li>
- *   <li>Web 日志拦截器的排除路径来自 {@link WebLogProperties#getExcludePathPatterns()}。</li>
+ *   <li>仅当 {@link WebLogProperties#isEnabled()} 为 {@code true} 时注册 Web 日志拦截器；排除路径来自 {@link WebLogProperties#getExcludePathPatterns()}，并通过注册表的 {@code excludePathPatterns} 应用。</li>
  * </ul>
  *
  * @author pangju666
@@ -143,15 +143,6 @@ public class WebMvcAutoConfiguration implements WebMvcConfigurer {
     private final WebLogProperties webLogProperties;
 
     /**
-     * Web 日志处理器列表。
-     *
-     * <p>在拦截器处理日志时执行，自定义扩展可通过实现处理器接口加入。</p>
-     *
-     * @since 1.0.0
-     */
-    private final List<WebLogHandler> webLogHandlers;
-
-    /**
      * 构造方法，初始化 Web MVC 配置。
      *
      * <p><b>行为</b></p>
@@ -163,14 +154,12 @@ public class WebMvcAutoConfiguration implements WebMvcConfigurer {
      * @param signatureProperties 签名属性配置（外部化配置源）
      * @param webLogProperties    Web 日志属性配置
      * @param interceptors        自定义 HTTP 拦截器列表
-     * @param webLogHandlers      Web 日志处理器列表
      * @since 1.0.0
      */
     public WebMvcAutoConfiguration(SignatureProperties signatureProperties, WebLogProperties webLogProperties,
-                                   List<BaseHttpInterceptor> interceptors, List<WebLogHandler> webLogHandlers) {
+                                   List<BaseHttpInterceptor> interceptors) {
 		this.interceptors = interceptors;
 		this.webLogProperties = webLogProperties;
-		this.webLogHandlers = webLogHandlers;
 
 		SignatureConfiguration signatureConfiguration = new SignatureConfiguration();
 		BeanUtils.copyProperties(signatureProperties, signatureConfiguration);
@@ -239,10 +228,13 @@ public class WebMvcAutoConfiguration implements WebMvcConfigurer {
 				.excludePathPatterns(rateLimitInterceptor.getExcludePathPatterns());
 		}
 
-		WebLogInterceptor webLogInterceptor = new WebLogInterceptor(Collections.emptySet(), webLogHandlers);
-		registry.addInterceptor(webLogInterceptor)
-			.addPathPatterns(webLogInterceptor.getPatterns())
-			.excludePathPatterns(List.copyOf(webLogProperties.getExcludePathPatterns()));
+        // 仅当开启 Web 日志功能时注册拦截器；排除路径由注册表应用
+        if (webLogProperties.isEnabled()) {
+            WebLogInterceptor webLogInterceptor = new WebLogInterceptor(Collections.emptySet());
+            registry.addInterceptor(webLogInterceptor)
+                .addPathPatterns(webLogInterceptor.getPatterns())
+                .excludePathPatterns(List.copyOf(webLogProperties.getExcludePathPatterns()));
+	   }
 
 		for (BaseHttpInterceptor interceptor : this.interceptors) {
 			registry.addInterceptor(interceptor)

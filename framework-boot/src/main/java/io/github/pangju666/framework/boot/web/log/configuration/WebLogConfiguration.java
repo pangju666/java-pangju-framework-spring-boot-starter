@@ -8,7 +8,7 @@ import java.util.List;
  * Web 日志采集配置。
  *
  * <p>用于定义请求与响应日志采集的范围与策略，包括是否记录头、查询参数、
- * 请求/响应体，以及可接受的媒体类型集合。</p>
+ * 请求/响应体，以及可接受的媒体类型集合（允许清单）。</p>
  *
  * <p><b>结构</b></p>
  * <ul>
@@ -56,15 +56,18 @@ public class WebLogConfiguration {
 	}
 
 	/**
-	 * 请求记录配置内部类
-	 * <p>
-	 * 配置需要记录的 HTTP 请求数据范围。
-	 * </p>
+	 * 请求记录配置。
+	 *
+	 * <p>定义 HTTP 请求日志的采集范围与条件，包括是否记录请求头、查询参数、请求体、
+	 * Multipart 数据，以及允许采集的请求体媒体类型集合。</p>
+	 *
+	 * <p><b>字段</b></p>
 	 * <ul>
 	 *     <li>{@link #headers}：是否记录请求头信息。</li>
 	 *     <li>{@link #queryParams}：是否记录 URL 查询参数。</li>
 	 *     <li>{@link #body}：是否记录请求体内容。</li>
 	 *     <li>{@link #multipart}：是否记录 Multipart 数据（如文件上传）。</li>
+	 *     <li>{@link #acceptableMediaTypes}：允许采集的请求体媒体类型集合（类型与子类型匹配）。</li>
 	 * </ul>
 	 *
 	 * @author pangju666
@@ -115,6 +118,7 @@ public class WebLogConfiguration {
 		 * 允许采集的请求体媒体类型集合。
 		 *
 		 * <p>仅当请求的 {@code Content-Type} 属于该集合，且 {@link #body} 开关为真时，才记录请求体。</p>
+		 * <p>匹配通常基于媒体类型的类型与子类型，参数（如 {@code charset}）不影响判断。</p>
 		 *
 		 * @since 1.0.0
 		 */
@@ -162,14 +166,17 @@ public class WebLogConfiguration {
 	}
 
 	/**
-	 * 响应记录配置内部类
-	 * <p>
-	 * 配置需要记录的 HTTP 响应数据范围。
-	 * </p>
+	 * 响应记录配置。
+	 *
+	 * <p>定义 HTTP 响应日志的采集范围与条件，包括是否记录响应头、响应体、
+	 * 统一结果结构（Result）的附加数据，以及允许采集的响应体媒体类型集合。</p>
+	 *
+	 * <p><b>字段</b></p>
 	 * <ul>
 	 *     <li>{@link #headers}：是否记录响应头信息。</li>
 	 *     <li>{@link #body}：是否记录响应体内容。</li>
-	 *     <li>{@link #resultData}：是否记录 Result 类型的附加数据。</li>
+	 *     <li>{@link #resultData}：是否记录 Result 类型的附加数据（仅在统一结果结构下生效）。</li>
+	 *     <li>{@link #acceptableMediaTypes}：允许采集的响应体媒体类型集合（类型与子类型匹配）。</li>
 	 * </ul>
 	 *
 	 * @author pangju666
@@ -197,9 +204,10 @@ public class WebLogConfiguration {
 		 */
 		private boolean body = true;
 		/**
-		 * 是否记录附加数据（Result 类型）
+		 * 是否记录附加数据（Result 类型）。
 		 * <p>
-		 * 默认值为 {@code false}。仅在响应内容为统一结果封装类型时可用。
+		 * 默认值为 {@code false}。仅在响应内容为统一结果封装类型（Result）时生效，
+		 * 且仅对 JSON 响应记录其附加数据；其他 JSON 结构或非 JSON 响应不处理附加数据。
 		 * </p>
 		 *
 		 * @since 1.0.0
@@ -209,6 +217,7 @@ public class WebLogConfiguration {
 		 * 允许采集的响应体媒体类型集合。
 		 *
 		 * <p>仅当响应的 {@code Content-Type} 属于该集合，且 {@link #body} 开关为真时，才记录响应体。</p>
+		 * <p>匹配通常基于媒体类型的类型与子类型，参数（如 {@code charset}）不影响判断。</p>
 		 *
 		 * @since 1.0.0
 		 */

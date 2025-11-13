@@ -29,13 +29,6 @@ import java.lang.reflect.Method;
  *   <li>在日志发送前执行，适用于追加业务上下文、脱敏、格式化或过滤等场景。</li>
  * </ul>
  *
- * <p><b>行为</b></p>
- * <ul>
- *   <li>接收已构建的 {@link WebLog} 以及目标类与目标方法上下文信息。</li>
- *   <li>支持链式处理：多个处理器将按顺序依次执行。</li>
- *   <li>通常由拦截器 {@link io.github.pangju666.framework.boot.web.log.interceptor.WebLogInterceptor} 调用。</li>
- * </ul>
- *
  * <p><b>实现示例</b></p>
  * <pre>{@code
  * // 自定义日志处理器：脱敏查询参数中的敏感字段
@@ -55,7 +48,7 @@ import java.lang.reflect.Method;
  * }</pre>
  *
  * @author pangju666
- * @see io.github.pangju666.framework.boot.web.log.interceptor.WebLogInterceptor
+ * @see io.github.pangju666.framework.boot.web.log.filter.WebLogFilter
  * @see WebLog
  * @since 1.0.0
  */

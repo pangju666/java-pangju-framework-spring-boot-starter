@@ -1,8 +1,8 @@
-package io.github.pangju666.framework.boot.web.log.type.impl;
+package io.github.pangju666.framework.boot.web.log.handler.impl;
 
 import io.github.pangju666.commons.lang.pool.Constants;
 import io.github.pangju666.commons.lang.utils.JsonUtils;
-import io.github.pangju666.framework.boot.web.log.type.MediaTypeBodyHandler;
+import io.github.pangju666.framework.boot.web.log.handler.MediaTypeBodyHandler;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.MediaType;
