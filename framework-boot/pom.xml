@@ -123,7 +123,7 @@
 			<optional>true</optional>
 		</dependency>
 
-		<!-- IO Image -->
+		<!-- Image -->
 		<dependency>
 			<groupId>io.github.pangju666.commons</groupId>
 			<artifactId>commons-image</artifactId>
@@ -137,6 +137,13 @@
 		<dependency>
 			<groupId>com.sharneng</groupId>
 			<artifactId>gm4java</artifactId>
+			<optional>true</optional>
+		</dependency>
+
+		<!-- Compress -->
+		<dependency>
+			<groupId>io.github.pangju666.commons</groupId>
+			<artifactId>commons-compress</artifactId>
 			<optional>true</optional>
 		</dependency>
 	</dependencies>
