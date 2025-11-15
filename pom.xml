@@ -30,6 +30,7 @@
 		<module>framework-spring-boot-starter-web</module>
 		<module>framework-spring-boot-starter-web-validation</module>
 		<module>framework-spring-boot-starter-image</module>
+		<module>framework-spring-boot-starter-concurrent</module>
 	</modules>
 
 	<properties>
@@ -129,6 +130,11 @@
 			<dependency>
 				<groupId>io.github.pangju666.framework.boot</groupId>
 				<artifactId>framework-spring-boot-starter-image</artifactId>
+				<version>1.0.0</version>
+			</dependency>
+			<dependency>
+				<groupId>io.github.pangju666.framework.boot</groupId>
+				<artifactId>framework-spring-boot-starter-concurrent</artifactId>
 				<version>1.0.0</version>
 			</dependency>
 			<dependency>
