@@ -38,9 +38,11 @@ import org.gm4java.im4java.GMOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 
@@ -433,6 +435,83 @@ public class GMImageTemplate implements ImageTemplate<GMImageOperation, GMOperat
 			throw new ServerException("GM进程连接出现错误", e);
 		} catch (IOException | GMException e) {
 			throw new ServiceException("图片处理失败", "GM命令: " + operation + " 执行失败", e);
+		} finally {
+			if (Objects.nonNull(connection)) {
+				try {
+					connection.close();
+				} catch (GMServiceException e) {
+					LOGGER.error("GM进程关闭时出现错误", e);
+				}
+			}
+		}
+	}
+
+	/**
+	 * 执行 GM 命令。
+	 *
+	 * <p>参数校验规则：</p>
+	 * <p>如果 {@code command} 为空，则不执行并抛出异常；如果 {@code arguments} 为空，则不设置附加参数。</p>
+	 *
+	 * <p>释放策略：使用连接池获取连接，始终在 {@code finally} 中关闭连接。</p>
+	 *
+	 * @param command   GM 命令
+	 * @param arguments GM 命令附加参数，可为空
+	 * @return 命令执行结果输出
+	 * @throws ServerException  GM 进程连接错误
+	 * @throws ServiceException GM 命令执行失败
+	 * @since 1.0.0
+	 */
+	public String execute(String command, String... arguments) {
+		Assert.hasText(command, "command 不可为空");
+
+		GMConnection connection = null;
+		try {
+			connection = pooledGMService.getConnection();
+			return connection.execute(command, arguments);
+		} catch (GMServiceException e) {
+			throw new ServerException("GM进程连接出现错误", e);
+		} catch (IOException | GMException e) {
+			throw new ServiceException("图片处理失败", "GM命令: " + command + StringUtils.SPACE +
+				StringUtils.joinWith(StringUtils.SPACE, command) + " 执行失败", e);
+		} finally {
+			if (Objects.nonNull(connection)) {
+				try {
+					connection.close();
+				} catch (GMServiceException e) {
+					LOGGER.error("GM进程关闭时出现错误", e);
+				}
+			}
+		}
+	}
+
+	/**
+	 * 执行 GM 命令列表。
+	 *
+	 * <p>参数校验规则：</p>
+	 * <p>如果 {@code command} 为空，则不执行并返回空字符串。</p>
+	 *
+	 * <p>释放策略：使用连接池获取连接，始终在 {@code finally} 中关闭连接。</p>
+	 *
+	 * @param command GM 命令及参数列表
+	 * @return 命令执行结果输出；当输入为空时返回空字符串
+	 * @throws ServerException  GM 进程连接错误
+	 * @throws ServiceException GM 命令执行失败
+	 * @since 1.0.0
+	 */
+	public String execute(List<String> command) {
+		if (CollectionUtils.isEmpty(command)) {
+			return StringUtils.EMPTY;
+		}
+
+		GMConnection connection = null;
+		try {
+			connection = pooledGMService.getConnection();
+			return connection.execute(command);
+		} catch (GMServiceException e) {
+			throw new ServerException("GM进程连接出现错误", e);
+		} catch (IOException | GMException e) {
+			throw new ServiceException("图片处理失败", "GM命令: " + StringUtils.join(command,
+				StringUtils.SPACE) + " 执行失败", e);
 		} finally {
 			if (Objects.nonNull(connection)) {
 				try {
