@@ -33,6 +33,8 @@ import java.util.Objects;
  * <p><strong>定位规则</strong>：沿用父类的方向/坐标互斥；坐标需为正数。</p>
  * <p><strong>缩放规则</strong>：支持 GM 的重采样滤镜。</p>
  *
+ * <p>注意事项：绘制文字水印必须设置字体，否则将不生效</p>
+ *
  * @author pangju666
  * @since 1.0.0
  */
