@@ -24,69 +24,60 @@ import java.util.Set;
  * <p><b>概述</b></p>
  * <ul>
  *   <li>在框架层面聚合不同图像处理引擎/库的读写能力，提供统一的类型集合。</li>
- *   <li>涵盖 GraphicsMagick、TwelveMonkeys ImageIO 插件与 Krpano Tools 的支持范围。</li>
+ *   <li>涵盖 GraphicsMagick 与 Krpano Tools 的支持范围，并与上游组件能力保持一致。</li>
  *   <li>便于在运行时进行能力判定与类型校验（例如选择可用的编解码方案）。</li>
  * </ul>
  *
  * <p><b>字段</b></p>
  * <ul>
- *   <li>{@link #GRAPHICS_MAGICK_SUPPORT_WRITE_IMAGE_TYPE_SET}：GraphicsMagick 可写出的图像 MIME 类型集合。</li>
- *   <li>{@link #GRAPHICS_MAGICK_SUPPORT_READ_IMAGE_TYPE_SET}：GraphicsMagick 可读取的图像 MIME 类型集合。</li>
- *   <li>{@link #KRPANO_TOOLS_SUPPORT_FORMAT_SET}：Krpano Tools 支持的图像格式扩展名集合（非 MIME 类型）。</li>
+ *   <li>{@link #GRAPHICS_MAGICK_SUPPORT_WRITE_IMAGE_FORMAT_SET}：GraphicsMagick 可写出的图像格式扩展名集合。</li>
+ *   <li>{@link #GRAPHICS_MAGICK_SUPPORT_READ_IMAGE_FORMAT_SET}：GraphicsMagick 可读取的图像格式扩展名集合。</li>
+ *   <li>{@link #KRPANO_TOOLS_SUPPORT_FORMAT_SET}：Krpano Tools 支持的图像格式扩展名集合。</li>
  * </ul>
  *
  * <p><b>备注</b></p>
  * <ul>
  *   <li>不同平台与安装的依赖库版本可能影响具体支持范围，请以实际环境为准。</li>
- *   <li>GraphicsMagick 与 TwelveMonkeys 的集合为 MIME 类型，Krpano 为文件扩展名，两者不可直接混用。</li>
+ *   <li>以上集合均为文件扩展名（如 {@code jpg}、{@code png}），非 MIME 类型。</li>
  *   <li>本类仅聚合能力信息，不参与具体的读写实现，具体处理由上层服务/工具决定。</li>
- * </ul>
- *
- * <p><b>GraphicsMagick 图片类型依赖库说明</b></p>
- * <ul>
- *   <li>CGM(image/cgm)：Requires ralcgm to render CGM files.</li>
- *   <li>JPEG(image/jpeg)：Requires jpegsrc.v6b.tar.gz or later.</li>
- *   <li>PNG(image/png)：Requires libpng-1.0.2 or later, libpng-1.2.5 or later recommended.</li>
- *   <li>SVG(image/svg+xml)：Requires libxml2 and freetype2. Note that SVG is a very complex specification so support
- *   is still not complete.</li>
- *   <li>TIF(image/tiff)：Also known as "TIF". Requires tiff-v3.5.4.tar.gz or later. Since the Unisys LZW patent
- *   recently expired, libtiff may still require a separate LZW patch in order to support LZW. LZW is included in
- *   libtiff by default since v3.7.0.</li>
- *   <li>WEBP(image/webp)：Requires libwebp from <a href="https://developers.google.com/speed/webp/">https://developers.google.com/speed/webp/</a>.
- *   WebP is good for small photos for the web and is supported by Google's Chrome and Firefox.</li>
  * </ul>
  *
  * @author pangju666
  * @since 1.0.0
  */
 public class ImageConstants extends io.github.pangju666.commons.image.lang.ImageConstants {
-    /**
-     * GraphicsMagick 支持写出的图像类型（MIME 类型）集合。
-     *
-     * <p>用于在选择输出格式时进行能力校验；具体支持取决于安装的 GM 版本与依赖库。</p>
+	/**
+	 * GraphicsMagick 可写出的图像格式扩展名集合。
 	 *
-	 * @since 1.0.0
-     */
-	public static final Set<String> GRAPHICS_MAGICK_SUPPORT_WRITE_IMAGE_TYPE_SET = Set.of(
-		"image/bmp", "image/x-dcx", "image/vnd.fpx", "image/gif", "image/jp2", "image/jpeg", "image/x-portable-bitmap",
-		"image/x-pcx", "image/x-portable-graymap", "image/x-pict", "image/png", "image/x-portable-pixmap", "image/x-rgb",
-		"image/svg+xml", "image/x-tga", "image/tiff", "image/vnd.wap.wbmp", "image/webp", "image/x-xbitmap",
-		"image/x-xpixmap", "image/xwd"
-	);
-
-    /**
-     * GraphicsMagick 支持读取的图像类型（MIME 类型）集合。
-     *
-     * <p>用于判定输入资源是否可由 GM 解析；实际支持范围随平台与依赖变化。</p>
-	 *
+	 * <p>参考：<a href="http://www.graphicsmagick.org/formats.html">GraphicsMagick 支持格式文档</a></p>
+	 * <p>说明：集合元素为文件扩展名（如 {@code jpg}、{@code png}），非 MIME 类型。</p>
 	 * @since 1.0.0
 	 */
-	public static final Set<String> GRAPHICS_MAGICK_SUPPORT_READ_IMAGE_TYPE_SET = Set.of(
-		"image/avif", "image/bmp", "image/cgm", "image/x-cursor", "image/x-dcx", "image/vnd.fpx", "image/gif",
-		"image/heic", "image/x-icon", "image/jp2", "image/jpeg", "image/x-portable-bitmap", "image/x-pcx",
-		"image/x-portable-graymap", "image/x-pict", "image/png", "image/x-portable-anymap", "image/x-portable-pixmap",
-		"image/x-rgb", "image/svg+xml", "image/x-tga", "image/tiff", "image/vnd.wap.wbmp", "image/webp",
-		"image/x-xbitmap", "image/x-xcf", "image/x-xpixmap", "image/xwd"
+	public static final Set<String> GRAPHICS_MAGICK_SUPPORT_WRITE_IMAGE_FORMAT_SET = Set.of(
+		"aai", "art", "avs", "bmp", "cmyk", "dcx", "dib", "dpx", "epdf", "epi", "eps", "eps2", "eps3", "epsf", "epsi",
+		"ept", "fax", "fits", "fpx", "gif", "gray", "graya", "html", "hrz", "jbig", "bie", "jpg", "jng",  "jp2", "jpc",
+		"jpeg", "jxl", "mat", "miff", "mono", "mng", "mpeg", "m2v", "mpc", "msl", "mtv", "mvg", "otb", "p7", "palm",
+		"pam", "pbm", "pcd", "pcds", "pcl", "pcx", "pdb", "pdf", "pgm", "picon", "pict", "png", "pnm", "ppm", "ps", "ps2",
+		"ps3", "psd", "ptif", "rgb", "rgba", "sgi", "shtml", "sun", "svg", "tga", "icb", "vda", "vst", "tiff", "tif",
+		"txt", "uil", "uyvy", "vicar", "viff", "wbmp", "webp", "xbm", "xpm", "xwd", "yuv"
+	);
+
+	/**
+	 * GraphicsMagick 可读取的图像格式扩展名集合。
+	 *
+	 * <p>参考：<a href="http://www.graphicsmagick.org/formats.html">GraphicsMagick 支持格式文档</a></p>
+	 * <p>说明：集合元素为文件扩展名（如 {@code jpg}、{@code png}），非 MIME 类型。</p>
+	 * @since 1.0.0
+	 */
+	public static final Set<String> GRAPHICS_MAGICK_SUPPORT_READ_IMAGE_FORMAT_SET = Set.of(
+		"aai", "art", "avif", "avs", "bmp", "cals", "cin", "cgm", "cmyk", "cur", "cut", "dcm", "dcx", "dib", "dpx",
+		"emf", "epdf", "epi", "eps", "epsf", "epsi", "ept", "fax", "fig", "fits", "fpx", "gif", "gray", "graya", "heif",
+		"hpgl", "html", "hrz", "ico", "jbig", "bie", "jpg", "jng",  "jp2", "jpc", "jpeg", "jxl", "man", "mat",
+		"miff", "mono", "mng", "mpeg", "m2v", "mpc", "msl", "mtv", "mvg", "otb", "p7", "palm", "pam", "pbm", "pcd",
+		"pcds",  "pcx", "pdb", "pdf", "pfa", "pfb", "pgm", "picon", "pict", "pix", "png", "pnm", "ppm", "ps", "ps2",
+		"ps3", "psd", "ptif", "pwp", "ras", "rad", "rgb", "rgba", "rla", "rle", "sct", "sfw", "sgi", "shtml", "sun",
+		"svg", "tga", "icb", "vda", "vst", "tiff", "tif", "tim", "ttf", "txt", "uyvy", "vicar", "viff", "wbmp", "webp",
+		"wpg", "xbm", "xcf", "xpm", "xwd", "yuv"
 	);
 
     /**
@@ -99,6 +90,6 @@ public class ImageConstants extends io.github.pangju666.commons.image.lang.Image
 	public static final Set<String> KRPANO_TOOLS_SUPPORT_FORMAT_SET = Set.of(
 		"tif", "tiff", "btf", "tf8", "bigtiff", "jpg", "jpeg", "png", "psd", "psb");
 
-    protected ImageConstants() {
-    }
+	protected ImageConstants() {
+	}
 }

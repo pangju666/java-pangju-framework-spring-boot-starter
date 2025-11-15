@@ -26,6 +26,7 @@ import io.github.pangju666.framework.web.exception.base.ServiceException;
  * <p><b>概述</b></p>
  * <ul>
  *   <li>当输入的图片类型（MIME 类型或扩展名）不在系统支持范围内时抛出。</li>
+ *   <li>可结合能力集合进行判定，例如 {@code ImageConstants} 中的可读/可写类型集合。</li>
  *   <li>继承 {@link ServiceException}，作为服务层业务异常，并通过 {@link HttpException} 注解映射为 HTTP 错误。</li>
  * </ul>
  *
@@ -39,20 +40,23 @@ import io.github.pangju666.framework.web.exception.base.ServiceException;
  *
  * <p><b>示例</b></p>
  * <pre>
- * String type = "image/unknown";
- * throw new UnSupportImageTypeException(type);
+ * throw new UnSupportImageTypeException("不支持读取xxx类型的图片");
  * </pre>
  *
  * @author pangju666
  * @since 1.0.0
  */
-@HttpException(code = 210, type = HttpExceptionType.SERVICE, description = "不受支持的图片类型错误", log = false)
-public class UnSupportImageTypeException extends ServiceException {
-	public UnSupportImageTypeException(String message, String reason) {
-		super(message, reason);
-	}
-
-	public UnSupportImageTypeException(String message) {
-		super(message);
-	}
+ @HttpException(code = 210, type = HttpExceptionType.SERVICE, description = "不受支持的图片类型错误", log = false)
+ public class UnSupportImageTypeException extends ServiceException {
+    /**
+     * 创建不受支持的图片类型异常。
+     *
+     * <p>参数说明：{@code message} 为图片类型或错误描述字符串。</p>
+     *
+     * @param message 图片类型或错误描述
+     * @since 1.0.0
+     */
+    public UnSupportImageTypeException(String message) {
+        super(message);
+    }
 }

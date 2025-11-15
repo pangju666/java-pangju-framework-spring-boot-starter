@@ -103,7 +103,7 @@ import java.util.*;
  * @since 1.0.0
  */
 public class WebLogFilter extends BaseHttpRequestFilter {
-	private static final Logger logger = LoggerFactory.getLogger(WebLogFilter.class);
+	protected static final Logger logger = LoggerFactory.getLogger(WebLogFilter.class);
 
 	/**
 	 * Web 日志发送器
@@ -114,7 +114,7 @@ public class WebLogFilter extends BaseHttpRequestFilter {
 	 *
 	 * @since 1.0.0
 	 */
-	private final WebLogSender sender;
+	protected final WebLogSender sender;
 	/**
 	 * Web 日志配置
 	 * <p>
@@ -124,7 +124,7 @@ public class WebLogFilter extends BaseHttpRequestFilter {
 	 *
 	 * @since 1.0.0
 	 */
-	private final WebLogConfiguration configuration;
+	protected final WebLogConfiguration configuration;
 	/**
 	 * 媒体类型处理器列表
 	 * <p>
@@ -132,7 +132,7 @@ public class WebLogFilter extends BaseHttpRequestFilter {
 	 * 处理器由构造器注入，可按需扩展支持的内容类型。
 	 * </p>
 	 */
-	private final List<MediaTypeBodyHandler> bodyHandlers;
+	protected final List<MediaTypeBodyHandler> bodyHandlers;
  	/**
  	 * Web 日志处理器列表
  	 * <p>
@@ -143,7 +143,7 @@ public class WebLogFilter extends BaseHttpRequestFilter {
  	 *
  	 * @since 1.0.0
  	 */
- 	private final List<WebLogHandler> webLogHandlers;
+	protected final List<WebLogHandler> webLogHandlers;
 
 	/**
 	 * 构造方法

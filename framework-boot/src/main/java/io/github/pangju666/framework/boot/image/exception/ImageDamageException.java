@@ -23,7 +23,7 @@ import io.github.pangju666.framework.web.exception.base.ServiceException;
 import java.io.File;
 
 /**
- * 图片损坏异常。
+ * 图片处理异常。
  *
  * <p><b>概述</b></p>
  * <ul>
@@ -35,26 +35,26 @@ import java.io.File;
  * <ul>
  *   <li>错误码：{@code 220}</li>
  *   <li>类型：{@link HttpExceptionType#SERVICE}</li>
- *   <li>描述：{@code 图片损坏错误}</li>
+ *   <li>描述：{@code 图片处理错误}</li>
  * </ul>
  *
  * <p><b>示例</b></p>
  * <pre>
  * File image = new File("/path/to/broken.jpg");
- * throw new ImageDamageException(image, "无法解析 JPEG 数据流");
+ * throw new ImageDamageException(image, "图片尺寸解析失败");
  * </pre>
  *
  * @author pangju666
  * @since 1.0.0
  */
-@HttpException(code = 220, type = HttpExceptionType.SERVICE, description = "图片损坏错误")
+@HttpException(code = 220, type = HttpExceptionType.SERVICE, description = "图片处理错误")
 public class ImageDamageException extends ServiceException {
 	/**
-	 * 默认异常消息：{@code 图片已损坏}。
+	 * 默认异常消息：{@code 图片解析失败}。
 	 *
 	 * @since 1.0.0
 	 */
-	private static final String DEFAULT_MESSAGE = "图片已损坏";
+	private static final String DEFAULT_MESSAGE = "图片解析失败";
 
 	/**
 	 * 使用默认消息构造图片损坏异常。

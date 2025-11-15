@@ -28,8 +28,25 @@ import java.util.function.Consumer;
  *
  * <p><b>概述</b></p>
  * <ul>
- *   <li>抽象常见图像处理能力：信息读取、缩放与尺寸调整。</li>
- *   <li>方法语义明确：{@code resize} 不保持长宽比，{@code scale} 保持长宽比；重采样策略由实现类定义。</li>
+ *   <li>抽象常见图像处理能力：信息读取、图像操作。</li>
+ * </ul>
+ *
+ * <p><b>类型参数</b></p>
+ * <ul>
+ *   <li>{@code T}：操作配置类型，需继承 {@link ImageOperation}。</li>
+ *   <li>{@code U}：底层图像对象类型（例如 {@code BufferedImage} 或 GM 的中间表示）。</li>
+ * </ul>
+ *
+ * <p><b>能力判定</b></p>
+ * <ul>
+ *   <li>结合能力集合进行读写支持探测（如 {@code ImageConstants} 的可读/可写类型集合）。</li>
+ *   <li>不受支持类型可抛出服务层异常用于 HTTP 映射。</li>
+ * </ul>
+ *
+ * <p><b>I/O 约束</b></p>
+ * <ul>
+ *   <li>输入与输出文件建议分离，输出覆盖策略由实现决定。</li>
+ *   <li>回调为 {@code null} 时不进行中间态处理。</li>
  * </ul>
  *
  * <p><b>异常</b></p>
@@ -40,7 +57,7 @@ import java.util.function.Consumer;
  * @author pangju666
  * @since 1.0.0
  */
-public interface ImageTemplate<T> {
+public interface ImageTemplate<T extends ImageOperation, U> {
 	/**
 	 * 读取并返回图像基础信息（尺寸、格式、MIME 类型、文件大小等）。
 	 *
@@ -51,21 +68,87 @@ public interface ImageTemplate<T> {
 	 */
 	ImageInfo readImageInfo(File imageFile) throws IOException;
 
-	default void execute(File inputImage, File outputImageFile, ImageOperation operation) throws IOException {
-		execute(inputImage, outputImageFile, operation, null);
+	/**
+	 * 执行图像操作并写入输出文件（使用文件作为输入；不提供回调）。
+	 *
+	 * <p>说明：相当于调用带回调的重载方法并传入 {@code null}，不触发中间处理回调。</p>
+	 *
+	 * @param inputFile  输入文件
+	 * @param outputFile 输出文件
+	 * @param operation  操作配置
+	 * @throws IOException I/O 或解码错误
+	 * @since 1.0.0
+	 */
+	default void execute(File inputFile, File outputFile, T operation) throws IOException {
+		execute(inputFile, outputFile, operation, null);
 	}
 
-	default void execute(ImageInfo imageInfo, File outputImageFile, ImageOperation operation) throws IOException {
-		execute(imageInfo, outputImageFile, operation, null);
+	/**
+	 * 执行图像操作并写入输出文件（使用已解析的图像信息；不提供回调）。
+	 *
+	 * <p>说明：相当于调用带回调的重载方法并传入 {@code null}，不触发中间处理回调。</p>
+	 *
+	 * @param imageInfo  已解析的图像信息
+	 * @param outputFile 输出文件
+	 * @param operation  操作配置
+	 * @throws IOException I/O 或解码错误
+	 * @since 1.0.0
+	 */
+	default void execute(ImageInfo imageInfo, File outputFile, T operation) throws IOException {
+		execute(imageInfo, outputFile, operation, null);
 	}
 
-	default void execute(File inputImage, File outputImageFile, ImageOperation operation, Consumer<T> imageConsumer) throws IOException {
-		execute(readImageInfo(inputImage), outputImageFile, operation, null);
-	}
+	/**
+	 * 执行图像操作并写入输出文件（以文件为输入）。
+	 *
+	 * <p>说明：当提供 {@code imageConsumer} 时，实现可在关键步骤向调用方提供底层图像对象以进行额外处理；
+	 * 如果 {@code imageConsumer} 为空，则不进行回调。</p>
+	 *
+	 * @param inputImage   输入图像文件
+	 * @param outputFile   输出文件
+	 * @param operation    操作配置
+	 * @param imageConsumer 中间处理回调，接受底层图像对象
+	 * @throws IOException I/O 或解码错误
+	 * @since 1.0.0
+	 */
+	void execute(File inputImage, File outputFile, T operation, Consumer<U> imageConsumer) throws IOException;
 
-	void execute(ImageInfo imageInfo, File outputImageFile, ImageOperation operation, Consumer<T> imageConsumer) throws IOException;
+	/**
+	 * 执行图像操作并写入输出文件（以已解析的图像信息为输入）。
+	 *
+	 * <p>说明：当提供 {@code imageConsumer} 时，实现可在关键步骤向调用方提供底层图像对象以进行额外处理；
+	 * 如果 {@code imageConsumer} 为空，则不进行回调。</p>
+	 *
+	 * @param imageInfo    已解析的图像信息
+	 * @param outputFile   输出文件
+	 * @param operation    操作配置
+	 * @param imageConsumer 中间处理回调，接受底层图像对象
+	 * @throws IOException I/O 或解码错误
+	 * @since 1.0.0
+	 */
+	void execute(ImageInfo imageInfo, File outputFile, T operation, Consumer<U> imageConsumer) throws IOException;
 
-	boolean canRead(String mimeType);
+	/**
+	 * 判断实现是否支持读取指定文件类型。
+	 *
+	 * <p>说明：实现可结合能力集合进行判定（例如 {@code ImageConstants} 的可读类型集合）。</p>
+	 *
+	 * @param file 待判定文件
+	 * @return {@code true} 表示支持读取
+	 * @throws IOException I/O 或探测错误
+	 * @since 1.0.0
+	 */
+	boolean canRead(File file) throws IOException;
 
-	boolean canWrite(String mimeType);
+	/**
+	 * 判断实现是否支持写出指定文件类型。
+	 *
+	 * <p>说明：实现可结合能力集合进行判定（例如 {@code ImageConstants} 的可写类型集合）。</p>
+	 *
+	 * @param file 待判定文件
+	 * @return {@code true} 表示支持写出
+	 * @throws IOException I/O 或探测错误
+	 * @since 1.0.0
+	 */
+	boolean canWrite(File file) throws IOException;
 }
