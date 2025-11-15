@@ -62,22 +62,22 @@ class GMConfiguration {
 	 * @return GM 连接池服务
 	 * @since 1.0.0
 	 */
-    @ConditionalOnProperty(prefix = "pangju.image.gm", name = "path")
+    @ConditionalOnProperty(prefix = "pangju.image.graphics-magick", name = "path")
     @ConditionalOnMissingBean(PooledGMService.class)
     @Bean
     public PooledGMService pooledGMService(ImageProperties properties) {
-        Assert.hasText(properties.getGm().getPath(), "gm执行文件路径不可为空");
+        Assert.hasText(properties.getGraphicsMagick().getPath(), "gm执行文件路径不可为空");
 
         GMConnectionPoolConfig config = new GMConnectionPoolConfig();
-        config.setGMPath(properties.getGm().getPath());
-        config.setMaxActive(properties.getGm().getPool().getMaxActive());
-		config.setMaxIdle(properties.getGm().getPool().getMaxIdle());
-		config.setMinIdle(properties.getGm().getPool().getMinIdle());
-		config.setMinEvictableIdleTimeMillis(properties.getGm().getPool().getMinEvictableIdleTimeMillis());
-		config.setWhenExhaustedAction(properties.getGm().getPool().getWhenExhaustedAction());
-		config.setMaxWait(properties.getGm().getPool().getMaxWait().toMillis());
-		config.setTestWhileIdle(properties.getGm().getPool().isTestWhileIdle());
-		config.setTimeBetweenEvictionRunsMillis(properties.getGm().getPool().getTimeBetweenEvictionRunsMillis());
+        config.setGMPath(properties.getGraphicsMagick().getPath());
+        config.setMaxActive(properties.getGraphicsMagick().getPool().getMaxActive());
+		config.setMaxIdle(properties.getGraphicsMagick().getPool().getMaxIdle());
+		config.setMinIdle(properties.getGraphicsMagick().getPool().getMinIdle());
+		config.setMinEvictableIdleTimeMillis(properties.getGraphicsMagick().getPool().getMinEvictableIdleTimeMillis());
+		config.setWhenExhaustedAction(properties.getGraphicsMagick().getPool().getWhenExhaustedAction());
+		config.setMaxWait(properties.getGraphicsMagick().getPool().getMaxWait().toMillis());
+		config.setTestWhileIdle(properties.getGraphicsMagick().getPool().isTestWhileIdle());
+		config.setTimeBetweenEvictionRunsMillis(properties.getGraphicsMagick().getPool().getTimeBetweenEvictionRunsMillis());
 		return new PooledGMService(config);
 	}
 
@@ -90,7 +90,7 @@ class GMConfiguration {
 	 * @return GM 图像处理模板
 	 * @since 1.0.0
 	 */
-    @ConditionalOnProperty(prefix = "pangju.image", name = "type", havingValue = "GM")
+    @ConditionalOnProperty(prefix = "pangju.image", name = "type", havingValue = "GRAPHICS_MAGICK")
     @ConditionalOnMissingBean(ImageTemplate.class)
     @ConditionalOnBean(PooledGMService.class)
     @Bean

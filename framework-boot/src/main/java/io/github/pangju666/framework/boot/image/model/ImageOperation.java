@@ -18,6 +18,7 @@ package io.github.pangju666.framework.boot.image.model;
 
 import io.github.pangju666.commons.image.enums.WatermarkDirection;
 import io.github.pangju666.commons.image.model.ImageWatermarkOption;
+import io.github.pangju666.framework.boot.image.enums.CropType;
 import org.apache.commons.lang3.ObjectUtils;
 
 import javax.annotation.Nullable;
@@ -25,12 +26,13 @@ import java.io.File;
 import java.util.Objects;
 
 /**
- * 图像处理操作配置模型，支持缩放及图片水印。
+ * 图像处理操作配置模型，支持裁剪、缩放及图片水印。
  * 使用构建器模式设置参数，供图像处理组件读取并执行。
  *
  * <p><strong>使用说明</strong>：通过构建器链式设置参数；不满足校验规则的参数将被忽略。</p>
  * <p><strong>互斥规则</strong>：水印方向与坐标互斥；设置其中之一会清空另一种配置。</p>
  * <p><strong>定位规则</strong>：可使用 {@code watermarkDirection} 或 {@code watermarkPosition(x,y)}；坐标需为正数。</p>
+ * <p><strong>裁剪规则</strong>：支持中心裁剪、偏移裁剪与矩形裁剪；如果裁剪参数为空、非正数或越界，则不设置裁剪。</p>
  * <p><strong>缩放规则</strong>：{@code forceScale(width,height)} 强制缩放到指定尺寸；按比例/按宽/按高缩放为等比，并会关闭强制缩放且清空其它尺寸/比例。</p>
  * <p><strong>透明度范围</strong>：取值区间 [0,1]；整体/水印透明度遵循该范围。</p>
  *
@@ -98,6 +100,182 @@ public abstract class ImageOperation {
 	 * @since 1.0.0
 	 */
 	protected File watermarkImage;
+	/**
+	 * 裁剪类型。
+	 *
+	 * @since 1.0.0
+	 */
+	protected CropType cropType;
+	/**
+	 * 中心裁剪的目标宽度。
+	 *
+	 * @since 1.0.0
+	 */
+	protected Integer centerCropWidth;
+	/**
+	 * 中心裁剪的目标高度。
+	 *
+	 * @since 1.0.0
+	 */
+	protected Integer centerCropHeight;
+	/**
+	 * 偏移裁剪的上边偏移量。
+	 *
+	 * @since 1.0.0
+	 */
+	protected Integer topCropOffset;
+	/**
+	 * 偏移裁剪的下边偏移量。
+	 *
+	 * @since 1.0.0
+	 */
+	protected Integer bottomCropOffset;
+	/**
+	 * 偏移裁剪的左边偏移量。
+	 *
+	 * @since 1.0.0
+	 */
+	protected Integer leftCropOffset;
+	/**
+	 * 偏移裁剪的右边偏移量。
+	 *
+	 * @since 1.0.0
+	 */
+	protected Integer rightCropOffset;
+	/**
+	 * 矩形裁剪的左上角 X 坐标。
+	 *
+	 * @since 1.0.0
+	 */
+	protected Integer cropRectX;
+	/**
+	 * 矩形裁剪的左上角 Y 坐标。
+	 *
+	 * @since 1.0.0
+	 */
+	protected Integer cropRectY;
+	/**
+	 * 矩形裁剪的宽度。
+	 *
+	 * @since 1.0.0
+	 */
+	protected Integer cropRectWidth;
+	/**
+	 * 矩形裁剪的高度。
+	 *
+	 * @since 1.0.0
+	 */
+	protected Integer cropRectHeight;
+
+	/**
+	 * 获取裁剪类型。
+	 *
+	 * @return 裁剪类型，未设置则为 {@code null}
+	 * @since 1.0.0
+	 */
+	public @Nullable CropType getCropType() {
+		return cropType;
+	}
+
+	/**
+	 * 获取中心裁剪的目标宽度。
+	 *
+	 * @return 目标宽度，未设置则为 {@code null}
+	 * @since 1.0.0
+	 */
+	public @Nullable Integer getCenterCropWidth() {
+		return centerCropWidth;
+	}
+
+	/**
+	 * 获取中心裁剪的目标高度。
+	 *
+	 * @return 目标高度，未设置则为 {@code null}
+	 * @since 1.0.0
+	 */
+	public @Nullable Integer getCenterCropHeight() {
+		return centerCropHeight;
+	}
+
+	/**
+	 * 获取偏移裁剪的上边偏移量。
+	 *
+	 * @return 上边偏移量，未设置则为 {@code null}
+	 * @since 1.0.0
+	 */
+	public @Nullable Integer getTopCropOffset() {
+		return topCropOffset;
+	}
+
+	/**
+	 * 获取偏移裁剪的下边偏移量。
+	 *
+	 * @return 下边偏移量，未设置则为 {@code null}
+	 * @since 1.0.0
+	 */
+	public @Nullable Integer getBottomCropOffset() {
+		return bottomCropOffset;
+	}
+
+	/**
+	 * 获取偏移裁剪的左边偏移量。
+	 *
+	 * @return 左边偏移量，未设置则为 {@code null}
+	 * @since 1.0.0
+	 */
+	public @Nullable Integer getLeftCropOffset() {
+		return leftCropOffset;
+	}
+
+	/**
+	 * 获取偏移裁剪的右边偏移量。
+	 *
+	 * @return 右边偏移量，未设置则为 {@code null}
+	 * @since 1.0.0
+	 */
+	public @Nullable Integer getRightCropOffset() {
+		return rightCropOffset;
+	}
+
+	/**
+	 * 获取矩形裁剪的左上角 X 坐标。
+	 *
+	 * @return X 坐标，未设置则为 {@code null}
+	 * @since 1.0.0
+	 */
+	public @Nullable Integer getCropRectX() {
+		return cropRectX;
+	}
+
+	/**
+	 * 获取矩形裁剪的左上角 Y 坐标。
+	 *
+	 * @return Y 坐标，未设置则为 {@code null}
+	 * @since 1.0.0
+	 */
+	public @Nullable Integer getCropRectY() {
+		return cropRectY;
+	}
+
+	/**
+	 * 获取矩形裁剪的宽度。
+	 *
+	 * @return 宽度，未设置则为 {@code null}
+	 * @since 1.0.0
+	 */
+	public @Nullable Integer getCropRectWidth() {
+		return cropRectWidth;
+	}
+
+	/**
+	 * 获取矩形裁剪的高度。
+	 *
+	 * @return 高度，未设置则为 {@code null}
+	 * @since 1.0.0
+	 */
+	public @Nullable Integer getCropRectHeight() {
+		return cropRectHeight;
+	}
 
 	/**
 	 * 受保护的构造方法，避免直接实例化。
@@ -227,6 +405,73 @@ public abstract class ImageOperation {
 		}
 
 		/**
+		 * 以图片中心为基准进行裁剪。
+		 *
+		 * <p>参数校验规则：如果 {@code width} 或 {@code height} 为空或非正数，则不设置。</p>
+		 *
+		 * @param width  目标宽度
+		 * @param height 目标高度
+		 * @return 构建器本身
+		 * @since 1.0.0
+		 */
+		public T cropByCenter(Integer width, Integer height) {
+			if (ObjectUtils.allNotNull(width, height) && width > 0 && height > 0) {
+				this.imageOperation.centerCropWidth = width;
+				this.imageOperation.centerCropHeight = height;
+				this.imageOperation.cropType = CropType.CENTER;
+			}
+			return self();
+		}
+
+		/**
+		 * 根据四边偏移量进行裁剪。
+		 *
+		 * <p>参数校验规则：如果任一偏移量为空或非正数，则不设置。</p>
+		 *
+		 * @param topOffset    上边偏移量
+		 * @param bottomOffset 下边偏移量
+		 * @param leftOffset   左边偏移量
+		 * @param rightOffset  右边偏移量
+		 * @return 构建器本身
+		 * @since 1.0.0
+		 */
+		public T cropByOffset(Integer topOffset, Integer bottomOffset, Integer leftOffset, Integer rightOffset) {
+			if (ObjectUtils.allNotNull(topOffset, bottomOffset, leftOffset, rightOffset) &&
+				topOffset > 0 && bottomOffset > 0 && leftOffset > 0 && rightOffset > 0) {
+				this.imageOperation.topCropOffset = topOffset;
+				this.imageOperation.bottomCropOffset = bottomOffset;
+				this.imageOperation.leftCropOffset = leftOffset;
+				this.imageOperation.rightCropOffset = rightOffset;
+				this.imageOperation.cropType = CropType.OFFSET;
+			}
+			return self();
+		}
+
+		/**
+		 * 按给定矩形区域进行裁剪。
+		 *
+		 * <p>参数校验规则：如果 {@code x}、{@code y}、{@code width} 或 {@code height} 为空或非正数，则不设置。</p>
+		 *
+		 * @param x      左上角 X 坐标
+		 * @param y      左上角 Y 坐标
+		 * @param width  矩形宽度
+		 * @param height 矩形高度
+		 * @return 构建器本身
+		 * @since 1.0.0
+		 */
+		public T cropByRect(Integer x, Integer y, Integer width, Integer height) {
+			if (ObjectUtils.allNotNull(x, y, width, height) &&
+				x > 0 && y > 0 && width > 0 && height > 0) {
+				this.imageOperation.cropRectX = x;
+				this.imageOperation.cropRectY = y;
+				this.imageOperation.cropRectWidth = width;
+				this.imageOperation.cropRectHeight = height;
+				this.imageOperation.cropType = CropType.RECT;
+			}
+			return self();
+		}
+
+		/**
 		 * 强制缩放到指定宽高（忽略比例）。
 		 *
 		 * <p>参数校验规则：如果 {@code width} 或 {@code height} 为 null，则不设置；设置后开启强制缩放。</p>
@@ -238,9 +483,9 @@ public abstract class ImageOperation {
 		 */
 		public T forceScale(Integer width, Integer height) {
 			if (ObjectUtils.allNotNull(width, height)) {
-				imageOperation.targetWidth = width;
-				imageOperation.targetHeight = height;
-				imageOperation.forceScale = true;
+				this.imageOperation.targetWidth = width;
+				this.imageOperation.targetHeight = height;
+				this.imageOperation.forceScale = true;
 			}
 			return self();
 		}
@@ -258,14 +503,14 @@ public abstract class ImageOperation {
 		 */
 		public T scaleByRange(Integer targetWidth, Integer targetHeight) {
 			if (Objects.nonNull(targetWidth)) {
-				imageOperation.targetWidth = targetWidth;
-				imageOperation.forceScale = false;
-				imageOperation.scaleRatio = null;
+				this.imageOperation.targetWidth = targetWidth;
+				this.imageOperation.forceScale = false;
+				this.imageOperation.scaleRatio = null;
 			}
 			if (Objects.nonNull(targetHeight)) {
-				imageOperation.targetHeight = targetHeight;
-				imageOperation.forceScale = false;
-				imageOperation.scaleRatio = null;
+				this.imageOperation.targetHeight = targetHeight;
+				this.imageOperation.forceScale = false;
+				this.imageOperation.scaleRatio = null;
 			}
 			return self();
 		}
@@ -281,10 +526,10 @@ public abstract class ImageOperation {
 		 */
 		public T scale(Float ratio) {
 			if (Objects.nonNull(ratio) && ratio > 0) {
-				imageOperation.forceScale = false;
-				imageOperation.scaleRatio = ratio;
-				imageOperation.targetWidth = null;
-				imageOperation.targetHeight = null;
+				this.imageOperation.forceScale = false;
+				this.imageOperation.scaleRatio = ratio;
+				this.imageOperation.targetWidth = null;
+				this.imageOperation.targetHeight = null;
 			}
 			return self();
 		}
@@ -300,10 +545,10 @@ public abstract class ImageOperation {
 		 */
 		public T scaleByWidth(Integer targetWidth) {
 			if (Objects.nonNull(targetWidth)) {
-				imageOperation.forceScale = false;
-				imageOperation.scaleRatio = null;
-				imageOperation.targetWidth = targetWidth;
-				imageOperation.targetHeight = null;
+				this.imageOperation.forceScale = false;
+				this.imageOperation.scaleRatio = null;
+				this.imageOperation.targetWidth = targetWidth;
+				this.imageOperation.targetHeight = null;
 			}
 			return self();
 		}
@@ -319,10 +564,10 @@ public abstract class ImageOperation {
 		 */
 		public T scaleByHeight(Integer targetHeight) {
 			if (Objects.nonNull(targetHeight)) {
-				imageOperation.forceScale = false;
-				imageOperation.scaleRatio = null;
-				imageOperation.targetWidth = null;
-				imageOperation.targetHeight = targetHeight;
+				this.imageOperation.forceScale = false;
+				this.imageOperation.scaleRatio = null;
+				this.imageOperation.targetWidth = null;
+				this.imageOperation.targetHeight = targetHeight;
 			}
 			return self();
 		}
@@ -338,9 +583,9 @@ public abstract class ImageOperation {
 		 */
 		public T watermarkDirection(WatermarkDirection direction) {
 			if (Objects.nonNull(direction)) {
-				imageOperation.watermarkX = null;
-				imageOperation.watermarkY = null;
-				imageOperation.watermarkDirection = direction;
+				this.imageOperation.watermarkX = null;
+				this.imageOperation.watermarkY = null;
+				this.imageOperation.watermarkDirection = direction;
 			}
 			return self();
 		}
@@ -357,9 +602,9 @@ public abstract class ImageOperation {
 		 */
 		public T watermarkPosition(Integer x, Integer y) {
 			if (ObjectUtils.allNotNull(x, y) && x > 0 && y > 0) {
-				imageOperation.watermarkX = x;
-				imageOperation.watermarkY = y;
-				imageOperation.watermarkDirection = null;
+				this.imageOperation.watermarkX = x;
+				this.imageOperation.watermarkY = y;
+				this.imageOperation.watermarkDirection = null;
 			}
 			return self();
 		}
@@ -372,7 +617,7 @@ public abstract class ImageOperation {
 		 * @since 1.0.0
 		 */
 		public T watermarkImage(File watermarkImage) {
-			imageOperation.watermarkImage = watermarkImage;
+			this.imageOperation.watermarkImage = watermarkImage;
 			return self();
 		}
 
@@ -387,7 +632,7 @@ public abstract class ImageOperation {
 		 */
 		public T watermarkImageScale(Float ratio) {
 			if (Objects.nonNull(ratio)) {
-				imageOperation.watermarkImageOption.setScale(ratio);
+				this.imageOperation.watermarkImageOption.setScale(ratio);
 			}
 			return self();
 		}
@@ -403,7 +648,7 @@ public abstract class ImageOperation {
 		 */
 		public T watermarkImageOpacity(Float opacity) {
 			if (Objects.nonNull(opacity)) {
-				imageOperation.watermarkImageOption.setOpacity(opacity);
+				this.imageOperation.watermarkImageOption.setOpacity(opacity);
 			}
 			return self();
 		}
@@ -420,7 +665,7 @@ public abstract class ImageOperation {
 		 */
 		public T watermarkImageWidthRange(Integer minWidth, Integer maxWidth) {
 			if (ObjectUtils.allNotNull(minWidth, maxWidth)) {
-				imageOperation.watermarkImageOption.setWidthRange(minWidth, maxWidth);
+				this.imageOperation.watermarkImageOption.setWidthRange(minWidth, maxWidth);
 			}
 			return self();
 		}
@@ -437,7 +682,7 @@ public abstract class ImageOperation {
 		 */
 		public T watermarkImageHeightRange(Integer minHeight, Integer maxHeight) {
 			if (ObjectUtils.allNotNull(minHeight, maxHeight)) {
-				imageOperation.watermarkImageOption.setHeightRange(minHeight, maxHeight);
+				this.imageOperation.watermarkImageOption.setHeightRange(minHeight, maxHeight);
 			}
 			return self();
 		}
@@ -449,7 +694,7 @@ public abstract class ImageOperation {
 		 * @since 1.0.0
 		 */
 		public V build() {
-			return imageOperation;
+			return this.imageOperation;
 		}
 	}
 }

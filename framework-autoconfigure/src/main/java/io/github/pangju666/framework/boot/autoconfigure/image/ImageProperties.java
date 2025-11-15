@@ -34,7 +34,7 @@ import java.time.Duration;
  * <p><strong>字段</strong></p>
  * <ul>
  *   <li>{@code type}：处理实现类型，默认 {@code IMAGEIO}。</li>
- *   <li>{@code gm}：GraphicsMagick 配置组，包含 {@code path} 与 {@code pool}。</li>
+ *   <li>{@code graphicsMagick}：GraphicsMagick 配置组，包含 {@code path} 与 {@code pool}。</li>
  * </ul>
  *
  * @author pangju666
@@ -53,14 +53,14 @@ public class ImageProperties {
 	 *
 	 * @since 1.0.0
 	 */
-	private GM gm = new GM();
+	private GraphicsMagick graphicsMagick = new GraphicsMagick();
 
-	public GM getGm() {
-		return gm;
+	public GraphicsMagick getGraphicsMagick() {
+		return graphicsMagick;
 	}
 
-	public void setGm(GM gm) {
-		this.gm = gm;
+	public void setGraphicsMagick(GraphicsMagick graphicsMagick) {
+		this.graphicsMagick = graphicsMagick;
 	}
 
 	public Type getType() {
@@ -83,7 +83,7 @@ public class ImageProperties {
 	 * @since 1.0.0
 	 */
 	public enum Type {
-		GM,
+		GRAPHICS_MAGICK,
 		IMAGEIO
 	}
 
@@ -93,7 +93,7 @@ public class ImageProperties {
 	 * @author pangju666
 	 * @since 1.0.0
 	 */
-	public static class GM {
+	public static class GraphicsMagick {
 		/**
 		 * GraphicsMagick 的连接池配置。
 		 *

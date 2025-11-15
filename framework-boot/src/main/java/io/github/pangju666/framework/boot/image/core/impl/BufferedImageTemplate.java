@@ -24,6 +24,7 @@ import io.github.pangju666.commons.image.utils.ImageUtils;
 import io.github.pangju666.commons.io.utils.FileUtils;
 import io.github.pangju666.commons.io.utils.FilenameUtils;
 import io.github.pangju666.framework.boot.image.core.ImageTemplate;
+import io.github.pangju666.framework.boot.image.enums.CropType;
 import io.github.pangju666.framework.boot.image.exception.UnSupportImageTypeException;
 import io.github.pangju666.framework.boot.image.lang.ImageConstants;
 import io.github.pangju666.framework.boot.image.model.BufferedImageOperation;
@@ -51,7 +52,7 @@ import java.util.function.Consumer;
  *
  * <p><strong>执行顺序（本实现）</strong></p>
  * <ul>
- *   <li>矫正方向 → 缩放 → 添加水印 → 写出文件。</li>
+ *   <li>矫正方向 → 缩放 → 裁剪 → 绘制文字/图片水印 → 输出。</li>
  * </ul>
  *
  * <p><strong>依赖</strong></p>
@@ -75,11 +76,11 @@ public class BufferedImageTemplate implements ImageTemplate<BufferedImageOperati
 	 * 读取图像信息（格式、大小、MIME、EXIF 方向与尺寸）。
 	 *
 	 * <p>优先使用 metadata 解析；失败则采用默认方向并通过文件解码获取尺寸。</p>
-	 * <p>参数校验规则：如果 {@code imageFile} 为 {@code null} 或不存在，将在底层探测时抛出 I/O 异常。</p>
 	 *
 	 * @param imageFile 待解析图像文件
 	 * @return 图像信息
-	 * @throws IOException 文件读取或类型校验失败
+	 * @throws IOException 当文件读取失败时抛出
+	 * @throws UnSupportImageTypeException 当图片格式不受支持时抛出
 	 */
 	@Override
 	public ImageInfo readImageInfo(File imageFile) throws IOException {
@@ -107,14 +108,14 @@ public class BufferedImageTemplate implements ImageTemplate<BufferedImageOperati
 	/**
 	 * 执行图像操作（输入文件形式）。
 	 *
-	 * <p>参数校验规则：如果 {@code inputFile} 为 {@code null} 或不可读，将在信息读取时抛出异常；
-	 * 如果 {@code outputFile} 扩展名为空或不在支持集合，抛出不受支持类型异常。</p>
+	 * <p>执行顺序：矫正方向 → 缩放 → 裁剪 → 绘制文字/图片水印 → 输出。</p>
 	 *
 	 * @param inputFile 输入文件
 	 * @param outputFile 输出文件
 	 * @param operation 操作配置
 	 * @param imageConsumer 中间处理回调，可为 {@code null}
-	 * @throws IOException I/O 或解码错误
+	 * @throws IOException 当输入文件/水印图片解析失败失败时抛出
+	 * @throws UnSupportImageTypeException 当输入文件/输出文件/水印图片格式不受支持时抛出
 	 */
 	@Override
 	public void execute(File inputFile, File outputFile, BufferedImageOperation operation, Consumer<BufferedImage> imageConsumer) throws IOException {
@@ -126,14 +127,14 @@ public class BufferedImageTemplate implements ImageTemplate<BufferedImageOperati
 	/**
 	 * 执行图像操作（已解析信息形式）。
 	 *
-	 * <p>参数校验规则：{@code imageInfo} 不可为 {@code null}；{@code imageInfo.file} 不可为 {@code null}；
-	 * 输出文件扩展名需在支持集合，否则抛出不受支持类型异常。</p>
+	 * <p>执行顺序：矫正方向 → 缩放 → 裁剪 → 绘制文字/图片水印 → 输出。</p>
 	 *
 	 * @param imageInfo 已解析的图像信息
 	 * @param outputFile 输出文件
 	 * @param operation 操作配置
 	 * @param imageConsumer 中间处理回调，可为 {@code null}
-	 * @throws IOException I/O 或解码错误
+	 * @throws IOException 当输入文件/水印图片解析失败失败时抛出
+	 * @throws UnSupportImageTypeException 当输入文件/输出文件/水印图片格式不受支持时抛出
 	 */
 	@Override
 	public void execute(ImageInfo imageInfo, File outputFile, BufferedImageOperation operation,
@@ -177,9 +178,7 @@ public class BufferedImageTemplate implements ImageTemplate<BufferedImageOperati
 	/**
 	 * 执行具体处理逻辑。
 	 *
-	 * <p>执行顺序：矫正方向 → 缩放 → 水印 → 输出。</p>
-	 * <p>参数校验规则：{
-	 * imageInfo} 的尺寸或方向异常时将回退为重新读取信息；当输出类型不受支持时已在上游进行校验。</p>
+	 * <p>执行顺序：矫正方向 → 缩放 → 裁剪 → 水印 → 输出。</p>
 	 *
 	 * @param imageInfo 图像信息
 	 * @param outputFile 输出文件
@@ -212,6 +211,28 @@ public class BufferedImageTemplate implements ImageTemplate<BufferedImageOperati
 			imageEditor.scaleByWidth(operation.getTargetWidth());
 		} else if (Objects.nonNull(operation.getTargetHeight())) {
 			imageEditor.scaleByHeight(operation.getTargetHeight());
+		}
+
+		// 判断是否需要执行裁剪
+		if (Objects.nonNull(operation.getCropType())) {
+			if (operation.getCropType() == CropType.CENTER) {
+				if (ObjectUtils.allNotNull(operation.getCenterCropWidth(), operation.getCenterCropHeight())) {
+					imageEditor.cropByCenter(operation.getCenterCropWidth(), operation.getCenterCropHeight());
+				}
+			} else if (operation.getCropType() == CropType.OFFSET) {
+				if (ObjectUtils.allNotNull(operation.getTopCropOffset(), operation.getBottomCropOffset(),
+					operation.getLeftCropOffset(), operation.getRightCropOffset())) {
+					imageEditor.cropByOffset(operation.getTopCropOffset(),
+						operation.getBottomCropOffset(), operation.getLeftCropOffset(),
+						operation.getRightCropOffset());
+				}
+			} else if (operation.getCropType() == CropType.RECT) {
+				if (ObjectUtils.allNotNull(operation.getCropRectX(), operation.getCropRectY(),
+					operation.getCropRectWidth(), operation.getCropRectHeight())) {
+					imageEditor.cropByRect(operation.getCropRectX(), operation.getCropRectY(),
+						operation.getCropRectWidth(), operation.getCropRectHeight());
+				}
+			}
 		}
 
 		// 判断是否需要添加水印

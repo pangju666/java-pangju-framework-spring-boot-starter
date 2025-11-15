@@ -20,6 +20,7 @@ import io.github.pangju666.commons.image.model.ImageSize;
 import io.github.pangju666.commons.io.utils.FileUtils;
 import io.github.pangju666.commons.io.utils.FilenameUtils;
 import io.github.pangju666.framework.boot.image.core.ImageTemplate;
+import io.github.pangju666.framework.boot.image.enums.CropType;
 import io.github.pangju666.framework.boot.image.exception.ImageDamageException;
 import io.github.pangju666.framework.boot.image.exception.UnSupportImageTypeException;
 import io.github.pangju666.framework.boot.image.lang.ImageConstants;
@@ -57,7 +58,7 @@ import java.util.function.Consumer;
  *
  * <p><strong>执行顺序（本实现）</strong></p>
  * <ul>
- *   <li>读取信息 → 计算目标尺寸 → 文字/图片水印 → 质量与输出。</li>
+ *   <li>>计算目标尺寸 → 裁剪（绘制图片水印时不支持裁剪） → 绘制文字/图片水印 → 方向矫正 → 缩放 → 去除元数据 → 设置质量 → 输出。</li>
  * </ul>
  *
  * <p><strong>依赖</strong></p>
@@ -168,6 +169,8 @@ public class GMImageTemplate implements ImageTemplate<GMImageOperation, GMOperat
 	/**
 	 * 执行图像操作（输入文件形式）。
 	 *
+	 * <p>执行顺序：计算目标尺寸 → 裁剪（绘制图片水印时不支持裁剪） → 绘制文字/图片水印 → 方向矫正 → 缩放 → 去除元数据 → 设置质量 → 输出。</p>
+	 *
 	 * @param inputFile 输入文件
 	 * @param outputFile 输出文件
 	 * @param operation 操作配置
@@ -186,6 +189,8 @@ public class GMImageTemplate implements ImageTemplate<GMImageOperation, GMOperat
 
 	/**
 	 * 执行图像操作（已解析信息形式）。
+	 *
+	 * <p>执行顺序：计算目标尺寸 → 裁剪（绘制图片水印时不支持裁剪） → 绘制文字/图片水印 → 方向矫正 → 缩放 → 去除元数据 → 设置质量 → 输出。</p>
 	 *
 	 * @param imageInfo 已解析的图像信息
 	 * @param outputFile 输出文件
@@ -247,7 +252,7 @@ public class GMImageTemplate implements ImageTemplate<GMImageOperation, GMOperat
     /**
      * 执行具体处理逻辑。
      *
-     * <p>执行顺序：计算目标尺寸 → 绘制文字/图片水印 → strip profiles → 设置质量 → 输出。</p>
+     * <p>执行顺序：计算目标尺寸 → 裁剪（绘制图片水印时不支持裁剪） → 绘制文字/图片水印 → 方向矫正 → 缩放 → 去除元数据 → 设置质量 → 输出。</p>
      *
      * @param imageInfo 图像信息
      * @param outputFile 输出文件
@@ -281,10 +286,12 @@ public class GMImageTemplate implements ImageTemplate<GMImageOperation, GMOperat
 		boolean needCorrectOrientation = operation.isStripProfiles();
 		boolean needInputImageArgs = true;
 		boolean needConvertCommand = true;
+		boolean needCropArgs = true;
 		if (Objects.nonNull(operation.getWatermarkText())) {
 			if (Objects.nonNull(operation.getWatermarkDirection())) {
 				// 根据方位绘制文字水印
 				gmOperation.addRawArg("convert");
+				setCropArgs(imageSize, operation, gmOperation);
 				setInputImageArgs(imageInfo.getFile(), imageSize, imageInfo.getOrientation(),
 					true, operation, gmOperation);
 
@@ -294,50 +301,57 @@ public class GMImageTemplate implements ImageTemplate<GMImageOperation, GMOperat
 
 				needConvertCommand = false;
 				needInputImageArgs = false;
+				needCropArgs = false;
 			} else if (ObjectUtils.allNotNull(operation.getWatermarkX(), operation.getWatermarkY())) {
 				// 根据坐标绘制文字水印
 				gmOperation.addRawArg("convert");
+				setCropArgs(imageSize, operation, gmOperation);
 				setInputImageArgs(imageInfo.getFile(), imageSize, imageInfo.getOrientation(),
 					true, operation, gmOperation);
 
+				// 设置左上角为原点
+				gmOperation.gravity(GMOperation.Gravity.NorthWest);
 				setTextWatermarkArgs(operation, gmOperation);
 				gmOperation.draw(String.format(DRAW_TEXT_ARG_FORMAT, operation.getWatermarkX(),
 					operation.getWatermarkY(), operation.getWatermarkText()));
 
 				needConvertCommand = false;
 				needInputImageArgs = false;
+				needCropArgs = false;
 			}
 		} else if (Objects.nonNull(operation.getWatermarkImage())) {
-			// 根据方位绘制图片水印
 			if (Objects.nonNull(operation.getWatermarkDirection())) {
-				ImageSize watermarkImageSize = getWatermarkImageScaleSize(imageSize, operation.getWatermarkImage(),
-					operation);
+				// 根据方位绘制图片水印
 				gmOperation.addRawArg("composite");
 				setGravityArg(operation, gmOperation);
-				gmOperation.geometry(watermarkImageSize.getWidth(), watermarkImageSize.getHeight(),
-					10, 10);
+				setWatermarkImageArgs(imageSize, operation, 10,10, gmOperation);
 				gmOperation.addRawArg("-dissolve " + (int) (operation.getWatermarkImageOption().getOpacity() * 100));
 				gmOperation.addImage(operation.getWatermarkImage());
 
 				needCorrectOrientation = true;
 				needConvertCommand = false;
+				needCropArgs = false;
 			} else if (ObjectUtils.allNotNull(operation.getWatermarkX(), operation.getWatermarkY())) {
 				// 根据坐标绘制图片水印
-				ImageSize watermarkImageSize = getWatermarkImageScaleSize(imageSize, operation.getWatermarkImage(),
-					operation);
 				gmOperation.addRawArg("composite");
-				gmOperation.geometry(watermarkImageSize.getWidth(), watermarkImageSize.getHeight(),
-					operation.getWatermarkX(), operation.getWatermarkY());
+				// 设置左上角为原点
+				gmOperation.gravity(GMOperation.Gravity.NorthWest);
+				setWatermarkImageArgs(imageSize, operation, operation.getWatermarkX(), operation.getWatermarkY(),
+					gmOperation);
 				gmOperation.addRawArg("-dissolve " + (int) (operation.getWatermarkImageOption().getOpacity() * 100));
 				gmOperation.addImage(operation.getWatermarkImage());
 
 				needCorrectOrientation = true;
 				needConvertCommand = false;
+				needCropArgs = false;
 			}
 		}
 
 		if (needConvertCommand) {
 			gmOperation.addRawArg("convert");
+		}
+		if (needCropArgs) {
+			setCropArgs(imageSize, operation, gmOperation);
 		}
 		if (needInputImageArgs) {
 			setInputImageArgs(imageInfo.getFile(), imageSize, imageInfo.getOrientation(),
@@ -391,6 +405,61 @@ public class GMImageTemplate implements ImageTemplate<GMImageOperation, GMOperat
 		// 判断是否需要执行缩放
 		if (ObjectUtils.anyNotNull(operation.getTargetWidth(), operation.getTargetHeight(), operation.getScaleRatio())) {
 			gmOperation.resize(imageSize.getWidth(), imageSize.getHeight(), '!');
+		}
+	}
+
+	/**
+	 * 设置裁剪相关参数
+	 *
+	 * @param imageSize 原始图片尺寸
+	 * @param operation 操作配置
+	 * @param gmOperation GM 操作对象
+	 * @since 1.0.0
+	 */
+	protected void setCropArgs(ImageSize imageSize, GMImageOperation operation, GMOperation gmOperation) {
+		// 判断是否需要执行裁剪
+		if (Objects.nonNull(operation.getCropType())) {
+			if (operation.getCropType() == CropType.CENTER) {
+				if (ObjectUtils.allNotNull(operation.getCenterCropWidth(), operation.getCenterCropHeight()) &&
+					operation.getCenterCropWidth() < imageSize.getWidth() &&
+					operation.getCenterCropHeight() < imageSize.getHeight() ) {
+					int posX = (imageSize.getWidth() - operation.getCenterCropWidth()) / 2;
+					int posY = (imageSize.getHeight() - operation.getCenterCropHeight()) / 2;
+					gmOperation.crop(operation.getCenterCropWidth(), operation.getCenterCropHeight(),
+						posX, posY);
+					gmOperation.addRawArg(" +repage");
+				}
+			} else if (operation.getCropType() == CropType.OFFSET) {
+				if (ObjectUtils.allNotNull(operation.getTopCropOffset(), operation.getBottomCropOffset(),
+					operation.getLeftCropOffset(), operation.getRightCropOffset()) &&
+					operation.getRightCropOffset() < imageSize.getWidth() &&
+					operation.getLeftCropOffset() < imageSize.getWidth() &&
+					operation.getLeftCropOffset() + operation.getRightCropOffset() < imageSize.getWidth() &&
+					operation.getTopCropOffset() < imageSize.getHeight() &&
+					operation.getBottomCropOffset() < imageSize.getHeight() &&
+					operation.getTopCropOffset() + operation.getBottomCropOffset() < imageSize.getHeight()) {
+
+					int width = imageSize.getWidth() - operation.getLeftCropOffset() - operation.getRightCropOffset();
+					int height = imageSize.getHeight() - operation.getTopCropOffset() - operation.getBottomCropOffset();
+					gmOperation.crop(width, height, operation.getLeftCropOffset(),
+						operation.getTopCropOffset());
+					gmOperation.addRawArg(" +repage");
+				}
+			} else if (operation.getCropType() == CropType.RECT) {
+				if (ObjectUtils.allNotNull(operation.getCropRectX(), operation.getCropRectY(),
+					operation.getCropRectWidth(), operation.getCropRectHeight()) &&
+					operation.getCropRectX() >= imageSize.getWidth() &&
+					operation.getCropRectWidth() >= imageSize.getWidth() &&
+					operation.getCropRectX() + operation.getCropRectWidth() >= imageSize.getWidth() &&
+					operation.getCropRectY() >= imageSize.getHeight() &&
+					operation.getCropRectHeight() >= imageSize.getHeight() &&
+					operation.getCropRectY() + operation.getCropRectHeight() >= imageSize.getHeight()) {
+
+					gmOperation.crop(operation.getCropRectWidth(), operation.getCropRectHeight(),
+						operation.getCropRectX(), operation.getCropRectY());
+					gmOperation.addRawArg(" +repage");
+				}
+			}
 		}
 	}
 
@@ -569,14 +638,14 @@ public class GMImageTemplate implements ImageTemplate<GMImageOperation, GMOperat
      * @since 1.0.0
      */
     protected void setTextWatermarkArgs(GMImageOperation operation, GMOperation gmOperation) {
-        if (Objects.nonNull(operation.getTextWatermarkFontName())) {
-            gmOperation.font(operation.getTextWatermarkFontName());
-            gmOperation.pointsize(operation.getTextWatermarkFontSize());
+        if (Objects.nonNull(operation.getWatermarkTextFontName())) {
+            gmOperation.font(operation.getWatermarkTextFontName());
+            gmOperation.pointsize(operation.getWatermarkTextFontSize());
 
-			String fillColor = FILL_COLOR_FORMAT.formatted(operation.getTextWatermarkColor().getRed(),
-				operation.getTextWatermarkColor().getGreen(),
-				operation.getTextWatermarkColor().getBlue(),
-				operation.getTextWatermarkOpacity());
+			String fillColor = FILL_COLOR_FORMAT.formatted(operation.getWatermarkTextColor().getRed(),
+				operation.getWatermarkTextColor().getGreen(),
+				operation.getWatermarkTextColor().getBlue(),
+				operation.getWatermarkTextOpacity());
 			gmOperation.fill(fillColor);
 		}
 	}
@@ -603,46 +672,41 @@ public class GMImageTemplate implements ImageTemplate<GMImageOperation, GMOperat
 		gmOperation.gravity(gravity);
 	}
 
-    /**
-     * 计算图片水印经缩放后的尺寸（含宽高范围约束）。
-     *
-     * <p>将按输入图像尺寸与水印缩放比例计算初始尺寸，并根据宽/高范围进行二次约束。</p>
-     *
-     * @param inputImageSize 输入图像尺寸
-     * @param watermarkFile 水印文件
-     * @param operation 操作配置
-     * @return 计算后的水印目标尺寸
-     * @throws IOException 水印图片尺寸解析失败时抛出
-	 * @throws UnSupportImageTypeException 当水印图片类型不受支持时抛出
-     * @since 1.0.0
-     */
-    protected ImageSize getWatermarkImageScaleSize(ImageSize inputImageSize, File watermarkFile, ImageOperation operation) throws IOException {
-        if (!canRead(watermarkFile)) {
-            throw new UnSupportImageTypeException("不受支持的水印图片类型");
-        }
-
-		ImageInfo imageInfo = readImageInfo(watermarkFile);
-		ImageSize originWaterImageSize = imageInfo.getSize();
-
-		ImageSize scaleWatermarkImageSize = originWaterImageSize.scale(inputImageSize.scale(
-			operation.getWatermarkImageOption().getScale()));
+	/**
+	 * 设置水印图片相关参数
+	 *
+	 * @param inputImageSize 输入图像尺寸
+	 * @param operation 操作配置
+	 * @param x 水印x坐标
+	 * @param y 水印y坐标
+	 * @param gmOperation GM 操作对象
+	 * @since 1.0.0
+	 */
+	protected void setWatermarkImageArgs(ImageSize inputImageSize, ImageOperation operation, Integer x, Integer y,
+										 GMOperation gmOperation) {
+		ImageSize scaleWatermarkImageSize = inputImageSize.scale(operation.getWatermarkImageOption().getScale());
 		if (scaleWatermarkImageSize.getWidth() > scaleWatermarkImageSize.getHeight()) {
 			if (scaleWatermarkImageSize.getWidth() > operation.getWatermarkImageOption().getMaxWidth()) {
-				scaleWatermarkImageSize = originWaterImageSize.scaleByWidth(
-					operation.getWatermarkImageOption().getMaxWidth());
+				gmOperation.addRawArg("-geometry " + operation.getWatermarkImageOption().getMaxWidth() +
+					"x+" + x + "+" + y);
 			} else if (scaleWatermarkImageSize.getWidth() < operation.getWatermarkImageOption().getMinWidth()) {
-				scaleWatermarkImageSize = originWaterImageSize.scaleByWidth(
-					operation.getWatermarkImageOption().getMinWidth());
+				gmOperation.addRawArg("-geometry " + operation.getWatermarkImageOption().getMinWidth() +
+					"x+" + x + "+" + y);
+			} else {
+				gmOperation.addRawArg("-geometry " + scaleWatermarkImageSize.getWidth() + "x" +
+					scaleWatermarkImageSize.getHeight() + "+" + x + "+" + y);
 			}
 		} else {
 			if (scaleWatermarkImageSize.getHeight() > operation.getWatermarkImageOption().getMaxHeight()) {
-				scaleWatermarkImageSize = originWaterImageSize.scaleByHeight(
-					operation.getWatermarkImageOption().getMaxHeight());
+				gmOperation.addRawArg("-geometry " + "x" + operation.getWatermarkImageOption().getMaxHeight() +
+					"+" + x + "+" + y);
 			} else if (scaleWatermarkImageSize.getHeight() < operation.getWatermarkImageOption().getMinHeight()) {
-				scaleWatermarkImageSize = originWaterImageSize.scaleByHeight(
-					operation.getWatermarkImageOption().getMinHeight());
+				gmOperation.addRawArg("-geometry " + "x" + operation.getWatermarkImageOption().getMinHeight() +
+					"+" + x + "+" + y);
+			} else {
+				gmOperation.addRawArg("-geometry " + scaleWatermarkImageSize.getWidth() + "x" +
+					scaleWatermarkImageSize.getHeight() + "+" + x + "+" + y);
 			}
 		}
-		return scaleWatermarkImageSize;
 	}
 }

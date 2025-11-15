@@ -16,11 +16,13 @@
 
 package io.github.pangju666.framework.boot.image.model;
 
+import io.github.pangju666.commons.io.utils.FileUtils;
 import io.github.pangju666.framework.boot.image.enums.ResampleFilter;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.lang.Nullable;
 
 import java.awt.*;
+import java.io.File;
 import java.util.Objects;
 
 /**
@@ -62,7 +64,7 @@ public class GMImageOperation extends ImageOperation {
 	 *
 	 * @since 1.0.0
 	 */
-	protected String textWatermarkFontName;
+	protected String watermarkTextFontName;
 	/**
 	 * 文字水印字体大小。
 	 *
@@ -70,7 +72,7 @@ public class GMImageOperation extends ImageOperation {
 	 *
 	 * @since 1.0.0
 	 */
-	protected int textWatermarkFontSize = 12;
+	protected int watermarkTextFontSize = 12;
 	/**
 	 * 文字水印颜色。
 	 *
@@ -78,7 +80,7 @@ public class GMImageOperation extends ImageOperation {
 	 *
 	 * @since 1.0.0
 	 */
-	protected Color textWatermarkColor = Color.WHITE;
+	protected Color watermarkTextColor = Color.WHITE;
 	/**
 	 * 文字水印透明度（0-1）。
 	 *
@@ -86,7 +88,7 @@ public class GMImageOperation extends ImageOperation {
 	 *
 	 * @since 1.0.0
 	 */
-	protected float textWatermarkOpacity = 0.4f;
+	protected float watermarkTextOpacity = 0.4f;
 	/**
 	 * 文字水印文本（与图片水印互斥）。
 	 *
@@ -110,8 +112,8 @@ public class GMImageOperation extends ImageOperation {
 	 * @return 颜色
 	 * @since 1.0.0
 	 */
-	public Color getTextWatermarkColor() {
-		return textWatermarkColor;
+	public Color getWatermarkTextColor() {
+		return watermarkTextColor;
 	}
 
 	/**
@@ -120,8 +122,8 @@ public class GMImageOperation extends ImageOperation {
 	 * @return 透明度（0-1）
 	 * @since 1.0.0
 	 */
-	public float getTextWatermarkOpacity() {
-		return textWatermarkOpacity;
+	public float getWatermarkTextOpacity() {
+		return watermarkTextOpacity;
 	}
 
 	/**
@@ -150,8 +152,8 @@ public class GMImageOperation extends ImageOperation {
 	 * @return 字体名称，未设置则为 {@code null}
 	 * @since 1.0.0
 	 */
-	public @Nullable String getTextWatermarkFontName() {
-		return textWatermarkFontName;
+	public @Nullable String getWatermarkTextFontName() {
+		return watermarkTextFontName;
 	}
 
 	/**
@@ -160,8 +162,8 @@ public class GMImageOperation extends ImageOperation {
 	 * @return 字体大小
 	 * @since 1.0.0
 	 */
-	public int getTextWatermarkFontSize() {
-		return textWatermarkFontSize;
+	public int getWatermarkTextFontSize() {
+		return watermarkTextFontSize;
 	}
 
 	/**
@@ -219,9 +221,9 @@ public class GMImageOperation extends ImageOperation {
 		 * @return 构建器本身
 		 * @since 1.0.0
 		 */
-		public GMImageOperationBuilder textWatermarkColor(Color color) {
+		public GMImageOperationBuilder watermarkTextColor(Color color) {
 			if (Objects.nonNull(color)) {
-				imageOperation.textWatermarkColor = color;
+				imageOperation.watermarkTextColor = color;
 			}
 			return this;
 		}
@@ -235,9 +237,9 @@ public class GMImageOperation extends ImageOperation {
 		 * @return 构建器本身
 		 * @since 1.0.0
 		 */
-		public GMImageOperationBuilder textWatermarkOpacity(Float opacity) {
+		public GMImageOperationBuilder watermarkTextOpacity(Float opacity) {
 			if (Objects.nonNull(opacity) && opacity >= 0f && opacity <= 1) {
-				imageOperation.textWatermarkOpacity = opacity;
+				imageOperation.watermarkTextOpacity = opacity;
 			}
 			return this;
 		}
@@ -251,9 +253,9 @@ public class GMImageOperation extends ImageOperation {
 		 * @return 构建器本身
 		 * @since 1.0.0
 		 */
-		public GMImageOperationBuilder textWatermarkFontName(String fontName) {
+		public GMImageOperationBuilder watermarkTextFontName(String fontName) {
 			if (StringUtils.isNotBlank(fontName)) {
-				imageOperation.textWatermarkFontName = fontName;
+				imageOperation.watermarkTextFontName = fontName;
 			}
 			return this;
 		}
@@ -267,9 +269,9 @@ public class GMImageOperation extends ImageOperation {
 		 * @return 构建器本身
 		 * @since 1.0.0
 		 */
-		public GMImageOperationBuilder textWatermarkFontSize(Integer fontSize) {
+		public GMImageOperationBuilder watermarkTextFontSize(Integer fontSize) {
 			if (Objects.nonNull(fontSize) && fontSize > 0) {
-				imageOperation.textWatermarkFontSize = fontSize;
+				imageOperation.watermarkTextFontSize = fontSize;
 			}
 			return this;
 		}
@@ -283,10 +285,29 @@ public class GMImageOperation extends ImageOperation {
 		 * @return 构建器本身
 		 * @since 1.0.0
 		 */
-		public GMImageOperationBuilder textWatermark(String watermarkText) {
+		public GMImageOperationBuilder watermarkText(String watermarkText) {
 			if (StringUtils.isNotBlank(watermarkText)) {
 				imageOperation.watermarkText = watermarkText;
 				imageOperation.watermarkImage = null;
+			}
+			return this;
+		}
+
+		/**
+		 * 使用图片水印（与文字水印互斥）。
+		 *
+		 * <p>参数校验规则：如果 {@code watermarkImage} 为 null或文件不存在，则不设置；
+		 * 设置后将文字水印设为 null。</p>
+		 *
+		 * @param watermarkImage 水印图片文件
+		 * @return 构建器本身
+		 * @since 1.0.0
+		 */
+		@Override
+		public GMImageOperationBuilder watermarkImage(File watermarkImage) {
+			if (FileUtils.existFile(watermarkImage)) {
+				imageOperation.watermarkImage = watermarkImage;
+				imageOperation.watermarkText = null;
 			}
 			return this;
 		}
