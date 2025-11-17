@@ -29,27 +29,12 @@
 		</dependency>
 
 		<dependency>
-			<groupId>commons-codec</groupId>
-			<artifactId>commons-codec</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>io.github.resilience4j</groupId>
 			<artifactId>resilience4j-ratelimiter</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>net.jodah</groupId>
 			<artifactId>expiringmap</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.redisson</groupId>
-			<artifactId>redisson-spring-boot-starter</artifactId>
-			<optional>true</optional>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-data-redis</artifactId>
-			<optional>true</optional>
 		</dependency>
 	</dependencies>
 </project>

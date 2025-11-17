@@ -17,8 +17,8 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>io.github.pangju666.framework.boot</groupId>
-			<artifactId>framework-spring-boot-starter-test</artifactId>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>compile</scope>
 		</dependency>
 

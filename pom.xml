@@ -16,21 +16,22 @@
 	<url>https://github.com/pangju666/java-pangju-framework-spring-boot-starter</url>
 
 	<modules>
-		<module>framework-boot</module>
 		<module>framework-autoconfigure</module>
+		<module>framework-boot</module>
+		<module>framework-spring-boot-starter</module>
+		<module>framework-spring-boot-starter-concurrent</module>
+		<module>framework-spring-boot-starter-crypto</module>
 		<module>framework-spring-boot-starter-data-mongodb</module>
 		<module>framework-spring-boot-starter-data-mybatis-plus</module>
 		<module>framework-spring-boot-starter-data-redis</module>
+		<module>framework-spring-boot-starter-image</module>
 		<module>framework-spring-boot-starter-spock-test</module>
-		<module>framework-spring-boot-starter</module>
 		<module>framework-spring-boot-starter-test</module>
 		<module>framework-spring-boot-starter-validation</module>
+		<module>framework-spring-boot-starter-web</module>
 		<module>framework-spring-boot-starter-web-crypto</module>
 		<module>framework-spring-boot-starter-web-log</module>
-		<module>framework-spring-boot-starter-web</module>
 		<module>framework-spring-boot-starter-web-validation</module>
-		<module>framework-spring-boot-starter-image</module>
-		<module>framework-spring-boot-starter-concurrent</module>
 	</modules>
 
 	<properties>
@@ -72,11 +73,7 @@
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
-			<dependency>
-				<groupId>io.github.pangju666.framework.boot</groupId>
-				<artifactId>framework-boot</artifactId>
-				<version>1.0.0</version>
-			</dependency>
+
 			<dependency>
 				<groupId>io.github.pangju666.framework.boot</groupId>
 				<artifactId>framework-autoconfigure</artifactId>
@@ -84,12 +81,23 @@
 			</dependency>
 			<dependency>
 				<groupId>io.github.pangju666.framework.boot</groupId>
+				<artifactId>framework-boot</artifactId>
+				<version>1.0.0</version>
+			</dependency>
+
+			<dependency>
+				<groupId>io.github.pangju666.framework.boot</groupId>
 				<artifactId>framework-spring-boot-starter</artifactId>
 				<version>1.0.0</version>
 			</dependency>
 			<dependency>
 				<groupId>io.github.pangju666.framework.boot</groupId>
-				<artifactId>framework-spring-boot-starter-validation</artifactId>
+				<artifactId>framework-spring-boot-starter-concurrent</artifactId>
+				<version>1.0.0</version>
+			</dependency>
+			<dependency>
+				<groupId>io.github.pangju666.framework.boot</groupId>
+				<artifactId>framework-spring-boot-starter-crypto</artifactId>
 				<version>1.0.0</version>
 			</dependency>
 			<dependency>
@@ -109,33 +117,14 @@
 			</dependency>
 			<dependency>
 				<groupId>io.github.pangju666.framework.boot</groupId>
-				<artifactId>framework-spring-boot-starter-web</artifactId>
-				<version>1.0.0</version>
-			</dependency>
-			<dependency>
-				<groupId>io.github.pangju666.framework.boot</groupId>
-				<artifactId>framework-spring-boot-starter-web-log</artifactId>
-				<version>1.0.0</version>
-			</dependency>
-			<dependency>
-				<groupId>io.github.pangju666.framework.boot</groupId>
-				<artifactId>framework-spring-boot-starter-web-crypto</artifactId>
-				<version>1.0.0</version>
-			</dependency>
-			<dependency>
-				<groupId>io.github.pangju666.framework.boot</groupId>
-				<artifactId>framework-spring-boot-starter-web-validation</artifactId>
-				<version>1.0.0</version>
-			</dependency>
-			<dependency>
-				<groupId>io.github.pangju666.framework.boot</groupId>
 				<artifactId>framework-spring-boot-starter-image</artifactId>
 				<version>1.0.0</version>
 			</dependency>
 			<dependency>
 				<groupId>io.github.pangju666.framework.boot</groupId>
-				<artifactId>framework-spring-boot-starter-concurrent</artifactId>
+				<artifactId>framework-spring-boot-starter-spock-test</artifactId>
 				<version>1.0.0</version>
+				<scope>test</scope>
 			</dependency>
 			<dependency>
 				<groupId>io.github.pangju666.framework.boot</groupId>
@@ -145,9 +134,28 @@
 			</dependency>
 			<dependency>
 				<groupId>io.github.pangju666.framework.boot</groupId>
-				<artifactId>framework-spring-boot-starter-spock-test</artifactId>
+				<artifactId>framework-spring-boot-starter-validation</artifactId>
 				<version>1.0.0</version>
-				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>io.github.pangju666.framework.boot</groupId>
+				<artifactId>framework-spring-boot-starter-web</artifactId>
+				<version>1.0.0</version>
+			</dependency>
+			<dependency>
+				<groupId>io.github.pangju666.framework.boot</groupId>
+				<artifactId>framework-spring-boot-starter-web-crypto</artifactId>
+				<version>1.0.0</version>
+			</dependency>
+			<dependency>
+				<groupId>io.github.pangju666.framework.boot</groupId>
+				<artifactId>framework-spring-boot-starter-web-log</artifactId>
+				<version>1.0.0</version>
+			</dependency>
+			<dependency>
+				<groupId>io.github.pangju666.framework.boot</groupId>
+				<artifactId>framework-spring-boot-starter-web-validation</artifactId>
+				<version>1.0.0</version>
 			</dependency>
 
 			<!-- https://mvnrepository.com/artifact/org.im4java/im4java -->
