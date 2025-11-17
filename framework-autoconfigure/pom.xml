@@ -27,6 +27,13 @@
 			<artifactId>framework-boot</artifactId>
 		</dependency>
 
+		<!-- Spring -->
+		<dependency>
+			<groupId>io.github.pangju666.framework</groupId>
+			<artifactId>framework-spring</artifactId>
+			<optional>true</optional>
+		</dependency>
+
 		<!-- MongoDB -->
 		<dependency>
 			<groupId>org.springframework.data</groupId>

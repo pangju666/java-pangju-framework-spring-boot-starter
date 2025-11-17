@@ -17,6 +17,7 @@
 package io.github.pangju666.framework.boot.autoconfigure.jackson;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.github.pangju666.commons.lang.utils.DateUtils;
 import io.github.pangju666.framework.boot.jackson.deserializer.ClassJsonDeserializer;
 import io.github.pangju666.framework.boot.jackson.deserializer.EnumJsonDeserializer;
 import io.github.pangju666.framework.boot.jackson.deserializer.LocalDateJsonDeserializer;
@@ -56,7 +57,7 @@ import java.time.LocalDateTime;
  * @since 1.0.0
  */
 @AutoConfiguration(before = org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration.class)
-@ConditionalOnClass({Jackson2ObjectMapperBuilder.class, ObjectMapper.class})
+@ConditionalOnClass({Jackson2ObjectMapperBuilder.class, ObjectMapper.class, DateUtils.class})
 public class JacksonAutoConfiguration {
 	/**
 	 * 创建Jackson2ObjectMapperBuilderCustomizer bean，用于自定义ObjectMapper的构建过程

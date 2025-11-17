@@ -23,16 +23,15 @@
 			<artifactId>spring-boot</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>io.github.pangju666.commons</groupId>
-			<artifactId>commons-lang</artifactId>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
 		</dependency>
+
+		<!-- Spring -->
 		<dependency>
 			<groupId>io.github.pangju666.framework</groupId>
 			<artifactId>framework-spring</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-api</artifactId>
+			<optional>true</optional>
 		</dependency>
 
 		<!-- Mybatis Plus -->
@@ -137,13 +136,6 @@
 		<dependency>
 			<groupId>com.sharneng</groupId>
 			<artifactId>gm4java</artifactId>
-			<optional>true</optional>
-		</dependency>
-
-		<!-- Compress -->
-		<dependency>
-			<groupId>io.github.pangju666.commons</groupId>
-			<artifactId>commons-compress</artifactId>
 			<optional>true</optional>
 		</dependency>
 

@@ -33,8 +33,7 @@ import java.util.function.Consumer;
  *
  * <p><b>类型参数</b></p>
  * <ul>
- *   <li>{@code T}：操作配置类型，需继承 {@link ImageOperation}。</li>
- *   <li>{@code U}：底层图像对象类型（例如 {@code BufferedImage} 或 GM 的中间表示）。</li>
+ *   <li>{@code T}：底层图像对象类型（例如 {@code BufferedImage} 或 GM 的中间表示）。</li>
  * </ul>
  *
  * <p><b>能力判定</b></p>
@@ -57,7 +56,7 @@ import java.util.function.Consumer;
  * @author pangju666
  * @since 1.0.0
  */
-public interface ImageTemplate<T extends ImageOperation, U> {
+public interface ImageTemplate<T> {
 	/**
 	 * 读取并返回图像基础信息（尺寸、格式、MIME 类型、文件大小等）。
 	 *
@@ -79,7 +78,7 @@ public interface ImageTemplate<T extends ImageOperation, U> {
 	 * @throws IOException I/O 或解码错误
 	 * @since 1.0.0
 	 */
-	default void execute(File inputFile, File outputFile, T operation) throws IOException {
+	default void execute(File inputFile, File outputFile, ImageOperation operation) throws IOException {
 		execute(inputFile, outputFile, operation, null);
 	}
 
@@ -94,7 +93,7 @@ public interface ImageTemplate<T extends ImageOperation, U> {
 	 * @throws IOException I/O 或解码错误
 	 * @since 1.0.0
 	 */
-	default void execute(ImageInfo imageInfo, File outputFile, T operation) throws IOException {
+	default void execute(ImageInfo imageInfo, File outputFile, ImageOperation operation) throws IOException {
 		execute(imageInfo, outputFile, operation, null);
 	}
 
@@ -111,7 +110,7 @@ public interface ImageTemplate<T extends ImageOperation, U> {
 	 * @throws IOException I/O 或解码错误
 	 * @since 1.0.0
 	 */
-	void execute(File inputImage, File outputFile, T operation, Consumer<U> imageConsumer) throws IOException;
+	void execute(File inputImage, File outputFile, ImageOperation operation, Consumer<T> imageConsumer) throws IOException;
 
 	/**
 	 * 执行图像操作并写入输出文件（以已解析的图像信息为输入）。
@@ -126,7 +125,7 @@ public interface ImageTemplate<T extends ImageOperation, U> {
 	 * @throws IOException I/O 或解码错误
 	 * @since 1.0.0
 	 */
-	void execute(ImageInfo imageInfo, File outputFile, T operation, Consumer<U> imageConsumer) throws IOException;
+	void execute(ImageInfo imageInfo, File outputFile, ImageOperation operation, Consumer<T> imageConsumer) throws IOException;
 
 	/**
 	 * 判断实现是否支持读取指定文件类型。

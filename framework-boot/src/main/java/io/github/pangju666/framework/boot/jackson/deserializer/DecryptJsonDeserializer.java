@@ -24,15 +24,16 @@ import com.fasterxml.jackson.databind.deser.std.NullifyingDeserializer;
 import com.fasterxml.jackson.databind.type.CollectionType;
 import com.fasterxml.jackson.databind.type.MapType;
 import io.github.pangju666.framework.boot.crypto.factory.CryptoFactory;
+import io.github.pangju666.framework.boot.crypto.utils.CryptoUtils;
 import io.github.pangju666.framework.boot.enums.CryptoAlgorithm;
 import io.github.pangju666.framework.boot.enums.Encoding;
 import io.github.pangju666.framework.boot.jackson.annotation.DecryptFormat;
 import io.github.pangju666.framework.boot.spring.StaticSpringContext;
-import io.github.pangju666.framework.boot.crypto.utils.CryptoUtils;
 import org.apache.commons.codec.DecoderException;
 import org.jasypt.exceptions.EncryptionOperationNotPossibleException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeansException;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -50,7 +51,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * </p>
  * <p>
  * 为提升性能，内部使用静态缓存（按算法或自定义工厂维度）存储已创建的反序列化器实例；同时在解密失败、密钥非法或解码异常时，
- * 反序列化器会记录日志并返回 null，避免抛出异常影响整体反序列化流程。
+ * 反序列化器会记录日志并返回 {@link NullifyingDeserializer}，避免抛出异常影响整体反序列化流程。
  * </p>
  *
  * @author pangju666
@@ -214,12 +215,17 @@ public class DecryptJsonDeserializer extends JsonDeserializer<Object> implements
     }
 
     /**
-     * 创建与属性上下文相关的反序列化器实例
-     * <p>
-     * 当属性缺失（<code>property == null</code>）时，返回 {@link com.fasterxml.jackson.databind.deser.std.NullifyingDeserializer#instance}，
-     * 使反序列化结果为 null；当属性标注了 {@link io.github.pangju666.framework.boot.jackson.annotation.DecryptFormat} 注解时，
-     * 根据注解配置与类型信息（包括集合/映射的元素类型）获取或创建对应的解密反序列化器；否则退回 Jackson 默认的值反序列化器。
-     * </p>
+     * 创建与属性上下文相关的反序列化器实例。
+     *
+     * <p>概述：当属性缺失返回 {@link com.fasterxml.jackson.databind.deser.std.NullifyingDeserializer#instance}；
+     * 标注了 {@link io.github.pangju666.framework.boot.jackson.annotation.DecryptFormat} 注解则按注解配置与类型信息（包含集合/映射的元素类型）创建或获取解密反序列化器；
+     * 否则退回 Jackson 默认的值反序列化器。</p>
+     *
+     * <p>参数校验规则：</p>
+     * <p>如果 {@code property} 为空，则返回 {@link com.fasterxml.jackson.databind.deser.std.NullifyingDeserializer#instance}；
+     * 未标注注解则使用默认值反序列化器；集合/映射元素类型不受支持则使用默认值反序列化器；映射键类型非 {@code String} 时使用默认值反序列化器。</p>
+     *
+     * <p>类型处理：支持 {@code List}/{@code Set}/{@code Collection} 的元素类型与 {@code Map<String, V>} 的值类型。</p>
      *
      * @param ctxt     反序列化上下文
      * @param property 当前处理的 Bean 属性
@@ -243,7 +249,7 @@ public class DecryptJsonDeserializer extends JsonDeserializer<Object> implements
 			CollectionType collectionType = (CollectionType) javaType;
 			Class<?> elementType = collectionType.getContentType().getRawClass();
 			if (isSupportType(elementType)) {
-				return getDeserializer(annotation, targetType, elementType, ctxt);
+				return getDeserializer(annotation, targetType, elementType);
 			}
 			return ctxt.findContextualValueDeserializer(property.getType(), property);
 		} else if (Map.class.equals(targetType)) {
@@ -251,11 +257,11 @@ public class DecryptJsonDeserializer extends JsonDeserializer<Object> implements
 			Class<?> keyType = mapType.getKeyType().getRawClass();
 			Class<?> valueType = mapType.getContentType().getRawClass();
 			if (String.class.equals(keyType) && isSupportType(valueType)) {
-				return getDeserializer(annotation, targetType, valueType, ctxt);
+				return getDeserializer(annotation, targetType, valueType);
 			}
 			return ctxt.findContextualValueDeserializer(property.getType(), property);
 		} else if (isSupportType(property.getType().getRawClass())) {
-			return getDeserializer(annotation, targetType, null, ctxt);
+			return getDeserializer(annotation, targetType, null);
 		} else {
 			return ctxt.findContextualValueDeserializer(property.getType(), property);
         }
@@ -408,50 +414,56 @@ public class DecryptJsonDeserializer extends JsonDeserializer<Object> implements
     }
 
     /**
-     * 基于注解配置和上下文类型信息，获取或创建解密反序列化器实例
-     * <p>
-     * 构建缓存键以复用已存在的反序列化器；当密钥解析失败或容器中无法获取加密工厂时，抛出 {@link JsonMappingException}。
-     * </p>
+     * 基于注解配置和上下文类型信息，获取或创建解密反序列化器实例。
+     *
+     * <p>参数校验规则：</p>
+     * <p>如果密钥无法解析，则返回 {@link com.fasterxml.jackson.databind.deser.std.NullifyingDeserializer#instance}；
+     * 如果工厂 Bean 获取失败，则返回 {@link com.fasterxml.jackson.databind.deser.std.NullifyingDeserializer#instance}。
+	 * </p>
      *
      * @param annotation  解密格式注解
      * @param targetType  当前属性的目标类型
-     * @param elementType 集合或映射的元素/值类型（非容器类型时为 null）
-     * @param ctxt        反序列化上下文
+     * @param elementType 集合或映射的元素/值类型（非容器类型时为 {@code null}）
      * @return 对应的解密反序列化器实例
-     * @throws JsonMappingException 初始化失败时抛出
      * @since 1.0.0
      */
-    private DecryptJsonDeserializer getDeserializer(DecryptFormat annotation, Class<?> targetType, Class<?> elementType,
-                                                      DeserializationContext ctxt) throws JsonMappingException {
+    private JsonDeserializer<?> getDeserializer(DecryptFormat annotation, Class<?> targetType, Class<?> elementType) {
 		String key = annotation.key() + "-" + annotation.encoding().name() + "-" + targetType.getName();
 		if (Objects.nonNull(elementType)) {
 			key += elementType.getName();
 		}
 		DecryptJsonDeserializer deserializer;
-		if (annotation.algorithm() == CryptoAlgorithm.CUSTOM) {
-			key += "-" + annotation.factory().getName();
-			deserializer = CUSTOM_DESERIALIZER_MAP.get(key);
-			if (Objects.isNull(deserializer)) {
-				String cryptoKey = CryptoUtils.getKey(annotation.key(), false);
-				if (Objects.isNull(cryptoKey)) {
-					throw JsonMappingException.from(ctxt, "解密Jackson反序列化器初始化失败");
+		try {
+			if (annotation.algorithm() == CryptoAlgorithm.CUSTOM) {
+				key += "-" + annotation.factory().getName();
+				deserializer = CUSTOM_DESERIALIZER_MAP.get(key);
+				if (Objects.isNull(deserializer)) {
+					String cryptoKey = CryptoUtils.getKey(annotation.key(), false);
+					if (Objects.isNull(cryptoKey)) {
+						return NullifyingDeserializer.instance;
+					}
+					CryptoFactory factory = StaticSpringContext.getBeanFactory().getBean(annotation.factory());
+					deserializer = new DecryptJsonDeserializer(cryptoKey, factory, annotation.encoding(), targetType, elementType);
+					CUSTOM_DESERIALIZER_MAP.put(key, deserializer);
 				}
-				CryptoFactory factory = StaticSpringContext.getBeanFactory().getBean(annotation.factory());
-				deserializer = new DecryptJsonDeserializer(cryptoKey, factory, annotation.encoding(), targetType, elementType);
-				CUSTOM_DESERIALIZER_MAP.put(key, deserializer);
-			}
-		} else {
-			key += "-" + annotation.algorithm().name();
-			deserializer = ALGORITHM_DESERIALIZER_MAP.get(key);
-			if (Objects.isNull(deserializer)) {
-				String cryptoKey = CryptoUtils.getKey(annotation.key(), false);
-				if (Objects.isNull(cryptoKey)) {
-					throw JsonMappingException.from(ctxt, "解密Jackson反序列化器初始化失败");
+			} else {
+				key += "-" + annotation.algorithm().name();
+				deserializer = ALGORITHM_DESERIALIZER_MAP.get(key);
+				if (Objects.isNull(deserializer)) {
+					String cryptoKey = CryptoUtils.getKey(annotation.key(), false);
+					if (Objects.isNull(cryptoKey)) {
+						return NullifyingDeserializer.instance;
+					}
+					CryptoFactory factory = StaticSpringContext.getBeanFactory().getBean(annotation.algorithm().getFactoryClass());
+					deserializer = new DecryptJsonDeserializer(cryptoKey, factory, annotation.encoding(), targetType, elementType);
+					ALGORITHM_DESERIALIZER_MAP.put(key, deserializer);
 				}
-				CryptoFactory factory = StaticSpringContext.getBeanFactory().getBean(annotation.algorithm().getFactoryClass());
-				deserializer = new DecryptJsonDeserializer(cryptoKey, factory, annotation.encoding(), targetType, elementType);
-				ALGORITHM_DESERIALIZER_MAP.put(key, deserializer);
 			}
+		} catch (InvalidKeySpecException ignored) {
+			return null;
+		} catch (BeansException e) {
+			LOGGER.error("CryptoFactory Bean 获取失败", e);
+			return NullifyingDeserializer.instance;
 		}
         return deserializer;
     }

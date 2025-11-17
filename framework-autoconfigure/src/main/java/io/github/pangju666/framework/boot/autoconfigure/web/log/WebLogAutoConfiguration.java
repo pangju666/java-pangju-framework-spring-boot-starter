@@ -25,8 +25,8 @@ import io.github.pangju666.framework.boot.web.log.handler.impl.TextBodyHandler;
 import io.github.pangju666.framework.boot.web.log.interceptor.WebLogInterceptor;
 import io.github.pangju666.framework.boot.web.log.sender.WebLogSender;
 import io.github.pangju666.framework.web.lang.WebConstants;
+import io.github.pangju666.framework.web.model.Result;
 import jakarta.servlet.Servlet;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -39,9 +39,11 @@ import org.springframework.context.annotation.Import;
 import org.springframework.core.Ordered;
 import org.springframework.http.InvalidMediaTypeException;
 import org.springframework.http.MediaType;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -105,42 +107,42 @@ import java.util.Objects;
  */
 @AutoConfiguration
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
-@ConditionalOnClass({Servlet.class, DispatcherServlet.class, WebMvcConfigurer.class})
+@ConditionalOnClass({Servlet.class, DispatcherServlet.class, WebMvcConfigurer.class, Result.class})
 @ConditionalOnBooleanProperty(prefix = "pangju.web.log", name = "enabled")
 @Import({DisruptorSenderConfiguration.class, KafkaSenderConfiguration.class, DiskReceiverConfiguration.class, MongoReceiverConfiguration.class})
 @EnableConfigurationProperties(WebLogProperties.class)
 public class WebLogAutoConfiguration {
-    /**
-     * 默认 JSON 媒体类型处理器。
-     *
-     * <p>仅在容器中不存在同类型 Bean 时注册（{@link ConditionalOnMissingBean}）。
-     * 在 {@link WebLogFilter} 中将与其它 {@link MediaTypeBodyHandler} 一同参与选择，
-     * 采用“按列表顺序首个支持即使用并停止”的语义。</p>
-     *
-     * @return 默认的 {@link JsonBodyHandler}
-     * @since 1.0.0
-     */
-    @ConditionalOnMissingBean(JsonBodyHandler.class)
-    @Bean
-    public JsonBodyHandler jsonBodyHandler() {
-        return new JsonBodyHandler();
-    }
+	/**
+	 * 默认 JSON 媒体类型处理器。
+	 *
+	 * <p>仅在容器中不存在同类型 Bean 时注册（{@link ConditionalOnMissingBean}）。
+	 * 在 {@link WebLogFilter} 中将与其它 {@link MediaTypeBodyHandler} 一同参与选择，
+	 * 采用“按列表顺序首个支持即使用并停止”的语义。</p>
+	 *
+	 * @return 默认的 {@link JsonBodyHandler}
+	 * @since 1.0.0
+	 */
+	@ConditionalOnMissingBean(JsonBodyHandler.class)
+	@Bean
+	public JsonBodyHandler jsonBodyHandler() {
+		return new JsonBodyHandler();
+	}
 
-    /**
-     * 默认文本媒体类型处理器。
-     *
-     * <p>仅在容器中不存在同类型 Bean 时注册（{@link ConditionalOnMissingBean}）。
-     * 在 {@link WebLogFilter} 中将与其它 {@link MediaTypeBodyHandler} 一同参与选择，
-     * 采用“按列表顺序首个支持即使用并停止”的语义”。</p>
-     *
-     * @return 默认的 {@link TextBodyHandler}
-     * @since 1.0.0
-     */
-    @ConditionalOnMissingBean(TextBodyHandler.class)
-    @Bean
-    public TextBodyHandler textBodyHandler() {
-        return new TextBodyHandler();
-    }
+	/**
+	 * 默认文本媒体类型处理器。
+	 *
+	 * <p>仅在容器中不存在同类型 Bean 时注册（{@link ConditionalOnMissingBean}）。
+	 * 在 {@link WebLogFilter} 中将与其它 {@link MediaTypeBodyHandler} 一同参与选择，
+	 * 采用“按列表顺序首个支持即使用并停止”的语义”。</p>
+	 *
+	 * @return 默认的 {@link TextBodyHandler}
+	 * @since 1.0.0
+	 */
+	@ConditionalOnMissingBean(TextBodyHandler.class)
+	@Bean
+	public TextBodyHandler textBodyHandler() {
+		return new TextBodyHandler();
+	}
 
 	/**
 	 * 注册全局 Web 日志过滤器。
@@ -151,60 +153,66 @@ public class WebLogAutoConfiguration {
 	 *   <li>当前应用尚未注册其他 {@link WebLogFilter}。</li>
 	 * </ul>
 	 *
-     * <p><b>行为</b></p>
-     * <ul>
-     *   <li>将 {@link WebLogProperties} 拷贝为 {@link WebLogConfiguration}。</li>
-     *   <li>解析并转换请求/响应的可接受媒体类型为 {@link MediaType} 列表：忽略非法值（{@link InvalidMediaTypeException}）、去重并写入配置。</li>
-     *   <li>创建 {@link WebLogFilter}，传入配置、发送器、{@code excludePathPatterns}、注入的 {@link MediaTypeBodyHandler} 列表与 {@link WebLogHandler} 列表。</li>
-     *   <li>过滤器将按处理器列表顺序选择首个支持的处理器并在成功解析后停止继续尝试（首匹配）。</li>
-     *   <li>注册为 {@link FilterRegistrationBean}，应用所有 URL，设置优先级。</li>
-     * </ul>
-     *
-     * @param properties   Web 日志属性配置
-     * @param webLogSender 日志发送器
-     * @param webLogHandlers 过滤链结束后按顺序执行的日志增强处理器列表（允许为空）
-     * @param bodyHandlers 媒体类型处理器列表（按顺序参与选择），允许为空
-     * @return 用于注册日志过滤器的注册 Bean
-     * @since 1.0.0
-     */
-    @ConditionalOnBean({WebLogSender.class})
-    @ConditionalOnMissingFilterBean
-    @Bean
-    public FilterRegistrationBean<WebLogFilter> webLogFilterRegistrationBean(WebLogProperties properties,
-                                                                             WebLogSender webLogSender,
+	 * <p><b>行为</b></p>
+	 * <ul>
+	 *   <li>将 {@link WebLogProperties} 拷贝为 {@link WebLogConfiguration}。</li>
+	 *   <li>解析并转换请求/响应的可接受媒体类型为 {@link MediaType} 列表：忽略非法值（{@link InvalidMediaTypeException}）、去重并写入配置。</li>
+	 *   <li>创建 {@link WebLogFilter}，传入配置、发送器、{@code excludePathPatterns}、注入的 {@link MediaTypeBodyHandler} 列表与 {@link WebLogHandler} 列表。</li>
+	 *   <li>过滤器将按处理器列表顺序选择首个支持的处理器并在成功解析后停止继续尝试（首匹配）。</li>
+	 *   <li>注册为 {@link FilterRegistrationBean}，应用所有 URL，设置优先级。</li>
+	 * </ul>
+	 *
+	 * @param properties     Web 日志属性配置
+	 * @param webLogSender   日志发送器
+	 * @param webLogHandlers 过滤链结束后按顺序执行的日志增强处理器列表（允许为空）
+	 * @param bodyHandlers   媒体类型处理器列表（按顺序参与选择），允许为空
+	 * @return 用于注册日志过滤器的注册 Bean
+	 * @since 1.0.0
+	 */
+	@ConditionalOnBean({WebLogSender.class})
+	@ConditionalOnMissingFilterBean
+	@Bean
+	public FilterRegistrationBean<WebLogFilter> webLogFilterRegistrationBean(WebLogProperties properties,
+																			 WebLogSender webLogSender,
 																			 List<WebLogHandler> webLogHandlers,
-                                                                             List<MediaTypeBodyHandler> bodyHandlers) {
+																			 List<MediaTypeBodyHandler> bodyHandlers) {
 		WebLogConfiguration configuration = new WebLogConfiguration();
 		BeanUtils.copyProperties(properties, configuration);
 
-		List<MediaType> requestMediaTypes = CollectionUtils.emptyIfNull(properties.getRequest().getAcceptableMediaTypes())
-			.stream()
-			.filter(StringUtils::isNotBlank)
-			.map(mediaType -> {
-				try {
-					return MediaType.parseMediaType(mediaType);
-				} catch (InvalidMediaTypeException e) {
-					return null;
-				}
-			})
-			.filter(Objects::nonNull)
-			.distinct()
-			.toList();
+		List<MediaType> requestMediaTypes = Collections.emptyList();
+		if (!CollectionUtils.isEmpty(properties.getRequest().getAcceptableMediaTypes())) {
+			requestMediaTypes = properties.getRequest().getAcceptableMediaTypes()
+				.stream()
+				.filter(StringUtils::isNotBlank)
+				.map(mediaType -> {
+					try {
+						return MediaType.parseMediaType(mediaType);
+					} catch (InvalidMediaTypeException e) {
+						return null;
+					}
+				})
+				.filter(Objects::nonNull)
+				.distinct()
+				.toList();
+		}
 		configuration.getRequest().setAcceptableMediaTypes(requestMediaTypes);
 
-		List<MediaType> responseMediaTypes = CollectionUtils.emptyIfNull(properties.getResponse().getAcceptableMediaTypes())
-			.stream()
-			.filter(StringUtils::isNotBlank)
-			.map(mediaType -> {
-				try {
-					return MediaType.parseMediaType(mediaType);
-				} catch (InvalidMediaTypeException e) {
-					return null;
-				}
-			})
-			.filter(Objects::nonNull)
-			.distinct()
-			.toList();
+		List<MediaType> responseMediaTypes = Collections.emptyList();
+		if (!CollectionUtils.isEmpty(properties.getResponse().getAcceptableMediaTypes())) {
+			responseMediaTypes = properties.getResponse().getAcceptableMediaTypes()
+				.stream()
+				.filter(StringUtils::isNotBlank)
+				.map(mediaType -> {
+					try {
+						return MediaType.parseMediaType(mediaType);
+					} catch (InvalidMediaTypeException e) {
+						return null;
+					}
+				})
+				.filter(Objects::nonNull)
+				.distinct()
+				.toList();
+		}
 		configuration.getResponse().setAcceptableMediaTypes(responseMediaTypes);
 
 		WebLogFilter webLogFilter = new WebLogFilter(configuration, webLogSender, properties.getExcludePathPatterns(),

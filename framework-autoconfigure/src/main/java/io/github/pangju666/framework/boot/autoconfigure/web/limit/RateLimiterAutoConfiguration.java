@@ -20,6 +20,7 @@ import io.github.pangju666.framework.boot.autoconfigure.web.WebMvcAutoConfigurat
 import io.github.pangju666.framework.boot.web.limit.interceptor.RateLimitInterceptor;
 import io.github.pangju666.framework.boot.web.limit.limiter.RateLimiter;
 import io.github.pangju666.framework.boot.web.limit.source.impl.IpRateLimitSourceExtractor;
+import io.github.pangju666.framework.web.model.Result;
 import jakarta.servlet.Servlet;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -65,7 +66,7 @@ import org.springframework.web.servlet.DispatcherServlet;
  */
 @AutoConfiguration(before = WebMvcAutoConfiguration.class)
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
-@ConditionalOnClass({Servlet.class, DispatcherServlet.class})
+@ConditionalOnClass({Servlet.class, DispatcherServlet.class, Result.class})
 @EnableConfigurationProperties(RateLimitProperties.class)
 @Import({Resilience4jRateLimiterConfiguration.class, RedissonRateLimiterConfiguration.class})
 class RateLimiterAutoConfiguration {

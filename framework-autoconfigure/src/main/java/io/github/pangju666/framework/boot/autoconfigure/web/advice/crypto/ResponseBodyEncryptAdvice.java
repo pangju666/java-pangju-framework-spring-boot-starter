@@ -28,6 +28,7 @@ import io.github.pangju666.framework.web.exception.base.ServerException;
 import io.github.pangju666.framework.web.model.Result;
 import jakarta.servlet.Servlet;
 import org.jasypt.exceptions.EncryptionOperationNotPossibleException;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.core.MethodParameter;
@@ -101,7 +102,8 @@ import java.util.Objects;
  */
 @Order(Ordered.HIGHEST_PRECEDENCE  + 5)
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
-@ConditionalOnClass({Servlet.class, DispatcherServlet.class, RSAKey.class})
+@ConditionalOnClass({Servlet.class, DispatcherServlet.class, RSAKey.class, Result.class})
+@ConditionalOnBean(CryptoFactory.class)
 @RestControllerAdvice
 public class ResponseBodyEncryptAdvice implements ResponseBodyAdvice<Object> {
 	/**
@@ -168,7 +170,12 @@ public class ResponseBodyEncryptAdvice implements ResponseBodyAdvice<Object> {
 			annotation = returnType.getDeclaringClass().getAnnotation(EncryptResponseBody.class);
 		}
 
-		String key = CryptoUtils.getKey(annotation.key(), true);
+		String key;
+		try {
+			key = CryptoUtils.getKey(annotation.key(), true);
+		} catch (InvalidKeySpecException e) {
+			throw new ServerException(e);
+		}
 
 		CryptoFactory factory;
 		if (annotation.algorithm() == CryptoAlgorithm.CUSTOM) {

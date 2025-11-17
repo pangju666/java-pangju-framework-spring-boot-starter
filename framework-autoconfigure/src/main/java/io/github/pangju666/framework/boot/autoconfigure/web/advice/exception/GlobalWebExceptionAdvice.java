@@ -87,16 +87,16 @@ import java.util.List;
  */
 @Order(Ordered.HIGHEST_PRECEDENCE + 3)
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
-@ConditionalOnClass({Servlet.class, DispatcherServlet.class})
+@ConditionalOnClass({Servlet.class, DispatcherServlet.class, Result.class})
 @ConditionalOnBooleanProperty(prefix = "pangju.web.advice", value = "exception", matchIfMissing = true)
 @RestControllerAdvice
-public class GlobalSpringExceptionAdvice {
+public class GlobalWebExceptionAdvice {
 	/**
 	 * 日志记录器。
 	 *
 	 * @since 1.0.0
 	 */
-	private static final Logger LOGGER = LoggerFactory.getLogger(GlobalSpringExceptionAdvice.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(GlobalWebExceptionAdvice.class);
 
 	/**
 	 * 处理自定义 HTTP 异常。

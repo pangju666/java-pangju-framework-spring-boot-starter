@@ -16,7 +16,6 @@
 
 package io.github.pangju666.framework.boot.autoconfigure.image;
 
-import org.gm4java.engine.support.WhenExhaustedAction;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.time.Duration;
@@ -53,14 +52,14 @@ public class ImageProperties {
 	 *
 	 * @since 1.0.0
 	 */
-	private GraphicsMagick graphicsMagick = new GraphicsMagick();
+	private GM gm = new GM();
 
-	public GraphicsMagick getGraphicsMagick() {
-		return graphicsMagick;
+	public GM getGm() {
+		return gm;
 	}
 
-	public void setGraphicsMagick(GraphicsMagick graphicsMagick) {
-		this.graphicsMagick = graphicsMagick;
+	public void setGm(GM graphicsMagick) {
+		this.gm = graphicsMagick;
 	}
 
 	public Type getType() {
@@ -93,7 +92,7 @@ public class ImageProperties {
 	 * @author pangju666
 	 * @since 1.0.0
 	 */
-	public static class GraphicsMagick {
+	public static class GM {
 		/**
 		 * GraphicsMagick 的连接池配置。
 		 *
@@ -243,5 +242,20 @@ public class ImageProperties {
 		public void setTimeBetweenEvictionRunsMillis(long timeBetweenEvictionRunsMillis) {
 			this.timeBetweenEvictionRunsMillis = timeBetweenEvictionRunsMillis;
 		}
+	}
+
+	public enum WhenExhaustedAction {
+		/**
+		 * Throw a {@link java.util.NoSuchElementException}.
+		 */
+		FAIL,
+		/**
+		 * Blocks until a new or idle connection is available. Or fail if maxWait is positive and passed.
+		 */
+		BLOCK,
+		/**
+		 * Create a new connection and return it (essentially making maxActive meaningless).
+		 */
+		GROW;
 	}
 }

@@ -18,6 +18,7 @@ package io.github.pangju666.framework.boot.autoconfigure.web.advice;
 
 import io.github.pangju666.framework.boot.autoconfigure.web.advice.bind.RequestParamBindingAdvice;
 import io.github.pangju666.framework.boot.autoconfigure.web.advice.exception.*;
+import io.github.pangju666.framework.web.model.Result;
 import jakarta.servlet.Servlet;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -46,7 +47,8 @@ import org.springframework.web.servlet.DispatcherServlet;
  *   <li>各增强组件通过自身的条件注解生效：
  *     <ul>
  *       <li>请求参数绑定增强：{@link RequestParamBindingAdvice}</li>
- *       <li>全局异常处理：{@link GlobalTomcatFileUploadExceptionAdvice}、{@link GlobalValidationExceptionAdvice}、{@link GlobalDataExceptionAdvice}、{@link GlobalSpringExceptionAdvice}、{@link GlobalInternalExceptionAdvice}</li>
+ *       <li>全局异常处理：{@link GlobalTomcatFileUploadExceptionAdvice}、{@link GlobalValidationExceptionAdvice}、
+ *       {@link GlobalDataExceptionAdvice}、{@link GlobalWebExceptionAdvice}、{@link GlobalInternalExceptionAdvice}</li>
  *       <li>统一响应包装：{@link io.github.pangju666.framework.boot.autoconfigure.web.advice.wrapper.ResponseBodyWrapperAdvice}</li>
  *     </ul>
  *   </li>
@@ -55,13 +57,13 @@ import org.springframework.web.servlet.DispatcherServlet;
  * @author pangju666
  * @see AdviceProperties
  * @see RequestParamBindingAdvice
- * @see GlobalSpringExceptionAdvice
+ * @see GlobalWebExceptionAdvice
  * @see io.github.pangju666.framework.boot.autoconfigure.web.advice.wrapper.ResponseBodyWrapperAdvice
  * @since 1.0.0
  */
 @AutoConfiguration
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
-@ConditionalOnClass({Servlet.class, DispatcherServlet.class})
+@ConditionalOnClass({Servlet.class, DispatcherServlet.class, Result.class})
 @EnableConfigurationProperties({AdviceProperties.class})
 public class AdviceAutoConfiguration {
 }

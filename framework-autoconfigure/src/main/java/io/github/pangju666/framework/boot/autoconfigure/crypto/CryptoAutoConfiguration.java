@@ -16,11 +16,13 @@
 
 package io.github.pangju666.framework.boot.autoconfigure.crypto;
 
+import io.github.pangju666.commons.crypto.key.RSAKey;
 import io.github.pangju666.framework.boot.crypto.factory.impl.AES256CryptoFactory;
 import io.github.pangju666.framework.boot.crypto.factory.impl.BasicCryptoFactory;
 import io.github.pangju666.framework.boot.crypto.factory.impl.RSACryptoFactory;
 import io.github.pangju666.framework.boot.crypto.factory.impl.StrongCryptoFactory;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 
@@ -37,6 +39,7 @@ import org.springframework.context.annotation.Bean;
  * @since 1.0.0
  */
 @AutoConfiguration
+@ConditionalOnClass(RSAKey.class)
 public class CryptoAutoConfiguration {
 	/**
 	 * 注册 AES‑256 算法加密工厂。

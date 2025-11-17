@@ -38,7 +38,8 @@ public interface KeyBasedLockExecutor {
 	 * @param task 需要在锁保护下执行的任务
 	 * @param <T>  任务返回类型
 	 * @return 任务返回结果
+	 * @throws Exception 任务执行过程中抛出的异常
 	 * @since 1.0.0
 	 */
-	<T> T executeWithLock(String key, KeyBasedLockTask<T> task);
+	<T> T executeWithLock(String key, KeyBasedLockTask<T> task) throws Exception;
 }

@@ -69,7 +69,7 @@ import java.util.Set;
  */
 @Order(Ordered.HIGHEST_PRECEDENCE + 2)
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
-@ConditionalOnClass({Servlet.class, DispatcherServlet.class, ConstraintViolationException.class})
+@ConditionalOnClass({Servlet.class, DispatcherServlet.class, ConstraintViolationException.class, Result.class})
 @ConditionalOnBooleanProperty(prefix = "pangju.web.advice", value = "exception", matchIfMissing = true)
 @RestControllerAdvice
 public class GlobalValidationExceptionAdvice {

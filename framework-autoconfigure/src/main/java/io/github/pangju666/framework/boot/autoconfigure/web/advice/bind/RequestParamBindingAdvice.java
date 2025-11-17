@@ -126,7 +126,7 @@ import java.util.Date;
  * @since 1.0.0
  */
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
-@ConditionalOnClass({Servlet.class, DispatcherServlet.class})
+@ConditionalOnClass({Servlet.class, DispatcherServlet.class, DateUtils.class})
 @ConditionalOnBooleanProperty(prefix = "pangju.web.advice", value = "binder", matchIfMissing = true)
 @RestControllerAdvice
 public class RequestParamBindingAdvice {

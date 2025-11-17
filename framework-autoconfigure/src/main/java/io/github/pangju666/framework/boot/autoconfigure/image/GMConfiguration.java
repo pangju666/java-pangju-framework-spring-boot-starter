@@ -20,6 +20,7 @@ import io.github.pangju666.framework.boot.image.core.ImageTemplate;
 import io.github.pangju666.framework.boot.image.core.impl.GMImageTemplate;
 import org.gm4java.engine.support.GMConnectionPoolConfig;
 import org.gm4java.engine.support.PooledGMService;
+import org.gm4java.engine.support.WhenExhaustedAction;
 import org.im4java.core.GMOperation;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -62,22 +63,23 @@ class GMConfiguration {
 	 * @return GM 连接池服务
 	 * @since 1.0.0
 	 */
-    @ConditionalOnProperty(prefix = "pangju.image.graphics-magick", name = "path")
-    @ConditionalOnMissingBean(PooledGMService.class)
+	@ConditionalOnMissingBean(PooledGMService.class)
+	@ConditionalOnProperty(prefix = "pangju.image.gm", name = "path")
     @Bean
     public PooledGMService pooledGMService(ImageProperties properties) {
-        Assert.hasText(properties.getGraphicsMagick().getPath(), "gm执行文件路径不可为空");
+        Assert.hasText(properties.getGm().getPath(), "gm执行文件路径不可为空");
 
         GMConnectionPoolConfig config = new GMConnectionPoolConfig();
-        config.setGMPath(properties.getGraphicsMagick().getPath());
-        config.setMaxActive(properties.getGraphicsMagick().getPool().getMaxActive());
-		config.setMaxIdle(properties.getGraphicsMagick().getPool().getMaxIdle());
-		config.setMinIdle(properties.getGraphicsMagick().getPool().getMinIdle());
-		config.setMinEvictableIdleTimeMillis(properties.getGraphicsMagick().getPool().getMinEvictableIdleTimeMillis());
-		config.setWhenExhaustedAction(properties.getGraphicsMagick().getPool().getWhenExhaustedAction());
-		config.setMaxWait(properties.getGraphicsMagick().getPool().getMaxWait().toMillis());
-		config.setTestWhileIdle(properties.getGraphicsMagick().getPool().isTestWhileIdle());
-		config.setTimeBetweenEvictionRunsMillis(properties.getGraphicsMagick().getPool().getTimeBetweenEvictionRunsMillis());
+        config.setGMPath(properties.getGm().getPath());
+        config.setMaxActive(properties.getGm().getPool().getMaxActive());
+		config.setMaxIdle(properties.getGm().getPool().getMaxIdle());
+		config.setMinIdle(properties.getGm().getPool().getMinIdle());
+		config.setMinEvictableIdleTimeMillis(properties.getGm().getPool().getMinEvictableIdleTimeMillis());
+		config.setWhenExhaustedAction(WhenExhaustedAction.valueOf(properties.getGm().getPool()
+			.getWhenExhaustedAction().name()));
+		config.setMaxWait(properties.getGm().getPool().getMaxWait().toMillis());
+		config.setTestWhileIdle(properties.getGm().getPool().isTestWhileIdle());
+		config.setTimeBetweenEvictionRunsMillis(properties.getGm().getPool().getTimeBetweenEvictionRunsMillis());
 		return new PooledGMService(config);
 	}
 
@@ -90,9 +92,9 @@ class GMConfiguration {
 	 * @return GM 图像处理模板
 	 * @since 1.0.0
 	 */
-    @ConditionalOnProperty(prefix = "pangju.image", name = "type", havingValue = "GRAPHICS_MAGICK")
     @ConditionalOnMissingBean(ImageTemplate.class)
     @ConditionalOnBean(PooledGMService.class)
+	@ConditionalOnProperty(prefix = "pangju.image", name = "type", havingValue = "GRAPHICS_MAGICK")
     @Bean
     public GMImageTemplate gmTemplate(PooledGMService pooledGMService) {
         return new GMImageTemplate(pooledGMService);

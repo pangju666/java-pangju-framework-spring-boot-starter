@@ -18,6 +18,7 @@ package io.github.pangju666.framework.boot.autoconfigure.web;
 
 import io.github.pangju666.framework.boot.autoconfigure.web.exception.HttpExceptionInfoProperties;
 import io.github.pangju666.framework.web.lang.WebConstants;
+import io.github.pangju666.framework.web.model.Result;
 import io.github.pangju666.framework.web.servlet.filter.HttpExceptionInfoFilter;
 import jakarta.servlet.Servlet;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -30,6 +31,7 @@ import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.Ordered;
 import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
@@ -86,7 +88,7 @@ import java.util.List;
  */
 @AutoConfiguration
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
-@ConditionalOnClass({Servlet.class, DispatcherServlet.class})
+@ConditionalOnClass({Servlet.class, DispatcherServlet.class, Result.class})
 @EnableConfigurationProperties(HttpExceptionInfoProperties.class)
 public class FilterAutoConfiguration {
 	/**
@@ -152,10 +154,11 @@ public class FilterAutoConfiguration {
 		Assert.hasText(properties.getRequestPath().getList(), "异常列表查询接口路径不可为空");
 
 		List<String> packages = new ArrayList<>(3);
-		packages.add("io.github.pangju666.framework.boot.image.exception");
 		packages.add("io.github.pangju666.framework.boot.web.idempotent.exception");
 		packages.add("io.github.pangju666.framework.boot.web.limit.exception");
-		packages.addAll(properties.getPackages());
+		if (!CollectionUtils.isEmpty(properties.getPackages())) {
+			packages.addAll(properties.getPackages());
+		}
 		HttpExceptionInfoFilter httpExceptionInfoFilter = new HttpExceptionInfoFilter(
 			properties.getRequestPath().getTypes(), properties.getRequestPath().getList(), packages);
 		FilterRegistrationBean<HttpExceptionInfoFilter> filterRegistrationBean = new FilterRegistrationBean<>(httpExceptionInfoFilter);

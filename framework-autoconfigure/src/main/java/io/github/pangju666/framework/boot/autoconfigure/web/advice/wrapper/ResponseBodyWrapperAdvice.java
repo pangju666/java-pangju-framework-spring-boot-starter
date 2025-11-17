@@ -77,7 +77,7 @@ import java.util.Objects;
  * @since 1.0.0
  */
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
-@ConditionalOnClass({Servlet.class, DispatcherServlet.class})
+@ConditionalOnClass({Servlet.class, DispatcherServlet.class, Result.class})
 @ConditionalOnBooleanProperty(prefix = "pangju.web.advice", value = "wrapper", matchIfMissing = true)
 @RestControllerAdvice
 public class ResponseBodyWrapperAdvice implements ResponseBodyAdvice<Object> {

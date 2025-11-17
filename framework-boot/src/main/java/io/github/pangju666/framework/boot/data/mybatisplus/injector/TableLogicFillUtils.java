@@ -19,7 +19,7 @@ package io.github.pangju666.framework.boot.data.mybatisplus.injector;
 import com.baomidou.mybatisplus.core.metadata.TableFieldInfo;
 import com.baomidou.mybatisplus.core.metadata.TableInfo;
 import io.github.pangju666.framework.boot.data.mybatisplus.TableLogicFill;
-import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.util.CollectionUtils;
 
 import java.lang.reflect.Field;
 import java.util.List;

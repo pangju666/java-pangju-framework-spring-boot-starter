@@ -16,6 +16,7 @@
 
 package io.github.pangju666.framework.boot.autoconfigure.web.advice.crypto;
 
+import io.github.pangju666.commons.crypto.key.RSAKey;
 import io.github.pangju666.commons.lang.pool.Constants;
 import io.github.pangju666.framework.boot.crypto.factory.CryptoFactory;
 import io.github.pangju666.framework.boot.crypto.utils.CryptoUtils;
@@ -28,6 +29,7 @@ import jakarta.servlet.Servlet;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.lang3.StringUtils;
 import org.jasypt.exceptions.EncryptionOperationNotPossibleException;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.core.MethodParameter;
@@ -49,7 +51,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
-import java.security.interfaces.RSAKey;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Objects;
 
@@ -99,6 +100,7 @@ import java.util.Objects;
 @Order(Ordered.HIGHEST_PRECEDENCE + 2)
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @ConditionalOnClass({Servlet.class, DispatcherServlet.class, RSAKey.class})
+@ConditionalOnBean(CryptoFactory.class)
 @RestControllerAdvice
 public class RequestBodyDecryptAdvice implements RequestBodyAdvice {
 	/**
@@ -154,11 +156,16 @@ public class RequestBodyDecryptAdvice implements RequestBodyAdvice {
 			return inputMessage;
 		}
 
-		try (InputStream inputStream = inputMessage.getBody()) {
-			DecryptRequestBody annotation = parameter.getParameterAnnotation(DecryptRequestBody.class);
-			String key = CryptoUtils.getKey(annotation.key(), true);
-			CryptoFactory factory = getCryptoFactory(annotation);
+		DecryptRequestBody annotation = parameter.getParameterAnnotation(DecryptRequestBody.class);
+		String key;
+		try {
+			key = CryptoUtils.getKey(annotation.key(), true);
+		} catch (InvalidKeySpecException e) {
+			throw new ServerException(e);
+		}
+		CryptoFactory factory = getCryptoFactory(annotation);
 
+		try (InputStream inputStream = inputMessage.getBody()) {
 			byte[] requestBody;
 			String rawRequestBodyStr = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
 			if (StringUtils.isBlank(rawRequestBodyStr)) {
@@ -198,11 +205,16 @@ public class RequestBodyDecryptAdvice implements RequestBodyAdvice {
 			return body;
 		}
 
+		DecryptRequestBody annotation = parameter.getParameterAnnotation(DecryptRequestBody.class);
+		String key;
 		try {
-			DecryptRequestBody annotation = parameter.getParameterAnnotation(DecryptRequestBody.class);
-			String key = CryptoUtils.getKey(annotation.key(), true);
-			CryptoFactory factory = getCryptoFactory(annotation);
+			key = CryptoUtils.getKey(annotation.key(), true);
+		} catch (InvalidKeySpecException e) {
+			throw new ServerException(e);
+		}
+		CryptoFactory factory = getCryptoFactory(annotation);
 
+		try {
 			if (body instanceof String string) {
 				if (StringUtils.isBlank(string)) {
 					return body;

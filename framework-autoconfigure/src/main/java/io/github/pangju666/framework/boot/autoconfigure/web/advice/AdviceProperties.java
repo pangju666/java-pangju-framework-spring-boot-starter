@@ -17,7 +17,6 @@
 package io.github.pangju666.framework.boot.autoconfigure.web.advice;
 
 import io.github.pangju666.framework.boot.autoconfigure.web.advice.bind.RequestParamBindingAdvice;
-import io.github.pangju666.framework.boot.autoconfigure.web.advice.exception.GlobalSpringExceptionAdvice;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
@@ -65,7 +64,7 @@ public class AdviceProperties {
 	 * 是否启用全局异常处理（默认：true）
 	 * <p>
 	 * 启用后统一处理应用异常并返回一致的错误响应结构。
-	 * 由 {@link GlobalSpringExceptionAdvice} 生效。
+	 * 由 {@link io.github.pangju666.framework.boot.autoconfigure.web.advice.exception} 生效。
 	 * </p>
 	 *
 	 * @since 1.0.0

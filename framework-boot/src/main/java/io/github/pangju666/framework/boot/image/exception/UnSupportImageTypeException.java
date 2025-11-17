@@ -16,47 +16,28 @@
 
 package io.github.pangju666.framework.boot.image.exception;
 
-import io.github.pangju666.framework.web.annotation.HttpException;
-import io.github.pangju666.framework.web.enums.HttpExceptionType;
-import io.github.pangju666.framework.web.exception.base.ServiceException;
+import org.springframework.core.NestedRuntimeException;
 
 /**
- * 不受支持的图片类型异常。
+ * 不支持的图片类型异常。
  *
- * <p><b>概述</b></p>
+ * <p><strong>概述</strong></p>
  * <ul>
- *   <li>当输入的图片类型（MIME 类型或扩展名）不在系统支持范围内时抛出。</li>
- *   <li>可结合能力集合进行判定，例如 {@code ImageConstants} 中的可读/可写类型集合。</li>
- *   <li>继承 {@link ServiceException}，作为服务层业务异常，并通过 {@link HttpException} 注解映射为 HTTP 错误。</li>
+ *   <li>当输入或输出的图片格式不在支持集合中时抛出。</li>
+ *   <li>常见于格式探测（读取）或写出格式校验流程。</li>
  * </ul>
- *
- * <p><b>HTTP 映射</b></p>
- * <ul>
- *   <li>错误码：{@code 210}</li>
- *   <li>类型：{@link HttpExceptionType#SERVICE}</li>
- *   <li>描述：{@code 不受支持的图片类型错误}</li>
- *   <li>日志：{@code false}（默认不记录 HTTP 层日志，可以由业务层决定是否记录）</li>
- * </ul>
- *
- * <p><b>示例</b></p>
- * <pre>
- * throw new UnSupportImageTypeException("不支持读取xxx类型的图片");
- * </pre>
  *
  * @author pangju666
  * @since 1.0.0
  */
- @HttpException(code = 210, type = HttpExceptionType.SERVICE, description = "不受支持的图片类型错误", log = false)
- public class UnSupportImageTypeException extends ServiceException {
-    /**
-     * 创建不受支持的图片类型异常。
-     *
-     * <p>参数说明：{@code message} 为图片类型或错误描述字符串。</p>
-     *
-     * @param message 图片类型或错误描述
-     * @since 1.0.0
-     */
-    public UnSupportImageTypeException(String message) {
-        super(message);
-    }
+public class UnSupportImageTypeException extends NestedRuntimeException {
+	/**
+	 * 通过消息构造异常。
+	 *
+	 * @param msg 异常消息
+	 * @since 1.0.0
+	 */
+	public UnSupportImageTypeException(String msg) {
+		super(msg);
+	}
 }

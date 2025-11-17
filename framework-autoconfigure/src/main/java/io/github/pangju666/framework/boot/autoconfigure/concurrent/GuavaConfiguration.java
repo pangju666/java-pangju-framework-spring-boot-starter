@@ -1,3 +1,19 @@
+/*
+ *   Copyright 2025 pangju666
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+
 package io.github.pangju666.framework.boot.autoconfigure.concurrent;
 
 import com.google.common.util.concurrent.Striped;
@@ -17,16 +33,16 @@ import org.springframework.context.annotation.Configuration;
  *   <li>仅在类路径存在 {@link Striped} 时生效。</li>
  *   <li>当容器中不存在自定义 {@link KeyBasedLockExecutor} Bean 时，提供基于 Guava 的实现。</li>
  *   <li>从 {@link KeyBasedLockExecutorProperties.Guava} 读取条带数量。</li>
- *   <li>当配置属性 {@code pangju.concurrent.executor.key-based-lock=STRIPED} 或未配置该属性（默认）时启用。</li>
+ *   <li>当配置属性 {@code pangju.concurrent.executor.key-based-lock=GUAVA} 或未配置该属性（默认）时启用。</li>
  * </ul>
  *
  * @author pangju666
  * @since 1.0.0
  */
 @Configuration(proxyBeanMethods = false)
-@ConditionalOnProperty(prefix = "pangju.concurrent.executor", name = "key-based-lock", havingValue = "STRIPED", matchIfMissing = true)
 @ConditionalOnClass({Striped.class})
-class StripedConfiguration {
+@ConditionalOnProperty(prefix = "pangju.concurrent.executor.key-based-lock", name = "type", havingValue = "GUAVA", matchIfMissing = true)
+class GuavaConfiguration {
 	/**
 	 * 创建基于 Guava Striped 的 {@link KeyBasedLockExecutor} 实例。
 	 *

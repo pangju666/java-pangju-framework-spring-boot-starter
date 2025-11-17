@@ -34,7 +34,7 @@ import java.util.Objects;
  * <p><strong>定位规则</strong>：可使用 {@code watermarkDirection} 或 {@code watermarkPosition(x,y)}；坐标需为正数。</p>
  * <p><strong>裁剪规则</strong>：支持中心裁剪、偏移裁剪与矩形裁剪；如果裁剪参数为空、非正数或越界，则不设置裁剪。</p>
  * <p><strong>缩放规则</strong>：{@code forceScale(width,height)} 强制缩放到指定尺寸；按比例/按宽/按高缩放为等比，并会关闭强制缩放且清空其它尺寸/比例。</p>
- * <p><strong>透明度范围</strong>：取值区间 [0,1]；整体/水印透明度遵循该范围。</p>
+ * <p><strong>透明度范围</strong>：取值区间 [0,1]；水印透明度遵循该范围。</p>
  *
  * @author pangju666
  * @since 1.0.0

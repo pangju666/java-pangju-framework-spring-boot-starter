@@ -19,7 +19,6 @@ package io.github.pangju666.framework.boot.concurrent.impl;
 import io.github.pangju666.framework.boot.concurrent.KeyBasedLockExecutor;
 import io.github.pangju666.framework.boot.concurrent.KeyBasedLockTask;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.util.Assert;
@@ -102,10 +101,11 @@ public class RedissonKeyBasedLockExecutor implements KeyBasedLockExecutor {
 	 * @param task 需要在锁保护下执行的任务
 	 * @param <T>  返回类型
 	 * @return 任务返回结果
+	 * @throws Exception 任务执行过程中抛出的异常
 	 * @since 1.0.0
 	 */
     @Override
-    public <T> T executeWithLock(String key, KeyBasedLockTask<T> task) {
+    public <T> T executeWithLock(String key, KeyBasedLockTask<T> task) throws Exception {
         Assert.hasText(key, "key 不可为空");
         Assert.notNull(task, "task 不可为 null");
 
@@ -114,8 +114,6 @@ public class RedissonKeyBasedLockExecutor implements KeyBasedLockExecutor {
 
 		try {
 			return task.execute(key);
-		} catch (Exception e) {
-			return ExceptionUtils.rethrow(e);
 		} finally {
 			if (lock.isHeldByCurrentThread()) {
 				lock.unlock();

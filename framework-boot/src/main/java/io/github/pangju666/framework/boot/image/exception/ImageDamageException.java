@@ -16,99 +16,90 @@
 
 package io.github.pangju666.framework.boot.image.exception;
 
-import io.github.pangju666.framework.web.annotation.HttpException;
-import io.github.pangju666.framework.web.enums.HttpExceptionType;
-import io.github.pangju666.framework.web.exception.base.ServiceException;
+import org.springframework.core.NestedRuntimeException;
 
 import java.io.File;
 
 /**
- * 图片处理异常。
+ * 图片损坏或解析失败异常。
  *
- * <p><b>概述</b></p>
+ * <p><strong>概述</strong></p>
  * <ul>
- *   <li>用于标识图像文件在解析、读取或校验过程中被判断为损坏（内容不完整、格式非法、无法解码等）。</li>
- *   <li>继承 {@link ServiceException}，作为服务层的业务异常，并通过 {@link HttpException} 映射为 HTTP 错误。</li>
+ *   <li>用于标识图像文件无法被正常解析或内容损坏。</li>
+ *   <li>适用于读取图像信息、解码图像等失败的场景。</li>
  * </ul>
- *
- * <p><b>HTTP 映射</b></p>
- * <ul>
- *   <li>错误码：{@code 220}</li>
- *   <li>类型：{@link HttpExceptionType#SERVICE}</li>
- *   <li>描述：{@code 图片处理错误}</li>
- * </ul>
- *
- * <p><b>示例</b></p>
- * <pre>
- * File image = new File("/path/to/broken.jpg");
- * throw new ImageDamageException(image, "图片尺寸解析失败");
- * </pre>
  *
  * @author pangju666
  * @since 1.0.0
  */
-@HttpException(code = 220, type = HttpExceptionType.SERVICE, description = "图片处理错误")
-public class ImageDamageException extends ServiceException {
+public class ImageDamageException extends NestedRuntimeException {
 	/**
-	 * 默认异常消息：{@code 图片解析失败}。
+	 * 默认异常消息：图片解析失败。
 	 *
 	 * @since 1.0.0
 	 */
 	private static final String DEFAULT_MESSAGE = "图片解析失败";
 
 	/**
-	 * 使用默认消息构造图片损坏异常。
+	 * 使用默认消息构造异常。
+	 *
+	 * @since 1.0.0
+	 */
+	public ImageDamageException() {
+		super(DEFAULT_MESSAGE);
+	}
+
+	/**
+	 * 指定文件与失败原因的构造方法。
 	 *
 	 * @param file   发生错误的图片文件
-	 * @param reason 详细错误原因（例如：无法解析数据流、格式非法等）
-	 *
+	 * @param reason 失败原因描述
 	 * @since 1.0.0
 	 */
 	public ImageDamageException(File file, String reason) {
-		this(DEFAULT_MESSAGE, file, reason);
+		super("图片文件：" + file.getAbsolutePath() + " " + reason);
 	}
 
 	/**
-	 * 使用默认消息并携带根因构造图片损坏异常。
+	 * 使用自定义消息构造异常。
+	 *
+	 * @param message 异常消息
+	 * @since 1.0.0
+	 */
+	public ImageDamageException(String message) {
+		super(message);
+	}
+
+	/**
+	 * 使用默认消息与原因构造异常。
+	 *
+	 * @param cause 原始异常原因
+	 * @since 1.0.0
+	 */
+	public ImageDamageException(Throwable cause) {
+		super(DEFAULT_MESSAGE, cause);
+	}
+
+	/**
+	 * 指定文件、失败原因与原始异常原因的构造方法。
 	 *
 	 * @param file   发生错误的图片文件
-	 * @param reason 详细错误原因说明
-	 * @param cause  原始异常根因，用于调试与日志定位
-	 *
+	 * @param reason 失败原因描述
+	 * @param cause  原始异常原因
 	 * @since 1.0.0
 	 */
 	public ImageDamageException(File file, String reason, Throwable cause) {
-		this(DEFAULT_MESSAGE, file, reason, cause);
+		super("图片文件：" + file.getAbsolutePath() + " " + reason, cause);
 	}
 
 	/**
-	 * 指定基础消息与详细原因的构造方法。
+	 * 使用自定义消息与原因构造异常。
 	 *
-	 * <p>最终异常消息格式：{@code 基础消息 + " 图片文件：" + 绝对路径 + " " + 原因}</p>
-	 *
-	 * @param message 基础异常消息（例如：图片已损坏）
-	 * @param file    发生错误的图片文件
-	 * @param reason  详细错误原因说明
-	 *
+	 * @param message 异常消息
+	 * @param cause   原始异常原因
 	 * @since 1.0.0
 	 */
-	public ImageDamageException(String message, File file, String reason) {
-		super(message, "图片文件：" + file.getAbsolutePath() + " " + reason);
-	}
-
-	/**
-	 * 指定基础消息、详细原因与根因的构造方法。
-	 *
-	 * <p>最终异常消息格式：{@code 基础消息 + " 图片文件：" + 绝对路径 + " " + 原因}</p>
-	 *
-	 * @param message 基础异常消息
-	 * @param file    发生错误的图片文件
-	 * @param reason  详细错误原因说明
-	 * @param cause   原始异常根因
-	 *
-	 * @since 1.0.0
-	 */
-	public ImageDamageException(String message, File file, String reason, Throwable cause) {
-		super(message, "图片文件：" + file.getAbsolutePath() + " " + reason, cause);
+	public ImageDamageException(String message, Throwable cause) {
+		super(message, cause);
 	}
 }

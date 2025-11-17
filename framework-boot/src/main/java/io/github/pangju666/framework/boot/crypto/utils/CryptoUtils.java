@@ -19,7 +19,6 @@ package io.github.pangju666.framework.boot.crypto.utils;
 import io.github.pangju666.framework.boot.crypto.factory.CryptoFactory;
 import io.github.pangju666.framework.boot.enums.Encoding;
 import io.github.pangju666.framework.boot.spring.StaticSpringContext;
-import io.github.pangju666.framework.web.exception.base.ServerException;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
@@ -216,8 +215,8 @@ public class CryptoUtils {
      * <p>
      * 行为说明：
      * <ul>
-     *     <li>入参为空白：<code>throwsException == true</code> 时抛出 {@link ServerException}，否则记录错误日志并返回 {@code null}。</li>
-     *     <li>占位符未解析到值：<code>throwsException == true</code> 时抛出 {@link ServerException}，否则记录错误日志并返回 {@code null}。</li>
+     *     <li>入参为空白：<code>throwsException == true</code> 时抛出 {@link InvalidKeySpecException}，否则记录错误日志并返回 {@code null}。</li>
+     *     <li>占位符未解析到值：<code>throwsException == true</code> 时抛出 {@link InvalidKeySpecException}，否则记录错误日志并返回 {@code null}。</li>
      * </ul>
      * </p>
      * <p>
@@ -231,13 +230,13 @@ public class CryptoUtils {
      * @param key 明文密钥或占位符（如 <code>${crypto.key}</code>）
      * @param throwsException 解析失败时是否抛出异常；true 抛出异常，false 返回 {@code null}
      * @return 解析后的明文密钥；当 <code>throwsException == false</code> 且失败时返回 {@code null}
-	 * @throws ServerException 当 <code>throwsException == true</code> 且入参为空或未解析到值时抛出
+	 * @throws InvalidKeySpecException 当 <code>throwsException == true</code> 且入参为空或未解析到值时抛出
 	 * @since 1.0.0
 	 */
-    public static String getKey(final String key, boolean throwsException) {
+    public static String getKey(final String key, boolean throwsException) throws InvalidKeySpecException {
         if (StringUtils.isBlank(key)) {
             if (throwsException) {
-				throw new ServerException("密钥属性为空");
+				throw new InvalidKeySpecException("密钥属性为空");
 			}
 			LOGGER.error("密钥属性不可为空");
             return null;
@@ -247,7 +246,7 @@ public class CryptoUtils {
             String cryptoKey = StaticSpringContext.getProperty(key);
             if (StringUtils.isBlank(cryptoKey)) {
 				if (throwsException) {
-					throw new ServerException("未找到密钥，属性：" + key);
+					throw new InvalidKeySpecException("未找到密钥，属性：" + key);
 				}
                 LOGGER.error("未找到密钥，属性：{}", key);
                 return null;

@@ -72,7 +72,7 @@ import java.util.Objects;
  */
 @Order(Ordered.HIGHEST_PRECEDENCE + 2)
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
-@ConditionalOnClass({Servlet.class, DispatcherServlet.class, SizeLimitExceededException.class})
+@ConditionalOnClass({Servlet.class, DispatcherServlet.class, SizeLimitExceededException.class, Result.class})
 @ConditionalOnBooleanProperty(prefix = "pangju.web.advice", value = "exception", matchIfMissing = true)
 @RestControllerAdvice
 public class GlobalTomcatFileUploadExceptionAdvice {

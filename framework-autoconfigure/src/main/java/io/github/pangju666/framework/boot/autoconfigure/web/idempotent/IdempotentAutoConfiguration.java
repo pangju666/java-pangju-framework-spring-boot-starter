@@ -18,6 +18,8 @@ package io.github.pangju666.framework.boot.autoconfigure.web.idempotent;
 
 import io.github.pangju666.framework.boot.web.idempotent.aspect.IdempotentAspect;
 import io.github.pangju666.framework.boot.web.idempotent.validator.IdempotentValidator;
+import io.github.pangju666.framework.spring.utils.SpELUtils;
+import io.github.pangju666.framework.web.model.Result;
 import org.aspectj.weaver.Advice;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.aop.AopAutoConfiguration;
@@ -77,7 +79,7 @@ import org.springframework.context.annotation.Import;
  */
 @AutoConfiguration(after = AopAutoConfiguration.class)
 @ConditionalOnBooleanProperty(name = "spring.aop.auto", matchIfMissing = true)
-@ConditionalOnClass(Advice.class)
+@ConditionalOnClass({Advice.class, Result.class})
 @Import({ExpireMapRequestRepeaterConfiguration.class, RedisRequestRepeaterConfiguration.class})
 @EnableConfigurationProperties(IdempotentProperties.class)
 public class IdempotentAutoConfiguration {
@@ -100,6 +102,7 @@ public class IdempotentAutoConfiguration {
 	 * @see IdempotentValidator
 	 * @since 1.0.0
 	 */
+	@ConditionalOnClass(SpELUtils.class)
 	@ConditionalOnBean(IdempotentValidator.class)
 	@Bean
 	public IdempotentAspect idempotentAspect(IdempotentValidator idempotentValidator) {

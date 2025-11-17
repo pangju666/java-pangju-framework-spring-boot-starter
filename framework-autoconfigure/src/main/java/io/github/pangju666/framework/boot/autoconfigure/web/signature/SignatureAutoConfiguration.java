@@ -19,6 +19,7 @@ package io.github.pangju666.framework.boot.autoconfigure.web.signature;
 import io.github.pangju666.framework.boot.autoconfigure.web.WebMvcAutoConfiguration;
 import io.github.pangju666.framework.boot.web.signature.storer.SignatureSecretKeyStorer;
 import io.github.pangju666.framework.boot.web.signature.storer.impl.DefaultSignatureSecretKeyStorer;
+import io.github.pangju666.framework.web.model.Result;
 import jakarta.servlet.Servlet;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -56,7 +57,7 @@ import org.springframework.web.servlet.DispatcherServlet;
  */
 @AutoConfiguration(before = WebMvcAutoConfiguration.class)
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
-@ConditionalOnClass({Servlet.class, DispatcherServlet.class})
+@ConditionalOnClass({Servlet.class, DispatcherServlet.class, Result.class})
 @EnableConfigurationProperties(SignatureProperties.class)
 public class SignatureAutoConfiguration {
 	/**

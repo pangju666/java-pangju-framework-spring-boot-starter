@@ -18,6 +18,7 @@ package io.github.pangju666.framework.boot.autoconfigure.web;
 
 import io.github.pangju666.framework.web.client.BufferingResponseInterceptor;
 import io.github.pangju666.framework.web.client.RestRequestBuilder;
+import io.github.pangju666.framework.web.model.Result;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -58,7 +59,7 @@ import org.springframework.web.client.RestClient;
  * @since 1.0.0
  */
 @AutoConfiguration(after = org.springframework.boot.autoconfigure.web.client.RestClientAutoConfiguration.class)
-@ConditionalOnClass(RestClient.class)
+@ConditionalOnClass({RestClient.class, BufferingResponseInterceptor.class, Result.class})
 public class RestClientAutoConfiguration {
     /**
      * 创建并注册 {@link RestClient} Bean。

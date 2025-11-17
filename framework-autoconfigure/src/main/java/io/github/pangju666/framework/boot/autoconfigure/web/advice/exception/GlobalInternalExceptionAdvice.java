@@ -67,7 +67,7 @@ import java.io.IOException;
  */
 @Order(Ordered.HIGHEST_PRECEDENCE + 4)
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
-@ConditionalOnClass({Servlet.class, DispatcherServlet.class})
+@ConditionalOnClass({Servlet.class, DispatcherServlet.class, Result.class})
 @ConditionalOnBooleanProperty(prefix = "pangju.web.advice", value = "exception", matchIfMissing = true)
 @RestControllerAdvice
 public class GlobalInternalExceptionAdvice {

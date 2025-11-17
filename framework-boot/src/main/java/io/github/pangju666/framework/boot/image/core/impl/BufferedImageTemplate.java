@@ -29,6 +29,7 @@ import io.github.pangju666.framework.boot.image.exception.UnSupportImageTypeExce
 import io.github.pangju666.framework.boot.image.lang.ImageConstants;
 import io.github.pangju666.framework.boot.image.model.BufferedImageOperation;
 import io.github.pangju666.framework.boot.image.model.ImageInfo;
+import io.github.pangju666.framework.boot.image.model.ImageOperation;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.Assert;
@@ -71,7 +72,7 @@ import java.util.function.Consumer;
  * @author pangju666
  * @since 1.0.0
  */
-public class BufferedImageTemplate implements ImageTemplate<BufferedImageOperation, BufferedImage> {
+public class BufferedImageTemplate implements ImageTemplate<BufferedImage> {
 	/**
 	 * 读取图像信息（格式、大小、MIME、EXIF 方向与尺寸）。
 	 *
@@ -118,7 +119,7 @@ public class BufferedImageTemplate implements ImageTemplate<BufferedImageOperati
 	 * @throws UnSupportImageTypeException 当输入文件/输出文件/水印图片格式不受支持时抛出
 	 */
 	@Override
-	public void execute(File inputFile, File outputFile, BufferedImageOperation operation, Consumer<BufferedImage> imageConsumer) throws IOException {
+	public void execute(File inputFile, File outputFile, ImageOperation operation, Consumer<BufferedImage> imageConsumer) throws IOException {
 		String outputImageFormat = getOutputFormat(outputFile);
 		ImageInfo imageInfo = readImageInfo(inputFile);
 		doExecute(imageInfo, outputFile, outputImageFormat, operation, imageConsumer);
@@ -137,8 +138,7 @@ public class BufferedImageTemplate implements ImageTemplate<BufferedImageOperati
 	 * @throws UnSupportImageTypeException 当输入文件/输出文件/水印图片格式不受支持时抛出
 	 */
 	@Override
-	public void execute(ImageInfo imageInfo, File outputFile, BufferedImageOperation operation,
-						Consumer<BufferedImage> imageConsumer) throws IOException {
+	public void execute(ImageInfo imageInfo, File outputFile, ImageOperation operation, Consumer<BufferedImage> imageConsumer) throws IOException {
 		Assert.notNull(imageInfo, "imageInfo不可为 null");
 		FileUtils.checkFile(imageInfo.getFile(), "输入图片不可为null");
 		String outputImageFormat = getOutputFormat(outputFile);
@@ -187,15 +187,20 @@ public class BufferedImageTemplate implements ImageTemplate<BufferedImageOperati
 	 * @param imageConsumer 中间处理回调，可为 {@code null}
 	 * @throws IOException I/O 或解码错误
 	 */
-	protected void doExecute(ImageInfo imageInfo, File outputFile, String outputFormat,
-						 BufferedImageOperation operation, Consumer<BufferedImage> imageConsumer) throws IOException {
+	protected void doExecute(ImageInfo imageInfo, File outputFile, String outputFormat, ImageOperation operation,
+							 Consumer<BufferedImage> imageConsumer) throws IOException {
 		ImageEditor imageEditor = ImageEditor.of(imageInfo.getFile())
 			// 矫正方向
 			.correctOrientation(imageInfo.getOrientation());
 
+		BufferedImageOperation bufferedImageOperation = null;
+		if (operation instanceof BufferedImageOperation) {
+			bufferedImageOperation = (BufferedImageOperation) operation;
+		}
+
 		// 判断是否需要修改缩放过滤器类型
-		if (Objects.nonNull(operation.getResampleFilterType())) {
-			imageEditor.resampleFilterType(operation.getResampleFilterType().getFilterType());
+		if (Objects.nonNull(bufferedImageOperation) && Objects.nonNull(bufferedImageOperation.getResampleFilterType())) {
+			imageEditor.resampleFilterType(bufferedImageOperation.getResampleFilterType().getFilterType());
 		}
 
 		// 判断是否需要执行缩放
@@ -237,8 +242,9 @@ public class BufferedImageTemplate implements ImageTemplate<BufferedImageOperati
 
 		// 判断是否需要添加水印
 		if (Objects.nonNull(operation.getWatermarkDirection())) {
-			if (ObjectUtils.allNotNull(operation.getWatermarkText(), operation.getWatermarkTextOption())) {
-				imageEditor.addTextWatermark(operation.getWatermarkText(), operation.getWatermarkTextOption(),
+			if (Objects.nonNull(bufferedImageOperation) &&
+				ObjectUtils.allNotNull(bufferedImageOperation.getWatermarkText(), bufferedImageOperation.getWatermarkTextOption())) {
+				imageEditor.addTextWatermark(bufferedImageOperation.getWatermarkText(), bufferedImageOperation.getWatermarkTextOption(),
 					operation.getWatermarkDirection());
 			} else if (ObjectUtils.allNotNull(operation.getWatermarkImage(), operation.getWatermarkImageOption())) {
 				if (!canRead(operation.getWatermarkImage())) {
@@ -248,8 +254,9 @@ public class BufferedImageTemplate implements ImageTemplate<BufferedImageOperati
 					operation.getWatermarkDirection());
 			}
 		} else if (ObjectUtils.allNotNull(operation.getWatermarkX(), operation.getWatermarkY())) {
-			if (ObjectUtils.allNotNull(operation.getWatermarkText(), operation.getWatermarkTextOption())) {
-				imageEditor.addTextWatermark(operation.getWatermarkText(), operation.getWatermarkTextOption(),
+			if (Objects.nonNull(bufferedImageOperation) &&
+				ObjectUtils.allNotNull(bufferedImageOperation.getWatermarkText(), bufferedImageOperation.getWatermarkTextOption())) {
+				imageEditor.addTextWatermark(bufferedImageOperation.getWatermarkText(), bufferedImageOperation.getWatermarkTextOption(),
 					operation.getWatermarkX(), operation.getWatermarkY());
 			} else if (ObjectUtils.allNotNull(operation.getWatermarkImage(), operation.getWatermarkImageOption())) {
 				if (!canRead(operation.getWatermarkImage())) {

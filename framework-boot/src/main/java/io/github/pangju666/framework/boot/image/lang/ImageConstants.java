@@ -24,7 +24,7 @@ import java.util.Set;
  * <p><b>概述</b></p>
  * <ul>
  *   <li>在框架层面聚合不同图像处理引擎/库的读写能力，提供统一的类型集合。</li>
- *   <li>涵盖 GraphicsMagick 与 Krpano Tools 的支持范围，并与上游组件能力保持一致。</li>
+ *   <li>涵盖 GraphicsMagick 的支持范围，并与上游组件能力保持一致。</li>
  *   <li>便于在运行时进行能力判定与类型校验（例如选择可用的编解码方案）。</li>
  * </ul>
  *
@@ -32,7 +32,6 @@ import java.util.Set;
  * <ul>
  *   <li>{@link #GRAPHICS_MAGICK_SUPPORT_WRITE_IMAGE_FORMAT_SET}：GraphicsMagick 可写出的图像格式扩展名集合。</li>
  *   <li>{@link #GRAPHICS_MAGICK_SUPPORT_READ_IMAGE_FORMAT_SET}：GraphicsMagick 可读取的图像格式扩展名集合。</li>
- *   <li>{@link #KRPANO_TOOLS_SUPPORT_FORMAT_SET}：Krpano Tools 支持的图像格式扩展名集合。</li>
  * </ul>
  *
  * <p><b>备注</b></p>
@@ -79,16 +78,6 @@ public class ImageConstants extends io.github.pangju666.commons.image.lang.Image
 		"svg", "tga", "icb", "vda", "vst", "tiff", "tif", "tim", "ttf", "txt", "uyvy", "vicar", "viff", "wbmp", "webp",
 		"wpg", "xbm", "xcf", "xpm", "xwd", "yuv"
 	);
-
-    /**
-     * Krpano Tools 支持的图像格式扩展名集合。
-     *
-     * <p>注意：此集合为文件扩展名（如 {@code jpg}、{@code tiff}），非 MIME 类型。</p>
-	 *
-	 * @since 1.0.0
-	 */
-	public static final Set<String> KRPANO_TOOLS_SUPPORT_FORMAT_SET = Set.of(
-		"tif", "tiff", "btf", "tf8", "bigtiff", "jpg", "jpeg", "png", "psd", "psb");
 
 	protected ImageConstants() {
 	}

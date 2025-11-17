@@ -23,12 +23,12 @@ import io.github.pangju666.framework.boot.image.core.ImageTemplate;
 import io.github.pangju666.framework.boot.image.enums.CropType;
 import io.github.pangju666.framework.boot.image.exception.ImageDamageException;
 import io.github.pangju666.framework.boot.image.exception.UnSupportImageTypeException;
+import io.github.pangju666.framework.boot.image.exception.UncheckedGMException;
+import io.github.pangju666.framework.boot.image.exception.UncheckedGMServiceException;
 import io.github.pangju666.framework.boot.image.lang.ImageConstants;
 import io.github.pangju666.framework.boot.image.model.GMImageOperation;
 import io.github.pangju666.framework.boot.image.model.ImageInfo;
 import io.github.pangju666.framework.boot.image.model.ImageOperation;
-import io.github.pangju666.framework.web.exception.base.ServerException;
-import io.github.pangju666.framework.web.exception.base.ServiceException;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.gm4java.engine.GMConnection;
@@ -70,7 +70,7 @@ import java.util.function.Consumer;
  * @since 1.0.0
  * @author pangju666
  */
-public class GMImageTemplate implements ImageTemplate<GMImageOperation, GMOperation> {
+public class GMImageTemplate implements ImageTemplate<GMOperation> {
     /**
      * 日志记录器。
      *
@@ -113,9 +113,9 @@ public class GMImageTemplate implements ImageTemplate<GMImageOperation, GMOperat
 	 * @return 图像信息
 	 * @throws IOException 当文件读取失败时抛出
 	 * @throws ImageDamageException 当图片解析失败时抛出
-	 * @throws ServerException 当GM进程连接出现错误时抛出
-	 * @throws ServiceException 当GM命令执行失败时抛出
 	 * @throws UnSupportImageTypeException 当图片格式不受支持时抛出
+	 * @throws UncheckedGMServiceException 当与底层 GraphicsMagick 进程通信时出现错误
+	 * @throws UncheckedGMException 当 GraphicsMagick 返回执行命令的非 IO 错误时
 	 */
     @Override
     public ImageInfo readImageInfo(File imageFile) throws IOException {
@@ -176,12 +176,12 @@ public class GMImageTemplate implements ImageTemplate<GMImageOperation, GMOperat
 	 * @param operation 操作配置
 	 * @param imageConsumer 中间处理回调，可为 {@code null}
 	 * @throws IOException 当输入文件/水印图片解析失败失败时抛出
-	 * @throws ServerException 当GM进程连接出现错误时抛出
-	 * @throws ServiceException 当GM命令执行失败时抛出
 	 * @throws UnSupportImageTypeException 当输入文件/输出文件/水印图片格式不受支持时抛出
+	 * @throws UncheckedGMServiceException 当与底层 GraphicsMagick 进程通信时出现错误
+	 * @throws UncheckedGMException 当 GraphicsMagick 返回执行命令的非 IO 错误时
 	 */
     @Override
-    public void execute(File inputFile, File outputFile, GMImageOperation operation, Consumer<GMOperation> imageConsumer) throws IOException {
+    public void execute(File inputFile, File outputFile, ImageOperation operation, Consumer<GMOperation> imageConsumer) throws IOException {
         validateOutputFile(outputFile);
         ImageInfo imageInfo = readImageInfo(inputFile);
         doExecute(imageInfo, outputFile, operation, imageConsumer);
@@ -197,12 +197,12 @@ public class GMImageTemplate implements ImageTemplate<GMImageOperation, GMOperat
 	 * @param operation 操作配置
 	 * @param imageConsumer 中间处理回调，可为 {@code null}
 	 * @throws IOException 当输入文件/水印图片解析失败失败时抛出
-	 * @throws ServerException 当GM进程连接出现错误时抛出
-	 * @throws ServiceException 当GM命令执行失败时抛出
 	 * @throws UnSupportImageTypeException 当输入文件/输出文件/水印图片格式不受支持时抛出
+	 * @throws UncheckedGMServiceException 当与底层 GraphicsMagick 进程通信时出现错误
+	 * @throws UncheckedGMException 当 GraphicsMagick 返回执行命令的非 IO 错误时
 	 */
     @Override
-    public void execute(ImageInfo imageInfo, File outputFile, GMImageOperation operation, Consumer<GMOperation> imageConsumer) throws IOException {
+    public void execute(ImageInfo imageInfo, File outputFile, ImageOperation operation, Consumer<GMOperation> imageConsumer) throws IOException {
         Assert.notNull(imageInfo, "imageInfo不可为 null");
         FileUtils.checkFile(imageInfo.getFile(), "输入图片不可为null");
         validateOutputFile(outputFile);
@@ -258,13 +258,13 @@ public class GMImageTemplate implements ImageTemplate<GMImageOperation, GMOperat
      * @param outputFile 输出文件
      * @param operation 操作配置
      * @param imageConsumer 中间处理回调，可为 {@code null}
-     * @throws IOException 当水印图片尺寸解析失败时抛出
-	 * @throws ServerException 当GM进程连接出现错误时抛出
-	 * @throws ServiceException 当GM命令执行失败时抛出
 	 * @throws UnSupportImageTypeException 当水印图片格式不受支持时抛出
+	 * @throws IOException 当 GM 执行命令时遇到 IO 错误
+	 * @throws UncheckedGMServiceException 当与底层 GraphicsMagick 进程通信时出现错误
+	 * @throws UncheckedGMException 当 GraphicsMagick 返回执行命令的非 IO 错误时
      * @since 1.0.0
      */
-    protected void doExecute(ImageInfo imageInfo, File outputFile, GMImageOperation operation,
+    protected void doExecute(ImageInfo imageInfo, File outputFile, ImageOperation operation,
 							 Consumer<GMOperation> imageConsumer) throws IOException {
         GMOperation gmOperation = new GMOperation();
 
@@ -283,21 +283,26 @@ public class GMImageTemplate implements ImageTemplate<GMImageOperation, GMOperat
 			imageSize = imageSize.scaleByWidth(operation.getTargetHeight());
 		}
 
-		boolean needCorrectOrientation = operation.isStripProfiles();
+		GMImageOperation gmImageOperation = null;
+		if (operation instanceof GMImageOperation) {
+			gmImageOperation = (GMImageOperation) operation;
+		}
+
+		boolean needCorrectOrientation = Objects.nonNull(gmImageOperation) && gmImageOperation.isStripProfiles();
 		boolean needInputImageArgs = true;
 		boolean needConvertCommand = true;
 		boolean needCropArgs = true;
-		if (Objects.nonNull(operation.getWatermarkText())) {
+		if (Objects.nonNull(gmImageOperation) && Objects.nonNull(gmImageOperation.getWatermarkText())) {
 			if (Objects.nonNull(operation.getWatermarkDirection())) {
 				// 根据方位绘制文字水印
 				gmOperation.addRawArg("convert");
-				setCropArgs(imageSize, operation, gmOperation);
+				setCropArgs(imageSize, gmImageOperation, gmOperation);
 				setInputImageArgs(imageInfo.getFile(), imageSize, imageInfo.getOrientation(),
-					true, operation, gmOperation);
+					true, gmImageOperation, gmOperation);
 
 				setGravityArg(operation, gmOperation);
-				setTextWatermarkArgs(operation, gmOperation);
-				gmOperation.draw(String.format(DRAW_TEXT_ARG_FORMAT, 20, 20, operation.getWatermarkText()));
+				setTextWatermarkArgs(gmImageOperation, gmOperation);
+				gmOperation.draw(String.format(DRAW_TEXT_ARG_FORMAT, 20, 20, gmImageOperation.getWatermarkText()));
 
 				needConvertCommand = false;
 				needInputImageArgs = false;
@@ -305,15 +310,15 @@ public class GMImageTemplate implements ImageTemplate<GMImageOperation, GMOperat
 			} else if (ObjectUtils.allNotNull(operation.getWatermarkX(), operation.getWatermarkY())) {
 				// 根据坐标绘制文字水印
 				gmOperation.addRawArg("convert");
-				setCropArgs(imageSize, operation, gmOperation);
+				setCropArgs(imageSize, gmImageOperation, gmOperation);
 				setInputImageArgs(imageInfo.getFile(), imageSize, imageInfo.getOrientation(),
-					true, operation, gmOperation);
+					true, gmImageOperation, gmOperation);
 
 				// 设置左上角为原点
 				gmOperation.gravity(GMOperation.Gravity.NorthWest);
-				setTextWatermarkArgs(operation, gmOperation);
+				setTextWatermarkArgs(gmImageOperation, gmOperation);
 				gmOperation.draw(String.format(DRAW_TEXT_ARG_FORMAT, operation.getWatermarkX(),
-					operation.getWatermarkY(), operation.getWatermarkText()));
+					operation.getWatermarkY(), gmImageOperation.getWatermarkText()));
 
 				needConvertCommand = false;
 				needInputImageArgs = false;
@@ -359,7 +364,7 @@ public class GMImageTemplate implements ImageTemplate<GMImageOperation, GMOperat
 		}
 
 		// 判断是否需要删除 ICM, EXIF, IPTC 等配置文件
-		if (needCorrectOrientation || operation.isStripProfiles()) {
+		if (Objects.nonNull(gmImageOperation) && (needCorrectOrientation || gmImageOperation.isStripProfiles())) {
 			gmOperation.stripProfiles();
 		}
 
@@ -369,7 +374,9 @@ public class GMImageTemplate implements ImageTemplate<GMImageOperation, GMOperat
 		}
 
 		// 修改输出质量
-		gmOperation.quality(operation.getQuality());
+		if (Objects.nonNull(gmImageOperation)) {
+			gmOperation.quality(gmImageOperation.getQuality());
+		}
 		// 传入输出文件
 		gmOperation.addImage(outputFile);
 		// 执行命令
@@ -388,7 +395,7 @@ public class GMImageTemplate implements ImageTemplate<GMImageOperation, GMOperat
      * @since 1.0.0
      */
     protected void setInputImageArgs(File inputImageFile, ImageSize imageSize, int orientation, boolean correctOrientation,
-                                     GMImageOperation operation, GMOperation gmOperation) {
+									 ImageOperation operation, GMOperation gmOperation) {
         // 方向矫正
         if (correctOrientation) {
             setCorrectOrientationArgs(orientation, gmOperation);
@@ -398,8 +405,8 @@ public class GMImageTemplate implements ImageTemplate<GMImageOperation, GMOperat
 		gmOperation.addImage(inputImageFile);
 
 		// 判断是否需要修改重采样过滤器
-		if (Objects.nonNull(operation.getResizeFilter())) {
-			gmOperation.filter(operation.getResizeFilter().getFilterName());
+		if (operation instanceof GMImageOperation gmImageOperation && Objects.nonNull(gmImageOperation.getResizeFilter())) {
+			gmOperation.filter(gmImageOperation.getResizeFilter().getFilterName());
 		}
 
 		// 判断是否需要执行缩放
@@ -416,7 +423,7 @@ public class GMImageTemplate implements ImageTemplate<GMImageOperation, GMOperat
 	 * @param gmOperation GM 操作对象
 	 * @since 1.0.0
 	 */
-	protected void setCropArgs(ImageSize imageSize, GMImageOperation operation, GMOperation gmOperation) {
+	protected void setCropArgs(ImageSize imageSize, ImageOperation operation, GMOperation gmOperation) {
 		// 判断是否需要执行裁剪
 		if (Objects.nonNull(operation.getCropType())) {
 			if (operation.getCropType() == CropType.CENTER) {
@@ -485,25 +492,28 @@ public class GMImageTemplate implements ImageTemplate<GMImageOperation, GMOperat
     /**
      * 执行 GM 命令并返回输出文本。
      *
-     * <p>异常映射：GM 服务连接或命令执行错误将映射为服务端异常。</p>
+     * <p>参数校验规则：</p>
+     * <p>如果 {@code operation} 为空，则不执行并抛出异常。</p>
+     * <p>释放策略：使用连接池获取连接，始终在 {@code finally} 中关闭连接。</p>
      *
      * @param operation GM 操作对象
      * @return 命令执行输出
-	 * @throws ServerException 当GM进程连接出现错误时抛出
-	 * @throws ServiceException 当GM命令执行失败时抛出
+	 * @throws IOException 当 GM 执行命令时遇到 IO 错误
+	 * @throws UncheckedGMServiceException 当与底层 GraphicsMagick 进程通信时出现错误
+	 * @throws UncheckedGMException 当 GraphicsMagick 返回执行命令的非 IO 错误时
      * @since 1.0.0
      */
-    public String execute(GMOperation operation) {
+    public String execute(GMOperation operation) throws IOException {
         Assert.notNull(operation, "operation 不可为 null");
 
-		GMConnection connection = null;
+		GMConnection connection= null;
 		try {
 			connection = pooledGMService.getConnection();
 			return connection.execute(operation.toString());
 		} catch (GMServiceException e) {
-			throw new ServerException("GM进程连接出现错误", e);
-		} catch (IOException | GMException e) {
-			throw new ServiceException("图片处理失败", "GM命令: " + operation + " 执行失败", e);
+			throw new UncheckedGMServiceException(e);
+		} catch (GMException e) {
+			throw new UncheckedGMException(operation, e);
 		} finally {
 			if (Objects.nonNull(connection)) {
 				try {
@@ -520,27 +530,27 @@ public class GMImageTemplate implements ImageTemplate<GMImageOperation, GMOperat
 	 *
 	 * <p>参数校验规则：</p>
 	 * <p>如果 {@code command} 为空，则不执行并抛出异常；如果 {@code arguments} 为空，则不设置附加参数。</p>
-	 *
 	 * <p>释放策略：使用连接池获取连接，始终在 {@code finally} 中关闭连接。</p>
 	 *
 	 * @param command   GM 命令
 	 * @param arguments GM 命令附加参数，可为空
 	 * @return 命令执行结果输出
-	 * @throws ServerException  GM 进程连接错误
-	 * @throws ServiceException GM 命令执行失败
+	 * @throws IOException 当 GM 执行命令时遇到 IO 错误
+	 * @throws UncheckedGMServiceException 当与底层 GraphicsMagick 进程通信时出现错误
+	 * @throws UncheckedGMException 当 GraphicsMagick 返回执行命令的非 IO 错误时
 	 * @since 1.0.0
 	 */
-	public String execute(String command, String... arguments) {
+	public String execute(String command, String... arguments) throws IOException {
 		Assert.hasText(command, "command 不可为空");
 
-		GMConnection connection = null;
+		GMConnection connection= null;
 		try {
 			connection = pooledGMService.getConnection();
 			return connection.execute(command, arguments);
 		} catch (GMServiceException e) {
-			throw new ServerException("GM进程连接出现错误", e);
-		} catch (IOException | GMException e) {
-			throw new ServiceException("图片处理失败", "GM命令: " + command + StringUtils.SPACE +
+			throw new UncheckedGMServiceException(e);
+		} catch (GMException e) {
+			throw new UncheckedGMException("GM命令: " + command + StringUtils.SPACE +
 				StringUtils.joinWith(StringUtils.SPACE, command) + " 执行失败", e);
 		} finally {
 			if (Objects.nonNull(connection)) {
@@ -558,28 +568,28 @@ public class GMImageTemplate implements ImageTemplate<GMImageOperation, GMOperat
 	 *
 	 * <p>参数校验规则：</p>
 	 * <p>如果 {@code command} 为空，则不执行并返回空字符串。</p>
-	 *
 	 * <p>释放策略：使用连接池获取连接，始终在 {@code finally} 中关闭连接。</p>
 	 *
 	 * @param command GM 命令及参数列表
 	 * @return 命令执行结果输出；当输入为空时返回空字符串
-	 * @throws ServerException  GM 进程连接错误
-	 * @throws ServiceException GM 命令执行失败
+	 * @throws IOException 当 GM 执行命令时遇到 IO 错误
+	 * @throws UncheckedGMServiceException 当与底层 GraphicsMagick 进程通信时出现错误
+	 * @throws UncheckedGMException 当 GraphicsMagick 返回执行命令的非 IO 错误时
 	 * @since 1.0.0
 	 */
-	public String execute(List<String> command) {
+	public String execute(List<String> command) throws IOException {
 		if (CollectionUtils.isEmpty(command)) {
 			return StringUtils.EMPTY;
 		}
 
-		GMConnection connection = null;
+		GMConnection connection= null;
 		try {
 			connection = pooledGMService.getConnection();
 			return connection.execute(command);
 		} catch (GMServiceException e) {
-			throw new ServerException("GM进程连接出现错误", e);
-		} catch (IOException | GMException e) {
-			throw new ServiceException("图片处理失败", "GM命令: " + StringUtils.join(command,
+			throw new UncheckedGMServiceException(e);
+		} catch (GMException e) {
+			throw new UncheckedGMException("GM命令: " + StringUtils.join(command,
 				StringUtils.SPACE) + " 执行失败", e);
 		} finally {
 			if (Objects.nonNull(connection)) {

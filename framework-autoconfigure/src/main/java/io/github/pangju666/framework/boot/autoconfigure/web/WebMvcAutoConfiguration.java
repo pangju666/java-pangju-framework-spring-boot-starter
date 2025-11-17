@@ -26,6 +26,7 @@ import io.github.pangju666.framework.boot.web.resolver.EnumRequestParamArgumentR
 import io.github.pangju666.framework.boot.web.signature.configuration.SignatureConfiguration;
 import io.github.pangju666.framework.boot.web.signature.interceptor.SignatureInterceptor;
 import io.github.pangju666.framework.boot.web.signature.storer.SignatureSecretKeyStorer;
+import io.github.pangju666.framework.web.model.Result;
 import io.github.pangju666.framework.web.servlet.BaseHttpInterceptor;
 import jakarta.servlet.Servlet;
 import org.springframework.beans.BeanUtils;
@@ -95,7 +96,7 @@ import java.util.Objects;
  */
 @AutoConfiguration(after = org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration.class)
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
-@ConditionalOnClass({Servlet.class, DispatcherServlet.class, WebMvcConfigurer.class})
+@ConditionalOnClass({Servlet.class, DispatcherServlet.class, WebMvcConfigurer.class, Result.class})
 public class WebMvcAutoConfiguration implements WebMvcConfigurer {
 	/**
 	 * 自定义 HTTP 请求拦截器列表
@@ -132,7 +133,6 @@ public class WebMvcAutoConfiguration implements WebMvcConfigurer {
      * @since 1.0.0
      */
     private SignatureSecretKeyStorer secretKeyStorer;
-
     /**
      * Web 日志属性配置。
      *
@@ -140,29 +140,20 @@ public class WebMvcAutoConfiguration implements WebMvcConfigurer {
      *
      * @since 1.0.0
      */
-    private final WebLogProperties webLogProperties;
+    private WebLogProperties webLogProperties;
+	private EncryptRequestParamArgumentResolver  encryptRequestParamArgumentResolver;
 
     /**
      * 构造方法，初始化 Web MVC 配置。
      *
-     * <p><b>行为</b></p>
-     * <ul>
-     *   <li>将外部 {@link SignatureProperties} 拷贝为运行时 {@link SignatureConfiguration}。</li>
-     *   <li>保存 Web 日志属性与处理器集合，用于配置拦截器。</li>
-     * </ul>
-     *
-     * @param signatureProperties 签名属性配置（外部化配置源）
-     * @param webLogProperties    Web 日志属性配置
      * @param interceptors        自定义 HTTP 拦截器列表
      * @since 1.0.0
      */
-    public WebMvcAutoConfiguration(SignatureProperties signatureProperties, WebLogProperties webLogProperties,
-                                   List<BaseHttpInterceptor> interceptors) {
+    public WebMvcAutoConfiguration(List<BaseHttpInterceptor> interceptors, SignatureProperties properties) {
 		this.interceptors = interceptors;
-		this.webLogProperties = webLogProperties;
 
 		SignatureConfiguration signatureConfiguration = new SignatureConfiguration();
-		BeanUtils.copyProperties(signatureProperties, signatureConfiguration);
+		BeanUtils.copyProperties(properties, signatureConfiguration);
 		this.signatureConfiguration = signatureConfiguration;
 	}
 
@@ -172,8 +163,18 @@ public class WebMvcAutoConfiguration implements WebMvcConfigurer {
 	}
 
 	@Autowired(required = false)
+	public void setWebLogProperties(WebLogProperties properties) {
+		this.webLogProperties = properties;
+	}
+
+	@Autowired(required = false)
 	public void setSecretKeyStorer(SignatureSecretKeyStorer secretKeyStorer) {
 		this.secretKeyStorer = secretKeyStorer;
+	}
+
+	@Autowired(required = false)
+	public void setEncryptRequestParamArgumentResolver(EncryptRequestParamArgumentResolver encryptRequestParamArgumentResolver) {
+		this.encryptRequestParamArgumentResolver = encryptRequestParamArgumentResolver;
 	}
 
     /**
@@ -191,10 +192,8 @@ public class WebMvcAutoConfiguration implements WebMvcConfigurer {
     @Override
     public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
 		resolvers.add(new EnumRequestParamArgumentResolver());
-		try {
-			Class.forName("io.github.pangju666.commons.crypto.key.RSAKey");
-			resolvers.add(new EncryptRequestParamArgumentResolver());
-		} catch (ClassNotFoundException ignored) {
+		if (Objects.nonNull(encryptRequestParamArgumentResolver)) {
+			resolvers.add(encryptRequestParamArgumentResolver);
 		}
 	}
 
@@ -229,7 +228,7 @@ public class WebMvcAutoConfiguration implements WebMvcConfigurer {
 		}
 
         // 仅当开启 Web 日志功能时注册拦截器；排除路径由注册表应用
-        if (webLogProperties.isEnabled()) {
+        if (Objects.nonNull(webLogProperties) && webLogProperties.isEnabled()) {
             WebLogInterceptor webLogInterceptor = new WebLogInterceptor(Collections.emptySet());
             registry.addInterceptor(webLogInterceptor)
                 .addPathPatterns(webLogInterceptor.getPatterns())

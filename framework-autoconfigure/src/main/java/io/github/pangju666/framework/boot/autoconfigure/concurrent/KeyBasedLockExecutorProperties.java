@@ -1,3 +1,19 @@
+/*
+ *   Copyright 2025 pangju666
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+
 package io.github.pangju666.framework.boot.autoconfigure.concurrent;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -31,13 +47,13 @@ public class KeyBasedLockExecutorProperties {
 	 */
 	private Guava guava = new Guava();
 	/**
-	 * 锁实现类型选择（可为空表示自动选择）。
+	 * 锁实现类型选择。
 	 *
-	 * <p>当为空时，自动配置将按类路径条件装配可用实现；当指定为 {@link LockType#REDISSON} 或 {@link LockType#STRIPED} 时，调用方可据此进行自定义选择。</p>
+	 * <p>默认值：{@link LockType#GUAVA}。</p>
 	 *
 	 * @since 1.0.0
 	 */
-	private LockType type;
+	private LockType type = LockType.GUAVA;
 
 	/**
 	 * 获取锁实现类型。
@@ -122,7 +138,7 @@ public class KeyBasedLockExecutorProperties {
 		 *
 		 * @since 1.0.0
 		 */
-		STRIPED
+		GUAVA
 	}
 
 	public static class Guava {

@@ -17,6 +17,7 @@
 package io.github.pangju666.framework.boot.autoconfigure.data.mongo;
 
 import com.mongodb.client.MongoClient;
+import io.github.pangju666.framework.data.mongodb.repository.SimpleBaseMongoRepository;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -53,7 +54,7 @@ import org.springframework.data.mongodb.repository.support.MongoRepositoryFactor
  * @since 1.0.0
  */
 @AutoConfiguration(before = org.springframework.boot.autoconfigure.data.mongo.MongoRepositoriesAutoConfiguration.class)
-@ConditionalOnClass({ MongoClient.class, MongoRepository.class })
+@ConditionalOnClass({ MongoClient.class, MongoRepository.class, SimpleBaseMongoRepository.class })
 @ConditionalOnMissingBean({ MongoRepositoryFactoryBean.class, MongoRepositoryConfigurationExtension.class })
 @ConditionalOnRepositoryType(store = "mongodb", type = RepositoryType.IMPERATIVE)
 @Import(MongoRepositoriesRegistrar.class)
