@@ -17,10 +17,8 @@
 package io.github.pangju666.framework.boot.autoconfigure.data.dynamic.mongo;
 
 import com.mongodb.client.MongoClient;
-import io.github.pangju666.framework.boot.autoconfigure.data.mongo.MongoRepositoriesAutoConfiguration;
 import io.github.pangju666.framework.data.mongodb.repository.SimpleBaseMongoRepository;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -78,9 +76,9 @@ import org.springframework.data.mongodb.gridfs.GridFsTemplate;
  * @see DynamicMongoRepositoriesRegistrar
  * @since 1.0.0
  */
-@AutoConfiguration(before = {MongoDataAutoConfiguration.class, MongoRepositoriesAutoConfiguration.class})
+@AutoConfiguration(before = MongoDataAutoConfiguration.class)
 @ConditionalOnClass({MongoClient.class, MongoTemplate.class, GridFsTemplate.class, SimpleBaseMongoRepository.class})
-@ConditionalOnBooleanProperty(prefix = DynamicMongoProperties.PREFIX, value = "databases")
+//@ConditionalOnProperty(prefix = DynamicMongoProperties.PREFIX, value = "databases")
 @EnableConfigurationProperties(DynamicMongoProperties.class)
 @Import({DynamicMongoRegistrar.class, DynamicMongoRepositoriesRegistrar.class})
 public class DynamicMongoAutoConfiguration {

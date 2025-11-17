@@ -92,7 +92,7 @@ class RedisRequestRepeaterConfiguration {
 		if (StringUtils.hasText(properties.getRedis().getRedisTemplateRef())) {
 			redisTemplate = beanFactory.getBean(properties.getRedis().getRedisTemplateRef(), RedisTemplate.class);
 		} else {
-			redisTemplate = beanFactory.getBean(RedisTemplate.class);
+			redisTemplate = beanFactory.getBean("redisTemplate", RedisTemplate.class);
 		}
 		return new RedisIdempotentValidator(redisTemplate, properties.getRedis().getKeyPrefix());
 	}
