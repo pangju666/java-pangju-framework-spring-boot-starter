@@ -22,7 +22,6 @@ import io.github.pangju666.framework.boot.web.log.handler.MediaTypeBodyHandler;
 import io.github.pangju666.framework.boot.web.log.handler.WebLogHandler;
 import io.github.pangju666.framework.boot.web.log.handler.impl.JsonBodyHandler;
 import io.github.pangju666.framework.boot.web.log.handler.impl.TextBodyHandler;
-import io.github.pangju666.framework.boot.web.log.interceptor.WebLogInterceptor;
 import io.github.pangju666.framework.boot.web.log.sender.WebLogSender;
 import io.github.pangju666.framework.web.lang.WebConstants;
 import io.github.pangju666.framework.web.model.Result;
@@ -102,14 +101,14 @@ import java.util.Objects;
  *
  * @author pangju666
  * @see WebLogProperties
- * @see WebLogInterceptor
+ * @see WebLogFilter
  * @since 1.0.0
  */
 @AutoConfiguration
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @ConditionalOnClass({Servlet.class, DispatcherServlet.class, WebMvcConfigurer.class, Result.class})
 @ConditionalOnBooleanProperty(prefix = "pangju.web.log", name = "enabled")
-@Import({DisruptorSenderConfiguration.class, KafkaSenderConfiguration.class, DiskReceiverConfiguration.class, MongoReceiverConfiguration.class})
+@Import({Slf4jReceiverConfiguration.class, MongoReceiverConfiguration.class, DisruptorSenderConfiguration.class, KafkaSenderConfiguration.class})
 @EnableConfigurationProperties(WebLogProperties.class)
 public class WebLogAutoConfiguration {
 	/**
@@ -169,7 +168,7 @@ public class WebLogAutoConfiguration {
 	 * @return 用于注册日志过滤器的注册 Bean
 	 * @since 1.0.0
 	 */
-	@ConditionalOnBean({WebLogSender.class})
+	@ConditionalOnBean(WebLogSender.class)
 	@ConditionalOnMissingFilterBean
 	@Bean
 	public FilterRegistrationBean<WebLogFilter> webLogFilterRegistrationBean(WebLogProperties properties,

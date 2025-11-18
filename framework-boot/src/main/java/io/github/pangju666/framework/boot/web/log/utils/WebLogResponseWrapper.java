@@ -310,9 +310,7 @@ public class WebLogResponseWrapper extends ContentCachingResponseWrapper {
 
 	@Override
     public void copyBodyToResponse() throws IOException {
-		if (Objects.nonNull(contentCachingResponseWrapper)) {
-			contentCachingResponseWrapper.copyBodyToResponse();
-		} else {
+		if (Objects.isNull(contentCachingResponseWrapper)) {
 			super.copyBodyToResponse();
 		}
 	}

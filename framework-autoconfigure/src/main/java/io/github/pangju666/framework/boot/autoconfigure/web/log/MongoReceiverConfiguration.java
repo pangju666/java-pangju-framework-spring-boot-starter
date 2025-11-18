@@ -68,8 +68,8 @@ import org.springframework.util.StringUtils;
  * @since 1.0.0
  */
 @AutoConfiguration(after = MongoDataAutoConfiguration.class)
-@ConditionalOnProperty(prefix = "pangju.web.log", name = "receiver-type", havingValue = "MONGODB")
 @ConditionalOnClass({MongoClient.class, MongoTemplate.class})
+@ConditionalOnProperty(prefix = "pangju.web.log", name = "receiver-type", havingValue = "MONGODB")
 class MongoReceiverConfiguration {
     /**
      * 注册 MongoDB Web 日志接收器。

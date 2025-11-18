@@ -165,23 +165,23 @@ public class WebLogFilter extends BaseHttpRequestFilter {
 	}
 
  	/**
- 	 * 过滤器处理方法。
- 	 *
- 	 * <p><b>行为</b></p>
- 	 * <ul>
- 	 *   <li>当请求 {@code Content-Type} 无法解析时，直接透传不过滤与采集。</li>
- 	 *   <li>在需要读取请求体时包裹为 {@link ContentCachingRequestWrapper}；进入采集分支时响应包裹为 {@link io.github.pangju666.framework.boot.web.log.utils.WebLogResponseWrapper}。</li>
- 	 *   <li>执行过滤链，随后构建并发送 {@link WebLog}。</li>
- 	 *   <li>过滤链出栈后，按顺序执行所有 {@link WebLogHandler} 对日志进行增强；每个处理器异常会被捕获并记录，不影响业务流程。</li>
- 	 *   <li>最后将缓存的响应体写回真实响应（调用 {@code copyBodyToResponse()}）。</li>
- 	 * </ul>
- 	 *
- 	 * <p><b>参数</b></p>
- 	 * <ul>
- 	 *   <li>{@code request} 当前 HTTP 请求。</li>
- 	 *   <li>{@code response} 当前 HTTP 响应（将被统一包裹为 {@code WebLogResponseWrapper}）。</li>
- 	 *   <li>{@code filterChain} 过滤器链。</li>
- 	 * </ul>
+	 * 过滤器处理方法。
+	 *
+	 * <p><b>行为</b></p>
+	 * <ul>
+	 *   <li>当请求 {@code Content-Type} 无法解析时，会直接忽略。</li>
+	 *   <li>在需要读取请求体时包裹为 {@link ContentCachingRequestWrapper}；进入采集分支时响应包裹为 {@link io.github.pangju666.framework.boot.web.log.utils.WebLogResponseWrapper}。</li>
+	 *   <li>执行过滤链，随后构建并发送 {@link WebLog}。</li>
+	 *   <li>过滤链出栈后，按顺序执行所有 {@link WebLogHandler} 对日志进行增强；每个处理器异常会被捕获并记录，不影响业务流程。</li>
+	 *   <li>最后将缓存的响应体写回真实响应（调用 {@code copyBodyToResponse()}）。</li>
+	 * </ul>
+	 *
+	 * <p><b>参数</b></p>
+	 * <ul>
+	 *   <li>{@code request} 当前 HTTP 请求。</li>
+	 *   <li>{@code response} 当前 HTTP 响应（将被统一包裹为 {@code WebLogResponseWrapper}）。</li>
+	 *   <li>{@code filterChain} 过滤器链。</li>
+	 * </ul>
 	 *
 	 * <p><b>约束与约定</b></p>
 	 * <ul>
@@ -198,17 +198,13 @@ public class WebLogFilter extends BaseHttpRequestFilter {
 		// 记录请求起始时间
 		long start = SystemClock.now();
 
-		if (StringUtils.isBlank(request.getContentType())) {
-			filterChain.doFilter(request, response);
-			return;
-		}
-
-		MediaType requestContentType;
+		MediaType requestContentType = null;
 		try {
-			requestContentType = MediaType.parseMediaType(request.getContentType());
+			String requestContentTypeStr = request.getContentType();
+			if (StringUtils.isNotBlank(requestContentTypeStr)) {
+				requestContentType = MediaType.parseMediaType(requestContentTypeStr);
+			}
 		} catch (InvalidMimeTypeException ignored) {
-			filterChain.doFilter(request, response);
-			return;
 		}
 
 		ContentCachingRequestWrapper contentCachingRequestWrapper = null;
@@ -354,9 +350,11 @@ public class WebLogFilter extends BaseHttpRequestFilter {
 		if (configuration.getResponse().isHeaders()) {
 			HttpHeaders headers = new HttpHeaders();
 			for (String headerName : response.getHeaderNames()) {
-				headers.add(headerName, response.getHeader(headerName));
+				if (!headers.containsKey(headerName)) {
+					headers.addAll(headerName, List.copyOf(response.getHeaders(headerName)));
+				}
 			}
-			responseLog.setHeaders(headers);
+			responseLog.setHeaders(HttpHeaders.readOnlyHttpHeaders(headers));
 		}
 		return responseLog;
 	}
@@ -475,6 +473,6 @@ public class WebLogFilter extends BaseHttpRequestFilter {
 	 * @since 1.0.0
 	 */
 	protected boolean isAcceptableMediaType(List<MediaType> acceptableMediaTypes, MediaType mediaType) {
-		return acceptableMediaTypes.stream().anyMatch(mediaType::equalsTypeAndSubtype);
+		return Objects.nonNull(mediaType) && acceptableMediaTypes.stream().anyMatch(mediaType::equalsTypeAndSubtype);
 	}
 }
