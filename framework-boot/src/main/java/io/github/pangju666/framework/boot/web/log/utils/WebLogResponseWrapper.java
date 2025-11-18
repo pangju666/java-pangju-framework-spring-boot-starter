@@ -310,6 +310,7 @@ public class WebLogResponseWrapper extends ContentCachingResponseWrapper {
 
 	@Override
     public void copyBodyToResponse() throws IOException {
+		// 如果由 ContentCachingResponseWrapper 构造，则由上层的ContentCachingResponseWrapper负责写入响应体
 		if (Objects.isNull(contentCachingResponseWrapper)) {
 			super.copyBodyToResponse();
 		}

@@ -33,10 +33,10 @@ import java.util.Set;
  *
  * <p><b>能力</b></p>
  * <ul>
- *   <li>发送通道：支持 {@code kafka} 与 {@code disruptor} 两种模式。</li>
- *   <li>接收器类型：支持 {@code DISK}、{@code MONGODB} 等接收器，用于持久化或转发。</li>
+ *   <li>发送通道：支持 {@code KAFKA} 与 {@code DISRUPTOR} 两种模式。</li>
+ *   <li>接收器类型：支持 {@code SLF4J}、{@code MONGODB} 等接收器，用于持久化或转发。</li>
  *   <li>记录范围：请求（头/查询参数/体/multipart）与响应（头/体/附加数据）。</li>
- *   <li>目标参数：提供 Kafka 与 MongoDB 的目标配置。</li>
+ *   <li>目标参数：提供 Kafka、MongoDB、Disruptor 和 Slf4J 的目标配置。</li>
  *   <li>路径排除：通过 {@link #excludePathPatterns} 排除无需记录的请求路径。</li>
  * </ul>
  *
@@ -47,7 +47,7 @@ import java.util.Set;
  *     log:
  *       enabled: true
  *       sender-type: kafka
- *       receiver-type: DISK
+ *       receiver-type: slf4j
  *       kafka:
  *         kafka-template-ref: myKafkaTemplate
  *         topic: web-log
@@ -56,12 +56,8 @@ import java.util.Set;
  *         base-collection-name: web-log
  *       disruptor:
  *         buffer-size: 1024
- *       disk:
- *         directory: logs/web
- *         base-filename: web-log
- *         writer-buffer-size: 8192
- *         queue-size: 10000
- *         write-thread-destroy-wait-mills: 5000
+ *       slf4j:
+ *         logger: WebLogLogger
  *       request:
  *         headers: true
  *         query-params: true
@@ -105,13 +101,13 @@ public class WebLogProperties {
     /**
      * 日志接收器类型
      * <p>
-     * 指定 Web 日志的落地或转发目标。默认值为 {@link ReceiverType#DISK}。
-     * 当选择不同类型时，分别使用对应的配置段（如 {@link #disk}、{@link #mongo}）。
+     * 指定 Web 日志的落地或转发目标。默认值为 {@link ReceiverType#SLF4J}。
+     * 当选择不同类型时，分别使用对应的配置段（如 {@link #slf4j}、{@link #mongo}）。
      * </p>
      *
      * @since 1.0.0
      */
-	private ReceiverType receiverType = ReceiverType.DISK;
+	private ReceiverType receiverType = ReceiverType.SLF4J;
 	/**
 	 * Kafka 配置
 	 * <p>
@@ -142,15 +138,15 @@ public class WebLogProperties {
 	 */
 	private Disruptor disruptor = new Disruptor();
     /**
-     * 磁盘接收器配置
+     * Slf4j 接收器配置
      * <p>
-     * 当 {@link #receiverType} 为 {@link ReceiverType#DISK} 时生效，用于控制日志写入目录、
-     * 文件命名、写缓冲大小、队列容量以及关闭等待时长等参数。
+     * 当 {@link #receiverType} 为 {@link ReceiverType#SLF4J} 时生效，用于指定目标日志记录器名称，
+     * 将采集的 {@link io.github.pangju666.framework.boot.web.log.model.WebLog} 写入日志系统（SLF4J 兼容实现，如 Logback、Log4j2）。
      * </p>
      *
      * @since 1.0.0
      */
-	private Disk disk = new Disk();
+	private Slf4j slf4j = new Slf4j();
 	/**
 	 * Web 日志功能开关
 	 * <p>
@@ -210,12 +206,12 @@ public class WebLogProperties {
 	 */
 	private Set<String> excludePathPatterns = Collections.emptySet();
 
-	public Disk getDisk() {
-		return disk;
+	public Slf4j getSlf4j() {
+		return slf4j;
 	}
 
-	public void setDisk(Disk disk) {
-		this.disk = disk;
+	public void setDisk(Slf4j slf4j) {
+		this.slf4j = slf4j;
 	}
 
 	public ReceiverType getReceiverType() {
@@ -309,12 +305,11 @@ public class WebLogProperties {
 	}
 
     /**
-     * 日志接收器类型枚举
-     * <p>
-     * 用于指定 Web 日志的最终处理位置或介质。
-     * </p>
+     * 日志接收器类型枚举。
+     *
+     * <p>用于指定 Web 日志的最终处理位置或介质。</p>
      * <ul>
-     *   <li>{@link #DISK}：写入本地或挂载磁盘文件，适用于简单归档。</li>
+     *   <li>{@link #SLF4J}：写入日志系统（SLF4J 兼容实现，如 Logback、Log4j2），适用于本地归档或集中采集。</li>
      *   <li>{@link #MONGODB}：写入 MongoDB 集合，适用于检索与分析。</li>
      * </ul>
      *
@@ -322,7 +317,7 @@ public class WebLogProperties {
      * @since 1.0.0
      */
     public enum ReceiverType {
-        DISK,
+		SLF4J,
         MONGODB
     }
 
@@ -478,97 +473,110 @@ public class WebLogProperties {
 	}
 
     /**
-     * 磁盘接收器配置。
+     * Slf4j 接收器配置。
      *
      * <p><b>概述</b></p>
      * <ul>
-     *   <li>配置日志写入目录与文件命名规则。</li>
-     *   <li>控制写入缓冲区与队列容量以平衡性能与内存占用。</li>
-     *   <li>关闭时的线程等待时长用于尽量写完残留消息。</li>
+     *   <li>配置目标日志记录器名称，用于将采集的 {@link io.github.pangju666.framework.boot.web.log.model.WebLog} 写入日志系统。</li>
+     *   <li>适配任意 SLF4J 兼容实现（Logback、Log4j2 等）。</li>
      * </ul>
+	 *
+	 * <p>logback配置示例</p>
+	 * <pre>{@code
+	 * 	<!-- 请求日志专用 Appender -->
+	 * 	<appender name="WEB_LOG_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+	 * 		<file>E:/logs/web/web.log</file>
+	 * 		<rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+	 * 			<fileNamePattern>E:/logs/web/web.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+	 * 			<maxFileSize>500MB</maxFileSize>
+	 * 			<maxHistory>30</maxHistory>
+	 * 			<totalSizeCap>10GB</totalSizeCap>
+	 * 		</rollingPolicy>
+	 * 		<encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+	 * 			<pattern>%msg%n</pattern>
+	 * 			<charset>UTF-8</charset>
+	 * 		</encoder>
+	 * 	</appender>
+	 * 	<!-- 绑定专用 Logger -->
+	 * 	<logger name="WebLogLogger" level="INFO" additivity="false">
+	 * 		<appender-ref ref="WEB_LOG_FILE"/>
+	 * 	</logger>
+	 * }</pre>
+	 *
+	 * <p>log4j2 xml配置示例</p>
+	 * <pre>{@code
+	 * <Appenders>
+	 * 		<!-- 请求日志专用 Appender -->
+	 *      <RollingFile name="WEB_LOG_FILE" fileName="E:/logs/web/web.log" filePattern="E:/logs/web/web.%d{yyyy-MM-dd}.%i.log">
+	 *     	 	<PatternLayout pattern="%msg%n" charset="UTF-8"/>
+	 *     		 <Policies>
+	 *      		<SizeBasedTriggeringPolicy size="500MB"/>
+	 *          	<TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+	 *      		</Policies>
+	 *     		 <DefaultRolloverStrategy max="30">
+	 *      		<!-- totalSizeCap 在 Log4j2 中需通过自定义删除动作实现 -->
+	 *          	<Delete basePath="E:/logs/web" maxDepth="1">
+	 *          	<IfFileName glob="web.*.log"/>
+	 *              <IfAccumulatedFileSize exceeds="10GB"/>
+	 *            </Delete>
+	 *       	  </DefaultRolloverStrategy>
+	 *      </RollingFile>
+	 * </Appenders>
+	 *
+	 * <Loggers>
+	 * 		<!-- 绑定专用 Logger -->
+	 *      <Logger name="WebLogLogger" level="info" additivity="false">
+	 *      	<AppenderRef ref="WEB_LOG_FILE"/>
+	 *      </Logger>
+	 *     </Loggers>
+	 * }</pre>
+	 *
+	 * <p>log4j2 yaml配置示例</p>
+	 * <pre>{@code
+	 *   Appenders:
+	 *     RollingFile:
+	 *       - name: webLogFile
+	 *         fileName: E:/logs/web/web.log
+	 *         filePattern: E:/logs/web/web.%d{yyyy-MM-dd}.%i.log
+	 *         PatternLayout:
+	 *           pattern: "%msg%n"
+	 *           charset: UTF-8
+	 *         Policies:
+	 *           SizeBasedTriggeringPolicy:
+	 *             size: 500MB
+	 *           TimeBasedTriggeringPolicy:
+	 *             interval: 1
+	 *             modulate: true
+	 *         DefaultRolloverStrategy:
+	 *           max: 30
+	 *           Delete:
+	 *             basePath: E:/logs/web/
+	 *             maxDepth: 1
+	 *             IfFileName:
+	 *               glob: "web.*.log"
+	 *             IfAccumulatedFileSize:
+	 *               exceeds: 10GB
+	 *  Loggers:
+	 *    Logger:
+	 *      - name: WebLogLogger
+	 *        level: info
+	 *        additivity: false
+	 *        AppenderRef:
+	 *          - ref: webLogFile
+	 * }</pre>
      *
      * @author pangju666
      * @since 1.0.0
      */
-    public static class Disk {
-        /**
-         * 日志文件目录路径。
-         * <p>
-         * 若目录不存在将自动创建；需确保应用对该目录具有写权限。
-         * </p>
-         */
-        private String directory;
-        /**
-         * 基础文件名后缀。
-         * <p>
-         * 用于区分不同来源或类型的日志，会与日期与扩展名组合生成最终文件名。
-         * 默认值为 {@code "web-log"}。
-         * </p>
-         */
-        private String baseFilename = "web-log";
-        /**
-         * 写入缓冲区大小（字节）。
-         * <p>
-         * 控制文件写入时的缓冲大小，增大可减少 IO 次数但会提高内存占用。
-         * 默认值为 {@code 8192}。
-         * </p>
-         */
-        private int writerBufferSize = 8192;
-        /**
-         * 背压队列容量（条）。
-         * <p>
-         * 接收器在入队时使用阻塞队列，队列满时生产方将阻塞形成背压。
-         * 默认值为 {@code 10000}。
-         * </p>
-         */
-        private int queueSize = 10000;
-        /**
-         * 写线程销毁等待时长（毫秒）。
-         * <p>
-         * 应用关闭时，等待写线程处理完剩余消息的最长时间。
-         * 默认值为 {@code 5000} 毫秒。
-         * </p>
-         */
-        private int writeThreadDestroyWaitMills = 5000;
+    public static class Slf4j {
+		private String logger;
 
-		public String getDirectory() {
-			return directory;
+		public String getLogger() {
+			return logger;
 		}
 
-		public void setDirectory(String directory) {
-			this.directory = directory;
-		}
-
-		public String getBaseFilename() {
-			return baseFilename;
-		}
-
-		public void setBaseFilename(String baseFilename) {
-			this.baseFilename = baseFilename;
-		}
-
-		public int getWriterBufferSize() {
-			return writerBufferSize;
-		}
-
-		public void setWriterBufferSize(int writerBufferSize) {
-			this.writerBufferSize = writerBufferSize;
-		}
-
-		public int getQueueSize() {
-			return queueSize;
-		}
-
-		public void setQueueSize(int queueSize) {
-			this.queueSize = queueSize;
-		}
-
-		public int getWriteThreadDestroyWaitMills() {
-			return writeThreadDestroyWaitMills;
-		}
-
-		public void setWriteThreadDestroyWaitMills(int writeThreadDestroyWaitMills) {
-			this.writeThreadDestroyWaitMills = writeThreadDestroyWaitMills;
+		public void setLogger(String logger) {
+			this.logger = logger;
 		}
 	}
 
