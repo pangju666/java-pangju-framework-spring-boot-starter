@@ -1,5 +1,6 @@
-package io.github.pangju666.framework.boot.autoconfigure.web;
+package io.github.pangju666.framework.boot.autoconfigure.web.crypto;
 
+import io.github.pangju666.framework.boot.autoconfigure.web.WebMvcAutoConfiguration;
 import io.github.pangju666.framework.boot.crypto.factory.CryptoFactory;
 import io.github.pangju666.framework.boot.web.resolver.EncryptRequestParamArgumentResolver;
 import io.github.pangju666.framework.web.model.Result;
