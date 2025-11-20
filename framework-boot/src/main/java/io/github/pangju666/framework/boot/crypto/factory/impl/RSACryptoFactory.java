@@ -19,6 +19,7 @@ package io.github.pangju666.framework.boot.crypto.factory.impl;
 import io.github.pangju666.commons.crypto.encryption.binary.RSABinaryEncryptor;
 import io.github.pangju666.commons.crypto.encryption.numeric.RSADecimalNumberEncryptor;
 import io.github.pangju666.commons.crypto.encryption.numeric.RSAIntegerNumberEncryptor;
+import io.github.pangju666.commons.crypto.encryption.text.RSATextEncryptor;
 import io.github.pangju666.commons.crypto.key.RSAKey;
 import io.github.pangju666.commons.crypto.transformation.RSATransformation;
 import io.github.pangju666.commons.crypto.transformation.impl.RSAOEAPWithSHA256Transformation;
@@ -26,6 +27,8 @@ import io.github.pangju666.framework.boot.crypto.factory.CryptoFactory;
 import org.jasypt.util.binary.BinaryEncryptor;
 import org.jasypt.util.numeric.DecimalNumberEncryptor;
 import org.jasypt.util.numeric.IntegerNumberEncryptor;
+import org.jasypt.util.text.TextEncryptor;
+import org.springframework.util.Assert;
 
 import java.security.spec.InvalidKeySpecException;
 import java.util.Map;
@@ -34,14 +37,18 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * RSA 加密工厂实现。
+ *
  * <p>
- * 基于 RSA（默认使用{@code RSA/ECB/OAEPWithSHA-256AndMGF1Padding}）的非对称加密与数字处理器，分别为二进制、整型与高精度小数提供适配的加密器。
- * 加密器使用公钥，解密器使用私钥；密钥以 Base64 形式传入。
+ * 通过密钥后执行RSA非对称加密；加密器使用公钥，解密器使用私钥；密钥以 Base64 形式传入
+ * </p>
+ * <p>
+ * 默认算法：<code>RSA/ECB/OAEPWithSHA-256AndMGF1Padding</code>
  * </p>
  *
  * @author pangju666
  * @since 1.0.0
  * @see RSABinaryEncryptor
+ * @see RSATextEncryptor
  * @see RSAIntegerNumberEncryptor
  * @see RSADecimalNumberEncryptor
  */
@@ -58,6 +65,18 @@ public class RSACryptoFactory implements CryptoFactory {
 	 * @since 1.0.0
 	 */
 	private static final Map<String, RSABinaryEncryptor> RSA_BINARY_DECRYPT_ENCRYPTOR_MAP = new ConcurrentHashMap<>();
+	/**
+	 * 公钥到文本加密器的缓存映射。
+	 *
+	 * @since 1.0.0
+	 */
+	private static final Map<String, RSATextEncryptor> RSA_TEXT_ENCRYPT_ENCRYPTOR_MAP = new ConcurrentHashMap<>();
+	/**
+	 * 私钥到文本解密器的缓存映射。
+	 *
+	 * @since 1.0.0
+	 */
+	private static final Map<String, RSATextEncryptor> RSA_TEXT_DECRYPT_ENCRYPTOR_MAP = new ConcurrentHashMap<>();
 	/**
 	 * 公钥到整型数字加密器的缓存映射。
 	 *
@@ -84,7 +103,7 @@ public class RSACryptoFactory implements CryptoFactory {
 	private static final Map<String, RSADecimalNumberEncryptor> RSA_BIGDECIMAL_DECRYPT_ENCRYPTOR_MAP = new ConcurrentHashMap<>();
 
     /**
-     * RSA 变换（填充/摘要等参数）。
+     * RSA 加密方案（填充/摘要等参数）。
      * 默认为 OAEPWithSHA-256AndMGF1Padding，可通过构造参数替换。
 	 *
 	 * @since 1.0.0
@@ -92,7 +111,7 @@ public class RSACryptoFactory implements CryptoFactory {
     private final RSATransformation transformation;
 
     /**
-     * 使用默认 OAEPWithSHA-256AndMGF1Padding 变换的构造方法。
+     * 默认使用 OAEPWithSHA-256AndMGF1Padding 作为加密方案的构造方法。
      *
      * @since 1.0.0
      */
@@ -101,7 +120,7 @@ public class RSACryptoFactory implements CryptoFactory {
     }
 
     /**
-     * 指定 RSA 变换的构造方法。
+     * 指定 RSA 加密方案的构造方法。
      *
      * @param transformation RSA 变换策略
      * @since 1.0.0
@@ -111,115 +130,169 @@ public class RSACryptoFactory implements CryptoFactory {
     }
 
     /**
-     * 获取二进制加密器（使用公钥）。
+     * 获取并缓存二进制加密器（使用公钥）。
      *
-     * @param key Base64 编码的公钥字符串
+     * @param publicKey Base64 编码的公钥字符串
      * @return 二进制加密器
      * @throws InvalidKeySpecException 公钥格式不合法时抛出
      * @since 1.0.0
      */
     @Override
-    public BinaryEncryptor getBinaryEncryptor(String key) throws InvalidKeySpecException {
-        RSABinaryEncryptor encryptor = RSA_BINARY_ENCRYPT_ENCRYPTOR_MAP.get(key);
+    public BinaryEncryptor getBinaryEncryptor(String publicKey) throws InvalidKeySpecException {
+		Assert.hasText(publicKey, "key 不可为空");
+
+		RSABinaryEncryptor encryptor = RSA_BINARY_ENCRYPT_ENCRYPTOR_MAP.get(publicKey);
         if (Objects.isNull(encryptor)) {
             encryptor = new RSABinaryEncryptor(transformation);
-            encryptor.setKey(RSAKey.fromBase64String(key, null));
-            RSA_BINARY_ENCRYPT_ENCRYPTOR_MAP.put(key, encryptor);
+            encryptor.setKey(RSAKey.fromBase64String(publicKey, null));
+            RSA_BINARY_ENCRYPT_ENCRYPTOR_MAP.put(publicKey, encryptor);
         }
         return encryptor;
     }
 
+	/**
+	 * 获取并缓存文本加密器（使用公钥）。
+	 *
+	 * @param publicKey Base64 编码的公钥字符串
+	 * @return 文本加密器
+	 * @throws InvalidKeySpecException 公钥格式不合法时抛出
+	 * @since 1.0.0
+	 */
+	@Override
+	public TextEncryptor getTextEncryptor(String publicKey) throws InvalidKeySpecException {
+		Assert.hasText(publicKey, "key 不可为空");
+
+		RSATextEncryptor encryptor = RSA_TEXT_ENCRYPT_ENCRYPTOR_MAP.get(publicKey);
+		if (Objects.isNull(encryptor)) {
+			encryptor = new RSATextEncryptor(transformation);
+			encryptor.setKey(RSAKey.fromBase64String(publicKey, null));
+			RSA_TEXT_ENCRYPT_ENCRYPTOR_MAP.put(publicKey, encryptor);
+		}
+		return encryptor;
+	}
+
     /**
-     * 获取整型数字加密器（使用公钥）。
+     * 获取并缓存整型数字加密器（使用公钥）。
      *
-     * @param key Base64 编码的公钥字符串
+     * @param publicKey Base64 编码的公钥字符串
      * @return 整型数字加密器
      * @throws InvalidKeySpecException 公钥格式不合法时抛出
      * @since 1.0.0
      */
     @Override
-    public IntegerNumberEncryptor getIntegerNumberEncryptor(String key) throws InvalidKeySpecException {
-        RSAIntegerNumberEncryptor encryptor = RSA_INTEGER_ENCRYPT_ENCRYPTOR_MAP.get(key);
+    public IntegerNumberEncryptor getIntegerNumberEncryptor(String publicKey) throws InvalidKeySpecException {
+		Assert.hasText(publicKey, "publicKey 不可为空");
+
+		RSAIntegerNumberEncryptor encryptor = RSA_INTEGER_ENCRYPT_ENCRYPTOR_MAP.get(publicKey);
         if (Objects.isNull(encryptor)) {
             encryptor = new RSAIntegerNumberEncryptor(transformation);
-            encryptor.setKey(RSAKey.fromBase64String(key, null));
-            RSA_INTEGER_ENCRYPT_ENCRYPTOR_MAP.put(key, encryptor);
+            encryptor.setKey(RSAKey.fromBase64String(publicKey, null));
+            RSA_INTEGER_ENCRYPT_ENCRYPTOR_MAP.put(publicKey, encryptor);
         }
         return encryptor;
     }
 
     /**
-     * 获取高精度小数加密器（使用公钥）。
+     * 获取并缓存高精度小数加密器（使用公钥）。
      *
-     * @param key Base64 编码的公钥字符串
+     * @param publicKey Base64 编码的公钥字符串
      * @return 高精度小数加密器
      * @throws InvalidKeySpecException 公钥格式不合法时抛出
      * @since 1.0.0
      */
     @Override
-    public DecimalNumberEncryptor getDecimalNumberEncryptor(String key) throws InvalidKeySpecException {
-        RSADecimalNumberEncryptor encryptor = RSA_BIGDECIMAL_ENCRYPT_ENCRYPTOR_MAP.get(key);
+    public DecimalNumberEncryptor getDecimalNumberEncryptor(String publicKey) throws InvalidKeySpecException {
+		Assert.hasText(publicKey, "publicKey 不可为空");
+
+		RSADecimalNumberEncryptor encryptor = RSA_BIGDECIMAL_ENCRYPT_ENCRYPTOR_MAP.get(publicKey);
         if (Objects.isNull(encryptor)) {
             encryptor = new RSADecimalNumberEncryptor(transformation);
-            encryptor.setKey(RSAKey.fromBase64String(key, null));
-            RSA_BIGDECIMAL_ENCRYPT_ENCRYPTOR_MAP.put(key, encryptor);
+            encryptor.setKey(RSAKey.fromBase64String(publicKey, null));
+            RSA_BIGDECIMAL_ENCRYPT_ENCRYPTOR_MAP.put(publicKey, encryptor);
         }
         return encryptor;
     }
 
     /**
-     * 获取二进制解密器（使用私钥）。
+     * 获取并缓存二进制解密器（使用私钥）。
      *
-     * @param key Base64 编码的私钥字符串
+     * @param privateKey Base64 编码的私钥字符串
      * @return 二进制解密器
      * @throws InvalidKeySpecException 私钥格式不合法时抛出
      * @since 1.0.0
      */
     @Override
-    public BinaryEncryptor getBinaryDecryptor(String key) throws InvalidKeySpecException {
-        RSABinaryEncryptor encryptor = RSA_BINARY_DECRYPT_ENCRYPTOR_MAP.get(key);
+    public BinaryEncryptor getBinaryDecryptor(String privateKey) throws InvalidKeySpecException {
+		Assert.hasText(privateKey, "privateKey 不可为空");
+
+		RSABinaryEncryptor encryptor = RSA_BINARY_DECRYPT_ENCRYPTOR_MAP.get(privateKey);
         if (Objects.isNull(encryptor)) {
             encryptor = new RSABinaryEncryptor(transformation);
-            encryptor.setKey(RSAKey.fromBase64String(null, key));
-            RSA_BINARY_DECRYPT_ENCRYPTOR_MAP.put(key, encryptor);
+            encryptor.setKey(RSAKey.fromBase64String(null, privateKey));
+            RSA_BINARY_DECRYPT_ENCRYPTOR_MAP.put(privateKey, encryptor);
         }
         return encryptor;
     }
 
+	/**
+	 * 获取并缓存文本解密器（使用私钥）。
+	 *
+	 * @param privateKey Base64 编码的私钥字符串
+	 * @return 二进制解密器
+	 * @throws InvalidKeySpecException 私钥格式不合法时抛出
+	 * @since 1.0.0
+	 */
+	@Override
+	public TextEncryptor getTextDecryptor(String privateKey) throws InvalidKeySpecException {
+		Assert.hasText(privateKey, "privateKey 不可为空");
+
+		RSATextEncryptor encryptor = RSA_TEXT_DECRYPT_ENCRYPTOR_MAP.get(privateKey);
+		if (Objects.isNull(encryptor)) {
+			encryptor = new RSATextEncryptor(transformation);
+			encryptor.setKey(RSAKey.fromBase64String(null, privateKey));
+			RSA_TEXT_DECRYPT_ENCRYPTOR_MAP.put(privateKey, encryptor);
+		}
+		return encryptor;
+	}
+
     /**
-     * 获取整型数字解密器（使用私钥）。
+     * 获取并缓存整型数字解密器（使用私钥）。
      *
-     * @param key Base64 编码的私钥字符串
+     * @param privateKey Base64 编码的私钥字符串
      * @return 整型数字解密器
      * @throws InvalidKeySpecException 私钥格式不合法时抛出
      * @since 1.0.0
      */
     @Override
-    public IntegerNumberEncryptor getIntegerNumberDecryptor(String key) throws InvalidKeySpecException {
-        RSAIntegerNumberEncryptor encryptor = RSA_INTEGER_DECRYPT_ENCRYPTOR_MAP.get(key);
+    public IntegerNumberEncryptor getIntegerNumberDecryptor(String privateKey) throws InvalidKeySpecException {
+		Assert.hasText(privateKey, "privateKey 不可为空");
+
+		RSAIntegerNumberEncryptor encryptor = RSA_INTEGER_DECRYPT_ENCRYPTOR_MAP.get(privateKey);
         if (Objects.isNull(encryptor)) {
             encryptor = new RSAIntegerNumberEncryptor(transformation);
-            encryptor.setKey(RSAKey.fromBase64String(null, key));
-            RSA_INTEGER_DECRYPT_ENCRYPTOR_MAP.put(key, encryptor);
+            encryptor.setKey(RSAKey.fromBase64String(null, privateKey));
+            RSA_INTEGER_DECRYPT_ENCRYPTOR_MAP.put(privateKey, encryptor);
         }
         return encryptor;
     }
 
     /**
-     * 获取高精度小数解密器（使用私钥）。
+     * 获取并缓存高精度小数解密器（使用私钥）。
      *
-     * @param key Base64 编码的私钥字符串
+     * @param privateKey Base64 编码的私钥字符串
      * @return 高精度小数解密器
      * @throws InvalidKeySpecException 私钥格式不合法时抛出
      * @since 1.0.0
      */
     @Override
-    public DecimalNumberEncryptor getDecimalNumberDecryptor(String key) throws InvalidKeySpecException {
-        RSADecimalNumberEncryptor encryptor = RSA_BIGDECIMAL_DECRYPT_ENCRYPTOR_MAP.get(key);
+    public DecimalNumberEncryptor getDecimalNumberDecryptor(String privateKey) throws InvalidKeySpecException {
+		Assert.hasText(privateKey, "privateKey 不可为空");
+
+		RSADecimalNumberEncryptor encryptor = RSA_BIGDECIMAL_DECRYPT_ENCRYPTOR_MAP.get(privateKey);
         if (Objects.isNull(encryptor)) {
             encryptor = new RSADecimalNumberEncryptor(transformation);
-            encryptor.setKey(RSAKey.fromBase64String(null, key));
-            RSA_BIGDECIMAL_DECRYPT_ENCRYPTOR_MAP.put(key, encryptor);
+            encryptor.setKey(RSAKey.fromBase64String(null, privateKey));
+            RSA_BIGDECIMAL_DECRYPT_ENCRYPTOR_MAP.put(privateKey, encryptor);
         }
         return encryptor;
     }

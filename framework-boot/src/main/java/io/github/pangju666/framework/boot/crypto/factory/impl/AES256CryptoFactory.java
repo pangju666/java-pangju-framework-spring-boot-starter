@@ -23,6 +23,9 @@ import org.jasypt.util.numeric.AES256DecimalNumberEncryptor;
 import org.jasypt.util.numeric.AES256IntegerNumberEncryptor;
 import org.jasypt.util.numeric.DecimalNumberEncryptor;
 import org.jasypt.util.numeric.IntegerNumberEncryptor;
+import org.jasypt.util.text.AES256TextEncryptor;
+import org.jasypt.util.text.TextEncryptor;
+import org.springframework.util.Assert;
 
 import java.util.Map;
 import java.util.Objects;
@@ -31,14 +34,16 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * AES‑256 加密工厂实现。
  * <p>
- * 基于 Jasypt 的 AES‑256 加密器，通过口令派生密钥后执行对称加密，
- * 适用于通用业务数据的高效加解密。与枚举 {@code Algorithm.AES256}
- * 的说明一致，通常对应 {@code PBEWithHMACSHA512AndAES_256} 变体。
+ * 通过口令派生密钥后执行AES对称加密，适用于通用业务数据的高效加解密。
+ * </p>
+ * <p>
+ * 对应算法：<code>PBEWithHMACSHA512AndAES_256</code>
  * </p>
  *
  * @author pangju666
  * @since 1.0.0
  * @see AES256BinaryEncryptor
+ * @see AES256TextEncryptor
  * @see AES256IntegerNumberEncryptor
  * @see AES256DecimalNumberEncryptor
  */
@@ -49,6 +54,12 @@ public class AES256CryptoFactory implements CryptoFactory {
 	 * @since 1.0.0
      */
     private static final Map<String, AES256BinaryEncryptor> BINARY_ENCRYPTOR_MAP = new ConcurrentHashMap<>();
+	/**
+	 * 口令到文本加密器的缓存映射。
+	 *
+	 * @since 1.0.0
+	 */
+	private static final Map<String, AES256TextEncryptor> TEXT_ENCRYPTOR_MAP = new ConcurrentHashMap<>();
     /**
      * 口令到整型数字加密器的缓存映射。
 	 *
@@ -71,7 +82,9 @@ public class AES256CryptoFactory implements CryptoFactory {
      */
     @Override
     public BinaryEncryptor getBinaryEncryptor(String key) {
-        AES256BinaryEncryptor encryptor = BINARY_ENCRYPTOR_MAP.get(key);
+		Assert.hasText(key, "key 不可为空");
+
+		AES256BinaryEncryptor encryptor = BINARY_ENCRYPTOR_MAP.get(key);
         if (Objects.isNull(encryptor)) {
             encryptor = new AES256BinaryEncryptor();
             encryptor.setPassword(key);
@@ -80,7 +93,27 @@ public class AES256CryptoFactory implements CryptoFactory {
         return encryptor;
     }
 
-    /**
+	/**
+	 * 获取并缓存文本加密器（按口令）。
+	 *
+	 * @param key 口令（Password）
+	 * @return 文本加密器
+	 * @since 1.0.0
+	 */
+	@Override
+	public TextEncryptor getTextEncryptor(String key) {
+		Assert.hasText(key, "key 不可为空");
+
+		AES256TextEncryptor encryptor = TEXT_ENCRYPTOR_MAP.get(key);
+		if (Objects.isNull(encryptor)) {
+			encryptor = new AES256TextEncryptor();
+			encryptor.setPassword(key);
+			TEXT_ENCRYPTOR_MAP.put(key, encryptor);
+		}
+		return encryptor;
+	}
+
+	/**
      * 获取并缓存整型数字加密器（按口令）。
      *
      * @param key 口令（Password）
@@ -89,6 +122,8 @@ public class AES256CryptoFactory implements CryptoFactory {
      */
     @Override
     public IntegerNumberEncryptor getIntegerNumberEncryptor(String key) {
+		Assert.hasText(key, "key 不可为空");
+
         AES256IntegerNumberEncryptor encryptor = INTEGER_ENCRYPTOR_MAP.get(key);
         if (Objects.isNull(encryptor)) {
             encryptor = new AES256IntegerNumberEncryptor();
@@ -107,6 +142,8 @@ public class AES256CryptoFactory implements CryptoFactory {
      */
     @Override
     public DecimalNumberEncryptor getDecimalNumberEncryptor(String key) {
+		Assert.hasText(key, "key 不可为空");
+
         AES256DecimalNumberEncryptor encryptor = DECIMAL_ENCRYPTOR_MAP.get(key);
         if (Objects.isNull(encryptor)) {
             encryptor = new AES256DecimalNumberEncryptor();

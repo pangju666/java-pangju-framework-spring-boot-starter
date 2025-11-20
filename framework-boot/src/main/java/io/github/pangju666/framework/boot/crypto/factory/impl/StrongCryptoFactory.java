@@ -19,7 +19,13 @@ package io.github.pangju666.framework.boot.crypto.factory.impl;
 import io.github.pangju666.framework.boot.crypto.factory.CryptoFactory;
 import org.jasypt.util.binary.BinaryEncryptor;
 import org.jasypt.util.binary.StrongBinaryEncryptor;
-import org.jasypt.util.numeric.*;
+import org.jasypt.util.numeric.DecimalNumberEncryptor;
+import org.jasypt.util.numeric.IntegerNumberEncryptor;
+import org.jasypt.util.numeric.StrongDecimalNumberEncryptor;
+import org.jasypt.util.numeric.StrongIntegerNumberEncryptor;
+import org.jasypt.util.text.StrongTextEncryptor;
+import org.jasypt.util.text.TextEncryptor;
+import org.springframework.util.Assert;
 
 import java.util.Map;
 import java.util.Objects;
@@ -28,14 +34,16 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * 高强度加密工厂实现。
  * <p>
- * 基于 Jasypt 的高强度加密器（StrongEncryptor），通常映射到
- * <code>PBEWithMD5AndTripleDES</code> 的口令派生加密（PBE），
- * 在同等口令强度下具备更高的安全性与更合理的参数默认值。
+ * 通过口令派生密钥后执行DES对称加密，在同等口令强度下具备更高的安全性。
+ * </p>
+ * <p>
+ * 对应算法：<code>PBEWithMD5AndTripleDES</code>
  * </p>
  *
  * @author pangju666
  * @since 1.0.0
  * @see StrongBinaryEncryptor
+ * @see StrongTextEncryptor
  * @see StrongIntegerNumberEncryptor
  * @see StrongDecimalNumberEncryptor
  */
@@ -46,6 +54,12 @@ public class StrongCryptoFactory implements CryptoFactory {
 	 * @since 1.0.0
 	 */
     private static final Map<String, StrongBinaryEncryptor> BINARY_ENCRYPTOR_MAP = new ConcurrentHashMap<>();
+	/**
+	 * 口令到文本加密器的缓存映射。
+	 *
+	 * @since 1.0.0
+	 */
+	private static final Map<String, StrongTextEncryptor> TEXT_ENCRYPTOR_MAP = new ConcurrentHashMap<>();
     /**
      * 口令到整型数字加密器的缓存映射。
 	 *
@@ -68,6 +82,8 @@ public class StrongCryptoFactory implements CryptoFactory {
      */
     @Override
     public BinaryEncryptor getBinaryEncryptor(String key) {
+		Assert.hasText(key, "key 不可为空");
+
         StrongBinaryEncryptor encryptor = BINARY_ENCRYPTOR_MAP.get(key);
         if (Objects.isNull(encryptor)) {
             encryptor = new StrongBinaryEncryptor();
@@ -76,6 +92,26 @@ public class StrongCryptoFactory implements CryptoFactory {
         }
         return encryptor;
     }
+
+	/**
+	 * 获取并缓存文本加密器（按口令）。
+	 *
+	 * @param key 口令（Password）
+	 * @return 文本加密器
+	 * @since 1.0.0
+	 */
+	@Override
+	public TextEncryptor getTextEncryptor(String key) {
+		Assert.hasText(key, "key 不可为空");
+
+		StrongTextEncryptor encryptor = TEXT_ENCRYPTOR_MAP.get(key);
+		if (Objects.isNull(encryptor)) {
+			encryptor = new StrongTextEncryptor();
+			encryptor.setPassword(key);
+			TEXT_ENCRYPTOR_MAP.put(key, encryptor);
+		}
+		return encryptor;
+	}
 
     /**
      * 获取并缓存整型数字加密器（按口令）。
@@ -86,6 +122,8 @@ public class StrongCryptoFactory implements CryptoFactory {
      */
     @Override
     public IntegerNumberEncryptor getIntegerNumberEncryptor(String key) {
+		Assert.hasText(key, "key 不可为空");
+
         StrongIntegerNumberEncryptor encryptor = INTEGER_ENCRYPTOR_MAP.get(key);
         if (Objects.isNull(encryptor)) {
             encryptor = new StrongIntegerNumberEncryptor();
@@ -104,6 +142,8 @@ public class StrongCryptoFactory implements CryptoFactory {
      */
     @Override
     public DecimalNumberEncryptor getDecimalNumberEncryptor(String key) {
+		Assert.hasText(key, "key 不可为空");
+
         StrongDecimalNumberEncryptor encryptor = DECIMAL_ENCRYPTOR_MAP.get(key);
         if (Objects.isNull(encryptor)) {
             encryptor = new StrongDecimalNumberEncryptor();

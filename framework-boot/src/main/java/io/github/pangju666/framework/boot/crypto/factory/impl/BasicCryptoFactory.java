@@ -19,7 +19,13 @@ package io.github.pangju666.framework.boot.crypto.factory.impl;
 import io.github.pangju666.framework.boot.crypto.factory.CryptoFactory;
 import org.jasypt.util.binary.BasicBinaryEncryptor;
 import org.jasypt.util.binary.BinaryEncryptor;
-import org.jasypt.util.numeric.*;
+import org.jasypt.util.numeric.BasicDecimalNumberEncryptor;
+import org.jasypt.util.numeric.BasicIntegerNumberEncryptor;
+import org.jasypt.util.numeric.DecimalNumberEncryptor;
+import org.jasypt.util.numeric.IntegerNumberEncryptor;
+import org.jasypt.util.text.BasicTextEncryptor;
+import org.jasypt.util.text.TextEncryptor;
+import org.springframework.util.Assert;
 
 import java.util.Map;
 import java.util.Objects;
@@ -28,14 +34,16 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * 基础强度加密工厂实现。
  * <p>
- * 基于 Jasypt 的基础强度加密器（BasicEncryptor），通常映射到
- * <code>PBEWithMD5AndDES</code> 的口令派生加密（PBE），适用于对安全
- * 要求不高或默认场景。建议提升口令强度并配置更合理的参数。
+ * 通过口令派生密钥后执行DES对称加密，适用于对安全要求不高或默认场景。
+ * </p>
+ * <p>
+ * 对应算法：<code>PBEWithMD5AndDES</code>
  * </p>
  *
  * @author pangju666
  * @since 1.0.0
  * @see BasicBinaryEncryptor
+ * @see BasicTextEncryptor
  * @see BasicIntegerNumberEncryptor
  * @see BasicDecimalNumberEncryptor
  */
@@ -46,6 +54,12 @@ public class BasicCryptoFactory implements CryptoFactory {
 	 * @since 1.0.0
 	 */
     private static final Map<String, BasicBinaryEncryptor> BINARY_ENCRYPTOR_MAP = new ConcurrentHashMap<>();
+	/**
+	 * 口令到文本加密器的缓存映射。
+	 *
+	 * @since 1.0.0
+	 */
+	private static final Map<String, BasicTextEncryptor> TEXT_ENCRYPTOR_MAP = new ConcurrentHashMap<>();
     /**
      * 口令到整型数字加密器的缓存映射。
 	 *
@@ -68,6 +82,8 @@ public class BasicCryptoFactory implements CryptoFactory {
      */
     @Override
     public BinaryEncryptor getBinaryEncryptor(String key) {
+		Assert.hasText(key, "key 不可为空");
+
         BasicBinaryEncryptor encryptor = BINARY_ENCRYPTOR_MAP.get(key);
         if (Objects.isNull(encryptor)) {
             encryptor = new BasicBinaryEncryptor();
@@ -77,7 +93,27 @@ public class BasicCryptoFactory implements CryptoFactory {
         return encryptor;
     }
 
-    /**
+	/**
+	 * 获取并缓存文本加密器（按口令）。
+	 *
+	 * @param key 口令（Password）
+	 * @return 文本加密器
+	 * @since 1.0.0
+	 */
+	@Override
+	public TextEncryptor getTextEncryptor(String key) {
+		Assert.hasText(key, "key 不可为空");
+
+		BasicTextEncryptor encryptor = TEXT_ENCRYPTOR_MAP.get(key);
+		if (Objects.isNull(encryptor)) {
+			encryptor = new BasicTextEncryptor();
+			encryptor.setPassword(key);
+			TEXT_ENCRYPTOR_MAP.put(key, encryptor);
+		}
+		return encryptor;
+	}
+
+	/**
      * 获取并缓存整型数字加密器（按口令）。
      *
      * @param key 口令（Password）
@@ -86,6 +122,8 @@ public class BasicCryptoFactory implements CryptoFactory {
      */
     @Override
     public IntegerNumberEncryptor getIntegerNumberEncryptor(String key) {
+		Assert.hasText(key, "key 不可为空");
+
         BasicIntegerNumberEncryptor encryptor = INTEGER_ENCRYPTOR_MAP.get(key);
         if (Objects.isNull(encryptor)) {
             encryptor = new BasicIntegerNumberEncryptor();
@@ -104,6 +142,8 @@ public class BasicCryptoFactory implements CryptoFactory {
      */
     @Override
     public DecimalNumberEncryptor getDecimalNumberEncryptor(String key) {
+		Assert.hasText(key, "key 不可为空");
+
         BasicDecimalNumberEncryptor encryptor = DECIMAL_ENCRYPTOR_MAP.get(key);
         if (Objects.isNull(encryptor)) {
             encryptor = new BasicDecimalNumberEncryptor();

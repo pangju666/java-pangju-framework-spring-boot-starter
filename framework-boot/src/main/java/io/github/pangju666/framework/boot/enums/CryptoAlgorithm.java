@@ -21,6 +21,7 @@ import io.github.pangju666.framework.boot.crypto.factory.impl.AES256CryptoFactor
 import io.github.pangju666.framework.boot.crypto.factory.impl.BasicCryptoFactory;
 import io.github.pangju666.framework.boot.crypto.factory.impl.RSACryptoFactory;
 import io.github.pangju666.framework.boot.crypto.factory.impl.StrongCryptoFactory;
+import io.github.pangju666.framework.boot.spring.StaticSpringContext;
 
 /**
  * 加密算法枚举。
@@ -50,7 +51,7 @@ public enum CryptoAlgorithm {
 	 * 业务数据的高效加解密。
 	 * </p>
 	 * <p>
-	 * 对应算法：<code>PBEWithMD5AndDES</code>（基于口令的加密，PBE）。
+	 * 对应算法：<code>PBEWithHMACSHA512AndAES_256</code>（基于口令的加密，PBE）。
 	 * </p>
 	 * <p>
 	 * 关联工厂：{@link AES256CryptoFactory}
@@ -77,12 +78,12 @@ public enum CryptoAlgorithm {
 	 * 允许用户扩展并提供自定义 {@link CryptoFactory} 的实现。
 	 * </p>
 	 * <p>
-	 * 默认关联为接口类型，只是作为占位使用。
+	 * 默认关联为AES256类型，只是作为占位使用。
 	 * </p>
 	 *
 	 * @since 1.0.0
 	 */
-	CUSTOM(CryptoFactory.class),
+	CUSTOM(AES256CryptoFactory.class),
 	/**
 	 * 高强度 DES 对称加密算法。
 	 * <p>
@@ -125,5 +126,15 @@ public enum CryptoAlgorithm {
 	 */
 	public Class<? extends CryptoFactory> getFactoryClass() {
 		return factoryClass;
+	}
+
+	/**
+	 * 获取与当前算法关联的工厂。
+	 *
+	 * @return 工厂实现类
+	 * @since 1.0.0
+	 */
+	public CryptoFactory getFactory() {
+		return StaticSpringContext.getBeanFactory().getBean(factoryClass);
 	}
 }

@@ -32,8 +32,6 @@ public interface KeyBasedLockTaskExecutor {
 	/**
 	 * 使用指定键获取锁并执行任务，执行结束后释放锁。
 	 *
-	 * <p>参数校验规则：如果 {@code key} 为空或任务为 {@code null}，具体实现可抛出异常或忽略执行。</p>
-	 *
 	 * @param key  锁的键标识
 	 * @param task 需要在锁保护下执行的任务
 	 * @param <T>  任务返回类型

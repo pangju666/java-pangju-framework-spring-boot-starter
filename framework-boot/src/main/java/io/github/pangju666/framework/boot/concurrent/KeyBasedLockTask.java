@@ -34,9 +34,6 @@ public interface KeyBasedLockTask<T> {
     /**
      * 执行在指定键上下文中的任务。
      *
-     * <p>参数校验规则：</p>
-     * <p>如果 {@code key} 为空，则不执行或抛出异常；具体由调用方或实现决定。</p>
-     *
      * @param key 锁的键标识
      * @return 任务返回结果
      * @throws Exception 任务执行过程中抛出的异常
