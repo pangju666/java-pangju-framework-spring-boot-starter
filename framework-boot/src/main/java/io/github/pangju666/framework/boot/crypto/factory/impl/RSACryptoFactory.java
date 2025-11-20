@@ -122,10 +122,13 @@ public class RSACryptoFactory implements CryptoFactory {
     /**
      * 指定 RSA 加密方案的构造方法。
      *
-     * @param transformation RSA 变换策略
+     * @param transformation RSA 加密方案
+	 * @throws IllegalArgumentException 当 transformation 为 null 时抛出
      * @since 1.0.0
      */
     public RSACryptoFactory(RSATransformation transformation) {
+		Assert.notNull(transformation, "transformation 不可为 null");
+
         this.transformation = transformation;
     }
 

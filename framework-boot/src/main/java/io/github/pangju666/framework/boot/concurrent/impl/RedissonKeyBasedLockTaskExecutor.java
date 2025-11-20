@@ -82,7 +82,7 @@ public class RedissonKeyBasedLockTaskExecutor implements KeyBasedLockTaskExecuto
      * @param keyPrefix      键前缀，可为空
      * @param leaseTime      租约时间（-1 表示不自动释放）
      * @param unit           时间单位
-     * @throws IllegalArgumentException 当 {@code redissonClient} 或 {@code unit} 为空，或 {@code leaseTime} 不为 -1 且 ≤ 0 时抛出
+     * @throws IllegalArgumentException 当 {@code redissonClient} 或 {@code unit} 为 null，或 {@code leaseTime} 不为 -1 且 ≤ 0 时抛出
      * @since 1.0.0
      */
     public RedissonKeyBasedLockTaskExecutor(RedissonClient redissonClient, String keyPrefix, long leaseTime, TimeUnit unit) {
