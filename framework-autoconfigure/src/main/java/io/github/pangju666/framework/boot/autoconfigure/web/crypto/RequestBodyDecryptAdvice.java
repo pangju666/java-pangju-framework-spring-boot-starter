@@ -20,13 +20,13 @@ import io.github.pangju666.commons.crypto.key.RSAKey;
 import io.github.pangju666.commons.lang.pool.Constants;
 import io.github.pangju666.framework.boot.crypto.factory.CryptoFactory;
 import io.github.pangju666.framework.boot.crypto.utils.CryptoUtils;
-import io.github.pangju666.framework.boot.crypto.enums.CryptoAlgorithm;
 import io.github.pangju666.framework.boot.spring.StaticSpringContext;
 import io.github.pangju666.framework.boot.web.advice.DecryptRequestBody;
 import io.github.pangju666.framework.web.exception.base.ServerException;
 import io.github.pangju666.framework.web.exception.base.ServiceException;
 import jakarta.servlet.Servlet;
 import org.apache.commons.codec.DecoderException;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jasypt.exceptions.EncryptionOperationNotPossibleException;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -36,7 +36,6 @@ import org.springframework.core.MethodParameter;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpInputMessage;
-import org.springframework.http.converter.ByteArrayHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.http.converter.json.AbstractJsonHttpMessageConverter;
@@ -200,8 +199,7 @@ public class RequestBodyDecryptAdvice implements RequestBodyAdvice {
 	@Override
 	public Object afterBodyRead(Object body, HttpInputMessage inputMessage, MethodParameter parameter, Type targetType,
 								Class<? extends HttpMessageConverter<?>> converterType) {
-		if (!StringHttpMessageConverter.class.isAssignableFrom(converterType) &&
-			!ByteArrayHttpMessageConverter.class.isAssignableFrom(converterType)) {
+		if (!StringHttpMessageConverter.class.isAssignableFrom(converterType)) {
 			return body;
 		}
 
@@ -249,10 +247,10 @@ public class RequestBodyDecryptAdvice implements RequestBodyAdvice {
 	}
 
 	protected CryptoFactory getCryptoFactory(DecryptRequestBody annotation) {
-		if (annotation.algorithm() == CryptoAlgorithm.CUSTOM) {
-			return StaticSpringContext.getBeanFactory().getBean(annotation.factory());
+		if (ArrayUtils.isNotEmpty(annotation.factory())) {
+			return StaticSpringContext.getBeanFactory().getBean(annotation.factory()[0]);
 		} else {
-			return StaticSpringContext.getBeanFactory().getBean(annotation.algorithm().getFactoryClass());
+			return annotation.algorithm().getFactory();
 		}
 	}
 }

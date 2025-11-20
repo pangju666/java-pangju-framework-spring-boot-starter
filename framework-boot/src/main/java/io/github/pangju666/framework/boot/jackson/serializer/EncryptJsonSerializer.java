@@ -29,6 +29,7 @@ import io.github.pangju666.framework.boot.crypto.enums.CryptoAlgorithm;
 import io.github.pangju666.framework.boot.crypto.enums.Encoding;
 import io.github.pangju666.framework.boot.jackson.annotation.EncryptFormat;
 import io.github.pangju666.framework.boot.spring.StaticSpringContext;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jasypt.exceptions.EncryptionOperationNotPossibleException;
 import org.slf4j.Logger;
@@ -194,15 +195,15 @@ public class EncryptJsonSerializer extends JsonSerializer<Object> implements Con
 			String key = annotation.key() + "-" + annotation.encoding().name();
 			EncryptJsonSerializer serializer;
 			try {
-				if (annotation.algorithm() == CryptoAlgorithm.CUSTOM) {
-					key += "-" + annotation.factory().getName();
+				if (ArrayUtils.isNotEmpty(annotation.factory())) {
+					key += "-" + annotation.factory()[0].getName();
 					serializer = CUSTOM_SERIALIZER_MAP.get(key);
 					if (Objects.isNull(serializer)) {
 						String cryptoKey = CryptoUtils.getKey(annotation.key(), false);
 						if (Objects.isNull(cryptoKey)) {
 							return NullSerializer.instance;
 						}
-						CryptoFactory factory = StaticSpringContext.getBeanFactory().getBean(annotation.factory());
+						CryptoFactory factory = StaticSpringContext.getBeanFactory().getBean(annotation.factory()[0]);
 						serializer = new EncryptJsonSerializer(cryptoKey, annotation.encoding(), factory);
 						CUSTOM_SERIALIZER_MAP.put(key, serializer);
 					}
@@ -214,7 +215,7 @@ public class EncryptJsonSerializer extends JsonSerializer<Object> implements Con
 						if (Objects.isNull(cryptoKey)) {
 							return NullSerializer.instance;
 						}
-						CryptoFactory factory = StaticSpringContext.getBeanFactory().getBean(annotation.algorithm().getFactoryClass());
+						CryptoFactory factory = annotation.algorithm().getFactory();
 						serializer = new EncryptJsonSerializer(cryptoKey, annotation.encoding(), factory);
 						ALGORITHM_SERIALIZER_MAP.put(key, serializer);
 

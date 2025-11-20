@@ -73,18 +73,6 @@ public enum CryptoAlgorithm {
 	 */
 	BASIC(BasicCryptoFactory.class),
 	/**
-	 * 自定义加密算法。
-	 * <p>
-	 * 允许用户扩展并提供自定义 {@link CryptoFactory} 的实现。
-	 * </p>
-	 * <p>
-	 * 默认关联为AES256类型，只是作为占位使用。
-	 * </p>
-	 *
-	 * @since 1.0.0
-	 */
-	CUSTOM(AES256CryptoFactory.class),
-	/**
 	 * 高强度 DES 对称加密算法。
 	 * <p>
 	 * 提供更强的安全策略或多算法组合能力，适合对安全性要求更高的场景。
@@ -119,19 +107,10 @@ public enum CryptoAlgorithm {
 	}
 
 	/**
-	 * 获取与当前算法关联的工厂类型。
-	 *
-	 * @return 工厂实现类类型
-	 * @since 1.0.0
-	 */
-	public Class<? extends CryptoFactory> getFactoryClass() {
-		return factoryClass;
-	}
-
-	/**
 	 * 获取与当前算法关联的工厂。
 	 *
-	 * @return 工厂实现类
+	 * @return 工厂 Bean 实例
+	 * @throws org.springframework.beans.BeansException 当容器中不存在该工厂 Bean 或获取失败时抛出
 	 * @since 1.0.0
 	 */
 	public CryptoFactory getFactory() {

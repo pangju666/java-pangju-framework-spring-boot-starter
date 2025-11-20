@@ -18,11 +18,11 @@ package io.github.pangju666.framework.boot.web.resolver;
 
 import io.github.pangju666.framework.boot.crypto.factory.CryptoFactory;
 import io.github.pangju666.framework.boot.crypto.utils.CryptoUtils;
-import io.github.pangju666.framework.boot.crypto.enums.CryptoAlgorithm;
 import io.github.pangju666.framework.boot.spring.StaticSpringContext;
 import io.github.pangju666.framework.web.exception.base.ServerException;
 import io.github.pangju666.framework.web.exception.base.ServiceException;
 import org.apache.commons.codec.DecoderException;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jasypt.exceptions.EncryptionOperationNotPossibleException;
 import org.springframework.core.MethodParameter;
@@ -119,10 +119,10 @@ public class EncryptRequestParamArgumentResolver implements HandlerMethodArgumen
 		String key = CryptoUtils.getKey(annotation.key(), true);
 
 		CryptoFactory factory;
-		if (annotation.algorithm() == CryptoAlgorithm.CUSTOM) {
-			factory = StaticSpringContext.getBeanFactory().getBean(annotation.factory());
+		if (ArrayUtils.isNotEmpty(annotation.factory())) {
+			factory = StaticSpringContext.getBeanFactory().getBean(annotation.factory()[0]);
 		} else {
-			factory = StaticSpringContext.getBeanFactory().getBean(annotation.algorithm().getFactoryClass());
+			factory = annotation.algorithm().getFactory();
 		}
 
 		try {

@@ -18,15 +18,15 @@ package io.github.pangju666.framework.boot.autoconfigure.web.crypto;
 
 import io.github.pangju666.commons.crypto.key.RSAKey;
 import io.github.pangju666.commons.lang.utils.JsonUtils;
+import io.github.pangju666.framework.boot.crypto.enums.Encoding;
 import io.github.pangju666.framework.boot.crypto.factory.CryptoFactory;
 import io.github.pangju666.framework.boot.crypto.utils.CryptoUtils;
-import io.github.pangju666.framework.boot.crypto.enums.CryptoAlgorithm;
-import io.github.pangju666.framework.boot.crypto.enums.Encoding;
 import io.github.pangju666.framework.boot.spring.StaticSpringContext;
 import io.github.pangju666.framework.boot.web.advice.EncryptResponseBody;
 import io.github.pangju666.framework.web.exception.base.ServerException;
 import io.github.pangju666.framework.web.model.Result;
 import jakarta.servlet.Servlet;
+import org.apache.commons.lang3.ArrayUtils;
 import org.jasypt.exceptions.EncryptionOperationNotPossibleException;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -137,9 +137,9 @@ public class ResponseBodyEncryptAdvice implements ResponseBodyAdvice<Object> {
 	 * <p>
 	 * 处理步骤：
 	 * <ul>
-	 *     <li>获取注解（方法级优先）。未标注时直接返回原始响应。</li>
-	 *     <li>解析密钥：支持明文或占位符（如 {@code ${app.encryption.key}}）。解析失败（为空）时返回 {@code null}。</li>
-	 *     <li>选择工厂：当算法为 {@link CryptoAlgorithm#CUSTOM} 使用注解 {@code factory}；否则按算法使用默认工厂。</li>
+	 *     <li>获取注解（方法级优先）。</li>
+	 *     <li>解析密钥：支持明文或占位符（如 {@code ${app.encryption.key}}）。解析失败时抛出{@link ServerException}异常。</li>
+	 *     <li>选择工厂：从注解中获取对应的加密工厂。</li>
 	 *     <li>加密策略：
 	 *         <ul>
 	 *             <li>{@code String}：{@link CryptoUtils#encryptString(CryptoFactory, String, String, Encoding)}。</li>
@@ -178,10 +178,10 @@ public class ResponseBodyEncryptAdvice implements ResponseBodyAdvice<Object> {
 		}
 
 		CryptoFactory factory;
-		if (annotation.algorithm() == CryptoAlgorithm.CUSTOM) {
-			factory = StaticSpringContext.getBeanFactory().getBean(annotation.factory());
+		if (ArrayUtils.isNotEmpty(annotation.factory())) {
+			factory = StaticSpringContext.getBeanFactory().getBean(annotation.factory()[0]);
 		} else {
-			factory = StaticSpringContext.getBeanFactory().getBean(annotation.algorithm().getFactoryClass());
+			factory = annotation.algorithm().getFactory();
 		}
 
 		try {

@@ -30,6 +30,7 @@ import io.github.pangju666.framework.boot.crypto.enums.Encoding;
 import io.github.pangju666.framework.boot.jackson.annotation.DecryptFormat;
 import io.github.pangju666.framework.boot.spring.StaticSpringContext;
 import org.apache.commons.codec.DecoderException;
+import org.apache.commons.lang3.ArrayUtils;
 import org.jasypt.exceptions.EncryptionOperationNotPossibleException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -434,15 +435,15 @@ public class DecryptJsonDeserializer extends JsonDeserializer<Object> implements
 		}
 		DecryptJsonDeserializer deserializer;
 		try {
-			if (annotation.algorithm() == CryptoAlgorithm.CUSTOM) {
-				key += "-" + annotation.factory().getName();
+			if (ArrayUtils.isNotEmpty(annotation.factory())) {
+				key += "-" + annotation.factory()[0].getName();
 				deserializer = CUSTOM_DESERIALIZER_MAP.get(key);
 				if (Objects.isNull(deserializer)) {
 					String cryptoKey = CryptoUtils.getKey(annotation.key(), false);
 					if (Objects.isNull(cryptoKey)) {
 						return NullifyingDeserializer.instance;
 					}
-					CryptoFactory factory = StaticSpringContext.getBeanFactory().getBean(annotation.factory());
+					CryptoFactory factory = StaticSpringContext.getBeanFactory().getBean(annotation.factory()[0]);
 					deserializer = new DecryptJsonDeserializer(cryptoKey, factory, annotation.encoding(), targetType, elementType);
 					CUSTOM_DESERIALIZER_MAP.put(key, deserializer);
 				}
@@ -454,7 +455,7 @@ public class DecryptJsonDeserializer extends JsonDeserializer<Object> implements
 					if (Objects.isNull(cryptoKey)) {
 						return NullifyingDeserializer.instance;
 					}
-					CryptoFactory factory = StaticSpringContext.getBeanFactory().getBean(annotation.algorithm().getFactoryClass());
+					CryptoFactory factory = annotation.algorithm().getFactory();
 					deserializer = new DecryptJsonDeserializer(cryptoKey, factory, annotation.encoding(), targetType, elementType);
 					ALGORITHM_DESERIALIZER_MAP.put(key, deserializer);
 				}
