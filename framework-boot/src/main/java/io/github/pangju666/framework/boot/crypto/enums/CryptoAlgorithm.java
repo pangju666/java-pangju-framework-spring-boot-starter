@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package io.github.pangju666.framework.boot.enums;
+package io.github.pangju666.framework.boot.crypto.enums;
 
 import io.github.pangju666.framework.boot.crypto.factory.CryptoFactory;
 import io.github.pangju666.framework.boot.crypto.factory.impl.AES256CryptoFactory;

@@ -1,6 +1,6 @@
 package io.github.pangju666.framework.boot.web.signature.configuration;
 
-import io.github.pangju666.framework.boot.enums.DigestAlgorithm;
+import io.github.pangju666.framework.boot.web.signature.enums.SignatureAlgorithm;
 import io.github.pangju666.framework.boot.web.signature.annotation.Signature;
 
 /**
@@ -35,12 +35,12 @@ import io.github.pangju666.framework.boot.web.signature.annotation.Signature;
  * <ul>
  *   <li>建议与客户端约定统一字段名，避免头与参数混用导致歧义。</li>
  *   <li>具体读取优先级（Header 或 Param）由签名处理器实现决定。</li>
- *   <li>摘要计算建议使用 {@link DigestAlgorithm#SHA256} 或 {@link DigestAlgorithm#SHA512}。</li>
+ *   <li>摘要计算建议使用 {@link SignatureAlgorithm#SHA256} 或 {@link SignatureAlgorithm#SHA512}。</li>
  * </ul>
  *
  * @author pangju666
  * @see Signature
- * @see DigestAlgorithm
+ * @see SignatureAlgorithm
  * @since 1.0.0
  */
 public class SignatureConfiguration {

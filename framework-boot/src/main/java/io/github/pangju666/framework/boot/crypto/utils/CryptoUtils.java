@@ -17,7 +17,7 @@
 package io.github.pangju666.framework.boot.crypto.utils;
 
 import io.github.pangju666.framework.boot.crypto.factory.CryptoFactory;
-import io.github.pangju666.framework.boot.enums.Encoding;
+import io.github.pangju666.framework.boot.crypto.enums.Encoding;
 import io.github.pangju666.framework.boot.spring.StaticSpringContext;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Base64;

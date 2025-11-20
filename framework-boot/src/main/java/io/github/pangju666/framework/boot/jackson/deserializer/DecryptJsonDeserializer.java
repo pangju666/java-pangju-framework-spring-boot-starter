@@ -25,8 +25,8 @@ import com.fasterxml.jackson.databind.type.CollectionType;
 import com.fasterxml.jackson.databind.type.MapType;
 import io.github.pangju666.framework.boot.crypto.factory.CryptoFactory;
 import io.github.pangju666.framework.boot.crypto.utils.CryptoUtils;
-import io.github.pangju666.framework.boot.enums.CryptoAlgorithm;
-import io.github.pangju666.framework.boot.enums.Encoding;
+import io.github.pangju666.framework.boot.crypto.enums.CryptoAlgorithm;
+import io.github.pangju666.framework.boot.crypto.enums.Encoding;
 import io.github.pangju666.framework.boot.jackson.annotation.DecryptFormat;
 import io.github.pangju666.framework.boot.spring.StaticSpringContext;
 import org.apache.commons.codec.DecoderException;
@@ -58,7 +58,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @see io.github.pangju666.framework.boot.jackson.annotation.DecryptFormat
  * @see io.github.pangju666.framework.boot.crypto.factory.CryptoFactory
  * @see CryptoAlgorithm
- * @see io.github.pangju666.framework.boot.enums.Encoding
+ * @see Encoding
  * @see com.fasterxml.jackson.databind.deser.ContextualDeserializer
  * @see com.fasterxml.jackson.databind.deser.std.NullifyingDeserializer
  * @see CryptoUtils

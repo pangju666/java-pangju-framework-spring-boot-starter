@@ -20,7 +20,7 @@ import io.github.pangju666.commons.crypto.key.RSAKey;
 import io.github.pangju666.commons.lang.pool.Constants;
 import io.github.pangju666.framework.boot.crypto.factory.CryptoFactory;
 import io.github.pangju666.framework.boot.crypto.utils.CryptoUtils;
-import io.github.pangju666.framework.boot.enums.CryptoAlgorithm;
+import io.github.pangju666.framework.boot.crypto.enums.CryptoAlgorithm;
 import io.github.pangju666.framework.boot.spring.StaticSpringContext;
 import io.github.pangju666.framework.boot.web.advice.DecryptRequestBody;
 import io.github.pangju666.framework.web.exception.base.ServerException;

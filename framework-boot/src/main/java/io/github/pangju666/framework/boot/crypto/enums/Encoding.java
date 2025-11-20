@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package io.github.pangju666.framework.boot.enums;
+package io.github.pangju666.framework.boot.crypto.enums;
 
 /**
  * 编码方式枚举类

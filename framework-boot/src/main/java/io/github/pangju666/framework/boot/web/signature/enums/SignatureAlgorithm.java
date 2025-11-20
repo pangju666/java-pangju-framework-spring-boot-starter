@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package io.github.pangju666.framework.boot.enums;
+package io.github.pangju666.framework.boot.web.signature.enums;
 
 import io.github.pangju666.framework.boot.web.signature.annotation.Signature;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -57,7 +57,7 @@ import java.util.function.Function;
  * @see Signature
  * @since 1.0.0
  */
-public enum DigestAlgorithm {
+public enum SignatureAlgorithm {
 	/**
 	 * SHA-1 哈希算法。
 	 * <p>安全性较低，已逐渐被弃用。</p>
@@ -89,7 +89,7 @@ public enum DigestAlgorithm {
 
 	private final Function<String, String> digestFunction;
 
-	DigestAlgorithm(Function<String, String> digestFunction) {
+	SignatureAlgorithm(Function<String, String> digestFunction) {
 		this.digestFunction = digestFunction;
 	}
 

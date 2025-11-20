@@ -20,8 +20,8 @@ import com.fasterxml.jackson.annotation.JacksonAnnotationsInside;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import io.github.pangju666.framework.boot.crypto.factory.CryptoFactory;
 import io.github.pangju666.framework.boot.crypto.factory.impl.AES256CryptoFactory;
-import io.github.pangju666.framework.boot.enums.CryptoAlgorithm;
-import io.github.pangju666.framework.boot.enums.Encoding;
+import io.github.pangju666.framework.boot.crypto.enums.CryptoAlgorithm;
+import io.github.pangju666.framework.boot.crypto.enums.Encoding;
 import io.github.pangju666.framework.boot.jackson.serializer.EncryptJsonSerializer;
 
 import java.lang.annotation.ElementType;

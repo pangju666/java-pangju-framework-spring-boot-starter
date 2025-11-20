@@ -17,7 +17,7 @@
 package io.github.pangju666.framework.boot.concurrent;
 
 /**
- * 基于键的锁执行器接口。
+ * 基于键的锁任务执行器接口。
  *
  * <p><strong>概述</strong></p>
  * <ul>

@@ -25,8 +25,8 @@ import com.fasterxml.jackson.databind.ser.ContextualSerializer;
 import com.fasterxml.jackson.databind.ser.std.NullSerializer;
 import io.github.pangju666.framework.boot.crypto.factory.CryptoFactory;
 import io.github.pangju666.framework.boot.crypto.utils.CryptoUtils;
-import io.github.pangju666.framework.boot.enums.CryptoAlgorithm;
-import io.github.pangju666.framework.boot.enums.Encoding;
+import io.github.pangju666.framework.boot.crypto.enums.CryptoAlgorithm;
+import io.github.pangju666.framework.boot.crypto.enums.Encoding;
 import io.github.pangju666.framework.boot.jackson.annotation.EncryptFormat;
 import io.github.pangju666.framework.boot.spring.StaticSpringContext;
 import org.apache.commons.lang3.StringUtils;
@@ -59,7 +59,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @see io.github.pangju666.framework.boot.jackson.annotation.EncryptFormat
  * @see io.github.pangju666.framework.boot.crypto.factory.CryptoFactory
  * @see CryptoAlgorithm
- * @see io.github.pangju666.framework.boot.enums.Encoding
+ * @see Encoding
  * @see com.fasterxml.jackson.databind.ser.ContextualSerializer
  * @see com.fasterxml.jackson.databind.ser.std.NullSerializer
  * @see CryptoUtils
