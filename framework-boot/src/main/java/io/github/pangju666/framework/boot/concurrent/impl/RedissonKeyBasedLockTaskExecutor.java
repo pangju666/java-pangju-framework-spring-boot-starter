@@ -76,17 +76,21 @@ public class RedissonKeyBasedLockTaskExecutor implements KeyBasedLockTaskExecuto
     /**
      * 创建基于 Redisson 的键锁执行器。
      *
-     * <p>参数校验规则：</p>
-     * <p>如果 {@code keyPrefix} 为空，则不设置前缀；如果 {@code unit} 为空，将可能导致加锁抛出异常，调用方需保证非空；{@code leaseTime} 建议为正数以启用自动释放。</p>
+     * <p>概述：指定客户端、键前缀与租约时间/单位，获取分布式锁时应用命名空间与自动释放策略。</p>
      *
      * @param redissonClient Redisson 客户端
      * @param keyPrefix      键前缀，可为空
-     * @param leaseTime      租约时间
+     * @param leaseTime      租约时间（-1 表示不自动释放）
      * @param unit           时间单位
+     * @throws IllegalArgumentException 当 {@code redissonClient} 或 {@code unit} 为空，或 {@code leaseTime} 不为 -1 且 ≤ 0 时抛出
      * @since 1.0.0
      */
     public RedissonKeyBasedLockTaskExecutor(RedissonClient redissonClient, String keyPrefix, long leaseTime, TimeUnit unit) {
-        this.redissonClient = redissonClient;
+		Assert.notNull(redissonClient, "redissonClient 不可为 null");
+		Assert.notNull(unit, "unit 不可为 null");
+		Assert.isTrue(leaseTime == -1 || leaseTime > 0, "leaseTime 必须等于-1或大于0");
+
+		this.redissonClient = redissonClient;
         this.leaseTime = leaseTime;
         this.unit = unit;
         this.keyPrefix = StringUtils.isBlank(keyPrefix) ? StringUtils.EMPTY : keyPrefix + REDIS_PATH_DELIMITER;

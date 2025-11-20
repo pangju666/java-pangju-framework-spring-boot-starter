@@ -143,7 +143,10 @@ public class KeyBasedLockTaskExecutorProperties {
 
 	public static class Guava {
 		/**
-		 * 锁条带数量（建议为正数）。
+		 * 锁条带数量（建议为 2 的幂次）。
+		 *
+		 * <p>默认值：64。适合中等并发；可根据并发度按 32/64/128/256 调整，取 2 的幂以优化索引与性能。</p>
+		 * <p>选型建议：条带数≈nextPowerOfTwo(2×线程池大小)，以 64 起步，热点冲突明显时提升。</p>
 		 *
 		 * @since 1.0.0
 		 */
@@ -174,13 +177,17 @@ public class KeyBasedLockTaskExecutorProperties {
 
 	public static class Redisson {
 		/**
-		 * 锁的租约时间（建议为正数）。
+		 * 锁的租约时间。
+		 *
+		 * <p>默认值：-1（不自动释放）。设置为正数时，按该时长自动释放。</p>
 		 *
 		 * @since 1.0.0
 		 */
-		private long leaseTime = 10;
+		private long leaseTime = -1;
 		/**
 		 * 租约时间单位。
+		 *
+		 * <p>默认值：分钟。</p>
 		 *
 		 * @since 1.0.0
 		 */

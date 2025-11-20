@@ -46,12 +46,17 @@ public class StripedKeyBasedLockTaskExecutor implements KeyBasedLockTaskExecutor
 	/**
 	 * 创建条带化锁执行器。
 	 *
-	 * <p>参数校验规则：如果 {@code stripes} ≤ 0，将导致锁集合不可用；调用方需提供正数。</p>
+	 * <p>概述：使用 {@link Striped#lazyWeakLock(int)} 创建按需初始化的弱引用锁集合，减少锁对象数量与内存占用。</p>
+	 *
+	 * <p>性能建议：条带数量可按预期并发度设置，以平衡锁冲突与内存占用。</p>
 	 *
 	 * @param stripes 锁条带数量
+	 * @throws IllegalArgumentException 当 {@code stripes} ≤ 0 时抛出
 	 * @since 1.0.0
 	 */
 	public StripedKeyBasedLockTaskExecutor(int stripes) {
+		Assert.isTrue(stripes > 0, "stripes 必须大于0");
+
 		this.striped = Striped.lazyWeakLock(stripes);
 	}
 
