@@ -205,27 +205,16 @@ public class CryptoUtils {
 
     /**
      * 解析密钥字符串。
-     * <p>
-     * 支持以下两种形式：
-     * <ul>
-     *     <li>明文密钥：直接返回入参。</li>
-     *     <li>占位符密钥：形如 <code>${crypto.key}</code>，从 Spring 环境解析实际值。</li>
-     * </ul>
-     * </p>
-     * <p>
-     * 行为说明：
-     * <ul>
-     *     <li>入参为空白：<code>throwsException == true</code> 时抛出 {@link InvalidKeySpecException}，否则记录错误日志并返回 {@code null}。</li>
-     *     <li>占位符未解析到值：<code>throwsException == true</code> 时抛出 {@link InvalidKeySpecException}，否则记录错误日志并返回 {@code null}。</li>
-     * </ul>
-     * </p>
-     * <p>
-     * 注意事项：
-     * <ul>
-     *     <li>占位符解析通过 {@link StaticSpringContext#getProperty(String)}。</li>
-     *     <li>调用方可通过 <code>throwsException</code> 控制失败时的处理策略。</li>
-     * </ul>
-     * </p>
+     *
+     * <p>概述：支持明文密钥与占位符密钥。占位符形如 <code>${crypto.key}</code>，从 Spring 环境解析实际值。</p>
+     *
+     * <p>参数校验规则：</p>
+     * <p>入参为空白且 <code>throwsException == true</code> 时抛出 {@link InvalidKeySpecException}；否则记录错误并返回 {@code null}。
+     * 占位符未解析到值且 <code>throwsException == true</code> 时抛出 {@link InvalidKeySpecException}；否则记录错误并返回 {@code null}。</p>
+     *
+     * <p>解析说明：</p>
+     * <p>占位符通过 {@code StaticSpringContext.getEnvironment().resolvePlaceholders(key)} 解析；
+     * 非占位符通过 {@code StaticSpringContext.getEnvironment().getProperty(key, key)} 获取，未命中则回退为入参。</p>
      *
      * @param key 明文密钥或占位符（如 <code>${crypto.key}</code>）
      * @param throwsException 解析失败时是否抛出异常；true 抛出异常，false 返回 {@code null}
@@ -242,17 +231,22 @@ public class CryptoUtils {
             return null;
         }
 
+		String cryptoKey;
         if (Strings.CS.startsWith(key, "${") && Strings.CS.endsWith(key, "}")) {
-            String cryptoKey = StaticSpringContext.getProperty(key);
-            if (StringUtils.isBlank(cryptoKey)) {
-				if (throwsException) {
-					throw new InvalidKeySpecException("未找到密钥，属性：" + key);
-				}
-                LOGGER.error("未找到密钥，属性：{}", key);
-                return null;
-            }
-            return cryptoKey;
-        }
-        return key;
+			cryptoKey = StaticSpringContext.getEnvironment().resolvePlaceholders(key);
+			if (cryptoKey.equals(key)) {
+				cryptoKey = null;
+			}
+        } else {
+			cryptoKey = StaticSpringContext.getEnvironment().getProperty(key, key);
+		}
+		if (StringUtils.isBlank(cryptoKey)) {
+			if (throwsException) {
+				throw new InvalidKeySpecException("未找到密钥，属性：" + key);
+			}
+			LOGGER.error("未找到密钥，属性：{}", key);
+			return null;
+		}
+		return cryptoKey;
     }
 }

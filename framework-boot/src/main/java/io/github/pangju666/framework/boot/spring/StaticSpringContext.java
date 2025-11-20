@@ -16,7 +16,6 @@
 
 package io.github.pangju666.framework.boot.spring;
 
-import org.apache.commons.lang3.Strings;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationContext;
@@ -84,25 +83,6 @@ public class StaticSpringContext implements ApplicationListener<ApplicationReady
 	 */
 	public static BeanFactory getBeanFactory() {
 		return BEAN_FACTORY;
-	}
-
-	/**
-	 * 获取配置属性值
-	 * <p>
-	 * 支持${property}格式的属性名解析
-	 * </p>
-	 *
-	 * @param key 属性键名，可以是${property}格式
-	 * @return 属性值，如果未找到则返回null
-	 * @since 1.0.0
-	 */
-	public static String getProperty(String key) {
-		String propName = key;
-		if (Strings.CS.startsWith(propName, "${") && Strings.CS.endsWith(propName, "}")) {
-			propName = key.substring(2, key.length() - 1);
-			return ENVIRONMENT.getProperty(propName);
-		}
-		return null;
 	}
 
 	/**
