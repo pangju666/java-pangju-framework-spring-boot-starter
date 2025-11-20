@@ -16,7 +16,7 @@
 
 package io.github.pangju666.framework.boot.concurrent.impl;
 
-import io.github.pangju666.framework.boot.concurrent.KeyBasedLockExecutor;
+import io.github.pangju666.framework.boot.concurrent.KeyBasedLockTaskExecutor;
 import io.github.pangju666.framework.boot.concurrent.KeyBasedLockTask;
 import org.apache.commons.lang3.StringUtils;
 import org.redisson.api.RLock;
@@ -40,7 +40,7 @@ import java.util.concurrent.TimeUnit;
  * @author pangju666
  * @since 1.0.0
  */
-public class RedissonKeyBasedLockExecutor implements KeyBasedLockExecutor {
+public class RedissonKeyBasedLockTaskExecutor implements KeyBasedLockTaskExecutor {
     /**
      * Redis 键路径分隔符。
      *
@@ -85,7 +85,7 @@ public class RedissonKeyBasedLockExecutor implements KeyBasedLockExecutor {
      * @param unit           时间单位
      * @since 1.0.0
      */
-    public RedissonKeyBasedLockExecutor(RedissonClient redissonClient, String keyPrefix, long leaseTime, TimeUnit unit) {
+    public RedissonKeyBasedLockTaskExecutor(RedissonClient redissonClient, String keyPrefix, long leaseTime, TimeUnit unit) {
         this.redissonClient = redissonClient;
         this.leaseTime = leaseTime;
         this.unit = unit;

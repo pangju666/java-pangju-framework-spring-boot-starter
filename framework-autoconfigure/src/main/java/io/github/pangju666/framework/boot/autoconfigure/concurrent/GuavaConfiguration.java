@@ -17,8 +17,8 @@
 package io.github.pangju666.framework.boot.autoconfigure.concurrent;
 
 import com.google.common.util.concurrent.Striped;
-import io.github.pangju666.framework.boot.concurrent.KeyBasedLockExecutor;
-import io.github.pangju666.framework.boot.concurrent.impl.StripedKeyBasedLockExecutor;
+import io.github.pangju666.framework.boot.concurrent.KeyBasedLockTaskExecutor;
+import io.github.pangju666.framework.boot.concurrent.impl.StripedKeyBasedLockTaskExecutor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -31,8 +31,8 @@ import org.springframework.context.annotation.Configuration;
  * <p><strong>概述</strong></p>
  * <ul>
  *   <li>仅在类路径存在 {@link Striped} 时生效。</li>
- *   <li>当容器中不存在自定义 {@link KeyBasedLockExecutor} Bean 时，提供基于 Guava 的实现。</li>
- *   <li>从 {@link KeyBasedLockExecutorProperties.Guava} 读取条带数量。</li>
+ *   <li>当容器中不存在自定义 {@link KeyBasedLockTaskExecutor} Bean 时，提供基于 Guava 的实现。</li>
+ *   <li>从 {@link KeyBasedLockTaskExecutorProperties.Guava} 读取条带数量。</li>
  *   <li>当配置属性 {@code pangju.concurrent.executor.key-based-lock=GUAVA} 或未配置该属性（默认）时启用。</li>
  * </ul>
  *
@@ -44,7 +44,7 @@ import org.springframework.context.annotation.Configuration;
 @ConditionalOnProperty(prefix = "pangju.concurrent.executor.key-based-lock", name = "type", havingValue = "GUAVA", matchIfMissing = true)
 class GuavaConfiguration {
 	/**
-	 * 创建基于 Guava Striped 的 {@link KeyBasedLockExecutor} 实例。
+	 * 创建基于 Guava Striped 的 {@link KeyBasedLockTaskExecutor} 实例。
 	 *
 	 * <p>参数校验规则：</p>
 	 * <p>如果 {@code properties.guava.stripes} ≤ 0，则不设置或保留默认值。</p>
@@ -53,9 +53,9 @@ class GuavaConfiguration {
 	 * @return Striped 键锁执行器
 	 * @since 1.0.0
 	 */
-	@ConditionalOnMissingBean(KeyBasedLockExecutor.class)
+	@ConditionalOnMissingBean(KeyBasedLockTaskExecutor.class)
 	@Bean
-	public StripedKeyBasedLockExecutor stripedKeyBasedLockExecutor(KeyBasedLockExecutorProperties properties) {
-		return new StripedKeyBasedLockExecutor(properties.getGuava().getStripes());
+	public StripedKeyBasedLockTaskExecutor stripedKeyBasedLockExecutor(KeyBasedLockTaskExecutorProperties properties) {
+		return new StripedKeyBasedLockTaskExecutor(properties.getGuava().getStripes());
 	}
 }

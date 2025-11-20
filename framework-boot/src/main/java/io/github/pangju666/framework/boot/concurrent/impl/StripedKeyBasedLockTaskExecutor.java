@@ -17,7 +17,7 @@
 package io.github.pangju666.framework.boot.concurrent.impl;
 
 import com.google.common.util.concurrent.Striped;
-import io.github.pangju666.framework.boot.concurrent.KeyBasedLockExecutor;
+import io.github.pangju666.framework.boot.concurrent.KeyBasedLockTaskExecutor;
 import io.github.pangju666.framework.boot.concurrent.KeyBasedLockTask;
 import org.springframework.util.Assert;
 
@@ -35,7 +35,7 @@ import java.util.concurrent.locks.Lock;
  * @author pangju666
  * @since 1.0.0
  */
-public class StripedKeyBasedLockExecutor implements KeyBasedLockExecutor {
+public class StripedKeyBasedLockTaskExecutor implements KeyBasedLockTaskExecutor {
 	/**
 	 * 条带化锁集合。
 	 *
@@ -51,7 +51,7 @@ public class StripedKeyBasedLockExecutor implements KeyBasedLockExecutor {
 	 * @param stripes 锁条带数量
 	 * @since 1.0.0
 	 */
-	public StripedKeyBasedLockExecutor(int stripes) {
+	public StripedKeyBasedLockTaskExecutor(int stripes) {
 		this.striped = Striped.lazyWeakLock(stripes);
 	}
 

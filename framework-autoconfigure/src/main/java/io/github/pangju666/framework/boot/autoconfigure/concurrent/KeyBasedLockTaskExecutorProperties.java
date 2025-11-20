@@ -33,7 +33,7 @@ import java.util.concurrent.TimeUnit;
  * @since 1.0.0
  */
 @ConfigurationProperties(prefix = "pangju.concurrent.executor.key-based-lock")
-public class KeyBasedLockExecutorProperties {
+public class KeyBasedLockTaskExecutorProperties {
 	/**
 	 * Redisson 分布式锁配置。
 	 *

@@ -28,7 +28,7 @@ package io.github.pangju666.framework.boot.concurrent;
  * @author pangju666
  * @since 1.0.0
  */
-public interface KeyBasedLockExecutor {
+public interface KeyBasedLockTaskExecutor {
 	/**
 	 * 使用指定键获取锁并执行任务，执行结束后释放锁。
 	 *

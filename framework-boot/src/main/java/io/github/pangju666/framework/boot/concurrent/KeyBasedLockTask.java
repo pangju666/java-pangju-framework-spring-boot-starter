@@ -22,7 +22,7 @@ package io.github.pangju666.framework.boot.concurrent;
  * <p><strong>概述</strong></p>
  * <ul>
  *   <li>表示在键锁保护下执行的任务单元，返回结果类型由泛型 {@code T} 指定。</li>
- *   <li>通常与 {@link io.github.pangju666.framework.boot.concurrent.KeyBasedLockExecutor} 配合使用，由执行器负责获取与释放锁。</li>
+ *   <li>通常与 {@link KeyBasedLockTaskExecutor} 配合使用，由执行器负责获取与释放锁。</li>
  * </ul>
  *
  * @param <T> 任务返回结果类型
