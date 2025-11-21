@@ -23,16 +23,17 @@ import java.util.Objects;
 import java.util.concurrent.*;
 
 /**
- * 去重任务执行器。
+ * 去重任务执行器（按键去重）。
  *
  * <p>概述：基于键进行并发去重，确保同一键的任务在同一时间仅执行一次；后续并发请求复用首个任务的结果。</p>
  * <p>实现：同步场景使用 {@link FutureTask} 与 {@link ConcurrentMap} 去重；异步场景使用 {@link CompletableFuture}
  * 与 {@link ConcurrentMap} 去重，并通过 {@link AsyncTaskExecutor} 提交任务。</p>
+ * <p>并发与清理：按键注册进行去重；任务结束（成功或异常）后移除对应键，避免内存泄漏与错误复用。</p>
  *
  * @author pangju666
  * @since 1.0.0
  */
-public class DeduplicatingTaskExecutor {
+public class OnceTaskExecutor {
     /**
      * 正在执行中的同步任务映射（用于并发去重）。
      *
@@ -58,7 +59,7 @@ public class DeduplicatingTaskExecutor {
      * @throws IllegalArgumentException 当任一初始容量 ≤ 0 时抛出
      * @since 1.0.0
      */
-    public DeduplicatingTaskExecutor(int syncInitialCapacity, int asyncInitialCapacity) {
+    public OnceTaskExecutor(int syncInitialCapacity, int asyncInitialCapacity) {
         Assert.isTrue(syncInitialCapacity > 0, "syncInitialCapacity 必须大于 0");
         Assert.isTrue(asyncInitialCapacity > 0, "asyncInitialCapacity 必须大于 0");
 

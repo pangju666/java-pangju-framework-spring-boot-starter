@@ -23,15 +23,16 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  *
  * <p><strong>概述</strong></p>
  * <ul>
- *   <li>属性前缀：{@code pangju.task.execution.deduplicating}。</li>
- *   <li>用于配置同步/异步任务去重映射的初始容量，以降低高并发场景下的扩容开销。</li>
+ *   <li>属性前缀：{@code pangju.task.execution.once}。</li>
+ *   <li>用于配置同步/异步去重任务执行器映射的初始容量，以降低高并发场景下的扩容开销。</li>
  * </ul>
  *
  * @author pangju666
  * @since 1.0.0
+ * @see io.github.pangju666.framework.boot.concurrent.OnceTaskExecutor
  */
-@ConfigurationProperties(prefix = "pangju.task.execution.deduplicating")
-public class DeduplicatingTaskExecutorProperties {
+@ConfigurationProperties(prefix = "pangju.task.execution.once")
+public class OnceTaskExecutorProperties {
     /**
      * 同步任务映射初始容量。
      *
