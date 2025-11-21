@@ -2,7 +2,7 @@ io.github.pangju666.framework.boot.autoconfigure.validation.ValidationAutoConfig
 io.github.pangju666.framework.boot.autoconfigure.jackson.JacksonAutoConfiguration
 io.github.pangju666.framework.boot.autoconfigure.crypto.CryptoAutoConfiguration
 io.github.pangju666.framework.boot.autoconfigure.image.ImageAutoConfiguration
-io.github.pangju666.framework.boot.autoconfigure.concurrent.KeyBasedLockTaskExecutorAutoConfiguration
+io.github.pangju666.framework.boot.autoconfigure.concurrent.DeduplicatingTaskExecutorAutoConfiguration
 io.github.pangju666.framework.boot.autoconfigure.data.mybatisplus.MybatisPlusAutoConfiguration
 io.github.pangju666.framework.boot.autoconfigure.data.redis.RedisAutoConfiguration
 io.github.pangju666.framework.boot.autoconfigure.data.mongo.MongoRepositoriesAutoConfiguration
