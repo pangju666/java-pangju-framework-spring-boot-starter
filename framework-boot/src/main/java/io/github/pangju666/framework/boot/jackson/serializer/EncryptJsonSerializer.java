@@ -201,6 +201,7 @@ public class EncryptJsonSerializer extends JsonSerializer<Object> implements Con
 					if (Objects.isNull(serializer)) {
 						String cryptoKey = CryptoUtils.getKey(annotation.key(), false);
 						if (Objects.isNull(cryptoKey)) {
+							LOGGER.error("未找到密钥，属性：{}", annotation.key());
 							return NullSerializer.instance;
 						}
 						CryptoFactory factory = StaticSpringContext.getBeanFactory().getBean(annotation.factory()[0]);
@@ -213,6 +214,7 @@ public class EncryptJsonSerializer extends JsonSerializer<Object> implements Con
 					if (Objects.isNull(serializer)) {
 						String cryptoKey = CryptoUtils.getKey(annotation.key(), false);
 						if (Objects.isNull(cryptoKey)) {
+							LOGGER.error("未找到密钥，属性：{}", annotation.key());
 							return NullSerializer.instance;
 						}
 						CryptoFactory factory = annotation.algorithm().getFactory();

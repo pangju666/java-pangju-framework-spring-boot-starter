@@ -8,7 +8,7 @@
 		<artifactId>framework-spring-boot-starter-parent</artifactId>
 		<version>1.0.0</version>
 	</parent>
-	<artifactId>framework-spring-boot-starter-web</artifactId>
+	<artifactId>framework-spring-boot-starter-json</artifactId>
 
 	<licenses>
 		<license>
@@ -20,21 +20,20 @@
 	<dependencies>
 		<dependency>
 			<groupId>io.github.pangju666.framework.boot</groupId>
-			<artifactId>framework-spring-boot-starter</artifactId>
+			<artifactId>framework-boot</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>io.github.pangju666.framework.boot</groupId>
-			<artifactId>framework-spring-boot-starter-json</artifactId>
+			<artifactId>framework-autoconfigure</artifactId>
 		</dependency>
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-web</artifactId>
+			<artifactId>spring-boot-starter-json</artifactId>
 		</dependency>
-
 		<dependency>
-			<groupId>io.github.pangju666.framework</groupId>
-			<artifactId>framework-web</artifactId>
+			<groupId>io.github.pangju666.framework.boot</groupId>
+			<artifactId>framework-spring-boot-starter-crypto</artifactId>
 		</dependency>
 	</dependencies>
 </project>

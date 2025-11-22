@@ -441,6 +441,7 @@ public class DecryptJsonDeserializer extends JsonDeserializer<Object> implements
 				if (Objects.isNull(deserializer)) {
 					String cryptoKey = CryptoUtils.getKey(annotation.key(), false);
 					if (Objects.isNull(cryptoKey)) {
+						LOGGER.error("未找到密钥，属性：{}", annotation.key());
 						return NullifyingDeserializer.instance;
 					}
 					CryptoFactory factory = StaticSpringContext.getBeanFactory().getBean(annotation.factory()[0]);
@@ -453,6 +454,7 @@ public class DecryptJsonDeserializer extends JsonDeserializer<Object> implements
 				if (Objects.isNull(deserializer)) {
 					String cryptoKey = CryptoUtils.getKey(annotation.key(), false);
 					if (Objects.isNull(cryptoKey)) {
+						LOGGER.error("未找到密钥，属性：{}", annotation.key());
 						return NullifyingDeserializer.instance;
 					}
 					CryptoFactory factory = annotation.algorithm().getFactory();

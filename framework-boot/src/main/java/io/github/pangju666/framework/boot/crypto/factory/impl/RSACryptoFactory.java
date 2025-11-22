@@ -135,7 +135,7 @@ public class RSACryptoFactory implements CryptoFactory {
     /**
      * 获取并缓存二进制加密器（使用公钥）。
      *
-     * @param publicKey Base64 编码的公钥字符串
+     * @param publicKey Base64 编码的 X.509 格式公钥字符串
      * @return 二进制加密器
      * @throws InvalidKeySpecException 公钥格式不合法时抛出
      * @since 1.0.0
@@ -156,7 +156,7 @@ public class RSACryptoFactory implements CryptoFactory {
 	/**
 	 * 获取并缓存文本加密器（使用公钥）。
 	 *
-	 * @param publicKey Base64 编码的公钥字符串
+	 * @param publicKey Base64 编码的 X.509 格式公钥字符串
 	 * @return 文本加密器
 	 * @throws InvalidKeySpecException 公钥格式不合法时抛出
 	 * @since 1.0.0
@@ -177,7 +177,7 @@ public class RSACryptoFactory implements CryptoFactory {
     /**
      * 获取并缓存整型数字加密器（使用公钥）。
      *
-     * @param publicKey Base64 编码的公钥字符串
+     * @param publicKey Base64 编码的 X.509 格式公钥字符串
      * @return 整型数字加密器
      * @throws InvalidKeySpecException 公钥格式不合法时抛出
      * @since 1.0.0
@@ -198,7 +198,7 @@ public class RSACryptoFactory implements CryptoFactory {
     /**
      * 获取并缓存高精度小数加密器（使用公钥）。
      *
-     * @param publicKey Base64 编码的公钥字符串
+     * @param publicKey Base64 编码的 X.509 格式公钥字符串
      * @return 高精度小数加密器
      * @throws InvalidKeySpecException 公钥格式不合法时抛出
      * @since 1.0.0
@@ -219,7 +219,7 @@ public class RSACryptoFactory implements CryptoFactory {
     /**
      * 获取并缓存二进制解密器（使用私钥）。
      *
-     * @param privateKey Base64 编码的私钥字符串
+     * @param privateKey Base64 编码的 PKCS#8 格式私钥字符串
      * @return 二进制解密器
      * @throws InvalidKeySpecException 私钥格式不合法时抛出
      * @since 1.0.0
@@ -240,7 +240,7 @@ public class RSACryptoFactory implements CryptoFactory {
 	/**
 	 * 获取并缓存文本解密器（使用私钥）。
 	 *
-	 * @param privateKey Base64 编码的私钥字符串
+	 * @param privateKey Base64 编码的 PKCS#8 格式私钥字符串
 	 * @return 二进制解密器
 	 * @throws InvalidKeySpecException 私钥格式不合法时抛出
 	 * @since 1.0.0
@@ -261,7 +261,7 @@ public class RSACryptoFactory implements CryptoFactory {
     /**
      * 获取并缓存整型数字解密器（使用私钥）。
      *
-     * @param privateKey Base64 编码的私钥字符串
+     * @param privateKey Base64 编码的 PKCS#8 格式私钥字符串
      * @return 整型数字解密器
      * @throws InvalidKeySpecException 私钥格式不合法时抛出
      * @since 1.0.0
@@ -282,7 +282,7 @@ public class RSACryptoFactory implements CryptoFactory {
     /**
      * 获取并缓存高精度小数解密器（使用私钥）。
      *
-     * @param privateKey Base64 编码的私钥字符串
+     * @param privateKey Base64 编码的 PKCS#8 格式私钥字符串
      * @return 高精度小数解密器
      * @throws InvalidKeySpecException 私钥格式不合法时抛出
      * @since 1.0.0

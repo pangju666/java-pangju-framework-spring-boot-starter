@@ -24,6 +24,7 @@
 		<module>framework-spring-boot-starter-data-mybatis-plus</module>
 		<module>framework-spring-boot-starter-data-redis</module>
 		<module>framework-spring-boot-starter-image</module>
+		<module>framework-spring-boot-starter-json</module>
 		<module>framework-spring-boot-starter-spock-test</module>
 		<module>framework-spring-boot-starter-test</module>
 		<module>framework-spring-boot-starter-validation</module>
@@ -112,6 +113,11 @@
 			<dependency>
 				<groupId>io.github.pangju666.framework.boot</groupId>
 				<artifactId>framework-spring-boot-starter-image</artifactId>
+				<version>1.0.0</version>
+			</dependency>
+			<dependency>
+				<groupId>io.github.pangju666.framework.boot</groupId>
+				<artifactId>framework-spring-boot-starter-json</artifactId>
 				<version>1.0.0</version>
 			</dependency>
 			<dependency>

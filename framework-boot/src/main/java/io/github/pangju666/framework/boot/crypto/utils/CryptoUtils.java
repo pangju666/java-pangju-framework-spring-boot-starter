@@ -16,8 +16,8 @@
 
 package io.github.pangju666.framework.boot.crypto.utils;
 
-import io.github.pangju666.framework.boot.crypto.factory.CryptoFactory;
 import io.github.pangju666.framework.boot.crypto.enums.Encoding;
+import io.github.pangju666.framework.boot.crypto.factory.CryptoFactory;
 import io.github.pangju666.framework.boot.spring.StaticSpringContext;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Base64;
@@ -25,8 +25,6 @@ import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -34,11 +32,10 @@ import java.security.spec.InvalidKeySpecException;
 import java.util.Objects;
 
 /**
- * 加解密工具类（内部使用）。
+ * 加解密工具类。
  * <p>
  * 提供对字节数组、字符串、{@link BigInteger}、{@link BigDecimal} 等类型的通用加/解密能力，
  * 并封装了常见编码（Base64、Hex）及密钥占位符解析（如 <code>${...}</code>）的辅助逻辑。
- * 工具类为无状态设计，所有方法均为静态方法，线程安全。
  * </p>
  *
  * @author pangju666
@@ -46,11 +43,6 @@ import java.util.Objects;
  * @see CryptoFactory
  */
 public class CryptoUtils {
-    /**
-     * 日志记录器。
-     */
-    protected static final Logger LOGGER = LoggerFactory.getLogger(CryptoUtils.class);
-
     protected CryptoUtils() {
     }
 
@@ -223,7 +215,6 @@ public class CryptoUtils {
             if (throwsException) {
 				throw new InvalidKeySpecException("密钥属性为空");
 			}
-			LOGGER.error("密钥属性不可为空");
             return null;
         }
 
@@ -234,7 +225,6 @@ public class CryptoUtils {
 				if (throwsException) {
 					throw new InvalidKeySpecException("未找到密钥，属性：" + key);
 				}
-				LOGGER.error("未找到密钥，属性：{}", key);
 				return null;
 			}
         }
