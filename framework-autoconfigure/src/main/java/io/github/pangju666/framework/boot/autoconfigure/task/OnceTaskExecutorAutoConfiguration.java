@@ -14,16 +14,16 @@
  *    limitations under the License.
  */
 
-package io.github.pangju666.framework.boot.autoconfigure.concurrent;
+package io.github.pangju666.framework.boot.autoconfigure.task;
 
-import io.github.pangju666.framework.boot.concurrent.OnceTaskExecutor;
+import io.github.pangju666.framework.boot.task.OnceTaskExecutor;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 
 /**
- * 去重任务执行器自动配置。
+ * 单次任务执行器自动配置。
  *
  * <p><b>概述</b></p>
  * <ul>
@@ -34,7 +34,7 @@ import org.springframework.context.annotation.Bean;
  * <p><b>配置项</b></p>
  * <ul>
  *   <li>前缀：{@code pangju.task.execution.once}。</li>
- *   <li>{@code sync-initial-capacity}、{@code async-initial-capacity}：同步/异步去重映射的初始容量。</li>
+ *   <li>{@code sync-initial-capacity}、{@code async-initial-capacity}：同步/异步任务映射的初始容量。</li>
  * </ul>
  *
  * @author pangju666
@@ -44,13 +44,13 @@ import org.springframework.context.annotation.Bean;
 @EnableConfigurationProperties(OnceTaskExecutorProperties.class)
 public class OnceTaskExecutorAutoConfiguration {
     /**
-     * 注册去重任务执行器 Bean。
+     * 注册单次任务执行器 Bean。
      *
-     * <p>行为：根据配置初始化同步与异步去重映射的初始容量。</p>
+     * <p>行为：根据配置初始化同步与异步任务映射的初始容量。</p>
      * <p>启用条件：当容器中不存在其它 {@link OnceTaskExecutor} Bean 时生效。</p>
      *
      * @param properties 配置属性
-     * @return 去重任务执行器实例
+     * @return 单次任务执行器实例
      * @since 1.0.0
      */
 	@ConditionalOnMissingBean(OnceTaskExecutor.class)

@@ -14,22 +14,22 @@
  *    limitations under the License.
  */
 
-package io.github.pangju666.framework.boot.autoconfigure.concurrent;
+package io.github.pangju666.framework.boot.autoconfigure.task;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
- * 去重任务执行器配置属性。
+ * 单次任务执行器配置属性。
  *
  * <p><strong>概述</strong></p>
  * <ul>
  *   <li>属性前缀：{@code pangju.task.execution.once}。</li>
- *   <li>用于配置同步/异步去重任务执行器映射的初始容量，以降低高并发场景下的扩容开销。</li>
+ *   <li>用于配置同步/异步任务映射的初始容量，以降低高并发场景下的扩容开销。</li>
  * </ul>
  *
  * @author pangju666
  * @since 1.0.0
- * @see io.github.pangju666.framework.boot.concurrent.OnceTaskExecutor
+ * @see io.github.pangju666.framework.boot.task.OnceTaskExecutor
  */
 @ConfigurationProperties(prefix = "pangju.task.execution.once")
 public class OnceTaskExecutorProperties {
