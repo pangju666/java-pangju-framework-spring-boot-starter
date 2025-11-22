@@ -26,9 +26,10 @@ import io.github.pangju666.framework.boot.jackson.serializer.LocalDateJsonSerial
 import io.github.pangju666.framework.boot.jackson.serializer.LocalDateTimeJsonSerializer;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
 import java.time.LocalDate;
@@ -69,14 +70,11 @@ public class JacksonAutoConfiguration {
 	 *   <li>为LocalDateTime和LocalDate类型注册序列化器和反序列化器，处理日期时间与时间戳的转换</li>
 	 * </ul>
 	 * </p>
-	 * <p>
-	 * 仅在未定义同类型bean的情况下生效。
-	 * </p>
 	 *
 	 * @return Jackson2ObjectMapperBuilder的自定义器实例
 	 * @since 1.0.0
 	 */
-	@ConditionalOnMissingBean(Jackson2ObjectMapperBuilderCustomizer.class)
+	@Order(Ordered.HIGHEST_PRECEDENCE)
 	@Bean
 	public Jackson2ObjectMapperBuilderCustomizer jackson2ObjectMapperBuilderCustomizer() {
 		return jacksonObjectMapperBuilder -> jacksonObjectMapperBuilder

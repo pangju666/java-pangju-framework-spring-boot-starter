@@ -20,10 +20,11 @@ import jakarta.validation.executable.ExecutableValidator;
 import org.hibernate.validator.HibernateValidatorConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnResource;
 import org.springframework.boot.autoconfigure.validation.ValidationConfigurationCustomizer;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 
 /**
  * 验证自动配置类
@@ -46,14 +47,11 @@ public class ValidationAutoConfiguration {
 	 * 当验证过程中发现第一个错误时，验证过程将立即停止并返回错误，不再继续验证其他属性。
 	 * 这有助于提高验证性能，特别是在处理大型对象时。
 	 * </p>
-	 * <p>
-	 * 仅在未定义同类型bean的情况下生效。
-	 * </p>
 	 *
 	 * @return ValidationConfigurationCustomizer 验证配置自定义器实例
 	 * @since 1.0.0
 	 */
-	@ConditionalOnMissingBean(ValidationConfigurationCustomizer.class)
+	@Order(Ordered.HIGHEST_PRECEDENCE)
 	@Bean
 	public ValidationConfigurationCustomizer hibernateValidationConfigurationCustomizer() {
 		return configuration -> {

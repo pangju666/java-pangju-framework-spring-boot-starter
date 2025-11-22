@@ -39,13 +39,13 @@ public class OnceTaskExecutor {
      *
      * @since 1.0.0
      */
-    private final ConcurrentMap<String, FutureTask<Object>> syncRunningTasks;
+    protected final ConcurrentMap<String, FutureTask<Object>> syncRunningTasks;
     /**
      * 正在执行中的异步任务映射（用于并发去重）。
      *
      * @since 1.0.0
      */
-    private final ConcurrentMap<String, CompletableFuture<Object>> asyncRunningTasks;
+	protected final ConcurrentMap<String, CompletableFuture<Object>> asyncRunningTasks;
 
     /**
      * 创建去重任务执行器（指定初始容量）。
