@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package io.github.pangju666.framework.boot.concurrent;
+package io.github.pangju666.framework.boot.task;
 
 import org.springframework.core.task.AsyncTaskExecutor;
 import org.springframework.util.Assert;
@@ -23,7 +23,7 @@ import java.util.Objects;
 import java.util.concurrent.*;
 
 /**
- * 去重任务执行器（按键去重）。
+ * 单次任务执行器（按键去重）。
  *
  * <p>概述：基于键进行并发去重，确保同一键的任务在同一时间仅执行一次；后续并发请求复用首个任务的结果。</p>
  * <p>实现：同步场景使用 {@link FutureTask} 与 {@link ConcurrentMap} 去重；异步场景使用 {@link CompletableFuture}
