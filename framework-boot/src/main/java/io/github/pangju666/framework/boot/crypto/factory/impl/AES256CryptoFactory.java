@@ -28,7 +28,6 @@ import org.jasypt.util.text.TextEncryptor;
 import org.springframework.util.Assert;
 
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -83,14 +82,11 @@ public class AES256CryptoFactory implements CryptoFactory {
     @Override
     public BinaryEncryptor getBinaryEncryptor(String key) {
 		Assert.hasText(key, "key 不可为空");
-
-		AES256BinaryEncryptor encryptor = BINARY_ENCRYPTOR_MAP.get(key);
-        if (Objects.isNull(encryptor)) {
-            encryptor = new AES256BinaryEncryptor();
-            encryptor.setPassword(key);
-            BINARY_ENCRYPTOR_MAP.put(key, encryptor);
-        }
-        return encryptor;
+		return BINARY_ENCRYPTOR_MAP.computeIfAbsent(key, k -> {
+			AES256BinaryEncryptor encryptor = new AES256BinaryEncryptor();
+			encryptor.setPassword(k);
+			return encryptor;
+		});
     }
 
 	/**
@@ -103,14 +99,11 @@ public class AES256CryptoFactory implements CryptoFactory {
 	@Override
 	public TextEncryptor getTextEncryptor(String key) {
 		Assert.hasText(key, "key 不可为空");
-
-		AES256TextEncryptor encryptor = TEXT_ENCRYPTOR_MAP.get(key);
-		if (Objects.isNull(encryptor)) {
-			encryptor = new AES256TextEncryptor();
-			encryptor.setPassword(key);
-			TEXT_ENCRYPTOR_MAP.put(key, encryptor);
-		}
-		return encryptor;
+		return TEXT_ENCRYPTOR_MAP.computeIfAbsent(key, k -> {
+			AES256TextEncryptor encryptor = new AES256TextEncryptor();
+			encryptor.setPassword(k);
+			return encryptor;
+		});
 	}
 
 	/**
@@ -123,14 +116,11 @@ public class AES256CryptoFactory implements CryptoFactory {
     @Override
     public IntegerNumberEncryptor getIntegerNumberEncryptor(String key) {
 		Assert.hasText(key, "key 不可为空");
-
-        AES256IntegerNumberEncryptor encryptor = INTEGER_ENCRYPTOR_MAP.get(key);
-        if (Objects.isNull(encryptor)) {
-            encryptor = new AES256IntegerNumberEncryptor();
-            encryptor.setPassword(key);
-            INTEGER_ENCRYPTOR_MAP.put(key, encryptor);
-        }
-        return encryptor;
+		return INTEGER_ENCRYPTOR_MAP.computeIfAbsent(key, k -> {
+			AES256IntegerNumberEncryptor encryptor = new AES256IntegerNumberEncryptor();
+			encryptor.setPassword(k);
+			return encryptor;
+		});
     }
 
     /**
@@ -143,13 +133,10 @@ public class AES256CryptoFactory implements CryptoFactory {
     @Override
     public DecimalNumberEncryptor getDecimalNumberEncryptor(String key) {
 		Assert.hasText(key, "key 不可为空");
-
-        AES256DecimalNumberEncryptor encryptor = DECIMAL_ENCRYPTOR_MAP.get(key);
-        if (Objects.isNull(encryptor)) {
-            encryptor = new AES256DecimalNumberEncryptor();
-            encryptor.setPassword(key);
-            DECIMAL_ENCRYPTOR_MAP.put(key, encryptor);
-        }
-        return encryptor;
+		return DECIMAL_ENCRYPTOR_MAP.computeIfAbsent(key, k -> {
+			AES256DecimalNumberEncryptor encryptor = new AES256DecimalNumberEncryptor();
+			encryptor.setPassword(k);
+			return encryptor;
+		});
     }
 }

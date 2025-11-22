@@ -20,7 +20,7 @@ import io.github.pangju666.commons.crypto.encryption.binary.RSABinaryEncryptor;
 import io.github.pangju666.commons.crypto.encryption.numeric.RSADecimalNumberEncryptor;
 import io.github.pangju666.commons.crypto.encryption.numeric.RSAIntegerNumberEncryptor;
 import io.github.pangju666.commons.crypto.encryption.text.RSATextEncryptor;
-import io.github.pangju666.commons.crypto.key.RSAKey;
+import io.github.pangju666.commons.crypto.key.RSAKeyPair;
 import io.github.pangju666.commons.crypto.transformation.RSATransformation;
 import io.github.pangju666.commons.crypto.transformation.impl.RSAOEAPWithSHA256Transformation;
 import io.github.pangju666.framework.boot.crypto.factory.CryptoFactory;
@@ -58,49 +58,49 @@ public class RSACryptoFactory implements CryptoFactory {
 	 *
 	 * @since 1.0.0
 	 */
-	private static final Map<String, RSABinaryEncryptor> RSA_BINARY_ENCRYPT_ENCRYPTOR_MAP = new ConcurrentHashMap<>();
+	private static final Map<String, RSABinaryEncryptor> RSA_BINARY_ENCRYPT_ENCRYPTOR_MAP = new ConcurrentHashMap<>(16);
 	/**
 	 * 私钥到二进制解密器的缓存映射。
 	 *
 	 * @since 1.0.0
 	 */
-	private static final Map<String, RSABinaryEncryptor> RSA_BINARY_DECRYPT_ENCRYPTOR_MAP = new ConcurrentHashMap<>();
+	private static final Map<String, RSABinaryEncryptor> RSA_BINARY_DECRYPT_ENCRYPTOR_MAP = new ConcurrentHashMap<>(16);
 	/**
 	 * 公钥到文本加密器的缓存映射。
 	 *
 	 * @since 1.0.0
 	 */
-	private static final Map<String, RSATextEncryptor> RSA_TEXT_ENCRYPT_ENCRYPTOR_MAP = new ConcurrentHashMap<>();
+	private static final Map<String, RSATextEncryptor> RSA_TEXT_ENCRYPT_ENCRYPTOR_MAP = new ConcurrentHashMap<>(16);
 	/**
 	 * 私钥到文本解密器的缓存映射。
 	 *
 	 * @since 1.0.0
 	 */
-	private static final Map<String, RSATextEncryptor> RSA_TEXT_DECRYPT_ENCRYPTOR_MAP = new ConcurrentHashMap<>();
+	private static final Map<String, RSATextEncryptor> RSA_TEXT_DECRYPT_ENCRYPTOR_MAP = new ConcurrentHashMap<>(16);
 	/**
 	 * 公钥到整型数字加密器的缓存映射。
 	 *
 	 * @since 1.0.0
 	 */
-	private static final Map<String, RSAIntegerNumberEncryptor> RSA_INTEGER_ENCRYPT_ENCRYPTOR_MAP = new ConcurrentHashMap<>();
+	private static final Map<String, RSAIntegerNumberEncryptor> RSA_INTEGER_ENCRYPT_ENCRYPTOR_MAP = new ConcurrentHashMap<>(16);
 	/**
 	 * 私钥到整型数字解密器的缓存映射。
 	 *
 	 * @since 1.0.0
 	 */
-	private static final Map<String, RSAIntegerNumberEncryptor> RSA_INTEGER_DECRYPT_ENCRYPTOR_MAP = new ConcurrentHashMap<>();
+	private static final Map<String, RSAIntegerNumberEncryptor> RSA_INTEGER_DECRYPT_ENCRYPTOR_MAP = new ConcurrentHashMap<>(16);
 	/**
 	 * 公钥到高精度小数加密器的缓存映射。
 	 *
 	 * @since 1.0.0
 	 */
-	private static final Map<String, RSADecimalNumberEncryptor> RSA_BIGDECIMAL_ENCRYPT_ENCRYPTOR_MAP = new ConcurrentHashMap<>();
+	private static final Map<String, RSADecimalNumberEncryptor> RSA_BIGDECIMAL_ENCRYPT_ENCRYPTOR_MAP = new ConcurrentHashMap<>(16);
 	/**
 	 * 私钥到高精度小数解密器的缓存映射。
 	 *
 	 * @since 1.0.0
 	 */
-	private static final Map<String, RSADecimalNumberEncryptor> RSA_BIGDECIMAL_DECRYPT_ENCRYPTOR_MAP = new ConcurrentHashMap<>();
+	private static final Map<String, RSADecimalNumberEncryptor> RSA_BIGDECIMAL_DECRYPT_ENCRYPTOR_MAP = new ConcurrentHashMap<>(16);
 
     /**
      * RSA 加密方案（填充/摘要等参数）。
@@ -144,13 +144,23 @@ public class RSACryptoFactory implements CryptoFactory {
     public BinaryEncryptor getBinaryEncryptor(String publicKey) throws InvalidKeySpecException {
 		Assert.hasText(publicKey, "key 不可为空");
 
-		RSABinaryEncryptor encryptor = RSA_BINARY_ENCRYPT_ENCRYPTOR_MAP.get(publicKey);
-        if (Objects.isNull(encryptor)) {
-            encryptor = new RSABinaryEncryptor(transformation);
-            encryptor.setKey(RSAKey.fromBase64String(publicKey, null));
-            RSA_BINARY_ENCRYPT_ENCRYPTOR_MAP.put(publicKey, encryptor);
-        }
-        return encryptor;
+		try {
+			return RSA_BINARY_ENCRYPT_ENCRYPTOR_MAP.computeIfAbsent(publicKey, k -> {
+				try {
+					RSABinaryEncryptor encryptor = new RSABinaryEncryptor(transformation);
+					encryptor.setPublicKey(RSAKeyPair.fromBase64String(k, null).getPublicKey());
+					encryptor.initialize();
+					return encryptor;
+				} catch (InvalidKeySpecException e) {
+					throw new RuntimeException(e);
+				}
+			});
+		} catch (RuntimeException e) {
+			if (e.getCause() instanceof InvalidKeySpecException invalidKeySpecException) {
+				throw invalidKeySpecException;
+			}
+			throw e;
+		}
     }
 
 	/**
@@ -165,13 +175,28 @@ public class RSACryptoFactory implements CryptoFactory {
 	public TextEncryptor getTextEncryptor(String publicKey) throws InvalidKeySpecException {
 		Assert.hasText(publicKey, "key 不可为空");
 
-		RSATextEncryptor encryptor = RSA_TEXT_ENCRYPT_ENCRYPTOR_MAP.get(publicKey);
-		if (Objects.isNull(encryptor)) {
-			encryptor = new RSATextEncryptor(transformation);
-			encryptor.setKey(RSAKey.fromBase64String(publicKey, null));
-			RSA_TEXT_ENCRYPT_ENCRYPTOR_MAP.put(publicKey, encryptor);
+		try {
+			return RSA_TEXT_ENCRYPT_ENCRYPTOR_MAP.computeIfAbsent(publicKey, k -> {
+				try {
+					RSABinaryEncryptor binaryEncryptor = RSA_BINARY_ENCRYPT_ENCRYPTOR_MAP.get(publicKey);
+					if (Objects.nonNull(binaryEncryptor)) {
+						return new RSATextEncryptor(binaryEncryptor);
+					}
+
+					RSATextEncryptor encryptor = new RSATextEncryptor(transformation);
+					encryptor.setPublicKey(RSAKeyPair.fromBase64String(publicKey, null).getPublicKey());
+					encryptor.initialize();
+					return encryptor;
+				} catch (InvalidKeySpecException e) {
+					throw new RuntimeException(e);
+				}
+			});
+		} catch (RuntimeException e) {
+			if (e.getCause() instanceof InvalidKeySpecException invalidKeySpecException) {
+				throw invalidKeySpecException;
+			}
+			throw e;
 		}
-		return encryptor;
 	}
 
     /**
@@ -186,13 +211,28 @@ public class RSACryptoFactory implements CryptoFactory {
     public IntegerNumberEncryptor getIntegerNumberEncryptor(String publicKey) throws InvalidKeySpecException {
 		Assert.hasText(publicKey, "publicKey 不可为空");
 
-		RSAIntegerNumberEncryptor encryptor = RSA_INTEGER_ENCRYPT_ENCRYPTOR_MAP.get(publicKey);
-        if (Objects.isNull(encryptor)) {
-            encryptor = new RSAIntegerNumberEncryptor(transformation);
-            encryptor.setKey(RSAKey.fromBase64String(publicKey, null));
-            RSA_INTEGER_ENCRYPT_ENCRYPTOR_MAP.put(publicKey, encryptor);
-        }
-        return encryptor;
+		try {
+			return RSA_INTEGER_ENCRYPT_ENCRYPTOR_MAP.computeIfAbsent(publicKey, k -> {
+				try {
+					RSABinaryEncryptor binaryEncryptor = RSA_BINARY_ENCRYPT_ENCRYPTOR_MAP.get(publicKey);
+					if (Objects.nonNull(binaryEncryptor)) {
+						return new RSAIntegerNumberEncryptor(binaryEncryptor);
+					}
+
+					RSAIntegerNumberEncryptor encryptor = new RSAIntegerNumberEncryptor(transformation);
+					encryptor.setPublicKey(RSAKeyPair.fromBase64String(publicKey, null).getPublicKey());
+					encryptor.initialize();
+					return encryptor;
+				} catch (InvalidKeySpecException e) {
+					throw new RuntimeException(e);
+				}
+			});
+		} catch (RuntimeException e) {
+			if (e.getCause() instanceof InvalidKeySpecException invalidKeySpecException) {
+				throw invalidKeySpecException;
+			}
+			throw e;
+		}
     }
 
     /**
@@ -207,13 +247,28 @@ public class RSACryptoFactory implements CryptoFactory {
     public DecimalNumberEncryptor getDecimalNumberEncryptor(String publicKey) throws InvalidKeySpecException {
 		Assert.hasText(publicKey, "publicKey 不可为空");
 
-		RSADecimalNumberEncryptor encryptor = RSA_BIGDECIMAL_ENCRYPT_ENCRYPTOR_MAP.get(publicKey);
-        if (Objects.isNull(encryptor)) {
-            encryptor = new RSADecimalNumberEncryptor(transformation);
-            encryptor.setKey(RSAKey.fromBase64String(publicKey, null));
-            RSA_BIGDECIMAL_ENCRYPT_ENCRYPTOR_MAP.put(publicKey, encryptor);
-        }
-        return encryptor;
+		try {
+			return RSA_BIGDECIMAL_ENCRYPT_ENCRYPTOR_MAP.computeIfAbsent(publicKey, k -> {
+				try {
+					RSABinaryEncryptor binaryEncryptor = RSA_BINARY_ENCRYPT_ENCRYPTOR_MAP.get(publicKey);
+					if (Objects.nonNull(binaryEncryptor)) {
+						return new RSADecimalNumberEncryptor(binaryEncryptor);
+					}
+
+					RSADecimalNumberEncryptor encryptor = new RSADecimalNumberEncryptor(transformation);
+					encryptor.setPublicKey(RSAKeyPair.fromBase64String(k, null).getPublicKey());
+					encryptor.initialize();
+					return encryptor;
+				} catch (InvalidKeySpecException e) {
+					throw new RuntimeException(e);
+				}
+			});
+		} catch (RuntimeException e) {
+			if (e.getCause() instanceof InvalidKeySpecException invalidKeySpecException) {
+				throw invalidKeySpecException;
+			}
+			throw e;
+		}
     }
 
     /**
@@ -228,13 +283,23 @@ public class RSACryptoFactory implements CryptoFactory {
     public BinaryEncryptor getBinaryDecryptor(String privateKey) throws InvalidKeySpecException {
 		Assert.hasText(privateKey, "privateKey 不可为空");
 
-		RSABinaryEncryptor encryptor = RSA_BINARY_DECRYPT_ENCRYPTOR_MAP.get(privateKey);
-        if (Objects.isNull(encryptor)) {
-            encryptor = new RSABinaryEncryptor(transformation);
-            encryptor.setKey(RSAKey.fromBase64String(null, privateKey));
-            RSA_BINARY_DECRYPT_ENCRYPTOR_MAP.put(privateKey, encryptor);
-        }
-        return encryptor;
+		try {
+			return RSA_BINARY_DECRYPT_ENCRYPTOR_MAP.computeIfAbsent(privateKey, k -> {
+				try {
+					RSABinaryEncryptor encryptor = new RSABinaryEncryptor(transformation);
+					encryptor.setPrivateKey(RSAKeyPair.fromBase64String( null, privateKey).getPrivateKey());
+					encryptor.initialize();
+					return encryptor;
+				} catch (InvalidKeySpecException e) {
+					throw new RuntimeException(e);
+				}
+			});
+		} catch (RuntimeException e) {
+			if (e.getCause() instanceof InvalidKeySpecException invalidKeySpecException) {
+				throw invalidKeySpecException;
+			}
+			throw e;
+		}
     }
 
 	/**
@@ -249,13 +314,28 @@ public class RSACryptoFactory implements CryptoFactory {
 	public TextEncryptor getTextDecryptor(String privateKey) throws InvalidKeySpecException {
 		Assert.hasText(privateKey, "privateKey 不可为空");
 
-		RSATextEncryptor encryptor = RSA_TEXT_DECRYPT_ENCRYPTOR_MAP.get(privateKey);
-		if (Objects.isNull(encryptor)) {
-			encryptor = new RSATextEncryptor(transformation);
-			encryptor.setKey(RSAKey.fromBase64String(null, privateKey));
-			RSA_TEXT_DECRYPT_ENCRYPTOR_MAP.put(privateKey, encryptor);
+		try {
+			return RSA_TEXT_DECRYPT_ENCRYPTOR_MAP.computeIfAbsent(privateKey, k -> {
+				try {
+					RSABinaryEncryptor binaryEncryptor = RSA_BINARY_DECRYPT_ENCRYPTOR_MAP.get(privateKey);
+					if (Objects.nonNull(binaryEncryptor)) {
+						return new RSATextEncryptor(binaryEncryptor);
+					}
+
+					RSATextEncryptor encryptor = new RSATextEncryptor(transformation);
+					encryptor.setPrivateKey(RSAKeyPair.fromBase64String( null, privateKey).getPrivateKey());
+					encryptor.initialize();
+					return encryptor;
+				} catch (InvalidKeySpecException e) {
+					throw new RuntimeException(e);
+				}
+			});
+		} catch (RuntimeException e) {
+			if (e.getCause() instanceof InvalidKeySpecException invalidKeySpecException) {
+				throw invalidKeySpecException;
+			}
+			throw e;
 		}
-		return encryptor;
 	}
 
     /**
@@ -270,13 +350,28 @@ public class RSACryptoFactory implements CryptoFactory {
     public IntegerNumberEncryptor getIntegerNumberDecryptor(String privateKey) throws InvalidKeySpecException {
 		Assert.hasText(privateKey, "privateKey 不可为空");
 
-		RSAIntegerNumberEncryptor encryptor = RSA_INTEGER_DECRYPT_ENCRYPTOR_MAP.get(privateKey);
-        if (Objects.isNull(encryptor)) {
-            encryptor = new RSAIntegerNumberEncryptor(transformation);
-            encryptor.setKey(RSAKey.fromBase64String(null, privateKey));
-            RSA_INTEGER_DECRYPT_ENCRYPTOR_MAP.put(privateKey, encryptor);
-        }
-        return encryptor;
+		try {
+			return RSA_INTEGER_DECRYPT_ENCRYPTOR_MAP.computeIfAbsent(privateKey, k -> {
+				try {
+					RSABinaryEncryptor binaryEncryptor = RSA_BINARY_DECRYPT_ENCRYPTOR_MAP.get(privateKey);
+					if (Objects.nonNull(binaryEncryptor)) {
+						return new RSAIntegerNumberEncryptor(binaryEncryptor);
+					}
+
+					RSAIntegerNumberEncryptor encryptor = new RSAIntegerNumberEncryptor(transformation);
+					encryptor.setPrivateKey(RSAKeyPair.fromBase64String( null, privateKey).getPrivateKey());
+					encryptor.initialize();
+					return encryptor;
+				} catch (InvalidKeySpecException e) {
+					throw new RuntimeException(e);
+				}
+			});
+		} catch (RuntimeException e) {
+			if (e.getCause() instanceof InvalidKeySpecException invalidKeySpecException) {
+				throw invalidKeySpecException;
+			}
+			throw e;
+		}
     }
 
     /**
@@ -291,12 +386,27 @@ public class RSACryptoFactory implements CryptoFactory {
     public DecimalNumberEncryptor getDecimalNumberDecryptor(String privateKey) throws InvalidKeySpecException {
 		Assert.hasText(privateKey, "privateKey 不可为空");
 
-		RSADecimalNumberEncryptor encryptor = RSA_BIGDECIMAL_DECRYPT_ENCRYPTOR_MAP.get(privateKey);
-        if (Objects.isNull(encryptor)) {
-            encryptor = new RSADecimalNumberEncryptor(transformation);
-            encryptor.setKey(RSAKey.fromBase64String(null, privateKey));
-            RSA_BIGDECIMAL_DECRYPT_ENCRYPTOR_MAP.put(privateKey, encryptor);
-        }
-        return encryptor;
+		try {
+			return RSA_BIGDECIMAL_DECRYPT_ENCRYPTOR_MAP.computeIfAbsent(privateKey, k -> {
+				try {
+					RSABinaryEncryptor binaryEncryptor = RSA_BINARY_DECRYPT_ENCRYPTOR_MAP.get(privateKey);
+					if (Objects.nonNull(binaryEncryptor)) {
+						return new RSADecimalNumberEncryptor(binaryEncryptor);
+					}
+
+					RSADecimalNumberEncryptor encryptor = new RSADecimalNumberEncryptor(transformation);
+					encryptor.setPrivateKey(RSAKeyPair.fromBase64String( null, privateKey).getPrivateKey());
+					encryptor.initialize();
+					return encryptor;
+				} catch (InvalidKeySpecException e) {
+					throw new RuntimeException(e);
+				}
+			});
+		} catch (RuntimeException e) {
+			if (e.getCause() instanceof InvalidKeySpecException invalidKeySpecException) {
+				throw invalidKeySpecException;
+			}
+			throw e;
+		}
     }
 }

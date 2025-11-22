@@ -28,7 +28,6 @@ import org.jasypt.util.text.TextEncryptor;
 import org.springframework.util.Assert;
 
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -73,25 +72,22 @@ public class BasicCryptoFactory implements CryptoFactory {
 	 */
     private static final Map<String, BasicDecimalNumberEncryptor> DECIMAL_ENCRYPTOR_MAP = new ConcurrentHashMap<>();
 
-    /**
-     * 获取并缓存字节数组加密器（按口令）。
-     *
-     * @param key 口令（Password）
-     * @return 字节数组加密器
-     * @since 1.0.0
-     */
-    @Override
-    public BinaryEncryptor getBinaryEncryptor(String key) {
+	/**
+	 * 获取并缓存字节数组加密器（按口令）。
+	 *
+	 * @param key 口令（Password）
+	 * @return 字节数组加密器
+	 * @since 1.0.0
+	 */
+	@Override
+	public BinaryEncryptor getBinaryEncryptor(String key) {
 		Assert.hasText(key, "key 不可为空");
-
-        BasicBinaryEncryptor encryptor = BINARY_ENCRYPTOR_MAP.get(key);
-        if (Objects.isNull(encryptor)) {
-            encryptor = new BasicBinaryEncryptor();
-            encryptor.setPassword(key);
-            BINARY_ENCRYPTOR_MAP.put(key, encryptor);
-        }
-        return encryptor;
-    }
+		return BINARY_ENCRYPTOR_MAP.computeIfAbsent(key, k -> {
+			BasicBinaryEncryptor encryptor = new BasicBinaryEncryptor();
+			encryptor.setPassword(k);
+			return encryptor;
+		});
+	}
 
 	/**
 	 * 获取并缓存文本加密器（按口令）。
@@ -103,53 +99,44 @@ public class BasicCryptoFactory implements CryptoFactory {
 	@Override
 	public TextEncryptor getTextEncryptor(String key) {
 		Assert.hasText(key, "key 不可为空");
-
-		BasicTextEncryptor encryptor = TEXT_ENCRYPTOR_MAP.get(key);
-		if (Objects.isNull(encryptor)) {
-			encryptor = new BasicTextEncryptor();
-			encryptor.setPassword(key);
-			TEXT_ENCRYPTOR_MAP.put(key, encryptor);
-		}
-		return encryptor;
+		return TEXT_ENCRYPTOR_MAP.computeIfAbsent(key, k -> {
+			BasicTextEncryptor encryptor = new BasicTextEncryptor();
+			encryptor.setPassword(k);
+			return encryptor;
+		});
 	}
 
 	/**
-     * 获取并缓存整型数字加密器（按口令）。
-     *
-     * @param key 口令（Password）
-     * @return 整型数字加密器
-     * @since 1.0.0
-     */
-    @Override
-    public IntegerNumberEncryptor getIntegerNumberEncryptor(String key) {
+	 * 获取并缓存整型数字加密器（按口令）。
+	 *
+	 * @param key 口令（Password）
+	 * @return 整型数字加密器
+	 * @since 1.0.0
+	 */
+	@Override
+	public IntegerNumberEncryptor getIntegerNumberEncryptor(String key) {
 		Assert.hasText(key, "key 不可为空");
+		return INTEGER_ENCRYPTOR_MAP.computeIfAbsent(key, k -> {
+			BasicIntegerNumberEncryptor encryptor = new BasicIntegerNumberEncryptor();
+			encryptor.setPassword(k);
+			return encryptor;
+		});
+	}
 
-        BasicIntegerNumberEncryptor encryptor = INTEGER_ENCRYPTOR_MAP.get(key);
-        if (Objects.isNull(encryptor)) {
-            encryptor = new BasicIntegerNumberEncryptor();
-            encryptor.setPassword(key);
-            INTEGER_ENCRYPTOR_MAP.put(key, encryptor);
-        }
-        return encryptor;
-    }
-
-    /**
-     * 获取并缓存高精度小数加密器（按口令）。
-     *
-     * @param key 口令（Password）
-     * @return 高精度小数加密器
-     * @since 1.0.0
-     */
-    @Override
-    public DecimalNumberEncryptor getDecimalNumberEncryptor(String key) {
+	/**
+	 * 获取并缓存高精度小数加密器（按口令）。
+	 *
+	 * @param key 口令（Password）
+	 * @return 高精度小数加密器
+	 * @since 1.0.0
+	 */
+	@Override
+	public DecimalNumberEncryptor getDecimalNumberEncryptor(String key) {
 		Assert.hasText(key, "key 不可为空");
-
-        BasicDecimalNumberEncryptor encryptor = DECIMAL_ENCRYPTOR_MAP.get(key);
-        if (Objects.isNull(encryptor)) {
-            encryptor = new BasicDecimalNumberEncryptor();
-            encryptor.setPassword(key);
-            DECIMAL_ENCRYPTOR_MAP.put(key, encryptor);
-        }
-        return encryptor;
-    }
+		return DECIMAL_ENCRYPTOR_MAP.computeIfAbsent(key, k -> {
+			BasicDecimalNumberEncryptor encryptor = new BasicDecimalNumberEncryptor();
+			encryptor.setPassword(k);
+			return encryptor;
+		});
+	}
 }
