@@ -17,6 +17,7 @@
 package io.github.pangju666.framework.boot.crypto.factory.impl;
 
 import io.github.pangju666.framework.boot.crypto.factory.CryptoFactory;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.jasypt.util.binary.BasicBinaryEncryptor;
 import org.jasypt.util.binary.BinaryEncryptor;
 import org.jasypt.util.numeric.BasicDecimalNumberEncryptor;
@@ -40,37 +41,37 @@ import java.util.concurrent.ConcurrentHashMap;
  * </p>
  *
  * @author pangju666
- * @since 1.0.0
  * @see BasicBinaryEncryptor
  * @see BasicTextEncryptor
  * @see BasicIntegerNumberEncryptor
  * @see BasicDecimalNumberEncryptor
+ * @since 1.0.0
  */
 public class BasicCryptoFactory implements CryptoFactory {
-    /**
-     * 口令到二进制加密器的缓存映射。
+	/**
+	 * 口令到二进制加密器的缓存映射。
 	 *
 	 * @since 1.0.0
 	 */
-    private static final Map<String, BasicBinaryEncryptor> BINARY_ENCRYPTOR_MAP = new ConcurrentHashMap<>();
+	private static final Map<String, BasicBinaryEncryptor> BINARY_ENCRYPTOR_MAP = new ConcurrentHashMap<>();
 	/**
 	 * 口令到文本加密器的缓存映射。
 	 *
 	 * @since 1.0.0
 	 */
 	private static final Map<String, BasicTextEncryptor> TEXT_ENCRYPTOR_MAP = new ConcurrentHashMap<>();
-    /**
-     * 口令到整型数字加密器的缓存映射。
+	/**
+	 * 口令到整型数字加密器的缓存映射。
 	 *
 	 * @since 1.0.0
 	 */
-    private static final Map<String, BasicIntegerNumberEncryptor> INTEGER_ENCRYPTOR_MAP = new ConcurrentHashMap<>();
-    /**
-     * 口令到高精度小数加密器的缓存映射。
+	private static final Map<String, BasicIntegerNumberEncryptor> INTEGER_ENCRYPTOR_MAP = new ConcurrentHashMap<>();
+	/**
+	 * 口令到高精度小数加密器的缓存映射。
 	 *
 	 * @since 1.0.0
 	 */
-    private static final Map<String, BasicDecimalNumberEncryptor> DECIMAL_ENCRYPTOR_MAP = new ConcurrentHashMap<>();
+	private static final Map<String, BasicDecimalNumberEncryptor> DECIMAL_ENCRYPTOR_MAP = new ConcurrentHashMap<>();
 
 	/**
 	 * 获取并缓存字节数组加密器（按口令）。
@@ -82,9 +83,10 @@ public class BasicCryptoFactory implements CryptoFactory {
 	@Override
 	public BinaryEncryptor getBinaryEncryptor(String key) {
 		Assert.hasText(key, "key 不可为空");
-		return BINARY_ENCRYPTOR_MAP.computeIfAbsent(key, k -> {
+
+		return BINARY_ENCRYPTOR_MAP.computeIfAbsent(DigestUtils.sha256Hex(key), k -> {
 			BasicBinaryEncryptor encryptor = new BasicBinaryEncryptor();
-			encryptor.setPassword(k);
+			encryptor.setPassword(key);
 			return encryptor;
 		});
 	}
@@ -99,9 +101,10 @@ public class BasicCryptoFactory implements CryptoFactory {
 	@Override
 	public TextEncryptor getTextEncryptor(String key) {
 		Assert.hasText(key, "key 不可为空");
-		return TEXT_ENCRYPTOR_MAP.computeIfAbsent(key, k -> {
+
+		return TEXT_ENCRYPTOR_MAP.computeIfAbsent(DigestUtils.sha256Hex(key), k -> {
 			BasicTextEncryptor encryptor = new BasicTextEncryptor();
-			encryptor.setPassword(k);
+			encryptor.setPassword(key);
 			return encryptor;
 		});
 	}
@@ -116,9 +119,10 @@ public class BasicCryptoFactory implements CryptoFactory {
 	@Override
 	public IntegerNumberEncryptor getIntegerNumberEncryptor(String key) {
 		Assert.hasText(key, "key 不可为空");
-		return INTEGER_ENCRYPTOR_MAP.computeIfAbsent(key, k -> {
+
+		return INTEGER_ENCRYPTOR_MAP.computeIfAbsent(DigestUtils.sha256Hex(key), k -> {
 			BasicIntegerNumberEncryptor encryptor = new BasicIntegerNumberEncryptor();
-			encryptor.setPassword(k);
+			encryptor.setPassword(key);
 			return encryptor;
 		});
 	}
@@ -133,9 +137,10 @@ public class BasicCryptoFactory implements CryptoFactory {
 	@Override
 	public DecimalNumberEncryptor getDecimalNumberEncryptor(String key) {
 		Assert.hasText(key, "key 不可为空");
-		return DECIMAL_ENCRYPTOR_MAP.computeIfAbsent(key, k -> {
+
+		return DECIMAL_ENCRYPTOR_MAP.computeIfAbsent(DigestUtils.sha256Hex(key), k -> {
 			BasicDecimalNumberEncryptor encryptor = new BasicDecimalNumberEncryptor();
-			encryptor.setPassword(k);
+			encryptor.setPassword(key);
 			return encryptor;
 		});
 	}

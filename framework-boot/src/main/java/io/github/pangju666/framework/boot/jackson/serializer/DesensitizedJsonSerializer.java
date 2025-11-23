@@ -22,7 +22,6 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.ContextualSerializer;
-import com.fasterxml.jackson.databind.ser.std.NullSerializer;
 import io.github.pangju666.commons.lang.utils.DesensitizationUtils;
 import io.github.pangju666.framework.boot.jackson.annotation.DesensitizeFormat;
 import io.github.pangju666.framework.boot.jackson.enums.DesensitizedType;
@@ -36,11 +35,15 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * JSON字段脱敏序列化器
+ * JSON 字段脱敏序列化器。
  * <p>
- * 该序列化器用于处理使用{@link DesensitizeFormat}注解标记的字符串字段，在序列化过程中对敏感信息进行脱敏处理。
- * 支持多种脱敏策略：内置的脱敏类型、基于正则表达式的脱敏和基于长度的脱敏。
- * 实现了{@link ContextualSerializer}接口，可根据上下文自动确定处理方式。
+ * 处理标记了 {@link DesensitizeFormat} 的字符串字段，在序列化过程中按策略进行脱敏。
+ * 支持两类策略：
+ * <ul>
+ *   <li>内置类型：使用 {@link DesensitizedType} 的内置转换器。</li>
+ *   <li>CUSTOM 类型：依据注解的 {@code prefix}/{@code suffix} 参数执行前后缀保留与中间隐藏。</li>
+ * </ul>
+ * 实现 {@link ContextualSerializer} 接口，可根据上下文与注解参数选择具体序列化器。
  * </p>
  *
  * @author pangju666
@@ -49,39 +52,25 @@ import java.util.concurrent.ConcurrentHashMap;
  * @see ContextualSerializer
  * @since 1.0.0
  */
-public class DesensitizedJsonSerializer extends JsonSerializer<CharSequence> implements ContextualSerializer {
-	/**
-	 * 基于脱敏类型的序列化器缓存
-	 * <p>
-	 * 存储所有内置脱敏类型对应的序列化器实例
-	 * </p>
-	 *
-	 * @since 1.0.0
-	 */
-	private static final Map<String, DesensitizedJsonSerializer> TYPE_SERIALIZER_MAP;
-	/**
-	 * 基于正则表达式的序列化器缓存
-	 * <p>
-	 * 键为正则表达式和替换格式的组合标识，值为对应的序列化器实例
-	 * </p>
-	 *
-	 * @since 1.0.0
-	 */
-	private static final Map<String, DesensitizedJsonSerializer> REGEX_SERIALIZER_MAP = new ConcurrentHashMap<>();
-	/**
-	 * 基于长度的序列化器缓存
-	 * <p>
-	 * 键为前缀和后缀长度的组合标识，值为对应的序列化器实例
-	 * </p>
-	 *
-	 * @since 1.0.0
-	 */
-	private static final Map<String, DesensitizedJsonSerializer> LENGTH_SERIALIZER_MAP = new ConcurrentHashMap<>();
+public final class DesensitizedJsonSerializer extends JsonSerializer<CharSequence> implements ContextualSerializer {
+    /**
+     * 内置类型序列化器缓存。
+     * <p>预先为每个 {@link DesensitizedType} 创建并缓存对应序列化器实例。</p>
+     *
+     * @since 1.0.0
+     */
+	private static final Map<String, DesensitizedJsonSerializer> TYPE_SERIALIZER_MAP = new HashMap<>(DesensitizedType.values().length);
+    /**
+     * CUSTOM 类型序列化器缓存。
+     * <p>键格式为 {@code prefix&suffix}，值为按前后缀保留策略构造的序列化器实例。</p>
+     *
+     * @since 1.0.0
+     */
+	private static final Map<String, DesensitizedJsonSerializer> CUSTOM_SERIALIZER_MAP = new ConcurrentHashMap<>(16);
 
-	// 静态初始化块，预先创建所有内置脱敏类型的序列化器
+    // 静态初始化块：预先创建所有内置类型的序列化器
 	static {
 		DesensitizedType[] desensitizedType = DesensitizedType.values();
-		TYPE_SERIALIZER_MAP = new HashMap<>(desensitizedType.length);
 		for (DesensitizedType type : desensitizedType) {
 			TYPE_SERIALIZER_MAP.put(type.name(), new DesensitizedJsonSerializer(type.getConverter()));
 		}
@@ -112,129 +101,94 @@ public class DesensitizedJsonSerializer extends JsonSerializer<CharSequence> imp
 	 * @param converter 字符串转换器，用于执行脱敏操作
 	 * @since 1.0.0
 	 */
-	public DesensitizedJsonSerializer(Converter<String, String> converter) {
-		this.converter = converter;
-	}
+    public DesensitizedJsonSerializer(Converter<String, String> converter) {
+        this.converter = converter;
+    }
 
-	/**
-	 * 获取基于正则表达式的脱敏序列化器
-	 * <p>
-	 * 根据提供的正则表达式和替换格式创建或复用序列化器实例，用于将匹配正则表达式的内容替换为指定格式
-	 * </p>
-	 *
-	 * @param regex  用于匹配需要脱敏内容的正则表达式
-	 * @param format 替换格式，用于替换匹配到的内容
-	 * @return 对应的序列化器实例
-	 * @since 1.0.0
-	 */
-	private static DesensitizedJsonSerializer getSerializer(String regex, String format) {
-		String key = regex + "_" + format;
-		if (REGEX_SERIALIZER_MAP.containsKey(key)) {
-			return REGEX_SERIALIZER_MAP.get(key);
-		}
-		DesensitizedJsonSerializer serializer = new DesensitizedJsonSerializer(value -> {
-			if (StringUtils.isBlank(value)) {
-				return value;
-			}
-			return value.replaceAll(regex, format);
-		});
-		REGEX_SERIALIZER_MAP.put(key, serializer);
-		return serializer;
-	}
-
-	/**
-	 * 获取基于长度的脱敏序列化器
-	 * <p>
-	 * 根据提供的前缀保留长度和后缀保留长度创建或复用序列化器实例
-	 * 当前缀或后缀长度为-1时表示不保留该部分
-	 * </p>
-	 *
-	 * @param left  保留的前缀长度，-1表示不保留前缀
-	 * @param right 保留的后缀长度，-1表示不保留后缀
-	 * @return 对应的序列化器实例
-	 * @since 1.0.0
-	 */
-	private static DesensitizedJsonSerializer getSerializer(int left, int right) {
-		String key = left + "&" + right;
-		if (LENGTH_SERIALIZER_MAP.containsKey(key)) {
-			return LENGTH_SERIALIZER_MAP.get(key);
-		}
-		DesensitizedJsonSerializer serializer = new DesensitizedJsonSerializer(value -> {
-			if (left == -1) {
-				if (right == -1) {
-					return value;
-				}
-				return DesensitizationUtils.hideRight(value, right);
-			}
-			if (right == -1) {
-				return DesensitizationUtils.hideLeft(value, left);
-			}
-			return DesensitizationUtils.hideRound(value, left, right);
-		});
-		LENGTH_SERIALIZER_MAP.put(key, serializer);
-		return serializer;
-	}
-
-	/**
-	 * 将字符串进行脱敏处理后序列化到JSON
-	 * <p>
-	 * 如果转换器不为空且输入字符串不为空白，则使用转换器对字符串进行脱敏处理后输出；
-	 * 否则直接输出原字符串。
-	 * </p>
-	 *
-	 * @param value       要序列化的字符串
-     * @param gen         用于生成JSON内容的生成器
-     * @param serializers 序列化器提供者
-     * @throws IOException 如果写入JSON内容时发生I/O错误
+    /**
+     * 构造方法，按前后缀保留规则创建序列化器。
+     *
+     * <p>行为：当 {@code prefix} &le; -1 且 {@code suffix} &le; -1 时，脱敏全部字符；
+     * 仅前缀 &le; -1 时保留后缀并隐藏左侧；仅后缀 &le; -1 时保留前缀并隐藏右侧；
+     * 两者均 &gt; -1 时按前后缀保留并隐藏中间。</p>
+     *
+     * @param prefix 前缀保留长度，-1 表示不保留前缀
+     * @param suffix 后缀保留长度，-1 表示不保留后缀
      * @since 1.0.0
      */
-    @Override
-    public void serialize(CharSequence value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
-        if (Objects.isNull(converter) || StringUtils.isBlank(value)) {
-            gen.writeString(value.toString());
+    public DesensitizedJsonSerializer(int prefix, int suffix) {
+        this.converter = value -> {
+            if (prefix <= -1) {
+                if (suffix <= -1) {
+                    return DesensitizationUtils.hidePassword(value);
+                }
+                return DesensitizationUtils.hideRight(value, suffix);
+            }
+            if (suffix <= -1) {
+                return DesensitizationUtils.hideLeft(value, prefix);
+            }
+            return DesensitizationUtils.hideRound(value, prefix, suffix);
+        };
+    }
+
+    /**
+     * 将字符串进行脱敏处理后序列化到 JSON。
+     * <p>当转换器存在且输入不为空白时输出脱敏结果，否则原样输出。</p>
+     *
+     * @param value       要序列化的字符串
+     * @param gen         JSON 输出生成器
+     * @param serializers 序列化器提供者
+     * @throws IOException 写入 JSON 内容时发生 I/O 错误
+     * @since 1.0.0
+     */
+	@Override
+	public void serialize(CharSequence value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+		if (Objects.isNull(value)) {
+			gen.writeNull();
+			return;
+		}
+		if (Objects.isNull(converter) || StringUtils.isBlank(value)) {
+			gen.writeString(value.toString());
 			return;
 		}
 		gen.writeString(converter.convert(value.toString()));
 	}
 
-	/**
-	 * 创建上下文相关的序列化器
-	 * <p>
-	 * 检查当前处理的属性是否标记了{@link DesensitizeFormat}注解，以及属性类型是否为字符串类型。
-	 * 如果符合条件，则根据注解配置创建或复用适当的序列化器实例：
-	 * <ul>
-	 *   <li>对于自定义(CUSTOM)类型，根据是否提供正则表达式和格式，使用正则表达式脱敏或长度脱敏</li>
-	 *   <li>对于内置类型，使用预先创建的对应类型序列化器</li>
-	 * </ul>
-	 * 如果不符合条件，则使用上下文中的默认序列化器。
-	 * </p>
-	 *
-	 * @param prov     序列化器提供者
-	 * @param property 当前处理的Bean属性
-	 * @return 上下文相关的序列化器实例
-	 * @throws JsonMappingException 如果创建序列化器时发生错误
-	 * @since 1.0.0
-	 */
+    /**
+     * 创建上下文相关的序列化器。
+     *
+     * <p>行为：当属性类型为字符串且存在 {@link DesensitizeFormat} 注解时，依据注解与类型选择序列化器：</p>
+     * <ul>
+     *   <li>非 {@link DesensitizedType#CUSTOM} 类型：复用预创建的内置类型序列化器。</li>
+     *   <li>{@link DesensitizedType#CUSTOM} 类型：标准化 {@code prefix}/{@code suffix}（最小为 -1）并按
+     *   {@code "prefix&suffix"} 作为键从缓存 {@code CUSTOM_SERIALIZER_MAP} 获取或创建长度保留序列化器。</li>
+     * </ul>
+     * <p>当属性为空或不满足条件时，返回当前实例或上下文默认序列化器。</p>
+     *
+     * @param prov     序列化器提供者
+     * @param property 当前处理的 Bean 属性
+     * @return 上下文相关的序列化器实例
+     * @throws JsonMappingException 创建或查找序列化器失败时抛出
+     * @since 1.0.0
+     */
 	@Override
 	public JsonSerializer<?> createContextual(SerializerProvider prov, BeanProperty property) throws JsonMappingException {
 		if (Objects.isNull(property)) {
-			return NullSerializer.instance;
+			return this;
 		}
 
 		if (CharSequence.class.isAssignableFrom(property.getType().getRawClass())) {
 			DesensitizeFormat annotation = property.getAnnotation(DesensitizeFormat.class);
 			if (Objects.nonNull(annotation)) {
-				if (DesensitizedType.CUSTOM == annotation.type()) {
-					if (StringUtils.isAnyBlank(annotation.regex(), annotation.format())) {
-						return getSerializer(annotation.prefix(), annotation.suffix());
-					} else {
-						return getSerializer(annotation.regex(), annotation.format());
-					}
+				if (annotation.type() != DesensitizedType.CUSTOM) {
+					return TYPE_SERIALIZER_MAP.get(annotation.type().name());
 				}
-				return TYPE_SERIALIZER_MAP.get(annotation.type().name());
+				int prefix = Math.max(annotation.prefix(), -1);
+				int suffix = Math.max(annotation.suffix(), -1);
+				String key = prefix + "&" + suffix;
+				return CUSTOM_SERIALIZER_MAP.computeIfAbsent(key, k -> new DesensitizedJsonSerializer(prefix, suffix));
 			}
 		}
-
 		return prov.findValueSerializer(property.getType(), property);
 	}
 }

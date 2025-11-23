@@ -38,7 +38,7 @@ import java.util.Objects;
  * @see LocalDate
  * @since 1.0.0
  */
-public class LocalDateJsonSerializer extends JsonSerializer<LocalDate> {
+public final class LocalDateJsonSerializer extends JsonSerializer<LocalDate> {
 	/**
 	 * 将LocalDate对象序列化为JSON中的毫秒时间戳
 	 * <p>

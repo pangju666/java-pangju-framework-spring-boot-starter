@@ -18,12 +18,9 @@ package io.github.pangju666.framework.boot.jackson.deserializer;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.databind.BeanProperty;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.deser.ContextualDeserializer;
-import com.fasterxml.jackson.databind.deser.std.NullifyingDeserializer;
+import com.fasterxml.jackson.databind.type.TypeFactory;
 import org.apache.commons.lang3.EnumUtils;
 
 import java.io.IOException;
@@ -48,7 +45,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @since 1.0.0
  */
 @SuppressWarnings("rawtypes")
-public class EnumJsonDeserializer extends JsonDeserializer<Enum> implements ContextualDeserializer {
+public final class EnumJsonDeserializer extends JsonDeserializer<Enum> implements ContextualDeserializer {
 	/**
 	 * 枚举类型反序列化器的缓存，用于存储已创建的反序列化器实例
 	 * <p>
@@ -57,7 +54,7 @@ public class EnumJsonDeserializer extends JsonDeserializer<Enum> implements Cont
 	 *
 	 * @since 1.0.0
 	 */
-	private static final Map<String, EnumJsonDeserializer> DESERIALIZER_MAP = new ConcurrentHashMap<>();
+	private static final Map<String, EnumJsonDeserializer> DESERIALIZER_MAP = new ConcurrentHashMap<>(16);
 
 	/**
 	 * 当前反序列化器处理的枚举类型
@@ -111,36 +108,43 @@ public class EnumJsonDeserializer extends JsonDeserializer<Enum> implements Cont
 	}
 
 	/**
-	 * 创建上下文相关的反序列化器
-	 * <p>
-	 * 根据反序列化上下文确定目标枚举类型，并返回对应的反序列化器实例。
-	 * 如果缓存中已存在对应类型的反序列化器，则直接返回；否则创建新实例并缓存。
-	 * 空上下文处理：当属性信息不可用（property为null）时，返回{@link NullifyingDeserializer#instance}，从而在反序列化时生成null值。
-	 * </p>
+	 * 创建上下文相关的反序列化器。
 	 *
-     * @param ctxt     反序列化上下文
-     * @param property 当前处理的Bean属性
-     * @return 上下文相关的反序列化器实例
-     * @since 1.0.0
-     */
+	 * <p>行为：优先从 {@code property} 获取类型；缺失时从上下文 {@link DeserializationContext#getContextualType()} 获取，
+	 * 若上下文类型也为空则返回针对 {@link TypeFactory#unknownType()} 的非上下文反序列化器；
+	 * 非枚举类型委派给默认反序列化器；枚举类型按类名缓存并复用 {@link EnumJsonDeserializer} 实例。</p>
+	 *
+	 * @param ctxt     反序列化上下文
+	 * @param property 当前处理的Bean属性
+	 * @return 上下文相关的反序列化器实例
+	 * @throws JsonMappingException 反序列化器创建或查找失败时抛出
+	 * @since 1.0.0
+	 */
 	@SuppressWarnings("unchecked")
     @Override
     public JsonDeserializer<?> createContextual(DeserializationContext ctxt, BeanProperty property) throws JsonMappingException {
-        if (Objects.isNull(property)) {
-			return NullifyingDeserializer.instance;
-		}
-
-		Class<?> clz = property.getType().getRawClass();
-		if (clz.isEnum()) {
-			String enumName = clz.getName();
-			EnumJsonDeserializer deserializer = DESERIALIZER_MAP.get(enumName);
-			if (Objects.isNull(deserializer)) {
-				deserializer = new EnumJsonDeserializer((Class<? extends Enum>) clz);
-				DESERIALIZER_MAP.put(enumName, deserializer);
+		JavaType type;
+		if (Objects.nonNull(property)) {
+			type = property.getType();
+		} else {
+			JavaType contextualType = ctxt.getContextualType();
+			if (Objects.isNull(contextualType)) {
+				return ctxt.findNonContextualValueDeserializer(TypeFactory.unknownType());
 			}
-			return deserializer;
+			type = contextualType;
 		}
 
-		return ctxt.findContextualValueDeserializer(property.getType(), property);
+		Class<?> clz = type.getRawClass();
+		if (!clz.isEnum()) {
+			if (Objects.nonNull(property)) {
+				return ctxt.findContextualValueDeserializer(type, property);
+			} else {
+				return ctxt.findNonContextualValueDeserializer(type);
+			}
+		}
+
+		String enumName = clz.getName();
+		return DESERIALIZER_MAP.computeIfAbsent(enumName, k -> new EnumJsonDeserializer(
+			(Class<? extends Enum>) clz));
 	}
 }

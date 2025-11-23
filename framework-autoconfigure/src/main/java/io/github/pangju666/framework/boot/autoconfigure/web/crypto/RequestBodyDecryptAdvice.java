@@ -16,7 +16,7 @@
 
 package io.github.pangju666.framework.boot.autoconfigure.web.crypto;
 
-import io.github.pangju666.commons.crypto.key.RSAKey;
+import io.github.pangju666.commons.crypto.key.RSAKeyPair;
 import io.github.pangju666.commons.lang.pool.Constants;
 import io.github.pangju666.framework.boot.crypto.factory.CryptoFactory;
 import io.github.pangju666.framework.boot.crypto.utils.CryptoUtils;
@@ -50,7 +50,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
-import java.security.spec.InvalidKeySpecException;
 import java.util.Objects;
 
 /**
@@ -63,7 +62,7 @@ import java.util.Objects;
  * 适用范围：
  * <ul>
  *     <li>仅适用于 Servlet Web 应用。</li>
- *     <li>类路径需存在 {@link Servlet}、{@link DispatcherServlet}、{@link RSAKey}。</li>
+ *     <li>类路径需存在 {@link Servlet}、{@link DispatcherServlet}、{@link RSAKeyPair}。</li>
  *     <li>方法参数标注 {@link DecryptRequestBody} 才会生效。</li>
  * </ul>
  * </p>
@@ -98,7 +97,7 @@ import java.util.Objects;
  */
 @Order(Ordered.HIGHEST_PRECEDENCE + 2)
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
-@ConditionalOnClass({Servlet.class, DispatcherServlet.class, RSAKey.class})
+@ConditionalOnClass({Servlet.class, DispatcherServlet.class, RSAKeyPair.class})
 @ConditionalOnBean(CryptoFactory.class)
 @RestControllerAdvice
 public class RequestBodyDecryptAdvice implements RequestBodyAdvice {
@@ -158,8 +157,8 @@ public class RequestBodyDecryptAdvice implements RequestBodyAdvice {
 		DecryptRequestBody annotation = parameter.getParameterAnnotation(DecryptRequestBody.class);
 		String key;
 		try {
-			key = CryptoUtils.getKey(annotation.key(), true);
-		} catch (InvalidKeySpecException e) {
+			key = CryptoUtils.getKey(annotation.key());
+		} catch (IllegalArgumentException e) {
 			throw new ServerException(e);
 		}
 		CryptoFactory factory = getCryptoFactory(annotation);
@@ -177,7 +176,7 @@ public class RequestBodyDecryptAdvice implements RequestBodyAdvice {
 			throw new ServiceException("无效的加密请求数据", "请求数据对象解密失败", e);
 		} catch (DecoderException e) {
 			throw new ServiceException("无效的加密请求数据", "请求数据对象十六进制解码失败", e);
-		} catch (InvalidKeySpecException e) {
+		} catch (IllegalArgumentException e) {
 			throw new ServerException("无效的密钥", e);
 		}
 	}
@@ -206,8 +205,8 @@ public class RequestBodyDecryptAdvice implements RequestBodyAdvice {
 		DecryptRequestBody annotation = parameter.getParameterAnnotation(DecryptRequestBody.class);
 		String key;
 		try {
-			key = CryptoUtils.getKey(annotation.key(), true);
-		} catch (InvalidKeySpecException e) {
+			key = CryptoUtils.getKey(annotation.key());
+		} catch (IllegalArgumentException e) {
 			throw new ServerException(e);
 		}
 		CryptoFactory factory = getCryptoFactory(annotation);
@@ -225,7 +224,7 @@ public class RequestBodyDecryptAdvice implements RequestBodyAdvice {
 			throw new ServiceException("无效的加密请求数据", "请求数据对象解密失败", e);
 		} catch (DecoderException e) {
 			throw new ServiceException("无效的加密请求数据", "请求数据对象十六进制解码失败", e);
-		} catch (InvalidKeySpecException e) {
+		} catch (IllegalArgumentException e) {
 			throw new ServerException("无效的密钥", e);
 		}
 	}
@@ -246,6 +245,7 @@ public class RequestBodyDecryptAdvice implements RequestBodyAdvice {
 		return body;
 	}
 
+	// todo 改成list注入
 	protected CryptoFactory getCryptoFactory(DecryptRequestBody annotation) {
 		if (ArrayUtils.isNotEmpty(annotation.factory())) {
 			return StaticSpringContext.getBeanFactory().getBean(annotation.factory()[0]);

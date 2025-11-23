@@ -24,6 +24,7 @@ import io.github.pangju666.commons.crypto.key.RSAKeyPair;
 import io.github.pangju666.commons.crypto.transformation.RSATransformation;
 import io.github.pangju666.commons.crypto.transformation.impl.RSAOEAPWithSHA256Transformation;
 import io.github.pangju666.framework.boot.crypto.factory.CryptoFactory;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.jasypt.util.binary.BinaryEncryptor;
 import org.jasypt.util.numeric.DecimalNumberEncryptor;
 import org.jasypt.util.numeric.IntegerNumberEncryptor;
@@ -137,30 +138,23 @@ public class RSACryptoFactory implements CryptoFactory {
      *
      * @param publicKey Base64 编码的 X.509 格式公钥字符串
      * @return 二进制加密器
-     * @throws InvalidKeySpecException 公钥格式不合法时抛出
      * @since 1.0.0
      */
     @Override
-    public BinaryEncryptor getBinaryEncryptor(String publicKey) throws InvalidKeySpecException {
+    public BinaryEncryptor getBinaryEncryptor(String publicKey) {
 		Assert.hasText(publicKey, "key 不可为空");
 
-		try {
-			return RSA_BINARY_ENCRYPT_ENCRYPTOR_MAP.computeIfAbsent(publicKey, k -> {
-				try {
-					RSABinaryEncryptor encryptor = new RSABinaryEncryptor(transformation);
-					encryptor.setPublicKey(RSAKeyPair.fromBase64String(k, null).getPublicKey());
-					encryptor.initialize();
-					return encryptor;
-				} catch (InvalidKeySpecException e) {
-					throw new RuntimeException(e);
-				}
-			});
-		} catch (RuntimeException e) {
-			if (e.getCause() instanceof InvalidKeySpecException invalidKeySpecException) {
-				throw invalidKeySpecException;
+		String mapKey = DigestUtils.sha256Hex(publicKey);
+		return RSA_BINARY_ENCRYPT_ENCRYPTOR_MAP.computeIfAbsent(mapKey, k -> {
+			try {
+				RSABinaryEncryptor encryptor = new RSABinaryEncryptor(transformation);
+				encryptor.setPublicKey(RSAKeyPair.fromBase64String(publicKey, null).getPublicKey());
+				encryptor.initialize();
+				return encryptor;
+			} catch (InvalidKeySpecException e) {
+				throw new IllegalArgumentException("无效的 RSA 公钥", e);
 			}
-			throw e;
-		}
+		});
     }
 
 	/**
@@ -168,35 +162,28 @@ public class RSACryptoFactory implements CryptoFactory {
 	 *
 	 * @param publicKey Base64 编码的 X.509 格式公钥字符串
 	 * @return 文本加密器
-	 * @throws InvalidKeySpecException 公钥格式不合法时抛出
 	 * @since 1.0.0
 	 */
 	@Override
-	public TextEncryptor getTextEncryptor(String publicKey) throws InvalidKeySpecException {
+	public TextEncryptor getTextEncryptor(String publicKey) {
 		Assert.hasText(publicKey, "key 不可为空");
 
-		try {
-			return RSA_TEXT_ENCRYPT_ENCRYPTOR_MAP.computeIfAbsent(publicKey, k -> {
-				try {
-					RSABinaryEncryptor binaryEncryptor = RSA_BINARY_ENCRYPT_ENCRYPTOR_MAP.get(publicKey);
-					if (Objects.nonNull(binaryEncryptor)) {
-						return new RSATextEncryptor(binaryEncryptor);
-					}
-
-					RSATextEncryptor encryptor = new RSATextEncryptor(transformation);
-					encryptor.setPublicKey(RSAKeyPair.fromBase64String(publicKey, null).getPublicKey());
-					encryptor.initialize();
-					return encryptor;
-				} catch (InvalidKeySpecException e) {
-					throw new RuntimeException(e);
+		String mapKey = DigestUtils.sha256Hex(publicKey);
+		return RSA_TEXT_ENCRYPT_ENCRYPTOR_MAP.computeIfAbsent(mapKey, k -> {
+			try {
+				RSABinaryEncryptor binaryEncryptor = RSA_BINARY_ENCRYPT_ENCRYPTOR_MAP.get(publicKey);
+				if (Objects.nonNull(binaryEncryptor)) {
+					return new RSATextEncryptor(binaryEncryptor);
 				}
-			});
-		} catch (RuntimeException e) {
-			if (e.getCause() instanceof InvalidKeySpecException invalidKeySpecException) {
-				throw invalidKeySpecException;
+
+				RSATextEncryptor encryptor = new RSATextEncryptor(transformation);
+				encryptor.setPublicKey(RSAKeyPair.fromBase64String(publicKey, null).getPublicKey());
+				encryptor.initialize();
+				return encryptor;
+			} catch (InvalidKeySpecException e) {
+				throw new IllegalArgumentException("无效的 RSA 公钥", e);
 			}
-			throw e;
-		}
+		});
 	}
 
     /**
@@ -204,35 +191,28 @@ public class RSACryptoFactory implements CryptoFactory {
      *
      * @param publicKey Base64 编码的 X.509 格式公钥字符串
      * @return 整型数字加密器
-     * @throws InvalidKeySpecException 公钥格式不合法时抛出
      * @since 1.0.0
      */
     @Override
-    public IntegerNumberEncryptor getIntegerNumberEncryptor(String publicKey) throws InvalidKeySpecException {
+    public IntegerNumberEncryptor getIntegerNumberEncryptor(String publicKey) {
 		Assert.hasText(publicKey, "publicKey 不可为空");
 
-		try {
-			return RSA_INTEGER_ENCRYPT_ENCRYPTOR_MAP.computeIfAbsent(publicKey, k -> {
-				try {
-					RSABinaryEncryptor binaryEncryptor = RSA_BINARY_ENCRYPT_ENCRYPTOR_MAP.get(publicKey);
-					if (Objects.nonNull(binaryEncryptor)) {
-						return new RSAIntegerNumberEncryptor(binaryEncryptor);
-					}
-
-					RSAIntegerNumberEncryptor encryptor = new RSAIntegerNumberEncryptor(transformation);
-					encryptor.setPublicKey(RSAKeyPair.fromBase64String(publicKey, null).getPublicKey());
-					encryptor.initialize();
-					return encryptor;
-				} catch (InvalidKeySpecException e) {
-					throw new RuntimeException(e);
+		String mapKey = DigestUtils.sha256Hex(publicKey);
+		return RSA_INTEGER_ENCRYPT_ENCRYPTOR_MAP.computeIfAbsent(mapKey, k -> {
+			try {
+				RSABinaryEncryptor binaryEncryptor = RSA_BINARY_ENCRYPT_ENCRYPTOR_MAP.get(publicKey);
+				if (Objects.nonNull(binaryEncryptor)) {
+					return new RSAIntegerNumberEncryptor(binaryEncryptor);
 				}
-			});
-		} catch (RuntimeException e) {
-			if (e.getCause() instanceof InvalidKeySpecException invalidKeySpecException) {
-				throw invalidKeySpecException;
+
+				RSAIntegerNumberEncryptor encryptor = new RSAIntegerNumberEncryptor(transformation);
+				encryptor.setPublicKey(RSAKeyPair.fromBase64String(publicKey, null).getPublicKey());
+				encryptor.initialize();
+				return encryptor;
+			} catch (InvalidKeySpecException e) {
+				throw new IllegalArgumentException("无效的 RSA 公钥", e);
 			}
-			throw e;
-		}
+		});
     }
 
     /**
@@ -240,35 +220,28 @@ public class RSACryptoFactory implements CryptoFactory {
      *
      * @param publicKey Base64 编码的 X.509 格式公钥字符串
      * @return 高精度小数加密器
-     * @throws InvalidKeySpecException 公钥格式不合法时抛出
      * @since 1.0.0
      */
     @Override
-    public DecimalNumberEncryptor getDecimalNumberEncryptor(String publicKey) throws InvalidKeySpecException {
+    public DecimalNumberEncryptor getDecimalNumberEncryptor(String publicKey) {
 		Assert.hasText(publicKey, "publicKey 不可为空");
 
-		try {
-			return RSA_BIGDECIMAL_ENCRYPT_ENCRYPTOR_MAP.computeIfAbsent(publicKey, k -> {
-				try {
-					RSABinaryEncryptor binaryEncryptor = RSA_BINARY_ENCRYPT_ENCRYPTOR_MAP.get(publicKey);
-					if (Objects.nonNull(binaryEncryptor)) {
-						return new RSADecimalNumberEncryptor(binaryEncryptor);
-					}
-
-					RSADecimalNumberEncryptor encryptor = new RSADecimalNumberEncryptor(transformation);
-					encryptor.setPublicKey(RSAKeyPair.fromBase64String(k, null).getPublicKey());
-					encryptor.initialize();
-					return encryptor;
-				} catch (InvalidKeySpecException e) {
-					throw new RuntimeException(e);
+		String mapKey = DigestUtils.sha256Hex(publicKey);
+		return RSA_BIGDECIMAL_ENCRYPT_ENCRYPTOR_MAP.computeIfAbsent(mapKey, k -> {
+			try {
+				RSABinaryEncryptor binaryEncryptor = RSA_BINARY_ENCRYPT_ENCRYPTOR_MAP.get(publicKey);
+				if (Objects.nonNull(binaryEncryptor)) {
+					return new RSADecimalNumberEncryptor(binaryEncryptor);
 				}
-			});
-		} catch (RuntimeException e) {
-			if (e.getCause() instanceof InvalidKeySpecException invalidKeySpecException) {
-				throw invalidKeySpecException;
+
+				RSADecimalNumberEncryptor encryptor = new RSADecimalNumberEncryptor(transformation);
+				encryptor.setPublicKey(RSAKeyPair.fromBase64String(publicKey, null).getPublicKey());
+				encryptor.initialize();
+				return encryptor;
+			} catch (InvalidKeySpecException e) {
+				throw new IllegalArgumentException("无效的 RSA 公钥", e);
 			}
-			throw e;
-		}
+		});
     }
 
     /**
@@ -276,30 +249,23 @@ public class RSACryptoFactory implements CryptoFactory {
      *
      * @param privateKey Base64 编码的 PKCS#8 格式私钥字符串
      * @return 二进制解密器
-     * @throws InvalidKeySpecException 私钥格式不合法时抛出
      * @since 1.0.0
      */
     @Override
-    public BinaryEncryptor getBinaryDecryptor(String privateKey) throws InvalidKeySpecException {
+    public BinaryEncryptor getBinaryDecryptor(String privateKey) {
 		Assert.hasText(privateKey, "privateKey 不可为空");
 
-		try {
-			return RSA_BINARY_DECRYPT_ENCRYPTOR_MAP.computeIfAbsent(privateKey, k -> {
-				try {
-					RSABinaryEncryptor encryptor = new RSABinaryEncryptor(transformation);
-					encryptor.setPrivateKey(RSAKeyPair.fromBase64String( null, privateKey).getPrivateKey());
-					encryptor.initialize();
-					return encryptor;
-				} catch (InvalidKeySpecException e) {
-					throw new RuntimeException(e);
-				}
-			});
-		} catch (RuntimeException e) {
-			if (e.getCause() instanceof InvalidKeySpecException invalidKeySpecException) {
-				throw invalidKeySpecException;
+		String mapKey = DigestUtils.sha256Hex(privateKey);
+		return RSA_BINARY_DECRYPT_ENCRYPTOR_MAP.computeIfAbsent(mapKey, k -> {
+			try {
+				RSABinaryEncryptor encryptor = new RSABinaryEncryptor(transformation);
+				encryptor.setPrivateKey(RSAKeyPair.fromBase64String( null, privateKey).getPrivateKey());
+				encryptor.initialize();
+				return encryptor;
+			} catch (InvalidKeySpecException e) {
+				throw new IllegalArgumentException("无效的 RSA 私钥", e);
 			}
-			throw e;
-		}
+		});
     }
 
 	/**
@@ -307,35 +273,28 @@ public class RSACryptoFactory implements CryptoFactory {
 	 *
 	 * @param privateKey Base64 编码的 PKCS#8 格式私钥字符串
 	 * @return 二进制解密器
-	 * @throws InvalidKeySpecException 私钥格式不合法时抛出
 	 * @since 1.0.0
 	 */
 	@Override
-	public TextEncryptor getTextDecryptor(String privateKey) throws InvalidKeySpecException {
+	public TextEncryptor getTextDecryptor(String privateKey) {
 		Assert.hasText(privateKey, "privateKey 不可为空");
 
-		try {
-			return RSA_TEXT_DECRYPT_ENCRYPTOR_MAP.computeIfAbsent(privateKey, k -> {
-				try {
-					RSABinaryEncryptor binaryEncryptor = RSA_BINARY_DECRYPT_ENCRYPTOR_MAP.get(privateKey);
-					if (Objects.nonNull(binaryEncryptor)) {
-						return new RSATextEncryptor(binaryEncryptor);
-					}
-
-					RSATextEncryptor encryptor = new RSATextEncryptor(transformation);
-					encryptor.setPrivateKey(RSAKeyPair.fromBase64String( null, privateKey).getPrivateKey());
-					encryptor.initialize();
-					return encryptor;
-				} catch (InvalidKeySpecException e) {
-					throw new RuntimeException(e);
+		String mapKey = DigestUtils.sha256Hex(privateKey);
+		return RSA_TEXT_DECRYPT_ENCRYPTOR_MAP.computeIfAbsent(mapKey, k -> {
+			try {
+				RSABinaryEncryptor binaryEncryptor = RSA_BINARY_DECRYPT_ENCRYPTOR_MAP.get(privateKey);
+				if (Objects.nonNull(binaryEncryptor)) {
+					return new RSATextEncryptor(binaryEncryptor);
 				}
-			});
-		} catch (RuntimeException e) {
-			if (e.getCause() instanceof InvalidKeySpecException invalidKeySpecException) {
-				throw invalidKeySpecException;
+
+				RSATextEncryptor encryptor = new RSATextEncryptor(transformation);
+				encryptor.setPrivateKey(RSAKeyPair.fromBase64String( null, privateKey).getPrivateKey());
+				encryptor.initialize();
+				return encryptor;
+			} catch (InvalidKeySpecException e) {
+				throw new IllegalArgumentException("无效的 RSA 私钥", e);
 			}
-			throw e;
-		}
+		});
 	}
 
     /**
@@ -343,35 +302,28 @@ public class RSACryptoFactory implements CryptoFactory {
      *
      * @param privateKey Base64 编码的 PKCS#8 格式私钥字符串
      * @return 整型数字解密器
-     * @throws InvalidKeySpecException 私钥格式不合法时抛出
      * @since 1.0.0
      */
     @Override
-    public IntegerNumberEncryptor getIntegerNumberDecryptor(String privateKey) throws InvalidKeySpecException {
+    public IntegerNumberEncryptor getIntegerNumberDecryptor(String privateKey) {
 		Assert.hasText(privateKey, "privateKey 不可为空");
 
-		try {
-			return RSA_INTEGER_DECRYPT_ENCRYPTOR_MAP.computeIfAbsent(privateKey, k -> {
-				try {
-					RSABinaryEncryptor binaryEncryptor = RSA_BINARY_DECRYPT_ENCRYPTOR_MAP.get(privateKey);
-					if (Objects.nonNull(binaryEncryptor)) {
-						return new RSAIntegerNumberEncryptor(binaryEncryptor);
-					}
-
-					RSAIntegerNumberEncryptor encryptor = new RSAIntegerNumberEncryptor(transformation);
-					encryptor.setPrivateKey(RSAKeyPair.fromBase64String( null, privateKey).getPrivateKey());
-					encryptor.initialize();
-					return encryptor;
-				} catch (InvalidKeySpecException e) {
-					throw new RuntimeException(e);
+		String mapKey = DigestUtils.sha256Hex(privateKey);
+		return RSA_INTEGER_DECRYPT_ENCRYPTOR_MAP.computeIfAbsent(mapKey, k -> {
+			try {
+				RSABinaryEncryptor binaryEncryptor = RSA_BINARY_DECRYPT_ENCRYPTOR_MAP.get(privateKey);
+				if (Objects.nonNull(binaryEncryptor)) {
+					return new RSAIntegerNumberEncryptor(binaryEncryptor);
 				}
-			});
-		} catch (RuntimeException e) {
-			if (e.getCause() instanceof InvalidKeySpecException invalidKeySpecException) {
-				throw invalidKeySpecException;
+
+				RSAIntegerNumberEncryptor encryptor = new RSAIntegerNumberEncryptor(transformation);
+				encryptor.setPrivateKey(RSAKeyPair.fromBase64String( null, privateKey).getPrivateKey());
+				encryptor.initialize();
+				return encryptor;
+			} catch (InvalidKeySpecException e) {
+				throw new IllegalArgumentException("无效的 RSA 私钥", e);
 			}
-			throw e;
-		}
+		});
     }
 
     /**
@@ -379,34 +331,27 @@ public class RSACryptoFactory implements CryptoFactory {
      *
      * @param privateKey Base64 编码的 PKCS#8 格式私钥字符串
      * @return 高精度小数解密器
-     * @throws InvalidKeySpecException 私钥格式不合法时抛出
      * @since 1.0.0
      */
     @Override
-    public DecimalNumberEncryptor getDecimalNumberDecryptor(String privateKey) throws InvalidKeySpecException {
+    public DecimalNumberEncryptor getDecimalNumberDecryptor(String privateKey) {
 		Assert.hasText(privateKey, "privateKey 不可为空");
 
-		try {
-			return RSA_BIGDECIMAL_DECRYPT_ENCRYPTOR_MAP.computeIfAbsent(privateKey, k -> {
-				try {
-					RSABinaryEncryptor binaryEncryptor = RSA_BINARY_DECRYPT_ENCRYPTOR_MAP.get(privateKey);
-					if (Objects.nonNull(binaryEncryptor)) {
-						return new RSADecimalNumberEncryptor(binaryEncryptor);
-					}
-
-					RSADecimalNumberEncryptor encryptor = new RSADecimalNumberEncryptor(transformation);
-					encryptor.setPrivateKey(RSAKeyPair.fromBase64String( null, privateKey).getPrivateKey());
-					encryptor.initialize();
-					return encryptor;
-				} catch (InvalidKeySpecException e) {
-					throw new RuntimeException(e);
+		String mapKey = DigestUtils.sha256Hex(privateKey);
+		return RSA_BIGDECIMAL_DECRYPT_ENCRYPTOR_MAP.computeIfAbsent(mapKey, k -> {
+			try {
+				RSABinaryEncryptor binaryEncryptor = RSA_BINARY_DECRYPT_ENCRYPTOR_MAP.get(privateKey);
+				if (Objects.nonNull(binaryEncryptor)) {
+					return new RSADecimalNumberEncryptor(binaryEncryptor);
 				}
-			});
-		} catch (RuntimeException e) {
-			if (e.getCause() instanceof InvalidKeySpecException invalidKeySpecException) {
-				throw invalidKeySpecException;
+
+				RSADecimalNumberEncryptor encryptor = new RSADecimalNumberEncryptor(transformation);
+				encryptor.setPrivateKey(RSAKeyPair.fromBase64String(null, privateKey).getPrivateKey());
+				encryptor.initialize();
+				return encryptor;
+			} catch (InvalidKeySpecException e) {
+				throw new IllegalArgumentException("无效的 RSA 私钥", e);
 			}
-			throw e;
-		}
-    }
+		});
+	}
 }

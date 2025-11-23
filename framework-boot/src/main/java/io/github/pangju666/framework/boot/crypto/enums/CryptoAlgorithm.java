@@ -107,6 +107,16 @@ public enum CryptoAlgorithm {
 	}
 
 	/**
+	 * 获取与当前算法关联的工厂类型。
+	 *
+	 * @return 工厂 Bean 类型
+	 * @since 1.0.0
+	 */
+	public Class<? extends CryptoFactory> getFactoryClass() {
+		return factoryClass;
+	}
+
+	/**
 	 * 获取与当前算法关联的工厂。
 	 *
 	 * @return 工厂 Bean 实例

@@ -44,7 +44,7 @@ import org.springframework.web.method.support.ModelAndViewContainer;
  * <p><strong>行为说明</strong></p>
  * <ul>
  *   <li>根据注解配置从 HTTP 请求中读取加密的字符串参数（名称由 {@link EncryptRequestParam#value()} 指定或回退到方法参数名）。</li>
- *   <li>按密钥、算法与编码进行解密后作为方法参数值返回；密钥支持明文或占位符（形如 {@code ${...}}，通过 {@link CryptoUtils#getKey(String, boolean)} 解析）。</li>
+ *   <li>按密钥、算法与编码进行解密后作为方法参数值返回；密钥支持明文或占位符（形如 {@code ${...}}，通过 {@link CryptoUtils#getKey(String)} 解析）。</li>
  *   <li>当 {@link EncryptRequestParam#required()} 为 false 且参数缺失时，返回 {@link EncryptRequestParam#defaultValue()}。</li>
  * </ul>
  *
@@ -116,8 +116,9 @@ public class EncryptRequestParamArgumentResolver implements HandlerMethodArgumen
 			return annotation.defaultValue();
 		}
 
-		String key = CryptoUtils.getKey(annotation.key(), true);
+		String key = CryptoUtils.getKey(annotation.key());
 
+		// todo 改成list注入
 		CryptoFactory factory;
 		if (ArrayUtils.isNotEmpty(annotation.factory())) {
 			factory = StaticSpringContext.getBeanFactory().getBean(annotation.factory()[0]);

@@ -181,8 +181,7 @@ public enum DesensitizedType {
 	/**
 	 * 自定义脱敏类型
 	 * <p>
-	 * 当选择此类型时，需要通过{@link DesensitizeFormat}
-	 * 的其他参数（如format、regex、prefix、suffix）来自定义脱敏规则
+	 * 不包含脱敏逻辑，只是作为占位使用
 	 * </p>
 	 *
 	 * @since 1.0.0

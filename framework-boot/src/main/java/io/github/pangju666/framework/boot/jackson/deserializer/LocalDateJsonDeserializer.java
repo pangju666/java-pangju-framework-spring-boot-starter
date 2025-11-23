@@ -37,7 +37,7 @@ import java.time.LocalDate;
  * @see LocalDate
  * @since 1.0.0
  */
-public class LocalDateJsonDeserializer extends JsonDeserializer<LocalDate> {
+public final class LocalDateJsonDeserializer extends JsonDeserializer<LocalDate> {
 	/**
 	 * 将JSON中的毫秒时间戳反序列化为LocalDate对象
 	 * <p>

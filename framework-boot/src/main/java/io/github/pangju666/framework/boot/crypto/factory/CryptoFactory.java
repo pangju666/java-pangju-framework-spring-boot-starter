@@ -21,8 +21,6 @@ import org.jasypt.util.numeric.DecimalNumberEncryptor;
 import org.jasypt.util.numeric.IntegerNumberEncryptor;
 import org.jasypt.util.text.TextEncryptor;
 
-import java.security.spec.InvalidKeySpecException;
-
 /**
  * 加/解密器工厂接口。
  * <p>
@@ -32,68 +30,67 @@ import java.security.spec.InvalidKeySpecException;
  * </p>
  *
  * @author pangju666
- * @since 1.0.0
  * @see BinaryEncryptor
  * @see TextEncryptor
  * @see DecimalNumberEncryptor
  * @see IntegerNumberEncryptor
  * @see IntegerNumberEncryptor
+ * @since 1.0.0
  */
 public interface CryptoFactory {
-    /**
-     * 获取字节数组加密器。
-     *
-     * @param key 密钥或口令
-     * @return 字节数组加密器
-     * @throws InvalidKeySpecException 密钥不可用或格式不合法时抛出
-     * @since 1.0.0
-     */
-    BinaryEncryptor getBinaryEncryptor(String key) throws InvalidKeySpecException;
+	/**
+	 * 获取字节数组加密器。
+	 *
+	 * @param key 密钥或口令
+	 * @return 字节数组加密器
+	 * @since 1.0.0
+	 */
+	BinaryEncryptor getBinaryEncryptor(String key);
 
 	/**
 	 * 获取文本加密器。
 	 *
 	 * @param key 密钥或口令
 	 * @return 文本加密器
-	 * @throws InvalidKeySpecException 密钥不可用或格式不合法时抛出
+	 * @throws IllegalArgumentException 密钥不可用或格式不合法时抛出
 	 * @since 1.0.0
 	 */
-	TextEncryptor getTextEncryptor(String key) throws InvalidKeySpecException;
+	TextEncryptor getTextEncryptor(String key);
 
-    /**
-     * 获取大整数加密器。
-     *
-     * @param key 密钥或口令
-     * @return 整型数字加密器
-     * @throws InvalidKeySpecException 密钥不可用或格式不合法时抛出
-     * @since 1.0.0
-     */
-    IntegerNumberEncryptor getIntegerNumberEncryptor(String key) throws InvalidKeySpecException;
+	/**
+	 * 获取大整数加密器。
+	 *
+	 * @param key 密钥或口令
+	 * @return 整型数字加密器
+	 * @throws IllegalArgumentException 密钥不可用或格式不合法时抛出
+	 * @since 1.0.0
+	 */
+	IntegerNumberEncryptor getIntegerNumberEncryptor(String key);
 
-    /**
-     * 获取高精度小数加密器。
-     *
-     * @param key 密钥或口令
-     * @return 高精度小数加密器
-     * @throws InvalidKeySpecException 密钥不可用或格式不合法时抛出
-     * @since 1.0.0
-     */
-    DecimalNumberEncryptor getDecimalNumberEncryptor(String key) throws InvalidKeySpecException;
+	/**
+	 * 获取高精度小数加密器。
+	 *
+	 * @param key 密钥或口令
+	 * @return 高精度小数加密器
+	 * @throws IllegalArgumentException 密钥不可用或格式不合法时抛出
+	 * @since 1.0.0
+	 */
+	DecimalNumberEncryptor getDecimalNumberEncryptor(String key);
 
-    /**
-     * 获取字节数组解密器。
-     * <p>
-     * 默认返回与加密器相同的实例；具体实现可覆盖以使用不同密钥或参数（如 RSA 私钥）。
-     * </p>
-     *
-     * @param key 密钥或口令
-     * @return 字节数组解密器
-     * @throws InvalidKeySpecException 密钥不可用或格式不合法时抛出
-     * @since 1.0.0
-     */
-    default BinaryEncryptor getBinaryDecryptor(String key) throws InvalidKeySpecException {
-        return getBinaryEncryptor(key);
-    }
+	/**
+	 * 获取字节数组解密器。
+	 * <p>
+	 * 默认返回与加密器相同的实例；具体实现可覆盖以使用不同密钥或参数（如 RSA 私钥）。
+	 * </p>
+	 *
+	 * @param key 密钥或口令
+	 * @return 字节数组解密器
+	 * @throws IllegalArgumentException 密钥不可用或格式不合法时抛出
+	 * @since 1.0.0
+	 */
+	default BinaryEncryptor getBinaryDecryptor(String key) {
+		return getBinaryEncryptor(key);
+	}
 
 	/**
 	 * 获取文本解密器。
@@ -104,40 +101,40 @@ public interface CryptoFactory {
 	 *
 	 * @param key 密钥或口令
 	 * @return 文本加密器
-	 * @throws InvalidKeySpecException 密钥不可用或格式不合法时抛出
+	 * @throws IllegalArgumentException 密钥不可用或格式不合法时抛出
 	 * @since 1.0.0
 	 */
-	default TextEncryptor getTextDecryptor(String key) throws InvalidKeySpecException {
+	default TextEncryptor getTextDecryptor(String key) {
 		return getTextEncryptor(key);
 	}
 
-    /**
-     * 获取大整数解密器。
-     * <p>
-     * 默认返回与加密器相同的实例；具体实现可覆盖以使用不同密钥或参数（如 RSA 私钥）。
-     * </p>
-     *
-     * @param key 密钥或口令
-     * @return 整型数字解密器
-     * @throws InvalidKeySpecException 密钥不可用或格式不合法时抛出
-     * @since 1.0.0
-     */
-    default IntegerNumberEncryptor getIntegerNumberDecryptor(String key) throws InvalidKeySpecException {
-        return getIntegerNumberEncryptor(key);
-    }
+	/**
+	 * 获取大整数解密器。
+	 * <p>
+	 * 默认返回与加密器相同的实例；具体实现可覆盖以使用不同密钥或参数（如 RSA 私钥）。
+	 * </p>
+	 *
+	 * @param key 密钥或口令
+	 * @return 整型数字解密器
+	 * @throws IllegalArgumentException 密钥不可用或格式不合法时抛出
+	 * @since 1.0.0
+	 */
+	default IntegerNumberEncryptor getIntegerNumberDecryptor(String key) {
+		return getIntegerNumberEncryptor(key);
+	}
 
-    /**
-     * 获取高精度小数解密器。
-     * <p>
-     * 默认返回与加密器相同的实例；具体实现可覆盖以使用不同密钥或参数。
-     * </p>
-     *
-     * @param key 密钥或口令
-     * @return 高精度小数解密器
-     * @throws InvalidKeySpecException 密钥不可用或格式不合法时抛出
-     * @since 1.0.0
-     */
-    default DecimalNumberEncryptor getDecimalNumberDecryptor(String key) throws InvalidKeySpecException {
-        return getDecimalNumberEncryptor(key);
-    }
+	/**
+	 * 获取高精度小数解密器。
+	 * <p>
+	 * 默认返回与加密器相同的实例；具体实现可覆盖以使用不同密钥或参数。
+	 * </p>
+	 *
+	 * @param key 密钥或口令
+	 * @return 高精度小数解密器
+	 * @throws IllegalArgumentException 密钥不可用或格式不合法时抛出
+	 * @since 1.0.0
+	 */
+	default DecimalNumberEncryptor getDecimalNumberDecryptor(String key) {
+		return getDecimalNumberEncryptor(key);
+	}
 }

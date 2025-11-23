@@ -28,7 +28,6 @@ import org.apache.commons.lang3.Strings;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.security.spec.InvalidKeySpecException;
 import java.util.Objects;
 
 /**
@@ -53,10 +52,9 @@ public class CryptoUtils {
      * @param rawData 原始字节数据；为空时直接返回
      * @param key     密钥或占位符（支持 <code>${property.name}</code> 形式）
      * @return 加密后的字节数组；若输入为空则返回原值
-     * @throws InvalidKeySpecException 当密钥格式不合法或不可用时抛出
 	 * @since 1.0.0
      */
-    public static byte[] encrypt(final CryptoFactory factory, final byte[] rawData, final String key) throws InvalidKeySpecException {
+    public static byte[] encrypt(final CryptoFactory factory, final byte[] rawData, final String key) {
         if (ArrayUtils.isEmpty(rawData)) {
             return rawData;
         }
@@ -70,10 +68,9 @@ public class CryptoUtils {
      * @param rawData 密文字节数据；为空时直接返回
      * @param key     密钥或占位符（支持 <code>${property.name}</code> 形式）
      * @return 解密后的字节数组；若输入为空则返回原值
-     * @throws InvalidKeySpecException 当密钥格式不合法或不可用时抛出
-	 * @since 1.0.0
+     * @since 1.0.0
 	 */
-    public static byte[] decrypt(final CryptoFactory factory, final byte[] rawData, final String key) throws InvalidKeySpecException {
+    public static byte[] decrypt(final CryptoFactory factory, final byte[] rawData, final String key) {
         if (ArrayUtils.isEmpty(rawData)) {
             return rawData;
         }
@@ -88,11 +85,9 @@ public class CryptoUtils {
      * @param key      密钥或占位符（支持 <code>${property.name}</code> 形式）
      * @param encoding 输出编码方式（Base64 或 Hex）
      * @return 编码后的密文字符串；若输入为空白则返回原值
-     * @throws InvalidKeySpecException 当密钥格式不合法或不可用时抛出
-	 * @since 1.0.0
+     * @since 1.0.0
 	 */
-    public static String encryptString(final CryptoFactory factory, final String rawData, final String key,
-                                       final Encoding encoding) throws InvalidKeySpecException {
+    public static String encryptString(final CryptoFactory factory, final String rawData, final String key, final Encoding encoding) {
         if (StringUtils.isBlank(rawData)) {
             return rawData;
         }
@@ -111,12 +106,11 @@ public class CryptoUtils {
      * @param key      密钥或占位符（支持 <code>${property.name}</code> 形式）
      * @param encoding 输入的编码方式（Base64 或 Hex）
      * @return 解密后的明文字符串；若输入为空白则返回原值
-     * @throws InvalidKeySpecException 当密钥格式不合法或不可用时抛出
      * @throws DecoderException        当编码内容解析失败时抛出（如 Hex 非法）
 	 * @since 1.0.0
 	 */
     public static String decryptString(final CryptoFactory factory, final String rawData, final String key,
-                                       final Encoding encoding) throws InvalidKeySpecException, DecoderException {
+									   final Encoding encoding) throws DecoderException {
         if (StringUtils.isBlank(rawData)) {
             return rawData;
         }
@@ -134,10 +128,9 @@ public class CryptoUtils {
      * @param rawData 原始大整数；为 null 时返回 null
      * @param key     密钥或占位符
      * @return 加密后的大整数；为 null 时返回 null
-     * @throws InvalidKeySpecException 当密钥格式不合法或不可用时抛出
-	 * @since 1.0.0
+     * @since 1.0.0
 	 */
-    public static BigInteger encryptBigInteger(final CryptoFactory factory, final BigInteger rawData, final String key) throws InvalidKeySpecException {
+    public static BigInteger encryptBigInteger(final CryptoFactory factory, final BigInteger rawData, final String key) {
         if (Objects.isNull(rawData)) {
             return null;
         }
@@ -151,10 +144,9 @@ public class CryptoUtils {
      * @param rawData 密文大整数；为 null 时返回 null
      * @param key     密钥或占位符
      * @return 解密后的大整数；为 null 时返回 null
-     * @throws InvalidKeySpecException 当密钥格式不合法或不可用时抛出
-	 * @since 1.0.0
+     * @since 1.0.0
 	 */
-    public static BigInteger decryptBigInteger(final CryptoFactory factory, final BigInteger rawData, final String key) throws InvalidKeySpecException {
+    public static BigInteger decryptBigInteger(final CryptoFactory factory, final BigInteger rawData, final String key) {
         if (Objects.isNull(rawData)) {
             return null;
         }
@@ -168,10 +160,9 @@ public class CryptoUtils {
      * @param rawData 原始小数；为 null 时返回 null
      * @param key     密钥或占位符
      * @return 加密后的高精度小数；为 null 时返回 null
-     * @throws InvalidKeySpecException 当密钥格式不合法或不可用时抛出
-	 * @since 1.0.0
+     * @since 1.0.0
 	 */
-    public static BigDecimal encryptBigDecimal(final CryptoFactory factory, final BigDecimal rawData, final String key) throws InvalidKeySpecException {
+    public static BigDecimal encryptBigDecimal(final CryptoFactory factory, final BigDecimal rawData, final String key) {
         if (Objects.isNull(rawData)) {
             return null;
         }
@@ -185,10 +176,9 @@ public class CryptoUtils {
      * @param rawData 密文小数；为 null 时返回 null
      * @param key     密钥或占位符
      * @return 解密后的高精度小数；为 null 时返回 null
-     * @throws InvalidKeySpecException 当密钥格式不合法或不可用时抛出
-	 * @since 1.0.0
+     * @since 1.0.0
 	 */
-    public static BigDecimal decryptBigDecimal(final CryptoFactory factory, final BigDecimal rawData, final String key) throws InvalidKeySpecException {
+    public static BigDecimal decryptBigDecimal(final CryptoFactory factory, final BigDecimal rawData, final String key) {
         if (Objects.isNull(rawData)) {
             return null;
         }
@@ -205,27 +195,20 @@ public class CryptoUtils {
      * 非占位符不经环境查找，直接返回原始入参。</p>
      *
      * @param key 明文密钥或占位符（如 <code>${crypto.key}</code>）
-     * @param throwsException 解析失败时是否抛出异常；true 抛出异常，false 返回 {@code null}
-     * @return 解析后的明文密钥；当 <code>throwsException == false</code> 且失败时返回 {@code null}
-	 * @throws InvalidKeySpecException 当 <code>throwsException == true</code> 且入参为空或未解析到值时抛出
+     * @return 解析后的明文密钥
+	 * @throws IllegalArgumentException 当入参为空或未解析到值时抛出
 	 * @since 1.0.0
 	 */
-    public static String getKey(final String key, boolean throwsException) throws InvalidKeySpecException {
+    public static String getKey(final String key) {
         if (StringUtils.isBlank(key)) {
-            if (throwsException) {
-				throw new InvalidKeySpecException("密钥属性为空");
-			}
-            return null;
+			throw new IllegalArgumentException("密钥属性为空");
         }
 
 		String cryptoKey = key;
         if (Strings.CS.startsWith(key, "${") && Strings.CS.endsWith(key, "}")) {
 			cryptoKey = StaticSpringContext.getEnvironment().resolvePlaceholders(key);
 			if (cryptoKey.equals(key)) {
-				if (throwsException) {
-					throw new InvalidKeySpecException("未找到密钥，属性：" + key);
-				}
-				return null;
+				throw new IllegalArgumentException("未找到密钥，属性：" + key);
 			}
         }
 		return cryptoKey;

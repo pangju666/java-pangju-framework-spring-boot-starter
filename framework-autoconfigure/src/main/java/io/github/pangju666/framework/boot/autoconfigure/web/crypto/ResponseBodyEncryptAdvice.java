@@ -16,7 +16,7 @@
 
 package io.github.pangju666.framework.boot.autoconfigure.web.crypto;
 
-import io.github.pangju666.commons.crypto.key.RSAKey;
+import io.github.pangju666.commons.crypto.key.RSAKeyPair;
 import io.github.pangju666.commons.lang.utils.JsonUtils;
 import io.github.pangju666.framework.boot.crypto.enums.Encoding;
 import io.github.pangju666.framework.boot.crypto.factory.CryptoFactory;
@@ -59,7 +59,7 @@ import java.util.Objects;
  * 适用范围：
  * <ul>
  *     <li>仅适用于 Servlet Web 应用。</li>
- *     <li>类路径需存在 {@link Servlet}、{@link DispatcherServlet}、{@link RSAKey}。</li>
+ *     <li>类路径需存在 {@link Servlet}、{@link DispatcherServlet}、{@link RSAKeyPair}。</li>
  *     <li>方法或类标注 {@link EncryptResponseBody} 才会生效（方法级优先）。</li>
  * </ul>
  * </p>
@@ -102,7 +102,7 @@ import java.util.Objects;
  */
 @Order(Ordered.HIGHEST_PRECEDENCE  + 5)
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
-@ConditionalOnClass({Servlet.class, DispatcherServlet.class, RSAKey.class, Result.class})
+@ConditionalOnClass({Servlet.class, DispatcherServlet.class, RSAKeyPair.class, Result.class})
 @ConditionalOnBean(CryptoFactory.class)
 @RestControllerAdvice
 public class ResponseBodyEncryptAdvice implements ResponseBodyAdvice<Object> {
@@ -172,11 +172,12 @@ public class ResponseBodyEncryptAdvice implements ResponseBodyAdvice<Object> {
 
 		String key;
 		try {
-			key = CryptoUtils.getKey(annotation.key(), true);
-		} catch (InvalidKeySpecException e) {
+			key = CryptoUtils.getKey(annotation.key());
+		} catch (IllegalArgumentException e) {
 			throw new ServerException(e);
 		}
 
+		// todo 改成list注入
 		CryptoFactory factory;
 		if (ArrayUtils.isNotEmpty(annotation.factory())) {
 			factory = StaticSpringContext.getBeanFactory().getBean(annotation.factory()[0]);
@@ -209,7 +210,7 @@ public class ResponseBodyEncryptAdvice implements ResponseBodyAdvice<Object> {
 			}
 		} catch (EncryptionOperationNotPossibleException e) {
 			throw new ServerException("响应数据对象加密失败", e);
-		} catch (InvalidKeySpecException e) {
+		} catch (IllegalArgumentException e) {
 			throw new ServerException("无效的密钥", e);
 		}
 	}
