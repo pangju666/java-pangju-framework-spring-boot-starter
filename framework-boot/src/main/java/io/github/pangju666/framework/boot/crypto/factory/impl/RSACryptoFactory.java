@@ -16,6 +16,8 @@
 
 package io.github.pangju666.framework.boot.crypto.factory.impl;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import io.github.pangju666.commons.crypto.encryption.binary.RSABinaryEncryptor;
 import io.github.pangju666.commons.crypto.encryption.numeric.RSADecimalNumberEncryptor;
 import io.github.pangju666.commons.crypto.encryption.numeric.RSAIntegerNumberEncryptor;
@@ -32,9 +34,7 @@ import org.jasypt.util.text.TextEncryptor;
 import org.springframework.util.Assert;
 
 import java.security.spec.InvalidKeySpecException;
-import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * RSA 加密工厂实现。
@@ -55,53 +55,53 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class RSACryptoFactory implements CryptoFactory {
 	/**
-	 * 公钥到二进制加密器的缓存映射。
+	 * 公钥到二进制加密器的缓存。
 	 *
 	 * @since 1.0.0
 	 */
-	private static final Map<String, RSABinaryEncryptor> RSA_BINARY_ENCRYPT_ENCRYPTOR_MAP = new ConcurrentHashMap<>(16);
+	private final Cache<String, RSABinaryEncryptor> binaryEncryptEncryptorCache;
 	/**
-	 * 私钥到二进制解密器的缓存映射。
+	 * 私钥到二进制解密器的缓存。
 	 *
 	 * @since 1.0.0
 	 */
-	private static final Map<String, RSABinaryEncryptor> RSA_BINARY_DECRYPT_ENCRYPTOR_MAP = new ConcurrentHashMap<>(16);
+	private final Cache<String, RSABinaryEncryptor> binaryDecryptEncryptorCache;
 	/**
-	 * 公钥到文本加密器的缓存映射。
+	 * 公钥到文本加密器的缓存。
 	 *
 	 * @since 1.0.0
 	 */
-	private static final Map<String, RSATextEncryptor> RSA_TEXT_ENCRYPT_ENCRYPTOR_MAP = new ConcurrentHashMap<>(16);
+	private final Cache<String, RSATextEncryptor> textEncryptEncryptorCache;
 	/**
-	 * 私钥到文本解密器的缓存映射。
+	 * 私钥到文本解密器的缓存。
 	 *
 	 * @since 1.0.0
 	 */
-	private static final Map<String, RSATextEncryptor> RSA_TEXT_DECRYPT_ENCRYPTOR_MAP = new ConcurrentHashMap<>(16);
+	private final Cache<String, RSATextEncryptor> textDecryptEncryptorCache;
 	/**
-	 * 公钥到整型数字加密器的缓存映射。
+	 * 公钥到整型数字加密器的缓存。
 	 *
 	 * @since 1.0.0
 	 */
-	private static final Map<String, RSAIntegerNumberEncryptor> RSA_INTEGER_ENCRYPT_ENCRYPTOR_MAP = new ConcurrentHashMap<>(16);
+	private final Cache<String, RSAIntegerNumberEncryptor> integerEncryptEncryptorCache;
 	/**
-	 * 私钥到整型数字解密器的缓存映射。
+	 * 私钥到整型数字解密器的缓存。
 	 *
 	 * @since 1.0.0
 	 */
-	private static final Map<String, RSAIntegerNumberEncryptor> RSA_INTEGER_DECRYPT_ENCRYPTOR_MAP = new ConcurrentHashMap<>(16);
+	private final Cache<String, RSAIntegerNumberEncryptor> integerDecryptEncryptorCache;
 	/**
-	 * 公钥到高精度小数加密器的缓存映射。
+	 * 公钥到高精度小数加密器的缓存。
 	 *
 	 * @since 1.0.0
 	 */
-	private static final Map<String, RSADecimalNumberEncryptor> RSA_BIGDECIMAL_ENCRYPT_ENCRYPTOR_MAP = new ConcurrentHashMap<>(16);
+	private final Cache<String, RSADecimalNumberEncryptor> decimalEncryptEncryptorCache;
 	/**
-	 * 私钥到高精度小数解密器的缓存映射。
+	 * 私钥到高精度小数解密器的缓存。
 	 *
 	 * @since 1.0.0
 	 */
-	private static final Map<String, RSADecimalNumberEncryptor> RSA_BIGDECIMAL_DECRYPT_ENCRYPTOR_MAP = new ConcurrentHashMap<>(16);
+	private final Cache<String, RSADecimalNumberEncryptor> decimalDecryptEncryptorCache;
 
     /**
      * RSA 加密方案（填充/摘要等参数）。
@@ -114,23 +114,56 @@ public class RSACryptoFactory implements CryptoFactory {
     /**
      * 默认使用 OAEPWithSHA-256AndMGF1Padding 作为加密方案的构造方法。
      *
+     * <p>缓存策略：为加/解密的二进制、文本、整型与高精度小数四类加密器分别创建独立的缓存，
+     * 每个缓存的最大条目数受 {@code maxKeySize} 限制。</p>
+     *
+     * @param maxKeySize 每类加密器缓存的最大条目数（建议为正整数）
      * @since 1.0.0
      */
-    public RSACryptoFactory() {
-        this.transformation = new RSAOEAPWithSHA256Transformation();
+    public RSACryptoFactory(int maxKeySize) {
+        this(maxKeySize, new RSAOEAPWithSHA256Transformation());
     }
 
     /**
      * 指定 RSA 加密方案的构造方法。
      *
+     * <p>缓存策略：为加/解密的二进制、文本、整型与高精度小数四类加密器分别创建独立的缓存，
+     * 每个缓存的最大条目数受 {@code maxKeySize} 限制。</p>
+     *
+     * @param maxKeySize     每类加密器缓存的最大条目数（建议为正整数）
      * @param transformation RSA 加密方案
-	 * @throws IllegalArgumentException 当 transformation 为 null 时抛出
+     * @throws IllegalArgumentException 当 {@code transformation} 为 {@code null} 时抛出
      * @since 1.0.0
      */
-    public RSACryptoFactory(RSATransformation transformation) {
-		Assert.notNull(transformation, "transformation 不可为 null");
+    public RSACryptoFactory(int maxKeySize, RSATransformation transformation) {
+        Assert.notNull(transformation, "transformation 不可为 null");
 
         this.transformation = transformation;
+		
+		this.binaryEncryptEncryptorCache = Caffeine.newBuilder()
+			.maximumSize(maxKeySize)
+			.build();
+		this.binaryDecryptEncryptorCache = Caffeine.newBuilder()
+			.maximumSize(maxKeySize)
+			.build();
+		this.textEncryptEncryptorCache = Caffeine.newBuilder()
+			.maximumSize(maxKeySize)
+			.build();
+		this.textDecryptEncryptorCache = Caffeine.newBuilder()
+			.maximumSize(maxKeySize)
+			.build();
+		this.integerEncryptEncryptorCache = Caffeine.newBuilder()
+			.maximumSize(maxKeySize)
+			.build();
+		this.integerDecryptEncryptorCache = Caffeine.newBuilder()
+			.maximumSize(maxKeySize)
+			.build();
+		this.decimalEncryptEncryptorCache = Caffeine.newBuilder()
+			.maximumSize(maxKeySize)
+			.build();
+		this.decimalDecryptEncryptorCache = Caffeine.newBuilder()
+			.maximumSize(maxKeySize)
+			.build();
     }
 
     /**
@@ -145,7 +178,7 @@ public class RSACryptoFactory implements CryptoFactory {
 		Assert.hasText(publicKey, "key 不可为空");
 
 		String mapKey = DigestUtils.sha256Hex(publicKey);
-		return RSA_BINARY_ENCRYPT_ENCRYPTOR_MAP.computeIfAbsent(mapKey, k -> {
+		return binaryEncryptEncryptorCache.get(mapKey, k -> {
 			try {
 				RSABinaryEncryptor encryptor = new RSABinaryEncryptor(transformation);
 				encryptor.setPublicKey(RSAKeyPair.fromBase64String(publicKey, null).getPublicKey());
@@ -169,9 +202,9 @@ public class RSACryptoFactory implements CryptoFactory {
 		Assert.hasText(publicKey, "key 不可为空");
 
 		String mapKey = DigestUtils.sha256Hex(publicKey);
-		return RSA_TEXT_ENCRYPT_ENCRYPTOR_MAP.computeIfAbsent(mapKey, k -> {
+		return textEncryptEncryptorCache.get(mapKey, k -> {
 			try {
-				RSABinaryEncryptor binaryEncryptor = RSA_BINARY_ENCRYPT_ENCRYPTOR_MAP.get(publicKey);
+				RSABinaryEncryptor binaryEncryptor = binaryEncryptEncryptorCache.getIfPresent(publicKey);
 				if (Objects.nonNull(binaryEncryptor)) {
 					return new RSATextEncryptor(binaryEncryptor);
 				}
@@ -198,9 +231,9 @@ public class RSACryptoFactory implements CryptoFactory {
 		Assert.hasText(publicKey, "publicKey 不可为空");
 
 		String mapKey = DigestUtils.sha256Hex(publicKey);
-		return RSA_INTEGER_ENCRYPT_ENCRYPTOR_MAP.computeIfAbsent(mapKey, k -> {
+		return integerEncryptEncryptorCache.get(mapKey, k -> {
 			try {
-				RSABinaryEncryptor binaryEncryptor = RSA_BINARY_ENCRYPT_ENCRYPTOR_MAP.get(publicKey);
+				RSABinaryEncryptor binaryEncryptor = binaryEncryptEncryptorCache.getIfPresent(publicKey);
 				if (Objects.nonNull(binaryEncryptor)) {
 					return new RSAIntegerNumberEncryptor(binaryEncryptor);
 				}
@@ -227,9 +260,9 @@ public class RSACryptoFactory implements CryptoFactory {
 		Assert.hasText(publicKey, "publicKey 不可为空");
 
 		String mapKey = DigestUtils.sha256Hex(publicKey);
-		return RSA_BIGDECIMAL_ENCRYPT_ENCRYPTOR_MAP.computeIfAbsent(mapKey, k -> {
+		return decimalEncryptEncryptorCache.get(mapKey, k -> {
 			try {
-				RSABinaryEncryptor binaryEncryptor = RSA_BINARY_ENCRYPT_ENCRYPTOR_MAP.get(publicKey);
+				RSABinaryEncryptor binaryEncryptor = binaryEncryptEncryptorCache.getIfPresent(publicKey);
 				if (Objects.nonNull(binaryEncryptor)) {
 					return new RSADecimalNumberEncryptor(binaryEncryptor);
 				}
@@ -256,7 +289,7 @@ public class RSACryptoFactory implements CryptoFactory {
 		Assert.hasText(privateKey, "privateKey 不可为空");
 
 		String mapKey = DigestUtils.sha256Hex(privateKey);
-		return RSA_BINARY_DECRYPT_ENCRYPTOR_MAP.computeIfAbsent(mapKey, k -> {
+		return binaryDecryptEncryptorCache.get(mapKey, k -> {
 			try {
 				RSABinaryEncryptor encryptor = new RSABinaryEncryptor(transformation);
 				encryptor.setPrivateKey(RSAKeyPair.fromBase64String( null, privateKey).getPrivateKey());
@@ -280,9 +313,9 @@ public class RSACryptoFactory implements CryptoFactory {
 		Assert.hasText(privateKey, "privateKey 不可为空");
 
 		String mapKey = DigestUtils.sha256Hex(privateKey);
-		return RSA_TEXT_DECRYPT_ENCRYPTOR_MAP.computeIfAbsent(mapKey, k -> {
+		return textDecryptEncryptorCache.get(mapKey, k -> {
 			try {
-				RSABinaryEncryptor binaryEncryptor = RSA_BINARY_DECRYPT_ENCRYPTOR_MAP.get(privateKey);
+				RSABinaryEncryptor binaryEncryptor = binaryDecryptEncryptorCache.getIfPresent(privateKey);
 				if (Objects.nonNull(binaryEncryptor)) {
 					return new RSATextEncryptor(binaryEncryptor);
 				}
@@ -309,9 +342,9 @@ public class RSACryptoFactory implements CryptoFactory {
 		Assert.hasText(privateKey, "privateKey 不可为空");
 
 		String mapKey = DigestUtils.sha256Hex(privateKey);
-		return RSA_INTEGER_DECRYPT_ENCRYPTOR_MAP.computeIfAbsent(mapKey, k -> {
+		return integerDecryptEncryptorCache.get(mapKey, k -> {
 			try {
-				RSABinaryEncryptor binaryEncryptor = RSA_BINARY_DECRYPT_ENCRYPTOR_MAP.get(privateKey);
+				RSABinaryEncryptor binaryEncryptor = binaryDecryptEncryptorCache.getIfPresent(privateKey);
 				if (Objects.nonNull(binaryEncryptor)) {
 					return new RSAIntegerNumberEncryptor(binaryEncryptor);
 				}
@@ -338,9 +371,9 @@ public class RSACryptoFactory implements CryptoFactory {
 		Assert.hasText(privateKey, "privateKey 不可为空");
 
 		String mapKey = DigestUtils.sha256Hex(privateKey);
-		return RSA_BIGDECIMAL_DECRYPT_ENCRYPTOR_MAP.computeIfAbsent(mapKey, k -> {
+		return decimalDecryptEncryptorCache.get(mapKey, k -> {
 			try {
-				RSABinaryEncryptor binaryEncryptor = RSA_BINARY_DECRYPT_ENCRYPTOR_MAP.get(privateKey);
+				RSABinaryEncryptor binaryEncryptor = binaryDecryptEncryptorCache.getIfPresent(privateKey);
 				if (Objects.nonNull(binaryEncryptor)) {
 					return new RSADecimalNumberEncryptor(binaryEncryptor);
 				}

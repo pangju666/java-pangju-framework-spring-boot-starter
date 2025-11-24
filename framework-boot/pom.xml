@@ -34,6 +34,41 @@
 			<optional>true</optional>
 		</dependency>
 
+		<!-- Crypto -->
+		<dependency>
+			<groupId>io.github.pangju666.commons</groupId>
+			<artifactId>commons-crypto</artifactId>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>com.github.ben-manes.caffeine</groupId>
+			<artifactId>caffeine</artifactId>
+		</dependency>
+
+		<!-- Jackson -->
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+			<optional>true</optional>
+		</dependency>
+
+		<!-- Image -->
+		<dependency>
+			<groupId>io.github.pangju666.commons</groupId>
+			<artifactId>commons-image</artifactId>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>org.im4java</groupId>
+			<artifactId>im4java</artifactId>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>com.sharneng</groupId>
+			<artifactId>gm4java</artifactId>
+			<optional>true</optional>
+		</dependency>
+
 		<!-- Mybatis Plus -->
 		<dependency>
 			<groupId>com.baomidou</groupId>
@@ -65,24 +100,10 @@
 			<optional>true</optional>
 		</dependency>
 
-		<!-- Jackson -->
-		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-databind</artifactId>
-			<optional>true</optional>
-		</dependency>
-
 		<!-- Web -->
 		<dependency>
 			<groupId>io.github.pangju666.framework</groupId>
 			<artifactId>framework-web</artifactId>
-			<optional>true</optional>
-		</dependency>
-
-		<!-- Web crypto -->
-		<dependency>
-			<groupId>io.github.pangju666.commons</groupId>
-			<artifactId>commons-crypto</artifactId>
 			<optional>true</optional>
 		</dependency>
 
@@ -119,23 +140,6 @@
 		<dependency>
 			<groupId>com.lmax</groupId>
 			<artifactId>disruptor</artifactId>
-			<optional>true</optional>
-		</dependency>
-
-		<!-- Image -->
-		<dependency>
-			<groupId>io.github.pangju666.commons</groupId>
-			<artifactId>commons-image</artifactId>
-			<optional>true</optional>
-		</dependency>
-		<dependency>
-			<groupId>org.im4java</groupId>
-			<artifactId>im4java</artifactId>
-			<optional>true</optional>
-		</dependency>
-		<dependency>
-			<groupId>com.sharneng</groupId>
-			<artifactId>gm4java</artifactId>
 			<optional>true</optional>
 		</dependency>
 	</dependencies>

@@ -16,6 +16,8 @@
 
 package io.github.pangju666.framework.boot.crypto.factory.impl;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import io.github.pangju666.framework.boot.crypto.factory.CryptoFactory;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.jasypt.util.binary.AES256BinaryEncryptor;
@@ -27,9 +29,6 @@ import org.jasypt.util.numeric.IntegerNumberEncryptor;
 import org.jasypt.util.text.AES256TextEncryptor;
 import org.jasypt.util.text.TextEncryptor;
 import org.springframework.util.Assert;
-
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * AES‑256 加密工厂实现。
@@ -49,29 +48,56 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class AES256CryptoFactory implements CryptoFactory {
 	/**
-	 * 口令到二进制加密器的缓存映射。
+	 * 口令到二进制加密器的缓存。
 	 *
 	 * @since 1.0.0
 	 */
-	private static final Map<String, AES256BinaryEncryptor> BINARY_ENCRYPTOR_MAP = new ConcurrentHashMap<>();
+	private final Cache<String, AES256BinaryEncryptor> binaryEncryptorCache;
 	/**
-	 * 口令到文本加密器的缓存映射。
+	 * 口令到文本加密器的缓存。
 	 *
 	 * @since 1.0.0
 	 */
-	private static final Map<String, AES256TextEncryptor> TEXT_ENCRYPTOR_MAP = new ConcurrentHashMap<>();
+	private final Cache<String, AES256TextEncryptor> textEncryptorCache;
 	/**
-	 * 口令到整型数字加密器的缓存映射。
+	 * 口令到整型数字加密器的缓存。
 	 *
 	 * @since 1.0.0
 	 */
-	private static final Map<String, AES256IntegerNumberEncryptor> INTEGER_ENCRYPTOR_MAP = new ConcurrentHashMap<>();
+	private final Cache<String, AES256IntegerNumberEncryptor> integerEncryptorCache;
 	/**
-	 * 口令到高精度小数加密器的缓存映射。
+	 * 口令到高精度小数加密器的缓存。
 	 *
 	 * @since 1.0.0
 	 */
-	private static final Map<String, AES256DecimalNumberEncryptor> DECIMAL_ENCRYPTOR_MAP = new ConcurrentHashMap<>();
+	private final Cache<String, AES256DecimalNumberEncryptor> decimalEncryptorCache;
+
+	/**
+	 * 构造 AES‑256 加密工厂并初始化内部缓存。
+	 *
+	 * <p>缓存策略：为二进制、文本、整型与高精度小数四类加密器分别创建独立的 Caffeine 缓存，
+	 * 每个缓存的最大条目数均受 {@code maxKeySize} 限制。</p>
+	 * <p>参数校验：{@code maxKeySize} 必须大于 0。</p>
+	 *
+	 * @param maxKeySize 每个加密器缓存的最大条目数
+	 * @since 1.0.0
+	 */
+	public AES256CryptoFactory(int maxKeySize) {
+		Assert.isTrue(maxKeySize > 0, "maxKeySize 必须大于0");
+
+		this.binaryEncryptorCache = Caffeine.newBuilder()
+			.maximumSize(maxKeySize)
+			.build();
+		this.textEncryptorCache = Caffeine.newBuilder()
+			.maximumSize(maxKeySize)
+			.build();
+		this.integerEncryptorCache = Caffeine.newBuilder()
+			.maximumSize(maxKeySize)
+			.build();
+		this.decimalEncryptorCache = Caffeine.newBuilder()
+			.maximumSize(maxKeySize)
+			.build();
+	}
 
 	/**
 	 * 获取并缓存字节数组加密器（按口令）。
@@ -84,7 +110,7 @@ public class AES256CryptoFactory implements CryptoFactory {
 	public BinaryEncryptor getBinaryEncryptor(String key) {
 		Assert.hasText(key, "key 不可为空");
 
-		return BINARY_ENCRYPTOR_MAP.computeIfAbsent(DigestUtils.sha256Hex(key), k -> {
+		return binaryEncryptorCache.get(DigestUtils.sha256Hex(key), k -> {
 			AES256BinaryEncryptor encryptor = new AES256BinaryEncryptor();
 			encryptor.setPassword(key);
 			return encryptor;
@@ -102,7 +128,7 @@ public class AES256CryptoFactory implements CryptoFactory {
 	public TextEncryptor getTextEncryptor(String key) {
 		Assert.hasText(key, "key 不可为空");
 
-		return TEXT_ENCRYPTOR_MAP.computeIfAbsent(DigestUtils.sha256Hex(key), k -> {
+		return textEncryptorCache.get(DigestUtils.sha256Hex(key), k -> {
 			AES256TextEncryptor encryptor = new AES256TextEncryptor();
 			encryptor.setPassword(key);
 			return encryptor;
@@ -120,7 +146,7 @@ public class AES256CryptoFactory implements CryptoFactory {
 	public IntegerNumberEncryptor getIntegerNumberEncryptor(String key) {
 		Assert.hasText(key, "key 不可为空");
 
-		return INTEGER_ENCRYPTOR_MAP.computeIfAbsent(DigestUtils.sha256Hex(key), k -> {
+		return integerEncryptorCache.get(DigestUtils.sha256Hex(key), k -> {
 			AES256IntegerNumberEncryptor encryptor = new AES256IntegerNumberEncryptor();
 			encryptor.setPassword(key);
 			return encryptor;
@@ -138,7 +164,7 @@ public class AES256CryptoFactory implements CryptoFactory {
 	public DecimalNumberEncryptor getDecimalNumberEncryptor(String key) {
 		Assert.hasText(key, "key 不可为空");
 
-		return DECIMAL_ENCRYPTOR_MAP.computeIfAbsent(DigestUtils.sha256Hex(key), k -> {
+		return decimalEncryptorCache.get(DigestUtils.sha256Hex(key), k -> {
 			AES256DecimalNumberEncryptor encryptor = new AES256DecimalNumberEncryptor();
 			encryptor.setPassword(key);
 			return encryptor;
