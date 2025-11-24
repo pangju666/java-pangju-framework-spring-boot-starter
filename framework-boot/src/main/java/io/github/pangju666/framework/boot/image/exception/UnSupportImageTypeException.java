@@ -29,15 +29,16 @@ import org.springframework.core.NestedRuntimeException;
  *
  * @author pangju666
  * @since 1.0.0
+ * @see NestedRuntimeException
  */
 public class UnSupportImageTypeException extends NestedRuntimeException {
 	/**
 	 * 通过消息构造异常。
 	 *
-	 * @param msg 异常消息
+	 * @param message 异常消息
 	 * @since 1.0.0
 	 */
-	public UnSupportImageTypeException(String msg) {
-		super(msg);
+	public UnSupportImageTypeException(String message) {
+		super(message);
 	}
 }

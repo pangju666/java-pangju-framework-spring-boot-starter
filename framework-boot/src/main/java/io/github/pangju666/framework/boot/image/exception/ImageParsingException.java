@@ -21,42 +21,39 @@ import org.springframework.core.NestedRuntimeException;
 import java.io.File;
 
 /**
- * 图片损坏或解析失败异常。
+ * 图像解析异常。
  *
  * <p><strong>概述</strong></p>
  * <ul>
- *   <li>用于标识图像文件无法被正常解析或内容损坏。</li>
- *   <li>适用于读取图像信息、解码图像等失败的场景。</li>
+ *   <li>用于标识图像文件在解析阶段失败，包括读取头信息、识别格式、提取尺寸/方向、获取 MIME 类型、计算摘要等。</li>
+ *   <li>适用于图像元数据提取与基础解码过程中的错误场景；更广泛的操作失败请参见 {@link ImageOperationException}。</li>
+ * </ul>
+ *
+ * <p><strong>消息格式</strong></p>
+ * <ul>
+ *   <li>基于文件的构造方法会拼接消息：{@code "图片文件：<absolute-path> <reason>"}。</li>
+ *   <li>使用自定义消息的构造方法原样透传调用方提供的内容。</li>
+ * </ul>
+ *
+ * <p><strong>异常类型</strong></p>
+ * <ul>
+ *   <li>为运行时异常（继承 {@link org.springframework.core.NestedRuntimeException}），适合在业务层统一捕获与处理。</li>
  * </ul>
  *
  * @author pangju666
  * @since 1.0.0
+ * @see org.springframework.core.NestedRuntimeException
  */
-public class ImageDamageException extends NestedRuntimeException {
-	/**
-	 * 默认异常消息：图片解析失败。
-	 *
-	 * @since 1.0.0
-	 */
-	private static final String DEFAULT_MESSAGE = "图片解析失败";
-
-	/**
-	 * 使用默认消息构造异常。
-	 *
-	 * @since 1.0.0
-	 */
-	public ImageDamageException() {
-		super(DEFAULT_MESSAGE);
-	}
-
+public class ImageParsingException extends NestedRuntimeException {
 	/**
 	 * 指定文件与失败原因的构造方法。
 	 *
 	 * @param file   发生错误的图片文件
 	 * @param reason 失败原因描述
+	 * @throws NullPointerException 当 {@code file} 为 {@code null} 时可能引发空指针（消息拼接依赖绝对路径）
 	 * @since 1.0.0
 	 */
-	public ImageDamageException(File file, String reason) {
+	public ImageParsingException(File file, String reason) {
 		super("图片文件：" + file.getAbsolutePath() + " " + reason);
 	}
 
@@ -66,18 +63,8 @@ public class ImageDamageException extends NestedRuntimeException {
 	 * @param message 异常消息
 	 * @since 1.0.0
 	 */
-	public ImageDamageException(String message) {
+	public ImageParsingException(String message) {
 		super(message);
-	}
-
-	/**
-	 * 使用默认消息与原因构造异常。
-	 *
-	 * @param cause 原始异常原因
-	 * @since 1.0.0
-	 */
-	public ImageDamageException(Throwable cause) {
-		super(DEFAULT_MESSAGE, cause);
 	}
 
 	/**
@@ -86,9 +73,10 @@ public class ImageDamageException extends NestedRuntimeException {
 	 * @param file   发生错误的图片文件
 	 * @param reason 失败原因描述
 	 * @param cause  原始异常原因
+	 * @throws NullPointerException 当 {@code file} 为 {@code null} 时可能引发空指针（消息拼接依赖绝对路径）
 	 * @since 1.0.0
 	 */
-	public ImageDamageException(File file, String reason, Throwable cause) {
+	public ImageParsingException(File file, String reason, Throwable cause) {
 		super("图片文件：" + file.getAbsolutePath() + " " + reason, cause);
 	}
 
@@ -99,7 +87,7 @@ public class ImageDamageException extends NestedRuntimeException {
 	 * @param cause   原始异常原因
 	 * @since 1.0.0
 	 */
-	public ImageDamageException(String message, Throwable cause) {
+	public ImageParsingException(String message, Throwable cause) {
 		super(message, cause);
 	}
 }
