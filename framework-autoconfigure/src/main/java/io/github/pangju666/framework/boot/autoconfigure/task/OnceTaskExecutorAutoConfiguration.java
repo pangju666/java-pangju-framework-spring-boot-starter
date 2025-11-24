@@ -24,7 +24,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 
 /**
- * 单次任务执行器自动配置。
+ * 一次性任务执行器自动配置。
  *
  * <p><b>概述</b></p>
  * <ul>
@@ -54,7 +54,7 @@ import org.springframework.context.annotation.Bean;
 @EnableConfigurationProperties(OnceTaskExecutorProperties.class)
 public class OnceTaskExecutorAutoConfiguration {
     /**
-     * 注册单次任务执行器 Bean。
+     * 注册一次性任务执行器 Bean。
      *
      * <p>行为：根据配置初始化同步与异步任务映射的初始容量。</p>
      * <p>启用条件：当容器中不存在其它 {@link OnceTaskExecutor} Bean 时生效（{@link ConditionalOnMissingBean}）。</p>

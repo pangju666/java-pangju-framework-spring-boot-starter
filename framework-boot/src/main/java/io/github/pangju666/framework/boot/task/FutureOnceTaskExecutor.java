@@ -84,7 +84,7 @@ public class FutureOnceTaskExecutor implements OnceTaskExecutor {
      * @throws IllegalArgumentException 当 {@code key} 为空白或 {@code task} 为 {@code null} 时抛出
      * @since 1.0.0
      */
-    public Object executeOnce(String key, Callable<Object> task) throws Exception, InterruptedException {
+    public Object execute(String key, Callable<Object> task) throws Exception, InterruptedException {
         FutureTask<Object> futureTask = getOrRegisterFutureTask(key, task);
         try {
             return futureTask.get();
@@ -114,7 +114,7 @@ public class FutureOnceTaskExecutor implements OnceTaskExecutor {
      * @throws InterruptedException 当等待期间线程被中断时抛出
      * @since 1.0.0
      */
-    public Object executeOnce(String key, Callable<Object> task, long timeout, TimeUnit unit)
+    public Object execute(String key, Callable<Object> task, long timeout, TimeUnit unit)
 		throws InterruptedException, TimeoutException, Exception {
 		Assert.isTrue(timeout > 0, "timeout 必须大于0");
 		Assert.notNull(unit, "unit 不可为 null");
@@ -144,7 +144,7 @@ public class FutureOnceTaskExecutor implements OnceTaskExecutor {
      * @throws IllegalArgumentException 当 {@code key} 为空白、{@code executor} 为 {@code null} 或 {@code task} 为 {@code null} 时抛出
      * @since 1.0.0
      */
-    public CompletableFuture<Object> submitOnce(AsyncTaskExecutor executor, String key, Callable<Object> task) {
+    public CompletableFuture<Object> submitToAsyncExecutor(AsyncTaskExecutor executor, String key, Callable<Object> task) {
         Assert.hasText(key, "key 不可为空");
         Assert.notNull(executor, "executor 不可为 null");
         Assert.notNull(task, "task 不可为 null");

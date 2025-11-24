@@ -19,7 +19,7 @@ package io.github.pangju666.framework.boot.autoconfigure.task;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
- * 单次任务执行器配置属性。
+ * 一次性任务执行器配置属性。
  *
  * <p><strong>概述</strong></p>
  * <ul>

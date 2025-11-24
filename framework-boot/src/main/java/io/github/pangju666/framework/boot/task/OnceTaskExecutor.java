@@ -49,7 +49,7 @@ public interface OnceTaskExecutor {
      * @throws Exception 任务执行失败或被中断时抛出；具体异常由实现决定
      * @since 1.0.0
      */
-    Object executeOnce(String key, Callable<Object> task) throws Exception;
+    Object execute(String key, Callable<Object> task) throws Exception;
 
     /**
      * 同步执行一次性任务并设置超时（按 {@code key} 去重）。
@@ -66,7 +66,7 @@ public interface OnceTaskExecutor {
      * @throws Exception 执行失败或超时抛出；具体异常由实现决定
      * @since 1.0.0
      */
-    Object executeOnce(String key, Callable<Object> task, long timeout, TimeUnit unit) throws Exception;
+    Object execute(String key, Callable<Object> task, long timeout, TimeUnit unit) throws Exception;
 
     /**
      * 异步提交一次性任务（按 {@code key} 去重）。
@@ -81,5 +81,5 @@ public interface OnceTaskExecutor {
      * @return 可观察任务结果的 {@link CompletableFuture}
      * @since 1.0.0
      */
-    CompletableFuture<Object> submitOnce(AsyncTaskExecutor executor, String key, Callable<Object> task);
+    CompletableFuture<Object> submitToAsyncExecutor(AsyncTaskExecutor executor, String key, Callable<Object> task);
 }
