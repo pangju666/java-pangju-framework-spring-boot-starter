@@ -80,7 +80,7 @@ import java.util.function.Consumer;
  * <p><strong>异常与容错</strong></p>
  * <ul>
  *   <li>元数据解析失败：使用 {@link io.github.pangju666.framework.boot.image.lang.ImageConstants#NORMAL_EXIF_ORIENTATION} 作为默认方向，并通过文件解码获取尺寸。</li>
- *   <li>输入或输出类型不受支持：抛出 {@link io.github.pangju666.framework.boot.image.exception.UnSupportImageTypeException}。</li>
+ *   <li>输入或输出类型不受支持：抛出 {@link UnSupportedTypeException}。</li>
  * </ul>
  *
  * @since 1.0.0
@@ -127,16 +127,16 @@ public class GMImageTemplate implements ImageTemplate<GMOperation> {
 	 *
 	 * @param file 待解析图像文件
 	 * @return 图像信息
-	 * @throws UnSupportImageTypeException 图像类型不受支持时抛出
+	 * @throws UnSupportedTypeException 图像类型不受支持时抛出
 	 * @throws ImageParsingException       图像类型、摘要或尺寸解析失败时抛出
 	 * @throws ImageOperationException     GM命令执行失败或与GM进程通信错误时抛出
 	 * @throws IOException                 文件读取失败时抛出
 	 */
     @Override
-    public ImageFile readImage(File file) throws IOException {
+    public ImageFile read(File file) throws IOException {
 		ImageFile imageFile = new ImageFile(file);
         if (!ImageConstants.GRAPHICS_MAGICK_SUPPORT_READ_IMAGE_FORMAT_SET.contains(imageFile.getFormat())) {
-            throw new UnSupportImageTypeException("不支持读取 " + imageFile.getFormat() + " 格式图片");
+            throw new UnSupportedTypeException("不支持读取 " + imageFile.getFormat() + " 格式图片");
         }
 
 		GMOperation operation = new GMOperation();
@@ -181,19 +181,20 @@ public class GMImageTemplate implements ImageTemplate<GMOperation> {
 	 *
 	 * @param inputFile 输入文件
 	 * @param outputFile 输出文件
-	 * @param operation 操作配置
+	 * @param operation 操作配置，可为 {@code null}
 	 * @param imageConsumer 中间处理回调，可为 {@code null}
-	 * @throws UnSupportImageTypeException 图像类型不受支持时抛出
+	 * @throws UnSupportedTypeException 图像类型不受支持时抛出
 	 * @throws ImageParsingException       图像类型、摘要或尺寸解析失败时抛出
 	 * @throws ImageOperationException     GM命令执行失败或与GM进程通信错误时抛出
 	 * @throws IOException                 文件读取失败时抛出
 	 */
     @Override
-    public void execute(File inputFile, File outputFile, ImageOperation operation, Consumer<GMOperation> imageConsumer) throws IOException {
+    public void process(File inputFile, File outputFile, ImageOperation operation, Consumer<GMOperation> imageConsumer) throws IOException {
         validateOutputFile(outputFile);
 
-        ImageFile imageFile = readImage(inputFile);
-        doExecute(imageFile, outputFile, operation, imageConsumer);
+        ImageFile imageFile = read(inputFile);
+        doExecute(imageFile, outputFile, ObjectUtils.getIfNull(operation,
+			ImageOperation.EMPTY), imageConsumer);
     }
 
 	/**
@@ -203,15 +204,15 @@ public class GMImageTemplate implements ImageTemplate<GMOperation> {
 	 *
 	 * @param imageFile 已解析的图像信息
 	 * @param outputFile 输出文件
-	 * @param operation 操作配置
+	 * @param operation 操作配置，可为 {@code null}
 	 * @param imageConsumer 中间处理回调，可为 {@code null}
-	 * @throws UnSupportImageTypeException 图像类型不受支持时抛出
+	 * @throws UnSupportedTypeException 图像类型不受支持时抛出
 	 * @throws ImageParsingException       图像类型、摘要或尺寸解析失败时抛出
 	 * @throws ImageOperationException     GM命令执行失败或与GM进程通信错误时抛出
 	 * @throws IOException                 文件读取失败时抛出
 	 */
     @Override
-    public void execute(ImageFile imageFile, File outputFile, ImageOperation operation, Consumer<GMOperation> imageConsumer) throws IOException {
+    public void process(ImageFile imageFile, File outputFile, ImageOperation operation, Consumer<GMOperation> imageConsumer) throws IOException {
         Assert.notNull(imageFile, "imageFile 不可为 null");
 		FileUtils.checkFile(imageFile.getFile(), "imageFile 未设置 file 属性");
         validateOutputFile(outputFile);
@@ -219,18 +220,19 @@ public class GMImageTemplate implements ImageTemplate<GMOperation> {
 		String format = StringUtils.defaultIfBlank(imageFile.getFormat(),
 			FilenameUtils.getExtension(imageFile.getFile().getName()));
 		if (!ImageConstants.GRAPHICS_MAGICK_SUPPORT_READ_IMAGE_FORMAT_SET.contains(format)) {
-			throw new UnSupportImageTypeException("不支持读取 " + format + " 格式图片");
+			throw new UnSupportedTypeException("不支持读取 " + format + " 格式图片");
 		}
 
 		if (imageFile.getOrientation() < 1 || imageFile.getOrientation() > 8 || Objects.isNull(imageFile.getImageSize())) {
-			imageFile = readImage(imageFile.getFile());
+			imageFile = read(imageFile.getFile());
 		}
 
-		doExecute(imageFile, outputFile, operation, imageConsumer);
+		doExecute(imageFile, outputFile, ObjectUtils.getIfNull(operation,
+			ImageOperation.EMPTY), imageConsumer);
 	}
 
 	/**
-	 * 判断是否支持读取指定文件类型。
+	 * 判断实现是否支持读取文件。
 	 *
 	 * @param file 待判定文件
 	 * @return {@code true} 表示支持读取
@@ -245,17 +247,15 @@ public class GMImageTemplate implements ImageTemplate<GMOperation> {
     }
 
 	/**
-	 * 判断是否支持写出指定文件类型。
+	 * 判断实现是否支持输出为指定的图像格式。
 	 *
-	 * @param file 待判定文件
+	 * @param format 待判定图像格式
 	 * @return {@code true} 表示支持写出
 	 */
     @Override
-    public boolean canWrite(File file) {
-        FileUtils.checkFileIfExist(file, "file 不可为 null");
-
-        String fileFormat = FilenameUtils.getExtension(file.getName());
-        return ImageConstants.GRAPHICS_MAGICK_SUPPORT_WRITE_IMAGE_FORMAT_SET.contains(fileFormat);
+    public boolean canWrite(String format) {
+		Assert.hasText(format, "format 不可为空");
+        return ImageConstants.GRAPHICS_MAGICK_SUPPORT_WRITE_IMAGE_FORMAT_SET.contains(format);
     }
 
     /**
@@ -501,7 +501,7 @@ public class GMImageTemplate implements ImageTemplate<GMOperation> {
 	 *
 	 *
 	 * @param outputFile 输出文件
-	 * @throws UnSupportImageTypeException 当输出文件格式不受支持时抛出
+	 * @throws UnSupportedTypeException 当输出文件格式不受支持时抛出
 	 * @throws IOException                 输出文件目录创建失败或 I/O 错误时抛出
 	 * @since 1.0.0
 	 */
@@ -509,10 +509,10 @@ public class GMImageTemplate implements ImageTemplate<GMOperation> {
 		FileUtils.checkFileIfExist(outputFile, "outputImageFile 不可为 null");
 		String outputImageFormat = FilenameUtils.getExtension(outputFile.getName());
 		if (StringUtils.isBlank(outputImageFormat)) {
-			throw new UnSupportImageTypeException("未知的输出格式");
+			throw new UnSupportedTypeException("未知的输出格式");
 		}
 		if (!ImageConstants.GRAPHICS_MAGICK_SUPPORT_WRITE_IMAGE_FORMAT_SET.contains(outputImageFormat)) {
-			throw new UnSupportImageTypeException("不支持输出为" + outputImageFormat + "格式");
+			throw new UnSupportedTypeException("不支持输出为" + outputImageFormat + "格式");
 		}
 		FileUtils.forceMkdirParent(outputFile);
 	}

@@ -27,7 +27,7 @@ import io.github.pangju666.framework.boot.image.core.ImageTemplate;
 import io.github.pangju666.framework.boot.image.enums.CropType;
 import io.github.pangju666.framework.boot.image.exception.ImageParsingException;
 import io.github.pangju666.framework.boot.image.exception.ImageOperationException;
-import io.github.pangju666.framework.boot.image.exception.UnSupportImageTypeException;
+import io.github.pangju666.framework.boot.image.exception.UnSupportedTypeException;
 import io.github.pangju666.framework.boot.image.lang.ImageConstants;
 import io.github.pangju666.framework.boot.image.model.BufferedImageOperation;
 import io.github.pangju666.framework.boot.image.model.ImageFile;
@@ -77,7 +77,7 @@ import java.util.function.Consumer;
  * <p><strong>异常与容错</strong></p>
  * <ul>
  *   <li>元数据解析失败：使用 {@link io.github.pangju666.framework.boot.image.lang.ImageConstants#NORMAL_EXIF_ORIENTATION} 作为默认方向，并通过文件解码获取尺寸。</li>
- *   <li>输入或输出类型不受支持：抛出 {@link io.github.pangju666.framework.boot.image.exception.UnSupportImageTypeException}。</li>
+ *   <li>输入或输出类型不受支持：抛出 {@link UnSupportedTypeException}。</li>
  * </ul>
  *
  * @author pangju666
@@ -91,15 +91,15 @@ public class BufferedImageTemplate implements ImageTemplate<BufferedImage> {
  	 *
  	 * @param file 待解析图像文件
  	 * @return 图像信息
-	 * @throws UnSupportImageTypeException 图像类型不受支持时抛出
+	 * @throws UnSupportedTypeException 图像类型不受支持时抛出
 	 * @throws ImageParsingException       图像类型、摘要或尺寸解析失败时抛出
 	 * @throws IOException                 文件读取或图像解码失败时抛出
  	 */
  	@Override
- 	public ImageFile readImage(File file) throws IOException {
+ 	public ImageFile read(File file) throws IOException {
 		ImageFile imageFile = new ImageFile(file);
 		if (!ImageConstants.getSupportReadImageTypes().contains(imageFile.getMimeType())) {
-			throw new UnSupportImageTypeException("不支持读取 " + imageFile.getMimeType() + " 类型图片");
+			throw new UnSupportedTypeException("不支持读取 " + imageFile.getMimeType() + " 类型图片");
 		}
 
 		try {
@@ -124,22 +124,23 @@ public class BufferedImageTemplate implements ImageTemplate<BufferedImage> {
  	 *
  	 * @param inputFile 输入文件
  	 * @param outputFile 输出文件
- 	 * @param operation 操作配置
+ 	 * @param operation 操作配置，可为 {@code null}
  	 * @param imageConsumer 中间处理回调，可为 {@code null}
- 	 * @throws UnSupportImageTypeException 图像类型不受支持时抛出
+ 	 * @throws UnSupportedTypeException 图像类型不受支持时抛出
  	 * @throws ImageParsingException       图像类型、摘要或尺寸解析失败时抛出
  	 * @throws ImageOperationException     ImageIO操作失败时抛出
  	 * @throws IOException                 文件读取或图像解码失败时抛出
  	 */
  	@Override
- 	public void execute(File inputFile, File outputFile, ImageOperation operation, Consumer<BufferedImage> imageConsumer) throws IOException {
-		String outputImageFormat = getOutputFormat(outputFile);
-		ImageFile imageFile = readImage(inputFile);
-		try {
-			doExecute(imageFile, outputFile, outputImageFormat, operation, imageConsumer);
-		} catch (IOException e) {
+ 	public void process(File inputFile, File outputFile, ImageOperation operation, Consumer<BufferedImage> imageConsumer) throws IOException {
+		 String outputImageFormat = getOutputFormat(outputFile);
+		 ImageFile imageFile = read(inputFile);
+		 try {
+			 doExecute(imageFile, outputFile, outputImageFormat, ObjectUtils.getIfNull(
+				 operation, ImageOperation.EMPTY), imageConsumer);
+		 } catch (IOException e) {
 			throw new ImageOperationException("图像操作失败", e);
-		}
+		 }
 	}
 
  	/**
@@ -149,15 +150,15 @@ public class BufferedImageTemplate implements ImageTemplate<BufferedImage> {
  	 *
  	 * @param imageFile 已解析的图像信息
  	 * @param outputFile 输出文件
- 	 * @param operation 操作配置
+ 	 * @param operation 操作配置，可为 {@code null}
  	 * @param imageConsumer 中间处理回调，可为 {@code null}
- 	 * @throws UnSupportImageTypeException 图像类型不受支持时抛出
+ 	 * @throws UnSupportedTypeException 图像类型不受支持时抛出
  	 * @throws ImageParsingException       图像类型、摘要或尺寸解析失败时抛出
  	 * @throws ImageOperationException     ImageIO操作失败时抛出
  	 * @throws IOException                 文件读取或图像解码失败时抛出
  	 */
  	@Override
- 	public void execute(ImageFile imageFile, File outputFile, ImageOperation operation, Consumer<BufferedImage> imageConsumer) throws IOException {
+ 	public void process(ImageFile imageFile, File outputFile, ImageOperation operation, Consumer<BufferedImage> imageConsumer) throws IOException {
 		Assert.notNull(imageFile, "imageFile 不可为 null");
 		FileUtils.checkFile(imageFile.getFile(), "imageFile 未设置 file 属性");
 
@@ -171,17 +172,18 @@ public class BufferedImageTemplate implements ImageTemplate<BufferedImage> {
 			throw new ImageParsingException("图像类型解析失败", e);
 		}
 		if (!ImageConstants.getSupportReadImageTypes().contains(mimeType)) {
-			throw new UnSupportImageTypeException("不支持读取 " + mimeType + " 类型图片");
+			throw new UnSupportedTypeException("不支持读取 " + mimeType + " 类型图片");
 		}
 
 		if (imageFile.getOrientation() < 1 || imageFile.getOrientation() > 8 || Objects.isNull(imageFile.getImageSize())) {
-			imageFile = readImage(imageFile.getFile());
+			imageFile = read(imageFile.getFile());
 		}
-		doExecute(imageFile, outputFile, outputImageFormat, operation, imageConsumer);
+		doExecute(imageFile, outputFile, outputImageFormat, ObjectUtils.getIfNull(operation,
+			ImageOperation.EMPTY), imageConsumer);
 	}
 
 	/**
-	 * 判断是否支持读取指定文件类型。
+	 * 判断实现是否支持读取文件。
 	 *
 	 * @param file 待判定文件
 	 * @return {@code true} 表示支持读取
@@ -194,17 +196,15 @@ public class BufferedImageTemplate implements ImageTemplate<BufferedImage> {
 	}
 
 	/**
-	 * 判断是否支持写出指定文件类型。
+	 * 判断实现是否支持输出为指定的图像格式。
 	 *
-	 * @param file 待判定文件
+	 * @param format 待判定图像格式
 	 * @return {@code true} 表示支持写出
 	 */
 	@Override
-	public boolean canWrite(File file) {
-		FileUtils.checkFileIfExist(file, "file 不可为 null");
-
-		String fileFormat = FilenameUtils.getExtension(file.getName());
-		return ImageConstants.getSupportWriteImageFormats().contains(fileFormat);
+	public boolean canWrite(String format) {
+		Assert.hasText(format, "format 不可为空");
+		return ImageConstants.getSupportWriteImageFormats().contains(format);
 	}
 
  	/**
@@ -215,17 +215,17 @@ public class BufferedImageTemplate implements ImageTemplate<BufferedImage> {
  	 *
  	 * @param outputFile 输出文件
  	 * @return 输出格式扩展名
- 	 * @throws UnSupportImageTypeException 输出格式未知或不受支持时抛出
+ 	 * @throws UnSupportedTypeException 输出格式未知或不受支持时抛出
  	 * @throws IOException                 输出文件目录创建失败或 I/O 错误时抛出
  	 */
  	protected String getOutputFormat(File outputFile) throws IOException {
 		FileUtils.checkFileIfExist(outputFile, "outputFile 不可为 null");
 		String outputImageFormat = FilenameUtils.getExtension(outputFile.getName());
 		if (StringUtils.isBlank(outputImageFormat)) {
-			throw new UnSupportImageTypeException("未知的输出格式");
+			throw new UnSupportedTypeException("未知的输出格式");
 		}
 		if (!ImageConstants.getSupportWriteImageFormats().contains(outputImageFormat)) {
-			throw new UnSupportImageTypeException("不支持输出为" + outputImageFormat + "格式");
+			throw new UnSupportedTypeException("不支持输出为" + outputImageFormat + "格式");
 		}
 		FileUtils.forceMkdirParent(outputFile);
 		return outputImageFormat;
@@ -241,7 +241,7 @@ public class BufferedImageTemplate implements ImageTemplate<BufferedImage> {
  	 * @param outputFormat 输出格式扩展名
  	 * @param operation 操作配置
  	 * @param imageConsumer 中间处理回调，可为 {@code null}
- 	 * @throws UnSupportImageTypeException 水印图片类型不受支持时抛出
+ 	 * @throws UnSupportedTypeException 水印图片类型不受支持时抛出
  	 * @throws IOException                 ImageIO操作失败时抛出
  	 */
  	protected void doExecute(ImageFile imageFile, File outputFile, String outputFormat, ImageOperation operation,
@@ -305,7 +305,7 @@ public class BufferedImageTemplate implements ImageTemplate<BufferedImage> {
 					operation.getWatermarkDirection());
 			} else if (ObjectUtils.allNotNull(operation.getWatermarkImage(), operation.getWatermarkImageOption())) {
 				if (!canRead(operation.getWatermarkImage())) {
-					throw new UnSupportImageTypeException("不受支持的水印图片类型");
+					throw new UnSupportedTypeException("不受支持的水印图片类型");
 				}
 				imageEditor.addImageWatermark(operation.getWatermarkImage(), operation.getWatermarkImageOption(),
 					operation.getWatermarkDirection());
@@ -317,7 +317,7 @@ public class BufferedImageTemplate implements ImageTemplate<BufferedImage> {
 					operation.getWatermarkX(), operation.getWatermarkY());
 			} else if (ObjectUtils.allNotNull(operation.getWatermarkImage(), operation.getWatermarkImageOption())) {
 				if (!canRead(operation.getWatermarkImage())) {
-					throw new UnSupportImageTypeException("不受支持的水印图片类型");
+					throw new UnSupportedTypeException("不受支持的水印图片类型");
 				}
 				imageEditor.addImageWatermark(operation.getWatermarkImage(), operation.getWatermarkImageOption(),
 					operation.getWatermarkX(), operation.getWatermarkY());

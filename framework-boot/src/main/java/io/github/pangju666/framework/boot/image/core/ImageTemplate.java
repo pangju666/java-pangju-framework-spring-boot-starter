@@ -18,7 +18,7 @@ package io.github.pangju666.framework.boot.image.core;
 
 import io.github.pangju666.framework.boot.image.exception.ImageOperationException;
 import io.github.pangju666.framework.boot.image.exception.ImageParsingException;
-import io.github.pangju666.framework.boot.image.exception.UnSupportImageTypeException;
+import io.github.pangju666.framework.boot.image.exception.UnSupportedTypeException;
 import io.github.pangju666.framework.boot.image.lang.ImageConstants;
 import io.github.pangju666.framework.boot.image.model.ImageFile;
 import io.github.pangju666.framework.boot.image.model.ImageOperation;
@@ -58,7 +58,7 @@ import java.util.function.Consumer;
  * <p><b>异常</b></p>
  * <ul>
  *   <li>方法可能抛出 {@link IOException}（底层 I/O 或解码错误）。</li>
- *   <li>可能抛出 {@link UnSupportImageTypeException}（类型不受支持）、{@link ImageParsingException}（解析失败）与 {@link ImageOperationException}（操作失败）。</li>
+ *   <li>可能抛出 {@link UnSupportedTypeException}（类型不受支持）、{@link ImageParsingException}（解析失败）与 {@link ImageOperationException}（操作失败）。</li>
  * </ul>
  *
  * @author pangju666
@@ -70,13 +70,13 @@ public interface ImageTemplate<T> {
  	 *
  	 * @param file 待解析的图像文件
  	 * @return 图像信息
- 	 * @throws UnSupportImageTypeException 图像类型不受支持
+ 	 * @throws UnSupportedTypeException 图像类型不受支持
 	 * @throws ImageParsingException       图像类型、摘要或尺寸等信息解析失败
  	 * @throws ImageOperationException     图像底层操作错误
  	 * @throws IOException                 图像文件读取或图像解码失败
  	 * @since 1.0.0
  	 */
- 	ImageFile readImage(File file) throws UnSupportImageTypeException, ImageParsingException, ImageOperationException,
+ 	ImageFile read(File file) throws UnSupportedTypeException, ImageParsingException, ImageOperationException,
  		IOException;
 
  	/**
@@ -86,16 +86,16 @@ public interface ImageTemplate<T> {
  	 *
  	 * @param inputFile  输入文件
  	 * @param outputFile 输出文件
- 	 * @param operation  操作配置
-	 * @throws UnSupportImageTypeException 图像类型不受支持时抛出
+ 	 * @param operation  操作配置，可为 {@code null}
+	 * @throws UnSupportedTypeException 图像类型不受支持时抛出
 	 * @throws ImageParsingException       图像类型、摘要或尺寸解析失败时抛出
 	 * @throws ImageOperationException     图像底层操作错误时抛出
 	 * @throws IOException                 文件读取失败时抛出
  	 * @since 1.0.0
  	 */
- 	default void execute(File inputFile, File outputFile, ImageOperation operation) throws UnSupportImageTypeException,
+ 	default void process(File inputFile, File outputFile, ImageOperation operation) throws UnSupportedTypeException,
  		ImageParsingException, ImageOperationException, IOException {
- 		execute(inputFile, outputFile, operation, null);
+		process(inputFile, outputFile, operation, null);
  	}
 
  	/**
@@ -105,16 +105,16 @@ public interface ImageTemplate<T> {
  	 *
  	 * @param imageFile  已解析的图像信息
  	 * @param outputFile 输出文件
- 	 * @param operation  操作配置
-	 * @throws UnSupportImageTypeException 图像类型不受支持时抛出
+ 	 * @param operation  操作配置，可为 {@code null}
+	 * @throws UnSupportedTypeException 图像类型不受支持时抛出
 	 * @throws ImageParsingException       图像类型、摘要或尺寸解析失败时抛出
 	 * @throws ImageOperationException     图像底层操作错误时抛出
 	 * @throws IOException                 文件读取失败时抛出
  	 * @since 1.0.0
  	 */
- 	default void execute(ImageFile imageFile, File outputFile, ImageOperation operation)
- 		throws UnSupportImageTypeException, ImageParsingException, ImageOperationException, IOException {
- 		execute(imageFile, outputFile, operation, null);
+ 	default void process(ImageFile imageFile, File outputFile, ImageOperation operation)
+ 		throws UnSupportedTypeException, ImageParsingException, ImageOperationException, IOException {
+		process(imageFile, outputFile, operation, null);
  	}
 
  	/**
@@ -125,16 +125,16 @@ public interface ImageTemplate<T> {
  	 *
  	 * @param inputImage   输入图像文件
  	 * @param outputFile   输出文件
- 	 * @param operation    操作配置
+ 	 * @param operation    操作配置，可为 {@code null}
  	 * @param imageConsumer 中间处理回调，接受底层图像对象
-	 * @throws UnSupportImageTypeException 图像类型不受支持时抛出
+	 * @throws UnSupportedTypeException 图像类型不受支持时抛出
 	 * @throws ImageParsingException       图像类型、摘要或尺寸解析失败时抛出
 	 * @throws ImageOperationException     图像底层操作错误时抛出
 	 * @throws IOException                 文件读取失败时抛出
  	 * @since 1.0.0
  	 */
- 	void execute(File inputImage, File outputFile, ImageOperation operation, Consumer<T> imageConsumer)
- 		throws UnSupportImageTypeException, ImageParsingException, ImageOperationException, IOException;
+ 	void process(File inputImage, File outputFile, ImageOperation operation, Consumer<T> imageConsumer)
+ 		throws UnSupportedTypeException, ImageParsingException, ImageOperationException, IOException;
 
  	/**
  	 * 执行图像操作并写入输出文件（以已解析的图像信息为输入）。
@@ -144,21 +144,21 @@ public interface ImageTemplate<T> {
  	 *
  	 * @param imageFile    已解析的图像信息
  	 * @param outputFile   输出文件
- 	 * @param operation    操作配置
+ 	 * @param operation    操作配置，可为 {@code null}
  	 * @param imageConsumer 中间处理回调，接受底层图像对象
-	 * @throws UnSupportImageTypeException 图像类型不受支持时抛出
+	 * @throws UnSupportedTypeException 图像类型不受支持时抛出
 	 * @throws ImageParsingException       图像类型、摘要或尺寸解析失败时抛出
 	 * @throws ImageOperationException     图像底层操作错误时抛出
 	 * @throws IOException                 文件读取失败时抛出
  	 * @since 1.0.0
  	 */
- 	void execute(ImageFile imageFile, File outputFile, ImageOperation operation, Consumer<T> imageConsumer)
- 		throws UnSupportImageTypeException, ImageParsingException, ImageOperationException, IOException;
+ 	void process(ImageFile imageFile, File outputFile, ImageOperation operation, Consumer<T> imageConsumer)
+ 		throws UnSupportedTypeException, ImageParsingException, ImageOperationException, IOException;
 
 	/**
-	 * 判断实现是否支持读取指定文件类型。
+	 * 判断实现是否支持读取图像文件。
 	 *
-	 * <p>说明：实现可结合能力集合进行判定（例如 {@code ImageConstants} 的可读类型集合）。</p>
+	 * <p>说明：实现可结合能力集合进行判定（例如 {@link ImageConstants} 的可读类型集合）。</p>
 	 *
 	 * @param file 待判定文件
 	 * @return {@code true} 表示支持读取
@@ -168,14 +168,13 @@ public interface ImageTemplate<T> {
 	boolean canRead(File file) throws IOException;
 
 	/**
-	 * 判断实现是否支持写出指定文件类型。
+	 * 判断实现是否支持输出为指定的图像格式。
 	 *
-	 * <p>说明：实现可结合能力集合进行判定（例如 {@code ImageConstants} 的可写类型集合）。</p>
+	 * <p>说明：实现可结合能力集合进行判定（例如 {@link ImageConstants} 的可写类型集合）。</p>
 	 *
-	 * @param file 待判定文件
+	 * @param format 待判定图像格式
 	 * @return {@code true} 表示支持写出
-	 * @throws IOException 文件读取失败时抛出
 	 * @since 1.0.0
 	 */
-	boolean canWrite(File file) throws IOException;
+	boolean canWrite(String format);
 }

@@ -41,6 +41,14 @@ import java.util.Objects;
  */
 public abstract class ImageOperation {
 	/**
+	 * 空图像操作
+	 *
+	 * @since 1.0.0
+	 */
+	public static final ImageOperation EMPTY = new ImageOperation() {
+	};
+
+	/**
 	 * 水印方向（当未设置具体坐标时生效，与坐标互斥）。
 	 *
 	 * <p>默认值：{@link WatermarkDirection#TOP_RIGHT}</p>

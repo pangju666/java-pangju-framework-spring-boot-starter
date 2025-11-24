@@ -11,7 +11,6 @@ io.github.pangju666.framework.boot.autoconfigure.data.dynamic.redis.ClientResour
 io.github.pangju666.framework.boot.autoconfigure.data.dynamic.mongo.DynamicMongoAutoConfiguration
 io.github.pangju666.framework.boot.autoconfigure.web.advice.bind.RequestParamBindingAdvice
 io.github.pangju666.framework.boot.autoconfigure.web.advice.wrapper.ResponseBodyWrapperAdvice
-io.github.pangju666.framework.boot.autoconfigure.web.advice.exception.GlobalImageExceptionAdvice
 io.github.pangju666.framework.boot.autoconfigure.web.advice.exception.GlobalDataExceptionAdvice
 io.github.pangju666.framework.boot.autoconfigure.web.advice.exception.GlobalValidationExceptionAdvice
 io.github.pangju666.framework.boot.autoconfigure.web.advice.exception.GlobalTomcatFileUploadExceptionAdvice
