@@ -141,7 +141,11 @@ public final class EncryptJsonSerializer extends JsonSerializer<Object> implemen
 	@Override
 	public void serialize(Object value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
 		try {
-			writeValue(value, gen);
+			if (Objects.isNull(cryptoFactory)) {
+				gen.writePOJO(value);
+			} else {
+				writeValue(value, gen);
+			}
 		} catch (EncryptionOperationNotPossibleException e) {
 			LOGGER.error("数据加密失败", e);
 			gen.writeNull();
