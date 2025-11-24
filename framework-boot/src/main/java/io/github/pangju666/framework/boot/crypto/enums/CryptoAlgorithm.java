@@ -21,7 +21,6 @@ import io.github.pangju666.framework.boot.crypto.factory.impl.AES256CryptoFactor
 import io.github.pangju666.framework.boot.crypto.factory.impl.BasicCryptoFactory;
 import io.github.pangju666.framework.boot.crypto.factory.impl.RSACryptoFactory;
 import io.github.pangju666.framework.boot.crypto.factory.impl.StrongCryptoFactory;
-import io.github.pangju666.framework.boot.spring.StaticSpringContext;
 
 /**
  * 加密算法枚举。
@@ -114,16 +113,5 @@ public enum CryptoAlgorithm {
 	 */
 	public Class<? extends CryptoFactory> getFactoryClass() {
 		return factoryClass;
-	}
-
-	/**
-	 * 获取与当前算法关联的工厂。
-	 *
-	 * @return 工厂 Bean 实例
-	 * @throws org.springframework.beans.BeansException 当容器中不存在该工厂 Bean 或获取失败时抛出
-	 * @since 1.0.0
-	 */
-	public CryptoFactory getFactory() {
-		return StaticSpringContext.getBeanFactory().getBean(factoryClass);
 	}
 }

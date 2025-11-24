@@ -23,19 +23,17 @@ import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.ContextualSerializer;
 import com.fasterxml.jackson.databind.ser.std.NullSerializer;
-import io.github.pangju666.framework.boot.crypto.enums.CryptoAlgorithm;
 import io.github.pangju666.framework.boot.crypto.enums.Encoding;
 import io.github.pangju666.framework.boot.crypto.factory.CryptoFactory;
 import io.github.pangju666.framework.boot.crypto.utils.CryptoUtils;
 import io.github.pangju666.framework.boot.jackson.annotation.EncryptFormat;
-import io.github.pangju666.framework.boot.spring.StaticSpringContext;
+import io.github.pangju666.framework.boot.jackson.utils.CryptoFactoryRegistry;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jasypt.exceptions.EncryptionOperationNotPossibleException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeansException;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -48,21 +46,19 @@ import java.util.concurrent.ConcurrentHashMap;
  * 数据加密的 JSON 序列化器。
  * <p>
  * 基于属性上的 {@link io.github.pangju666.framework.boot.jackson.annotation.EncryptFormat} 注解，
- * 按密钥、编码和加密工厂对输出内容进行加密。实现 {@link com.fasterxml.jackson.databind.ser.ContextualSerializer}
+ * 按密钥、编码与工厂对输出内容进行加密。实现 {@link com.fasterxml.jackson.databind.ser.ContextualSerializer}
  * 接口，可根据属性上下文动态创建或复用序列化器实例。</p>
  *
- * <p>缓存：按“密钥摘要-编码-工厂类名”维度缓存已创建的序列化器实例，提高复用与性能。</p>
- * <p>工厂优先级：当注解提供工厂类型时，优先使用该工厂；否则使用算法枚举关联的工厂。</p>
- * <p>失败处理：密钥解析或工厂获取失败时记录日志并返回 {@link NullSerializer}，避免中断序列化流程。</p>
+ * <p>缓存：按“密钥摘要-编码-工厂类名”维度缓存已创建的序列化器实例，密钥摘要为 SHA-256。</p>
+ * <p>工厂优先级：当注解提供工厂类型时，优先使用该工厂；否则使用算法枚举关联的工厂；工厂获取通过 {@link CryptoFactoryRegistry} 进行 Spring Bean 优先与构造回退。</p>
+ * <p>失败处理：上下文化阶段密钥解析或工厂获取失败时返回 {@link NullSerializer}；序列化阶段加密失败记录日志并写出 JSON null。</p>
  *
  * @author pangju666
  * @see io.github.pangju666.framework.boot.jackson.annotation.EncryptFormat
  * @see io.github.pangju666.framework.boot.crypto.factory.CryptoFactory
- * @see CryptoAlgorithm
- * @see Encoding
- * @see com.fasterxml.jackson.databind.ser.ContextualSerializer
- * @see com.fasterxml.jackson.databind.ser.std.NullSerializer
- * @see CryptoUtils
+ * @see io.github.pangju666.framework.boot.crypto.enums.Encoding
+ * @see io.github.pangju666.framework.boot.crypto.utils.CryptoUtils
+ * @see CryptoFactoryRegistry
  * @since 1.0.0
  */
 public final class EncryptJsonSerializer extends JsonSerializer<Object> implements ContextualSerializer {
@@ -76,6 +72,7 @@ public final class EncryptJsonSerializer extends JsonSerializer<Object> implemen
     /**
      * 加密序列化器缓存。
      * <p>键格式：{@code sha256Hex(key)-encoding-factoryClassName}；值为对应的 {@link EncryptJsonSerializer} 实例。</p>
+     * <p>使用并发映射确保并发环境下的安全与可见性。</p>
      *
      * @since 1.0.0
      */
@@ -156,11 +153,11 @@ public final class EncryptJsonSerializer extends JsonSerializer<Object> implemen
      *
      * <p>行为：</p>
      * <ul>
-     *   <li>属性为空时返回当前实例（用于后续上下文分派）。</li>
+     *   <li>属性为空时返回当前实例。</li>
      *   <li>未标注注解时，使用默认值序列化器。</li>
-     *   <li>密钥解析失败（非法）记录日志并返回 {@link NullSerializer}。</li>
+     *   <li>密钥解析失败记录日志并返回 {@link NullSerializer}。</li>
      *   <li>优先使用注解指定的工厂类型；未提供时使用算法枚举关联的工厂。</li>
-     *   <li>工厂获取失败记录日志并返回 {@link NullSerializer}。</li>
+     *   <li>工厂获取通过 {@link CryptoFactoryRegistry} 完成，失败时返回 {@link NullSerializer}。</li>
      *   <li>缓存键：{@code sha256Hex(key)-encoding-factoryClassName}；按键复用实例。</li>
      * </ul>
      *
@@ -189,45 +186,21 @@ public final class EncryptJsonSerializer extends JsonSerializer<Object> implemen
 			return NullSerializer.instance;
 		}
 
-		StringBuilder keyBuilder = new StringBuilder()
-			.append(DigestUtils.sha256Hex(cryptoKey))
-			.append('-')
-			.append(annotation.encoding().name())
-			.append('-');
-
-		EncryptJsonSerializer serializer;
+		Class<? extends CryptoFactory> factoryClass;
 		if (ArrayUtils.isNotEmpty(annotation.factory())) {
-			Class<? extends CryptoFactory> factoryClass = annotation.factory()[0];
-			keyBuilder.append(factoryClass.getName());
-			String mapKey = keyBuilder.toString();
-			serializer = ENCRYPT_SERIALIZER_MAP.computeIfAbsent(mapKey, k -> {
-				try {
-					CryptoFactory cryptoFactory = StaticSpringContext.getBeanFactory().getBean(factoryClass);
-					return new EncryptJsonSerializer(cryptoKey, annotation.encoding(), cryptoFactory);
-				} catch (BeansException e) {
-					LOGGER.error("CryptoFactory Bean 获取失败: {}", factoryClass.getName(), e);
-					return null;
-				}
-			});
+			factoryClass = annotation.factory()[0];
 		} else {
-			Class<? extends CryptoFactory> factoryClass = annotation.algorithm().getFactoryClass();
-			keyBuilder.append(factoryClass.getName());
-			String mapKey = keyBuilder.toString();
-			serializer = ENCRYPT_SERIALIZER_MAP.computeIfAbsent(mapKey, k -> {
-				try {
-					CryptoFactory cryptoFactory = annotation.algorithm().getFactory();
-					return new EncryptJsonSerializer(cryptoKey, annotation.encoding(), cryptoFactory);
-				} catch (BeansException e) {
-					LOGGER.error("CryptoFactory Bean 获取失败: {}", factoryClass, e);
-					return null;
-				}
-			});
+			factoryClass = annotation.algorithm().getFactoryClass();
 		}
 
-		if (Objects.isNull(serializer)) {
+		String mapKey = DigestUtils.sha256Hex(cryptoKey) + '-' + annotation.encoding().name() + '-' + factoryClass.getName();
+		try {
+			return ENCRYPT_SERIALIZER_MAP.computeIfAbsent(mapKey, k -> new EncryptJsonSerializer(
+				cryptoKey, annotation.encoding(), CryptoFactoryRegistry.getOrCreate(factoryClass)));
+		} catch (IllegalStateException e) {
+			LOGGER.error("无法获取或创建 CryptoFactory, class: {}", factoryClass.getName(), e);
 			return NullSerializer.instance;
 		}
-		return serializer;
 	}
 
 	/**
@@ -351,7 +324,7 @@ public final class EncryptJsonSerializer extends JsonSerializer<Object> implemen
 	/**
 	 * 加密并写出映射类型
 	 * <p>
-	 * 以 JSON 对象形式输出映射内容。若键为 null 则跳过该条目；根据值的类型进行分派加密后写出。
+	 * 以 JSON 对象形式输出映射内容，根据值的类型进行分派加密后写出。
 	 * </p>
 	 *
 	 * @param value 映射内容
@@ -362,29 +335,26 @@ public final class EncryptJsonSerializer extends JsonSerializer<Object> implemen
 	private void writeMap(Map<?, ?> value, JsonGenerator gen) throws IOException {
 		gen.writeStartObject();
 		for (var entry : value.entrySet()) {
-			if (Objects.isNull(entry.getKey())) {
-				continue;
-			}
 			if (entry.getValue() instanceof byte[] bytes) {
-				gen.writeFieldName(entry.getKey().toString());
+				gen.writeFieldName(Objects.toString(entry.getKey()));
 				writeBytes(bytes, gen);
 			} else if (entry.getValue() instanceof CharSequence charSequence) {
-				gen.writeFieldName(entry.getKey().toString());
+				gen.writeFieldName(Objects.toString(entry.getKey()));
 				writeString(charSequence, gen);
 			} else if (entry.getValue() instanceof Iterable<?> iterable) {
-				gen.writeFieldName(entry.getKey().toString());
+				gen.writeFieldName(Objects.toString(entry.getKey()));
 				writeIterable(iterable, gen);
 			} else if (entry.getValue() instanceof Map<?, ?> map) {
-				gen.writeFieldName(entry.getKey().toString());
+				gen.writeFieldName(Objects.toString(entry.getKey()));
 				writeMap(map, gen);
 			} else if (value instanceof BigDecimal bigDecimal) {
-				gen.writeFieldName(entry.getKey().toString());
+				gen.writeFieldName(Objects.toString(entry.getKey()));
 				writeBigDecimal(bigDecimal, gen);
 			} else if (value instanceof BigInteger bigInteger) {
-				gen.writeFieldName(entry.getKey().toString());
+				gen.writeFieldName(Objects.toString(entry.getKey()));
 				writeBigInteger(bigInteger, gen);
 			} else {
-				gen.writePOJOField(entry.getKey().toString(), entry.getValue());
+				gen.writePOJOField(Objects.toString(entry.getKey()), entry.getValue());
 			}
 		}
 		gen.writeEndObject();

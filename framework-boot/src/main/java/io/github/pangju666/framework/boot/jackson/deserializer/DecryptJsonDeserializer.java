@@ -23,19 +23,17 @@ import com.fasterxml.jackson.databind.deser.ContextualDeserializer;
 import com.fasterxml.jackson.databind.deser.std.NullifyingDeserializer;
 import com.fasterxml.jackson.databind.type.CollectionType;
 import com.fasterxml.jackson.databind.type.MapType;
-import io.github.pangju666.framework.boot.crypto.enums.CryptoAlgorithm;
 import io.github.pangju666.framework.boot.crypto.enums.Encoding;
 import io.github.pangju666.framework.boot.crypto.factory.CryptoFactory;
 import io.github.pangju666.framework.boot.crypto.utils.CryptoUtils;
 import io.github.pangju666.framework.boot.jackson.annotation.DecryptFormat;
-import io.github.pangju666.framework.boot.spring.StaticSpringContext;
+import io.github.pangju666.framework.boot.jackson.utils.CryptoFactoryRegistry;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.jasypt.exceptions.EncryptionOperationNotPossibleException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeansException;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -52,17 +50,15 @@ import java.util.concurrent.ConcurrentHashMap;
  * 接口，可根据反序列化上下文动态创建或复用反序列化器实例。</p>
  *
  * <p>缓存：按“密钥摘要-编码-目标类型-(元素类型)-工厂类名”维度缓存已创建的反序列化器实例，密钥摘要为 SHA-256。</p>
- * <p>工厂优先级：当注解提供工厂类型时，优先使用该工厂；否则使用算法枚举关联的工厂。</p>
+ * <p>工厂优先级：当注解提供工厂类型时，优先使用该工厂；否则使用算法枚举关联的工厂；工厂获取通过 {@link CryptoFactoryRegistry} 进行 Spring Bean 优先与构造回退。</p>
  * <p>失败处理：上下文化阶段密钥解析或工厂获取失败时返回 {@link NullifyingDeserializer}；解密过程中发生错误时记录日志并返回 {@code null}。</p>
  *
  * @author pangju666
  * @see io.github.pangju666.framework.boot.jackson.annotation.DecryptFormat
  * @see io.github.pangju666.framework.boot.crypto.factory.CryptoFactory
- * @see CryptoAlgorithm
- * @see Encoding
- * @see com.fasterxml.jackson.databind.deser.ContextualDeserializer
- * @see com.fasterxml.jackson.databind.deser.std.NullifyingDeserializer
- * @see CryptoUtils
+ * @see io.github.pangju666.framework.boot.crypto.enums.Encoding
+ * @see io.github.pangju666.framework.boot.crypto.utils.CryptoUtils
+ * @see CryptoFactoryRegistry
  * @since 1.0.0
  */
 public final class DecryptJsonDeserializer extends JsonDeserializer<Object> implements ContextualDeserializer {
@@ -74,11 +70,9 @@ public final class DecryptJsonDeserializer extends JsonDeserializer<Object> impl
 	private static final Logger LOGGER = LoggerFactory.getLogger(DecryptJsonDeserializer.class);
 
     /**
-     * 反序列化器缓存映射
-     * <p>
-     * 键格式：{@code sha256Hex(key)-encoding-targetType-(elementType-)?factoryClassName}；值为对应的
-     * {@link DecryptJsonDeserializer} 实例。
-     * </p>
+     * 反序列化器缓存映射。
+     * <p>键格式：{@code sha256Hex(key)-encoding-targetType-(elementType-)?factoryClassName}；值为对应的 {@link DecryptJsonDeserializer} 实例。</p>
+     * <p>使用并发映射确保并发环境下的安全与可见性。</p>
      *
      * @since 1.0.0
      */
@@ -135,13 +129,13 @@ public final class DecryptJsonDeserializer extends JsonDeserializer<Object> impl
 	 * 指定密钥、工厂、编码及目标/元素类型的构造方法
 	 *
 	 * @param key         解密密钥（使用前已通过工具解析为实际密钥值）
-	 * @param factory     加密工厂实例
 	 * @param encoding    字符串解密使用的编码方式
 	 * @param targetType  当前属性的目标类型
 	 * @param elementType 集合或映射的元素/值类型（非容器类型时为 null）
+	 * @param factory     加密工厂实例
 	 * @since 1.0.0
 	 */
-	public DecryptJsonDeserializer(String key, CryptoFactory factory, Encoding encoding, Class<?> targetType, Class<?> elementType) {
+	public DecryptJsonDeserializer(String key, Encoding encoding, Class<?> targetType, Class<?> elementType, CryptoFactory factory) {
 		this.key = key;
 		this.cryptoFactory = factory;
 		this.encoding = encoding;
@@ -330,6 +324,8 @@ public final class DecryptJsonDeserializer extends JsonDeserializer<Object> impl
 		} else if (BigDecimal.class.equals(elementType)) {
 			if (value instanceof String string) {
 				return readBigDecimal(new BigDecimal(string));
+			} else if (value instanceof BigInteger bigInteger) {
+				return readBigDecimal(new BigDecimal(bigInteger.toString()));
 			}
 			return readBigDecimal((BigDecimal) value);
 		} else if (BigInteger.class.equals(elementType)) {
@@ -425,6 +421,13 @@ public final class DecryptJsonDeserializer extends JsonDeserializer<Object> impl
 			return NullifyingDeserializer.instance;
 		}
 
+		Class<? extends CryptoFactory> factoryClass;
+		if (ArrayUtils.isNotEmpty(annotation.factory())) {
+			factoryClass = annotation.factory()[0];
+		} else {
+			factoryClass = annotation.algorithm().getFactoryClass();
+		}
+
 		StringBuilder keyBuilder = new StringBuilder()
 			.append(DigestUtils.sha256Hex(cryptoKey))
 			.append('-')
@@ -435,40 +438,16 @@ public final class DecryptJsonDeserializer extends JsonDeserializer<Object> impl
 		if (Objects.nonNull(elementType)) {
 			keyBuilder.append(elementType.getName()).append('-');
 		}
+		keyBuilder.append(factoryClass.getName());
 
-		DecryptJsonDeserializer deserializer;
-		if (ArrayUtils.isNotEmpty(annotation.factory())) {
-			Class<? extends CryptoFactory> factoryClass = annotation.factory()[0];
-			keyBuilder.append(factoryClass.getName());
-			String mapKey = keyBuilder.toString();
-			deserializer = DECRYPT_DESERIALIZER_MAP.computeIfAbsent(mapKey, k -> {
-				try {
-					CryptoFactory cryptoFactory = StaticSpringContext.getBeanFactory().getBean(factoryClass);
-					return new DecryptJsonDeserializer(cryptoKey, cryptoFactory, annotation.encoding(), targetType, elementType);
-				} catch (BeansException e) {
-					LOGGER.error("CryptoFactory Bean 获取失败: {}", factoryClass.getName(), e);
-					return null;
-				}
-			});
-		} else {
-			Class<? extends CryptoFactory> factoryClass = annotation.algorithm().getFactoryClass();
-			keyBuilder.append(factoryClass.getName());
-			String mapKey = keyBuilder.toString();
-			deserializer = DECRYPT_DESERIALIZER_MAP.computeIfAbsent(mapKey, k -> {
-				try {
-					CryptoFactory cryptoFactory = annotation.algorithm().getFactory();
-					return new DecryptJsonDeserializer(cryptoKey, cryptoFactory, annotation.encoding(), targetType, elementType);
-				} catch (BeansException e) {
-					LOGGER.error("CryptoFactory Bean 获取失败: {}", factoryClass.getName(), e);
-					return null;
-				}
-			});
-		}
-
-		if (Objects.isNull(deserializer)) {
+		try {
+			return DECRYPT_DESERIALIZER_MAP.computeIfAbsent(keyBuilder.toString(), k ->
+				new DecryptJsonDeserializer(cryptoKey, annotation.encoding(), targetType, elementType,
+					CryptoFactoryRegistry.getOrCreate(factoryClass)));
+		} catch (IllegalStateException e) {
+			LOGGER.error("无法获取或创建 CryptoFactory, class: {}", factoryClass.getName(), e);
 			return NullifyingDeserializer.instance;
 		}
-		return deserializer;
 	}
 
 	/**

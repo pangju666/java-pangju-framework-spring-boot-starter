@@ -29,28 +29,26 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * JSON字段加密注解，用于在JSON序列化过程中对指定字段进行加密操作
+ * JSON 字段加密注解，用于在序列化过程中对指定字段执行加密。
  * <p>
- * 该注解可以应用于类的字段上，指定字段在JSON序列化时将使用{@link EncryptJsonSerializer}
- * 进行加密处理。加密过程将根据配置的密钥、算法和编码方式进行。
+ * 标注于字段后，序列化阶段由 {@link EncryptJsonSerializer} 根据密钥、编码与工厂进行加密输出。
+ * 支持明文密钥或占位符形式；编码仅作用于字符串加密；工厂解析优先使用注解指定类型，其次回退到算法枚举关联工厂。
  * </p>
- * <p>
- * 支持的字段类型（依据 {@link EncryptJsonSerializer} 的类型分派）：
- * </p>
+ *
+ * <p>支持类型（依据 {@link EncryptJsonSerializer} 的类型分派）：</p>
  * <ul>
- *   <li>标量类型：{@link String}、<code>byte[]</code>、{@link java.math.BigInteger}、{@link java.math.BigDecimal}</li>
- *   <li>集合类型：{@link java.util.List}&lt;T&gt;、{@link java.util.Set}&lt;T&gt;、{@link java.util.Collection}&lt;T&gt; 以及其他 {@link Iterable}&lt;T&gt;，其中 T 为上述受支持类型</li>
- *   <li>映射类型：{@link java.util.Map}&lt;?, T&gt; 其中 T 为上述受支持类型</li>
+ *   <li>标量：{@link String}、<code>byte[]</code>、{@link java.math.BigInteger}、{@link java.math.BigDecimal}</li>
+ *   <li>集合：{@link java.util.List}&lt;T&gt;、{@link java.util.Set}&lt;T&gt;、{@link java.util.Collection}&lt;T&gt; 及其他 {@link Iterable}&lt;T&gt;，其中 T 为上述受支持类型</li>
+ *   <li>映射：{@link java.util.Map}&lt;?, T&gt;，其中 T 为上述受支持类型</li>
  * </ul>
- * <p>
- * 说明：不在列表中的类型将按 POJO 原样输出（不加密）；当值为 <code>null</code> 时输出 JSON null；
- * 字符串为空白（空或仅空白字符）时原样输出不加密。
- * </p>
+ * <p>行为：不在列表的类型按 POJO 原样输出；值为 {@code null} 时输出 JSON null；字符串为空白（空或仅空白字符）时原样输出不加密。</p>
  *
  * @author pangju666
  * @see DecryptFormat
  * @see CryptoAlgorithm
  * @see Encoding
+ * @see CryptoFactory
+ * @see io.github.pangju666.framework.boot.jackson.utils.CryptoFactoryRegistry
  * @since 1.0.0
  */
 @Retention(RetentionPolicy.RUNTIME)
@@ -72,41 +70,33 @@ public @interface EncryptFormat {
 	 */
 	String key();
 
-	/**
-	 * 用于加密的算法
-	 * <p>
-	 * 默认使用AES256算法
-	 * </p>
-	 *
-	 * @return 加密算法
-	 * @since 1.0.0
-	 */
+    /**
+     * 加密算法。
+     * <p>默认使用 AES256 算法。</p>
+     *
+     * @return 加密算法
+     * @since 1.0.0
+     */
 	CryptoAlgorithm algorithm() default CryptoAlgorithm.AES256;
 
-	/**
-	 * 加密内容的编码方式
-	 * <p>
-	 * 默认使用BASE64编码。
-	 * </p>
-	 * <p>
-	 * 注意：仅在加密字符串时生效，对二进制与数值类型不适用。
-	 * </p>
-	 *
-	 * @return 编码方式
-	 * @since 1.0.0
-	 */
+    /**
+     * 字符串加密输出的编码方式。
+     * <p>默认使用 BASE64；仅在加密字符串时生效，对二进制与数值类型不适用。</p>
+     *
+     * @return 编码方式
+     * @since 1.0.0
+     */
 	Encoding encoding() default Encoding.BASE64;
 
-	/**
-	 * 自定义加密工厂。
-	 *
-	 * <p>优先级：当提供工厂类型时，始终使用该 {@link CryptoFactory} Bean，忽略算法枚举关联的工厂；未提供时按算法枚举使用预设工厂。</p>
-	 *
-	 * <p><strong>要求</strong>：指定的类必须是 Spring Bean（已注册到容器中）。</p>
-	 * <p><strong>默认与行为</strong>：未指定则使用算法默认工厂；如提供多个类型，仅取第一个作为目标工厂。</p>
-	 *
-	 * @return 自定义加密工厂类型
-	 * @since 1.0.0
-	 */
+    /**
+     * 自定义加密工厂。
+     *
+     * <p>优先级：当提供工厂类型时，优先使用该类型；未提供时按算法枚举关联的工厂。</p>
+     * <p>获取策略：优先从 Spring 容器获取 Bean；当容器不可用或获取失败时回退到直接构造。</p>
+     * <p>默认与行为：未指定则使用算法默认工厂；如提供多个类型，仅取第一个。</p>
+     *
+     * @return 自定义加密工厂类型
+     * @since 1.0.0
+     */
 	Class<? extends CryptoFactory>[] factory() default {};
 }
