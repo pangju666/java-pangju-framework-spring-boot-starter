@@ -47,14 +47,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * @author pangju666
  * @see CryptoFactory
- * @see AES256CryptoFactory
- * @see RSACryptoFactory
- * @see StrongCryptoFactory
- * @see BasicCryptoFactory
- * @see io.github.pangju666.framework.boot.jackson.deserializer.DecryptJsonDeserializer
- * @see io.github.pangju666.framework.boot.jackson.serializer.EncryptJsonSerializer
  * @see StaticSpringContext
- * @see BeanFactory
  * @since 1.0.0
  */
 public final class CryptoFactoryRegistry {
