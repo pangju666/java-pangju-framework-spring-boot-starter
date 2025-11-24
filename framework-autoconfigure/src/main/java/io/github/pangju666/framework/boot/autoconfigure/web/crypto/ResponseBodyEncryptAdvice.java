@@ -23,6 +23,7 @@ import io.github.pangju666.framework.boot.crypto.factory.CryptoFactory;
 import io.github.pangju666.framework.boot.crypto.utils.CryptoUtils;
 import io.github.pangju666.framework.boot.spring.StaticSpringContext;
 import io.github.pangju666.framework.boot.web.advice.EncryptResponseBody;
+import io.github.pangju666.framework.web.exception.base.BaseHttpException;
 import io.github.pangju666.framework.web.exception.base.ServerException;
 import io.github.pangju666.framework.web.model.Result;
 import jakarta.servlet.Servlet;
@@ -102,7 +103,7 @@ import java.util.Objects;
  */
 @Order(Ordered.HIGHEST_PRECEDENCE  + 5)
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
-@ConditionalOnClass({Servlet.class, DispatcherServlet.class, RSAKeyPair.class, Result.class})
+@ConditionalOnClass({Servlet.class, DispatcherServlet.class, RSAKeyPair.class, Result.class, BaseHttpException.class})
 @ConditionalOnBean(CryptoFactory.class)
 @RestControllerAdvice
 public class ResponseBodyEncryptAdvice implements ResponseBodyAdvice<Object> {
@@ -182,7 +183,7 @@ public class ResponseBodyEncryptAdvice implements ResponseBodyAdvice<Object> {
 		if (ArrayUtils.isNotEmpty(annotation.factory())) {
 			factory = StaticSpringContext.getBeanFactory().getBean(annotation.factory()[0]);
 		} else {
-			factory = annotation.algorithm().getFactory();
+			factory = StaticSpringContext.getBeanFactory().getBean( annotation.algorithm().getFactoryClass());
 		}
 
 		try {

@@ -16,6 +16,7 @@
 
 package io.github.pangju666.framework.boot.autoconfigure.image;
 
+import io.github.pangju666.commons.image.model.ImageSize;
 import io.github.pangju666.framework.boot.autoconfigure.task.OnceTaskExecutorAutoConfiguration;
 import io.github.pangju666.framework.boot.image.core.ImageTaskExecutor;
 import io.github.pangju666.framework.boot.image.core.ImageTemplate;
@@ -23,6 +24,7 @@ import io.github.pangju666.framework.boot.task.OnceTaskExecutor;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.task.TaskExecutionAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -62,6 +64,7 @@ import org.springframework.core.task.AsyncTaskExecutor;
  * @author pangju666
  */
 @AutoConfiguration(after = {OnceTaskExecutorAutoConfiguration.class, TaskExecutionAutoConfiguration.class})
+@ConditionalOnClass({ImageSize.class})
 @EnableConfigurationProperties(ImageProperties.class)
 @Import({GMConfiguration.class, ImageIOConfiguration.class})
 public class ImageAutoConfiguration {

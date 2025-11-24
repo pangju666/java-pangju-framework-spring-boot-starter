@@ -16,6 +16,7 @@
 
 package io.github.pangju666.framework.boot.autoconfigure.crypto;
 
+import com.github.benmanes.caffeine.cache.Caffeine;
 import io.github.pangju666.commons.crypto.key.RSAKeyPair;
 import io.github.pangju666.framework.boot.crypto.factory.impl.AES256CryptoFactory;
 import io.github.pangju666.framework.boot.crypto.factory.impl.BasicCryptoFactory;
@@ -49,7 +50,7 @@ import org.springframework.context.annotation.Bean;
  * @see CryptoProperties
  */
 @AutoConfiguration
-@ConditionalOnClass(RSAKeyPair.class)
+@ConditionalOnClass({RSAKeyPair.class, Caffeine.class})
 @EnableConfigurationProperties(CryptoProperties.class)
 public class CryptoAutoConfiguration {
 	/**

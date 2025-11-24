@@ -123,7 +123,7 @@ public class EncryptRequestParamArgumentResolver implements HandlerMethodArgumen
 		if (ArrayUtils.isNotEmpty(annotation.factory())) {
 			factory = StaticSpringContext.getBeanFactory().getBean(annotation.factory()[0]);
 		} else {
-			factory = annotation.algorithm().getFactory();
+			factory = StaticSpringContext.getBeanFactory().getBean( annotation.algorithm().getFactoryClass());
 		}
 
 		try {

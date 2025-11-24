@@ -22,6 +22,7 @@ import io.github.pangju666.framework.boot.crypto.factory.CryptoFactory;
 import io.github.pangju666.framework.boot.crypto.utils.CryptoUtils;
 import io.github.pangju666.framework.boot.spring.StaticSpringContext;
 import io.github.pangju666.framework.boot.web.advice.DecryptRequestBody;
+import io.github.pangju666.framework.web.exception.base.BaseHttpException;
 import io.github.pangju666.framework.web.exception.base.ServerException;
 import io.github.pangju666.framework.web.exception.base.ServiceException;
 import jakarta.servlet.Servlet;
@@ -97,7 +98,7 @@ import java.util.Objects;
  */
 @Order(Ordered.HIGHEST_PRECEDENCE + 2)
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
-@ConditionalOnClass({Servlet.class, DispatcherServlet.class, RSAKeyPair.class})
+@ConditionalOnClass({Servlet.class, DispatcherServlet.class, RSAKeyPair.class, BaseHttpException.class})
 @ConditionalOnBean(CryptoFactory.class)
 @RestControllerAdvice
 public class RequestBodyDecryptAdvice implements RequestBodyAdvice {
@@ -250,7 +251,7 @@ public class RequestBodyDecryptAdvice implements RequestBodyAdvice {
 		if (ArrayUtils.isNotEmpty(annotation.factory())) {
 			return StaticSpringContext.getBeanFactory().getBean(annotation.factory()[0]);
 		} else {
-			return annotation.algorithm().getFactory();
+			return StaticSpringContext.getBeanFactory().getBean( annotation.algorithm().getFactoryClass());
 		}
 	}
 }
