@@ -24,9 +24,7 @@ import com.fasterxml.jackson.databind.type.TypeFactory;
 import org.apache.commons.lang3.EnumUtils;
 
 import java.io.IOException;
-import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 枚举类型的JSON反序列化器
@@ -34,9 +32,6 @@ import java.util.concurrent.ConcurrentHashMap;
  * 该反序列化器用于将JSON中的字符串值转换为对应的枚举实例。支持不区分大小写的枚举名匹配，
  * 通过{@link EnumUtils#getEnumIgnoreCase(Class, String)}方法实现。同时实现了
  * {@link ContextualDeserializer}接口，可根据上下文自动确定目标枚举类型。
- * </p>
- * <p>
- * 为了提高性能，该反序列化器使用内部缓存来存储已创建的针对特定枚举类型的反序列化器实例。
  * </p>
  *
  * @author pangju666
@@ -46,16 +41,6 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @SuppressWarnings("rawtypes")
 public final class EnumJsonDeserializer extends JsonDeserializer<Enum> implements ContextualDeserializer {
-	/**
-	 * 枚举类型反序列化器的缓存，用于存储已创建的反序列化器实例
-	 * <p>
-	 * 键为枚举类型，值为对应的反序列化器实例
-	 * </p>
-	 *
-	 * @since 1.0.0
-	 */
-	private static final Map<String, EnumJsonDeserializer> DESERIALIZER_MAP = new ConcurrentHashMap<>(16);
-
 	/**
 	 * 当前反序列化器处理的枚举类型
 	 *
@@ -112,7 +97,7 @@ public final class EnumJsonDeserializer extends JsonDeserializer<Enum> implement
 	 *
 	 * <p>行为：优先从 {@code property} 获取类型；缺失时从上下文 {@link DeserializationContext#getContextualType()} 获取，
 	 * 若上下文类型也为空则返回针对 {@link TypeFactory#unknownType()} 的非上下文反序列化器；
-	 * 非枚举类型委派给默认反序列化器；枚举类型按类名缓存并复用 {@link EnumJsonDeserializer} 实例。</p>
+	 * 非枚举类型委派给默认反序列化器。</p>
 	 *
 	 * @param ctxt     反序列化上下文
 	 * @param property 当前处理的Bean属性
@@ -142,9 +127,6 @@ public final class EnumJsonDeserializer extends JsonDeserializer<Enum> implement
 				return ctxt.findNonContextualValueDeserializer(type);
 			}
 		}
-
-		String enumName = clz.getName();
-		return DESERIALIZER_MAP.computeIfAbsent(enumName, k -> new EnumJsonDeserializer(
-			(Class<? extends Enum>) clz));
+		return new EnumJsonDeserializer((Class<? extends Enum>) clz);
 	}
 }

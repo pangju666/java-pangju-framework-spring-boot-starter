@@ -52,25 +52,25 @@ public class StrongCryptoFactory implements CryptoFactory {
 	 *
 	 * @since 1.0.0
 	 */
-	private final Cache<String, StrongBinaryEncryptor> binaryEncryptorCache;
+	protected final Cache<String, StrongBinaryEncryptor> binaryEncryptorCache;
 	/**
 	 * 口令到文本加密器的缓存。
 	 *
 	 * @since 1.0.0
 	 */
-	private final Cache<String, StrongTextEncryptor> textEncryptorCache;
+	protected final Cache<String, StrongTextEncryptor> textEncryptorCache;
 	/**
 	 * 口令到整型数字加密器的缓存。
 	 *
 	 * @since 1.0.0
 	 */
-	private final Cache<String, StrongIntegerNumberEncryptor> integerEncryptorCache;
+	protected final Cache<String, StrongIntegerNumberEncryptor> integerEncryptorCache;
 	/**
 	 * 口令到高精度小数加密器的缓存。
 	 *
 	 * @since 1.0.0
 	 */
-	private final Cache<String, StrongDecimalNumberEncryptor> decimalEncryptorCache;
+	protected final Cache<String, StrongDecimalNumberEncryptor> decimalEncryptorCache;
 
 	/**
 	 * 构造 Strong 加密工厂并初始化内部缓存。

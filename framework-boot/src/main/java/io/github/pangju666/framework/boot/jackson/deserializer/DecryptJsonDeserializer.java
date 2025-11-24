@@ -29,7 +29,6 @@ import io.github.pangju666.framework.boot.crypto.utils.CryptoUtils;
 import io.github.pangju666.framework.boot.jackson.annotation.DecryptFormat;
 import io.github.pangju666.framework.boot.jackson.utils.CryptoFactoryRegistry;
 import org.apache.commons.codec.DecoderException;
-import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.jasypt.exceptions.EncryptionOperationNotPossibleException;
 import org.slf4j.Logger;
@@ -40,7 +39,6 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.security.spec.InvalidKeySpecException;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 数据解密的 JSON 反序列化器。
@@ -68,15 +66,6 @@ public final class DecryptJsonDeserializer extends JsonDeserializer<Object> impl
 	 * @since 1.0.0
 	 */
 	private static final Logger LOGGER = LoggerFactory.getLogger(DecryptJsonDeserializer.class);
-
-    /**
-     * 反序列化器缓存映射。
-     * <p>键格式：{@code sha256Hex(key)-encoding-javaType-factoryClassName}；值为对应的 {@link DecryptJsonDeserializer} 实例。</p>
-	 * <p>使用并发映射确保并发环境下的安全与可见性。</p>
-	 *
-     * @since 1.0.0
-     */
-    private static final Map<String, DecryptJsonDeserializer> DECRYPT_DESERIALIZER_MAP = new ConcurrentHashMap<>(16);
 
 	/**
 	 * 解密密钥（已解析后的实际密钥值）
@@ -449,12 +438,9 @@ public final class DecryptJsonDeserializer extends JsonDeserializer<Object> impl
 			factoryClass = annotation.algorithm().getFactoryClass();
 		}
 
-		String mapKey = DigestUtils.sha256Hex(cryptoKey) + '-' + annotation.encoding().name() + '-' + 
-			targetType.toString() + '-' + factoryClass.getName();
 		try {
-			return DECRYPT_DESERIALIZER_MAP.computeIfAbsent(mapKey, k ->
-				new DecryptJsonDeserializer(cryptoKey, annotation.encoding(), targetType, 
-					CryptoFactoryRegistry.getOrCreate(factoryClass)));
+			return new DecryptJsonDeserializer(cryptoKey, annotation.encoding(), targetType,
+					CryptoFactoryRegistry.getOrCreate(factoryClass));
 		} catch (IllegalStateException e) {
 			LOGGER.error("无法获取或创建 CryptoFactory, class: {}", factoryClass.getName(), e);
 			return NullifyingDeserializer.instance;

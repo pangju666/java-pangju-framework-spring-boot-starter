@@ -21,9 +21,12 @@ import io.github.pangju666.framework.boot.crypto.factory.impl.AES256CryptoFactor
 import io.github.pangju666.framework.boot.crypto.factory.impl.BasicCryptoFactory;
 import io.github.pangju666.framework.boot.crypto.factory.impl.RSACryptoFactory;
 import io.github.pangju666.framework.boot.crypto.factory.impl.StrongCryptoFactory;
+import io.github.pangju666.framework.boot.jackson.deserializer.DecryptJsonDeserializer;
+import io.github.pangju666.framework.boot.jackson.serializer.EncryptJsonSerializer;
 import io.github.pangju666.framework.boot.spring.StaticSpringContext;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
+import org.springframework.util.Assert;
 
 import java.util.Map;
 import java.util.Objects;
@@ -35,6 +38,10 @@ import java.util.concurrent.ConcurrentHashMap;
  * 提供统一的 {@link CryptoFactory} 获取入口：优先从 Spring {@link BeanFactory} 获取 Bean；
  * 当容器不可用或获取失败时，回退到直接构造工厂实例。为提升性能与复用，内部使用并发映射按工厂类名缓存实例。
  * </p>
+ * <p>
+ * 用途：在 Jackson 的加/解密组件中获取加密工厂实例，供
+ * {@link EncryptJsonSerializer}与 {@link DecryptJsonDeserializer}在上下文化阶段选择并复用具体的工厂实现。
+ * </p>
  *
  * <p>特点：线程安全、惰性创建；对常见实现（AES、RSA、Strong、Basic）使用显式构造，其他实现通过反射调用无参构造。</p>
  *
@@ -44,6 +51,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * @see RSACryptoFactory
  * @see StrongCryptoFactory
  * @see BasicCryptoFactory
+ * @see io.github.pangju666.framework.boot.jackson.deserializer.DecryptJsonDeserializer
+ * @see io.github.pangju666.framework.boot.jackson.serializer.EncryptJsonSerializer
  * @see StaticSpringContext
  * @see BeanFactory
  * @since 1.0.0
@@ -69,11 +78,13 @@ public final class CryptoFactoryRegistry {
      * </p>
      *
      * @param factoryClass 工厂实现类
+	 * @throws IllegalArgumentException 当{@code factoryClass}为{@code null}时抛出
      * @return 对应的 {@link CryptoFactory} 实例（来自容器或直接构造）
 	 * @see #getCryptoFactory(Class) 
      * @since 1.0.0
      */
     public static CryptoFactory getOrCreate(Class<? extends CryptoFactory> factoryClass) {
+		Assert.notNull(factoryClass, "factoryClass 不可为 null");
         return CRYPTO_FACTORY_MAP.computeIfAbsent(factoryClass.getName(), k -> {
             try {
                 BeanFactory beanFactory = StaticSpringContext.getBeanFactory();
@@ -88,6 +99,22 @@ public final class CryptoFactoryRegistry {
         });
     }
 
+	/**
+	 * 注册外部创建的加密工厂实例。
+	 * <p>
+	 * 便于在 Spring 容器不可用或需要预先放入自定义实现时进行手动注册，后续
+	 * {@link #getOrCreate(Class)} 将优先复用该缓存实例。
+	 * </p>
+	 *
+	 * @param cryptoFactory 待注册的加密工厂实例
+	 * @throws IllegalArgumentException 当{@code cryptoFactory}为{@code null}时抛出
+	 * @since 1.0.0
+	 */
+	public static void register(CryptoFactory cryptoFactory) {
+		Assert.notNull(cryptoFactory, "cryptoFactory 不可为 null");
+		CRYPTO_FACTORY_MAP.putIfAbsent(cryptoFactory.getClass().getName(), cryptoFactory);
+	}
+
     /**
      * 直接构造加密工厂实例。
      * <p>
@@ -101,13 +128,13 @@ public final class CryptoFactoryRegistry {
      */
     private static CryptoFactory getCryptoFactory(Class<? extends CryptoFactory> factoryClass) {
         if (factoryClass == AES256CryptoFactory.class) {
-            return new AES256CryptoFactory();
+            return new AES256CryptoFactory(16);
         } else if (factoryClass == RSACryptoFactory.class) {
-            return new RSACryptoFactory();
+            return new RSACryptoFactory(16);
         } else if (factoryClass == StrongCryptoFactory.class) {
-            return new StrongCryptoFactory();
+            return new StrongCryptoFactory(16);
         } else if (factoryClass == BasicCryptoFactory.class) {
-            return new BasicCryptoFactory();
+            return new BasicCryptoFactory(16);
         } else {
             try {
                 return factoryClass.getDeclaredConstructor().newInstance();

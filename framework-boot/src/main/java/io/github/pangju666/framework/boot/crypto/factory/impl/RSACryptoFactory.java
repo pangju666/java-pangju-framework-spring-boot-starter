@@ -59,49 +59,49 @@ public class RSACryptoFactory implements CryptoFactory {
 	 *
 	 * @since 1.0.0
 	 */
-	private final Cache<String, RSABinaryEncryptor> binaryEncryptEncryptorCache;
+	protected final Cache<String, RSABinaryEncryptor> binaryEncryptEncryptorCache;
 	/**
 	 * 私钥到二进制解密器的缓存。
 	 *
 	 * @since 1.0.0
 	 */
-	private final Cache<String, RSABinaryEncryptor> binaryDecryptEncryptorCache;
+	protected final Cache<String, RSABinaryEncryptor> binaryDecryptEncryptorCache;
 	/**
 	 * 公钥到文本加密器的缓存。
 	 *
 	 * @since 1.0.0
 	 */
-	private final Cache<String, RSATextEncryptor> textEncryptEncryptorCache;
+	protected final Cache<String, RSATextEncryptor> textEncryptEncryptorCache;
 	/**
 	 * 私钥到文本解密器的缓存。
 	 *
 	 * @since 1.0.0
 	 */
-	private final Cache<String, RSATextEncryptor> textDecryptEncryptorCache;
+	protected final Cache<String, RSATextEncryptor> textDecryptEncryptorCache;
 	/**
 	 * 公钥到整型数字加密器的缓存。
 	 *
 	 * @since 1.0.0
 	 */
-	private final Cache<String, RSAIntegerNumberEncryptor> integerEncryptEncryptorCache;
+	protected final Cache<String, RSAIntegerNumberEncryptor> integerEncryptEncryptorCache;
 	/**
 	 * 私钥到整型数字解密器的缓存。
 	 *
 	 * @since 1.0.0
 	 */
-	private final Cache<String, RSAIntegerNumberEncryptor> integerDecryptEncryptorCache;
+	protected final Cache<String, RSAIntegerNumberEncryptor> integerDecryptEncryptorCache;
 	/**
 	 * 公钥到高精度小数加密器的缓存。
 	 *
 	 * @since 1.0.0
 	 */
-	private final Cache<String, RSADecimalNumberEncryptor> decimalEncryptEncryptorCache;
+	protected final Cache<String, RSADecimalNumberEncryptor> decimalEncryptEncryptorCache;
 	/**
 	 * 私钥到高精度小数解密器的缓存。
 	 *
 	 * @since 1.0.0
 	 */
-	private final Cache<String, RSADecimalNumberEncryptor> decimalDecryptEncryptorCache;
+	protected final Cache<String, RSADecimalNumberEncryptor> decimalDecryptEncryptorCache;
 
     /**
      * RSA 加密方案（填充/摘要等参数）。
@@ -109,7 +109,7 @@ public class RSACryptoFactory implements CryptoFactory {
 	 *
 	 * @since 1.0.0
 	 */
-    private final RSATransformation transformation;
+    protected final RSATransformation transformation;
 
     /**
      * 默认使用 OAEPWithSHA-256AndMGF1Padding 作为加密方案的构造方法。
@@ -280,19 +280,19 @@ public class RSACryptoFactory implements CryptoFactory {
     /**
      * 获取并缓存二进制解密器（使用私钥）。
      *
-     * @param privateKey Base64 编码的 PKCS#8 格式私钥字符串
+     * @param protectedKey Base64 编码的 PKCS#8 格式私钥字符串
      * @return 二进制解密器
      * @since 1.0.0
      */
     @Override
-    public BinaryEncryptor getBinaryDecryptor(String privateKey) {
-		Assert.hasText(privateKey, "privateKey 不可为空");
+    public BinaryEncryptor getBinaryDecryptor(String protectedKey) {
+		Assert.hasText(protectedKey, "protectedKey 不可为空");
 
-		String mapKey = DigestUtils.sha256Hex(privateKey);
+		String mapKey = DigestUtils.sha256Hex(protectedKey);
 		return binaryDecryptEncryptorCache.get(mapKey, k -> {
 			try {
 				RSABinaryEncryptor encryptor = new RSABinaryEncryptor(transformation);
-				encryptor.setPrivateKey(RSAKeyPair.fromBase64String( null, privateKey).getPrivateKey());
+				encryptor.setPrivateKey(RSAKeyPair.fromBase64String( null, protectedKey).getPrivateKey());
 				encryptor.initialize();
 				return encryptor;
 			} catch (InvalidKeySpecException e) {
@@ -304,24 +304,24 @@ public class RSACryptoFactory implements CryptoFactory {
 	/**
 	 * 获取并缓存文本解密器（使用私钥）。
 	 *
-	 * @param privateKey Base64 编码的 PKCS#8 格式私钥字符串
+	 * @param protectedKey Base64 编码的 PKCS#8 格式私钥字符串
 	 * @return 二进制解密器
 	 * @since 1.0.0
 	 */
 	@Override
-	public TextEncryptor getTextDecryptor(String privateKey) {
-		Assert.hasText(privateKey, "privateKey 不可为空");
+	public TextEncryptor getTextDecryptor(String protectedKey) {
+		Assert.hasText(protectedKey, "protectedKey 不可为空");
 
-		String mapKey = DigestUtils.sha256Hex(privateKey);
+		String mapKey = DigestUtils.sha256Hex(protectedKey);
 		return textDecryptEncryptorCache.get(mapKey, k -> {
 			try {
-				RSABinaryEncryptor binaryEncryptor = binaryDecryptEncryptorCache.getIfPresent(privateKey);
+				RSABinaryEncryptor binaryEncryptor = binaryDecryptEncryptorCache.getIfPresent(protectedKey);
 				if (Objects.nonNull(binaryEncryptor)) {
 					return new RSATextEncryptor(binaryEncryptor);
 				}
 
 				RSATextEncryptor encryptor = new RSATextEncryptor(transformation);
-				encryptor.setPrivateKey(RSAKeyPair.fromBase64String( null, privateKey).getPrivateKey());
+				encryptor.setPrivateKey(RSAKeyPair.fromBase64String( null, protectedKey).getPrivateKey());
 				encryptor.initialize();
 				return encryptor;
 			} catch (InvalidKeySpecException e) {
@@ -333,24 +333,24 @@ public class RSACryptoFactory implements CryptoFactory {
     /**
      * 获取并缓存整型数字解密器（使用私钥）。
      *
-     * @param privateKey Base64 编码的 PKCS#8 格式私钥字符串
+     * @param protectedKey Base64 编码的 PKCS#8 格式私钥字符串
      * @return 整型数字解密器
      * @since 1.0.0
      */
     @Override
-    public IntegerNumberEncryptor getIntegerNumberDecryptor(String privateKey) {
-		Assert.hasText(privateKey, "privateKey 不可为空");
+    public IntegerNumberEncryptor getIntegerNumberDecryptor(String protectedKey) {
+		Assert.hasText(protectedKey, "protectedKey 不可为空");
 
-		String mapKey = DigestUtils.sha256Hex(privateKey);
+		String mapKey = DigestUtils.sha256Hex(protectedKey);
 		return integerDecryptEncryptorCache.get(mapKey, k -> {
 			try {
-				RSABinaryEncryptor binaryEncryptor = binaryDecryptEncryptorCache.getIfPresent(privateKey);
+				RSABinaryEncryptor binaryEncryptor = binaryDecryptEncryptorCache.getIfPresent(protectedKey);
 				if (Objects.nonNull(binaryEncryptor)) {
 					return new RSAIntegerNumberEncryptor(binaryEncryptor);
 				}
 
 				RSAIntegerNumberEncryptor encryptor = new RSAIntegerNumberEncryptor(transformation);
-				encryptor.setPrivateKey(RSAKeyPair.fromBase64String( null, privateKey).getPrivateKey());
+				encryptor.setPrivateKey(RSAKeyPair.fromBase64String( null, protectedKey).getPrivateKey());
 				encryptor.initialize();
 				return encryptor;
 			} catch (InvalidKeySpecException e) {
@@ -362,24 +362,24 @@ public class RSACryptoFactory implements CryptoFactory {
     /**
      * 获取并缓存高精度小数解密器（使用私钥）。
      *
-     * @param privateKey Base64 编码的 PKCS#8 格式私钥字符串
+     * @param protectedKey Base64 编码的 PKCS#8 格式私钥字符串
      * @return 高精度小数解密器
      * @since 1.0.0
      */
     @Override
-    public DecimalNumberEncryptor getDecimalNumberDecryptor(String privateKey) {
-		Assert.hasText(privateKey, "privateKey 不可为空");
+    public DecimalNumberEncryptor getDecimalNumberDecryptor(String protectedKey) {
+		Assert.hasText(protectedKey, "protectedKey 不可为空");
 
-		String mapKey = DigestUtils.sha256Hex(privateKey);
+		String mapKey = DigestUtils.sha256Hex(protectedKey);
 		return decimalDecryptEncryptorCache.get(mapKey, k -> {
 			try {
-				RSABinaryEncryptor binaryEncryptor = binaryDecryptEncryptorCache.getIfPresent(privateKey);
+				RSABinaryEncryptor binaryEncryptor = binaryDecryptEncryptorCache.getIfPresent(protectedKey);
 				if (Objects.nonNull(binaryEncryptor)) {
 					return new RSADecimalNumberEncryptor(binaryEncryptor);
 				}
 
 				RSADecimalNumberEncryptor encryptor = new RSADecimalNumberEncryptor(transformation);
-				encryptor.setPrivateKey(RSAKeyPair.fromBase64String(null, privateKey).getPrivateKey());
+				encryptor.setPrivateKey(RSAKeyPair.fromBase64String(null, protectedKey).getPrivateKey());
 				encryptor.initialize();
 				return encryptor;
 			} catch (InvalidKeySpecException e) {

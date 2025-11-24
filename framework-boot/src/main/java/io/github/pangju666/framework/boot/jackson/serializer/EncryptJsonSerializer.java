@@ -28,7 +28,6 @@ import io.github.pangju666.framework.boot.crypto.factory.CryptoFactory;
 import io.github.pangju666.framework.boot.crypto.utils.CryptoUtils;
 import io.github.pangju666.framework.boot.jackson.annotation.EncryptFormat;
 import io.github.pangju666.framework.boot.jackson.utils.CryptoFactoryRegistry;
-import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jasypt.exceptions.EncryptionOperationNotPossibleException;
@@ -40,7 +39,6 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 数据加密的 JSON 序列化器。
@@ -68,15 +66,6 @@ public final class EncryptJsonSerializer extends JsonSerializer<Object> implemen
 	 * @since 1.0.0
 	 */
 	private static final Logger LOGGER = LoggerFactory.getLogger(EncryptJsonSerializer.class);
-
-    /**
-     * 加密序列化器缓存。
-     * <p>键格式：{@code sha256Hex(key)-encoding-factoryClassName}；值为对应的 {@link EncryptJsonSerializer} 实例。</p>
-     * <p>使用并发映射确保并发环境下的安全与可见性。</p>
-     *
-     * @since 1.0.0
-     */
-	private static final Map<String, EncryptJsonSerializer> ENCRYPT_SERIALIZER_MAP = new ConcurrentHashMap<>(16);
 
 	/**
 	 * 加密密钥（已解析后的实际密钥值）
@@ -197,10 +186,8 @@ public final class EncryptJsonSerializer extends JsonSerializer<Object> implemen
 			factoryClass = annotation.algorithm().getFactoryClass();
 		}
 
-		String mapKey = DigestUtils.sha256Hex(cryptoKey) + '-' + annotation.encoding().name() + '-' + factoryClass.getName();
 		try {
-			return ENCRYPT_SERIALIZER_MAP.computeIfAbsent(mapKey, k -> new EncryptJsonSerializer(
-				cryptoKey, annotation.encoding(), CryptoFactoryRegistry.getOrCreate(factoryClass)));
+			return new EncryptJsonSerializer(cryptoKey, annotation.encoding(), CryptoFactoryRegistry.getOrCreate(factoryClass));
 		} catch (IllegalStateException e) {
 			LOGGER.error("无法获取或创建 CryptoFactory, class: {}", factoryClass.getName(), e);
 			return NullSerializer.instance;

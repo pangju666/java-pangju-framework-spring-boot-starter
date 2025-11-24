@@ -52,25 +52,25 @@ public class BasicCryptoFactory implements CryptoFactory {
 	 *
 	 * @since 1.0.0
 	 */
-	private final Cache<String, BasicBinaryEncryptor> binaryEncryptorCache;
+	protected final Cache<String, BasicBinaryEncryptor> binaryEncryptorCache;
 	/**
 	 * 口令到文本加密器的缓存。
 	 *
 	 * @since 1.0.0
 	 */
-	private final Cache<String, BasicTextEncryptor> textEncryptorCache;
+	protected final Cache<String, BasicTextEncryptor> textEncryptorCache;
 	/**
 	 * 口令到整型数字加密器的缓存。
 	 *
 	 * @since 1.0.0
 	 */
-	private final Cache<String, BasicIntegerNumberEncryptor> integerEncryptorCache;
+	protected final Cache<String, BasicIntegerNumberEncryptor> integerEncryptorCache;
 	/**
 	 * 口令到高精度小数加密器的缓存。
 	 *
 	 * @since 1.0.0
 	 */
-	private final Cache<String, BasicDecimalNumberEncryptor> decimalEncryptorCache;
+	protected final Cache<String, BasicDecimalNumberEncryptor> decimalEncryptorCache;
 
 	/**
 	 * 构造 Basic 加密工厂并初始化内部缓存。

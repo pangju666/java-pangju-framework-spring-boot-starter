@@ -52,25 +52,25 @@ public class AES256CryptoFactory implements CryptoFactory {
 	 *
 	 * @since 1.0.0
 	 */
-	private final Cache<String, AES256BinaryEncryptor> binaryEncryptorCache;
+	protected final Cache<String, AES256BinaryEncryptor> binaryEncryptorCache;
 	/**
 	 * 口令到文本加密器的缓存。
 	 *
 	 * @since 1.0.0
 	 */
-	private final Cache<String, AES256TextEncryptor> textEncryptorCache;
+	protected final Cache<String, AES256TextEncryptor> textEncryptorCache;
 	/**
 	 * 口令到整型数字加密器的缓存。
 	 *
 	 * @since 1.0.0
 	 */
-	private final Cache<String, AES256IntegerNumberEncryptor> integerEncryptorCache;
+	protected final Cache<String, AES256IntegerNumberEncryptor> integerEncryptorCache;
 	/**
 	 * 口令到高精度小数加密器的缓存。
 	 *
 	 * @since 1.0.0
 	 */
-	private final Cache<String, AES256DecimalNumberEncryptor> decimalEncryptorCache;
+	protected final Cache<String, AES256DecimalNumberEncryptor> decimalEncryptorCache;
 
 	/**
 	 * 构造 AES‑256 加密工厂并初始化内部缓存。

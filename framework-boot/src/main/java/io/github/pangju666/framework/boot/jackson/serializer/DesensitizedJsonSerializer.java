@@ -29,10 +29,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.convert.converter.Converter;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * JSON 字段脱敏序列化器。
@@ -53,29 +50,6 @@ import java.util.concurrent.ConcurrentHashMap;
  * @since 1.0.0
  */
 public final class DesensitizedJsonSerializer extends JsonSerializer<CharSequence> implements ContextualSerializer {
-    /**
-     * 内置类型序列化器缓存。
-     * <p>预先为每个 {@link DesensitizedType} 创建并缓存对应序列化器实例。</p>
-     *
-     * @since 1.0.0
-     */
-	private static final Map<String, DesensitizedJsonSerializer> TYPE_SERIALIZER_MAP = new HashMap<>(DesensitizedType.values().length);
-    /**
-     * CUSTOM 类型序列化器缓存。
-     * <p>键格式为 {@code prefix&suffix}，值为按前后缀保留策略构造的序列化器实例。</p>
-     *
-     * @since 1.0.0
-     */
-	private static final Map<String, DesensitizedJsonSerializer> CUSTOM_SERIALIZER_MAP = new ConcurrentHashMap<>(16);
-
-    // 静态初始化块：预先创建所有内置类型的序列化器
-	static {
-		DesensitizedType[] desensitizedType = DesensitizedType.values();
-		for (DesensitizedType type : desensitizedType) {
-			TYPE_SERIALIZER_MAP.put(type.name(), new DesensitizedJsonSerializer(type.getConverter()));
-		}
-	}
-
 	/**
 	 * 字符串转换器，用于执行具体的脱敏操作
 	 *
@@ -181,12 +155,11 @@ public final class DesensitizedJsonSerializer extends JsonSerializer<CharSequenc
 			DesensitizeFormat annotation = property.getAnnotation(DesensitizeFormat.class);
 			if (Objects.nonNull(annotation)) {
 				if (annotation.type() != DesensitizedType.CUSTOM) {
-					return TYPE_SERIALIZER_MAP.get(annotation.type().name());
+					return new DesensitizedJsonSerializer(annotation.type().getConverter());
 				}
 				int prefix = Math.max(annotation.prefix(), -1);
 				int suffix = Math.max(annotation.suffix(), -1);
-				String key = prefix + "&" + suffix;
-				return CUSTOM_SERIALIZER_MAP.computeIfAbsent(key, k -> new DesensitizedJsonSerializer(prefix, suffix));
+				return new DesensitizedJsonSerializer(prefix, suffix);
 			}
 		}
 		return prov.findValueSerializer(property.getType(), property);

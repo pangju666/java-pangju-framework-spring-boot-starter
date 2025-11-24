@@ -22,6 +22,7 @@ import io.github.pangju666.framework.boot.crypto.enums.CryptoAlgorithm;
 import io.github.pangju666.framework.boot.crypto.enums.Encoding;
 import io.github.pangju666.framework.boot.crypto.factory.CryptoFactory;
 import io.github.pangju666.framework.boot.jackson.deserializer.DecryptJsonDeserializer;
+import io.github.pangju666.framework.boot.jackson.utils.CryptoFactoryRegistry;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -89,14 +90,18 @@ public @interface DecryptFormat {
 	Encoding encoding() default Encoding.BASE64;
 
     /**
-     * 自定义加密工厂。
+     * 自定义加密工厂（必须存在可访问的无参构造方法）。
      *
      * <p>优先级：当提供工厂类型时，优先使用该类型；未提供时按算法枚举关联的工厂。</p>
      * <p>获取策略：优先从 Spring 容器获取 Bean；当容器不可用或获取失败时回退到直接构造。</p>
+     * <p>构造要求与原因：为保证在容器不可用或无 Bean 定义时能够通过{@link CryptoFactoryRegistry}的反射回退路径创建实例
+	 * （调用无参构造），自定义工厂必须提供可访问的无参构造方法（必须为 public）。
+     * 若缺失或不可访问，将导致回退构造失败并抛出异常。</p>
      * <p>默认与行为：未指定则使用算法默认工厂；如提供多个类型，仅取第一个。</p>
      *
      * @return 自定义加密工厂类型
      * @since 1.0.0
+	 * @see io.github.pangju666.framework.boot.jackson.utils.CryptoFactoryRegistry
      */
-	Class<? extends CryptoFactory>[] factory() default {};
+    Class<? extends CryptoFactory>[] factory() default {};
 }
