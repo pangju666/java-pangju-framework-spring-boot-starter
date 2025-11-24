@@ -227,19 +227,22 @@ public final class DecryptJsonDeserializer extends JsonDeserializer<Object> impl
 		JavaType javaType = property.getType();
 		Class<?> targetType = javaType.getRawClass();
 		if (targetType == List.class || targetType == Set.class || targetType == Collection.class) {
-			return getDeserializer(annotation, javaType);
+			CollectionType collectionType = (CollectionType) javaType;
+			Class<?> contentType = collectionType.getContentType().getRawClass();
+			if (isSupportedContentType(contentType)) {
+				return getDeserializer(annotation, javaType);
+			}
 		} else if (targetType == Map.class) {
 			MapType mapType = (MapType) javaType;
 			Class<?> keyType = mapType.getKeyType().getRawClass();
-			if (keyType == String.class) {
+			Class<?> contentType = mapType.getContentType().getRawClass();
+			if (keyType == String.class && isSupportedContentType(contentType)) {
 				return getDeserializer(annotation, javaType);
 			}
-			return ctxt.findContextualValueDeserializer(property.getType(), property);
-		} else if (isSupportType(property.getType().getRawClass())) {
+		} else if (isSupportedBaseType(targetType)) {
 			return getDeserializer(annotation, javaType);
-		} else {
-			return ctxt.findContextualValueDeserializer(property.getType(), property);
 		}
+		return ctxt.findContextualValueDeserializer(property.getType(), property);
 	}
 
 	/**
@@ -459,14 +462,32 @@ public final class DecryptJsonDeserializer extends JsonDeserializer<Object> impl
 	}
 
 	/**
-	 * 判断类型是否受支持（用于元素或值类型判定）
+	 * 判断是否为支持的基础类型。
 	 *
-	 * @param valueType 类型
-	 * @return 当类型为 {@link String}、<code>byte[]</code>、{@link BigInteger} 或 {@link BigDecimal} 时返回 true；否则返回 false
+	 * <p>支持类型：{@link String}、<code>byte[]</code>、{@link BigInteger}、{@link BigDecimal}。</p>
+	 *
+	 * @param valueType 待判定类型
+	 * @return 当类型为支持的基础类型时返回 {@code true}
 	 * @since 1.0.0
 	 */
-	private boolean isSupportType(Class<?> valueType) {
-		return valueType == String.class || valueType == byte[].class || valueType == BigInteger.class || 
+	private boolean isSupportedBaseType(Class<?> valueType) {
+		return valueType == String.class || valueType == byte[].class || valueType == BigInteger.class ||
 			valueType == BigDecimal.class;
+	}
+
+	/**
+	 * 判断是否为支持的集合/映射元素类型。
+	 *
+	 * <p>支持类型：（{@link String}、<code>byte[]</code>、{@link BigInteger}、{@link BigDecimal}）、（{@link List}、
+	 * {@link Set}、{@link Collection}、{@link Map}）。</p>
+	 *
+	 * @param valueType 待判定类型
+	 * @return 当类型为支持的基础或容器类型时返回 {@code true}
+	 * @since 1.0.0
+	 */
+	private boolean isSupportedContentType(Class<?> valueType) {
+		return valueType == String.class || valueType == byte[].class || valueType == BigInteger.class ||
+			valueType == BigDecimal.class || valueType == List.class || valueType == Set.class ||
+			valueType == Collection.class || valueType == Map.class;
 	}
 }
