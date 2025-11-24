@@ -28,6 +28,7 @@ import io.github.pangju666.framework.boot.image.model.ImageFile;
 import io.github.pangju666.framework.boot.image.model.ImageOperation;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.tika.Tika;
 import org.gm4java.engine.GMConnection;
 import org.gm4java.engine.GMException;
 import org.gm4java.engine.GMServiceException;
@@ -45,12 +46,23 @@ import java.util.Objects;
 import java.util.function.Consumer;
 
 /**
- * 基于 GraphicsMagick 的图像处理实现，支持尺寸读取、缩放、文字/图片水印与质量控制。
+ * 基于 GraphicsMagick 的图像处理实现。
  *
  * <p><strong>概述</strong></p>
  * <ul>
+ *   <li>使用 Tika 进行图像类型解析。</li>
  *   <li>使用 GM 命令（identify/convert/composite）进行图像处理与信息读取。</li>
- *   <li>结合能力集合进行读/写支持判定，并在不受支持时抛出业务异常。</li>
+ *   <li>读取图像元数据（尺寸、EXIF 方向）并封装为 {@link ImageFile}。</li>
+ *   <li>提供缩放与尺寸调整能力：{@code resize} 不保持长宽比，{@code scale} 保持长宽比。</li>
+ *   <li>结合能力集合进行读/写支持判定。</li>
+ * </ul>
+ *
+ * <p><strong>约束</strong></p>
+ * <ul>
+ *   <li>连接管理：通过 {@link PooledGMService} 获取连接，方法内始终在 {@code finally} 中关闭连接。</li>
+ *   <li>线程安全：调用方与连接池共同确保多线程下的资源正确使用。</li>
+ *   <li>裁剪限制：绘制“图片水印”路径下不支持裁剪（已在执行顺序中说明）。</li>
+ *   <li>异常策略：GM 命令或通信错误统一抛出 {@link ImageOperationException}。</li>
  * </ul>
  *
  * <p><strong>执行顺序（本实现）</strong></p>
@@ -60,8 +72,15 @@ import java.util.function.Consumer;
  *
  * <p><strong>依赖</strong></p>
  * <ul>
- *   <li>GM4Java：GM 命令组装与连接池。</li>
- *   <li>ImageConstants：读/写格式能力集合与工具。</li>
+ *   <li>{@link Tika}：图像类型解析。</li>
+ *   <li>{@link GMOperation}：GM 命令组装。</li>
+ *   <li>{@link PooledGMService}：GM 命令执行。</li>
+ * </ul>
+ *
+ * <p><strong>异常与容错</strong></p>
+ * <ul>
+ *   <li>元数据解析失败：使用 {@link io.github.pangju666.framework.boot.image.lang.ImageConstants#NORMAL_EXIF_ORIENTATION} 作为默认方向，并通过文件解码获取尺寸。</li>
+ *   <li>输入或输出类型不受支持：抛出 {@link io.github.pangju666.framework.boot.image.exception.UnSupportImageTypeException}。</li>
  * </ul>
  *
  * @since 1.0.0

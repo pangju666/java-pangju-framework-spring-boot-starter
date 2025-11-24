@@ -34,6 +34,7 @@ import io.github.pangju666.framework.boot.image.model.ImageFile;
 import io.github.pangju666.framework.boot.image.model.ImageOperation;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.tika.Tika;
 import org.springframework.util.Assert;
 
 import javax.imageio.ImageIO;
@@ -44,10 +45,13 @@ import java.util.Objects;
 import java.util.function.Consumer;
 
 /**
- * 基于 TwelveMonkeys 与 metadata-extractor 的图像处理实现。
+ * 基于 ImageIO 的图像处理实现。
  *
  * <p><strong>概述</strong></p>
  * <ul>
+ *   <li>使用 Tika 进行图像类型解析。</li>
+ *   <li>使用 Metadata Extractor 进行图像信息读取。</li>
+ *   <li>使用 ImageIO 进行图像处理与信息读取。</li>
  *   <li>读取图像元数据（尺寸、EXIF 方向）并封装为 {@link ImageFile}。</li>
  *   <li>提供缩放与尺寸调整能力：{@code resize} 不保持长宽比，{@code scale} 保持长宽比。</li>
  *   <li>结合能力集合进行读/写支持判定。</li>
@@ -65,9 +69,9 @@ import java.util.function.Consumer;
  *
  * <p><strong>依赖</strong></p>
  * <ul>
+ *   <li>{@link Tika}：图像类型解析。</li>
  *   <li>{@link com.drew.imaging.ImageMetadataReader}：解析图像元数据。</li>
  *   <li>{@link io.github.pangju666.commons.image.utils.ImageEditor}：执行缩放/调整与输出。</li>
- *   <li>{@link io.github.pangju666.framework.boot.image.lang.ImageConstants}：维护支持的类型集合与默认 EXIF 方向。</li>
  * </ul>
  *
  * <p><strong>异常与容错</strong></p>
