@@ -36,19 +36,20 @@ import java.util.concurrent.*;
  * @see OnceTaskExecutor
  * @see FutureTask
  */
+@SuppressWarnings({"rawtypes", "unchecked"})
 public class FutureOnceTaskExecutor implements OnceTaskExecutor {
     /**
      * 正在执行中的同步任务映射（用于并发去重）。
      *
      * @since 1.0.0
      */
-    protected final ConcurrentMap<String, FutureTask<Object>> syncRunningTasks;
+    protected final ConcurrentMap<String, FutureTask> syncRunningTasks;
     /**
      * 正在执行中的异步任务映射（用于并发去重）。
      *
      * @since 1.0.0
      */
-	protected final ConcurrentMap<String, CompletableFuture<Object>> asyncRunningTasks;
+	protected final ConcurrentMap<String, CompletableFuture> asyncRunningTasks;
 
     /**
      * 创建去重任务执行器（指定初始容量）。
@@ -84,8 +85,8 @@ public class FutureOnceTaskExecutor implements OnceTaskExecutor {
      * @throws IllegalArgumentException 当 {@code key} 为空白或 {@code task} 为 {@code null} 时抛出
      * @since 1.0.0
      */
-    public Object execute(String key, Callable<Object> task) throws Exception, InterruptedException {
-        FutureTask<Object> futureTask = getOrRegisterFutureTask(key, task);
+    public <T> T execute(String key, Callable<T> task) throws Exception, InterruptedException {
+        FutureTask<T> futureTask = getOrRegisterFutureTask(key, task);
         try {
             return futureTask.get();
         } catch (ExecutionException e) {
@@ -114,12 +115,12 @@ public class FutureOnceTaskExecutor implements OnceTaskExecutor {
      * @throws InterruptedException 当等待期间线程被中断时抛出
      * @since 1.0.0
      */
-    public Object execute(String key, Callable<Object> task, long timeout, TimeUnit unit)
+    public <T> T execute(String key, Callable<T> task, long timeout, TimeUnit unit)
 		throws InterruptedException, TimeoutException, Exception {
 		Assert.isTrue(timeout > 0, "timeout 必须大于0");
 		Assert.notNull(unit, "unit 不可为 null");
 
-		FutureTask<Object> futureTask = getOrRegisterFutureTask(key, task);
+		FutureTask<T> futureTask = getOrRegisterFutureTask(key, task);
 		try {
 			return futureTask.get(timeout, unit);
 		} catch (ExecutionException e) {
@@ -144,13 +145,13 @@ public class FutureOnceTaskExecutor implements OnceTaskExecutor {
      * @throws IllegalArgumentException 当 {@code key} 为空白、{@code executor} 为 {@code null} 或 {@code task} 为 {@code null} 时抛出
      * @since 1.0.0
      */
-    public CompletableFuture<Object> submitToAsyncExecutor(AsyncTaskExecutor executor, String key, Callable<Object> task) {
+    public <T> CompletableFuture<T> submitToAsyncExecutor(AsyncTaskExecutor executor, String key, Callable<T> task) {
         Assert.hasText(key, "key 不可为空");
         Assert.notNull(executor, "executor 不可为 null");
         Assert.notNull(task, "task 不可为 null");
 
 		return asyncRunningTasks.computeIfAbsent(key, k -> {
-			CompletableFuture<Object> newFuture = new CompletableFuture<>();
+			CompletableFuture<T> newFuture = new CompletableFuture<>();
 			executor.submit(() -> {
 				try {
 					newFuture.complete(task.call());
@@ -175,16 +176,16 @@ public class FutureOnceTaskExecutor implements OnceTaskExecutor {
      * @throws IllegalArgumentException 当 {@code key} 为空白或 {@code task} 为 {@code null} 时抛出
      * @since 1.0.0
      */
-    protected FutureTask<Object> getOrRegisterFutureTask(String key, Callable<Object> task) {
+    protected <T> FutureTask<T> getOrRegisterFutureTask(String key, Callable<T> task) {
 		Assert.hasText(key, "key 不可为空");
 		Assert.notNull(task, "task 不可为 null");
 
-		FutureTask<Object> existTask = syncRunningTasks.get(key);
+		FutureTask<T> existTask = syncRunningTasks.get(key);
 		if (Objects.nonNull(existTask)) {
 			return existTask;
 		}
 
-		FutureTask<Object> newTask = new FutureTask<>(() -> {
+		FutureTask<T> newTask = new FutureTask<>(() -> {
 			try {
 				return task.call();
 			} finally {
@@ -192,7 +193,7 @@ public class FutureOnceTaskExecutor implements OnceTaskExecutor {
 			}
 		});
 
-		FutureTask<Object> registered = syncRunningTasks.putIfAbsent(key, newTask);
+		FutureTask<T> registered = syncRunningTasks.putIfAbsent(key, newTask);
 		if (Objects.nonNull(registered)) {
 			return registered;
 		}
