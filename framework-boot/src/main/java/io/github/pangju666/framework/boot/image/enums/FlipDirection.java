@@ -37,5 +37,5 @@ public enum FlipDirection {
      *
      * @since 1.0.0
      */
-    VERTICAL;
+    VERTICAL
 }

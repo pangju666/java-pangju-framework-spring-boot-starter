@@ -37,9 +37,9 @@ import java.io.IOException;
  * <p><b>字段</b></p>
  * <ul>
  *   <li>{@link #imageSize} 图像宽高信息，见 {@link io.github.pangju666.commons.image.model.ImageSize}。</li>
- *   <li>{@link #orientation} 图像方向标记（如 EXIF Orientation），整数表示，默认值见 {@link io.github.pangju666.framework.boot.image.lang.ImageConstants#NORMAL_EXIF_ORIENTATION}。</li>
+ *   <li>{@link #orientation} 图像方向标记（EXIF Orientation），默认值见 {@link io.github.pangju666.framework.boot.image.lang.ImageConstants#NORMAL_EXIF_ORIENTATION}。</li>
  *   <li>{@link #format} 图像文件格式（如 {@code JPEG}、{@code PNG}）。</li>
- *   <li>{@link #fileSize} 文件大小，单位字节。</li>
+ *   <li>{@link #fileSize} 文件大小（单位：字节）。</li>
  *   <li>{@link #mimeType} 图像的 MIME 类型（如 {@code image/jpeg}）。</li>
  *   <li>{@link #digest} 图像摘要（用于内容唯一性校验或缓存）。</li>
  *   <li>{@link #file} 图像对应的本地文件引用。</li>
@@ -128,13 +128,13 @@ public class ImageFile {
 		try {
 			this.mimeType = FileUtils.getMimeType(file);
 		} catch (IOException e) {
-			throw new ImageParsingException("图像类型解析失败", e);
+			throw new ImageParsingException(file, "类型解析失败", e);
 		}
 
 		try {
 			this.digest = FileUtils.computeDigest(file);
 		} catch (IOException e) {
-			throw new ImageParsingException("图像摘要计算失败", e);
+			throw new ImageParsingException(file, "摘要计算失败", e);
 		}
 
 		this.format = FilenameUtils.getExtension(file.getName());

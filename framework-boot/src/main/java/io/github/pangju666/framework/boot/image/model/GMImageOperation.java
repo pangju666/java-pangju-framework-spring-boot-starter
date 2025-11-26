@@ -16,7 +16,6 @@
 
 package io.github.pangju666.framework.boot.image.model;
 
-import io.github.pangju666.commons.io.utils.FileUtils;
 import io.github.pangju666.framework.boot.image.core.impl.GMImageTemplate;
 import io.github.pangju666.framework.boot.image.enums.FlipDirection;
 import io.github.pangju666.framework.boot.image.enums.ResampleFilter;
@@ -26,11 +25,11 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.lang.Nullable;
 
 import java.awt.*;
-import java.io.File;
 import java.util.Objects;
 
 /**
- * 面向 {@link GMImageTemplate} 的图像操作配置，扩展质量、元数据处理与文字水印能力。
+ * 面向 {@link GMImageTemplate} 的图像操作配置，
+ * 扩展文字水印、缩放重采样策略、输出质量、输出DPI与元数据清除能力，并提供模糊/锐化调整。
  * 使用构建器模式设置参数，供图像处理组件读取并执行。
  *
  * <p><strong>使用说明</strong>：通过构建器链式设置参数；不满足校验规则的参数将被忽略。</p>
@@ -143,6 +142,9 @@ public class GMImageOperation extends ImageOperation {
 	 */
 	protected Integer dpi;
 
+	protected GMImageOperation() {
+	}
+
 	/**
 	 * 获取输出图像的 DPI（每英寸点数）。
 	 *
@@ -175,16 +177,6 @@ public class GMImageOperation extends ImageOperation {
 	 */
 	public @Nullable Pair<Double, Double> getSharpenPair() {
 		return sharpenPair;
-	}
-
-	/**
-	 * 创建 {@link GMImageOperationBuilder} 构建器实例。
-	 *
-	 * @return 构建器实例
-	 * @since 1.0.0
-	 */
-	public static GMImageOperation.GMImageOperationBuilder builder() {
-		return new GMImageOperation.GMImageOperationBuilder();
 	}
 
 	/**
@@ -387,23 +379,9 @@ public class GMImageOperation extends ImageOperation {
 			return this;
 		}
 
-		/**
-		 * 使用图片水印（与文字水印互斥）。
-		 *
-		 * <p>参数校验规则：如果 {@code watermarkImage} 为 null或文件不存在，则不设置；
-		 * 设置后将文字水印设为 null。</p>
-		 *
-		 * @param watermarkImage 水印图片文件
-		 * @return 构建器本身
-		 * @since 1.0.0
-		 */
 		@Override
-		public GMImageOperationBuilder watermarkImage(File watermarkImage) {
-			if (FileUtils.existFile(watermarkImage)) {
-				imageOperation.watermarkImage = watermarkImage;
-				imageOperation.watermarkText = null;
-			}
-			return this;
+		protected void onSetWatermarkImage() {
+			imageOperation.watermarkText = null;
 		}
 
 		/**
@@ -458,7 +436,7 @@ public class GMImageOperation extends ImageOperation {
 		/**
 		 * 设置高斯模糊（指定半径与标准差）。
 		 *
-		 * <p>参数校验规则：如果任一参数为 null，或 {@code sigma} ≤ 1，或 {@code radius} < 0，则不设置。</p>
+		 * <p>参数校验规则：如果任一参数为 null，或 {@code sigma} &le; 1，或 {@code radius} &lt; 0，则不设置。</p>
 		 *
 		 * @param radius 半径（≥0）
 		 * @param sigma  标准差（>1）

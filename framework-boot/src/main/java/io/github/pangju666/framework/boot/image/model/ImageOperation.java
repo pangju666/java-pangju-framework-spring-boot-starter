@@ -18,6 +18,7 @@ package io.github.pangju666.framework.boot.image.model;
 
 import io.github.pangju666.commons.image.enums.WatermarkDirection;
 import io.github.pangju666.commons.image.model.ImageWatermarkOption;
+import io.github.pangju666.commons.io.utils.FileUtils;
 import io.github.pangju666.framework.boot.image.core.ImageTemplate;
 import io.github.pangju666.framework.boot.image.enums.CropType;
 import io.github.pangju666.framework.boot.image.enums.FlipDirection;
@@ -34,31 +35,18 @@ import java.util.Objects;
  *
  * <p><strong>使用说明</strong>：通过构建器链式设置参数；不满足校验规则的参数将被忽略。</p>
  * <p><strong>互斥规则</strong>：水印方向与坐标互斥；设置其中之一会清空另一种配置。</p>
- * <p><strong>定位规则</strong>：可使用 {@code watermarkDirection} 或 {@code watermarkPosition(x,y)}；坐标需为正数。</p>
+ * <p><strong>定位规则</strong>：可使用 {@code watermarkDirection} 或 {@code watermarkPosition(x,y)} 坐标需为正数。</p>
  * <p><strong>裁剪规则</strong>：支持中心裁剪、偏移裁剪与矩形裁剪；如果裁剪参数为空、非正数或越界，则不设置裁剪。</p>
  * <p><strong>缩放规则</strong>：{@code forceScale(width,height)} 强制缩放到指定尺寸；按比例/按宽/按高缩放为等比，并会关闭强制缩放且清空其它尺寸/比例。</p>
  * <p><strong>透明度范围</strong>：取值区间 [0,1]；水印透明度遵循该范围。</p>
  * <p><strong>旋转/翻转</strong>：旋转角度正数表示顺时针、负数表示逆时针；翻转方向由 {@link FlipDirection} 指定。</p>
  * <p><strong>灰度化</strong>：当开启灰度化时，输出图像为灰度模式。</p>
  *
- * <p><strong>子类扩展</strong>：如 {@link BufferedImageOperation} 在本模型基础上扩展文字水印、
- * 缩放重采样滤镜以及模糊/锐化/对比度/亮度调节与自定义滤镜管线。</p>
- *
  * @author pangju666
  * @since 1.0.0
  * @see ImageTemplate
  */
 public abstract class ImageOperation {
-	/**
-	 * 空图像操作。
-	 *
-	 * <p>用途：仅进行图片格式转换时使用，不包含裁剪、缩放、图片水印、旋转、翻转、灰度等其它操作。</p>
-	 *
-	 * @since 1.0.0
-	 */
-	public static final ImageOperation EMPTY = new ImageOperation() {
-	};
-
 	/**
 	 * 水印方向（当未设置具体坐标时生效，与坐标互斥）。
 	 *
@@ -210,6 +198,9 @@ public abstract class ImageOperation {
      */
     protected boolean grayscale = false;
 
+	protected ImageOperation() {
+	}
+
     /**
      * 是否启用灰度化输出。
      *
@@ -351,14 +342,6 @@ public abstract class ImageOperation {
 	}
 
 	/**
-	 * 受保护的构造方法，避免直接实例化。
-	 *
-	 * @since 1.0.0
-	 */
-	protected ImageOperation() {
-	}
-
-	/**
 	 * 获取水印方向（当未设置具体坐标时生效）。
 	 *
 	 * @return 水印方向
@@ -454,7 +437,7 @@ public abstract class ImageOperation {
 	 * @author pangju666
 	 * @since 1.0.0
 	 */
-	public static abstract class ImageOperationBuilder<T extends ImageOperationBuilder<T, V>, V extends ImageOperation> {
+	public abstract static class ImageOperationBuilder<T extends ImageOperationBuilder<T, V>, V extends ImageOperation> {
 		/**
 		 * 目标操作对象实例，供构建器写入配置。
 		 *
@@ -597,7 +580,7 @@ public abstract class ImageOperation {
 		 * @return 构建器本身
 		 * @since 1.0.0
 		 */
-		public T scale(Float ratio) {
+		public T scaleByRatio(Float ratio) {
 			if (Objects.nonNull(ratio) && ratio > 0) {
 				this.imageOperation.forceScale = false;
 				this.imageOperation.scaleRatio = ratio;
@@ -690,7 +673,10 @@ public abstract class ImageOperation {
 		 * @since 1.0.0
 		 */
 		public T watermarkImage(File watermarkImage) {
-			this.imageOperation.watermarkImage = watermarkImage;
+			if (FileUtils.existFile(watermarkImage)) {
+				this.imageOperation.watermarkImage = watermarkImage;
+				onSetWatermarkImage();
+			}
 			return self();
 		}
 
@@ -834,6 +820,56 @@ public abstract class ImageOperation {
             }
             return self();
         }
+
+		/**
+		 * 预留钩子：设置图片水印后的附加处理。
+		 *
+		 * <p><b>作用</b>：供子类在设置图片水印时执行互斥或补充逻辑（如清空文字水印、规范化坐标）。</p>
+		 * <p><b>调用约定</b>：默认不做任何处理；子类可在对应的 setter 内主动调用本方法。</p>
+		 * <p><b>示例流程</b>：设置图片水印 -> 调用钩子 -> 执行互斥清理/参数修正。</p>
+		 *
+		 * @since 1.0.0
+		 */
+		protected void onSetWatermarkImage() {
+		}
+
+		/**
+		 * 合并另一个操作配置的通用字段到当前构建器。
+		 *
+		 * <p><b>流程</b>：复制灰度/翻转/裁剪/缩放/水印定位/目标尺寸/比例/强制缩放/图片水印选项与文件 -> 返回构建器。</p>
+		 * <p><b>约束</b>：不进行参数校验；会覆盖当前已设置的同名字段；不处理子类扩展字段。</p>
+		 * <p><b>互斥提示</b>：若合并对象包含图片水印与文字水印的混合配置，互斥关系由具体实现负责处理。</p>
+		 *
+		 * @param operation 待合并的操作配置
+		 * @return 构建器本身
+		 * @since 1.0.0
+		 */
+		public T addOperation(ImageOperation operation) {
+			imageOperation.grayscale = operation.grayscale;
+			imageOperation.flipDirection = operation.flipDirection;
+			imageOperation.cropType = operation.cropType;
+			imageOperation.centerCropWidth = operation.centerCropWidth;
+			imageOperation.centerCropHeight = operation.centerCropHeight;
+			imageOperation.topCropOffset = operation.topCropOffset;
+			imageOperation.bottomCropOffset = operation.bottomCropOffset;
+			imageOperation.leftCropOffset = operation.leftCropOffset;
+			imageOperation.rightCropOffset = operation.rightCropOffset;
+			imageOperation.cropRectX = operation.cropRectX;
+			imageOperation.cropRectY = operation.cropRectY;
+			imageOperation.cropRectWidth = operation.cropRectWidth;
+			imageOperation.cropRectHeight = operation.cropRectHeight;
+			imageOperation.watermarkDirection = operation.watermarkDirection;
+			imageOperation.watermarkX = operation.watermarkX;
+			imageOperation.watermarkY = operation.watermarkY;
+			imageOperation.targetWidth = operation.targetWidth;
+			imageOperation.scaleRatio = operation.scaleRatio;
+			imageOperation.targetHeight = operation.targetHeight;
+			imageOperation.forceScale = operation.forceScale;
+			imageOperation.watermarkImageOption = operation.watermarkImageOption;
+			imageOperation.watermarkImage = operation.watermarkImage;
+
+			return self();
+		}
 
 		/**
 		 * 构建并返回 {@link ImageOperation} 对象。

@@ -25,8 +25,6 @@ import io.github.pangju666.framework.boot.image.exception.UnSupportedTypeExcepti
 import io.github.pangju666.framework.boot.image.model.ImageFile;
 import io.github.pangju666.framework.boot.image.model.ImageOperation;
 import io.github.pangju666.framework.boot.task.OnceTaskExecutor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.core.task.AsyncTaskExecutor;
 import org.springframework.util.Assert;
 
@@ -59,8 +57,6 @@ import java.util.concurrent.TimeoutException;
  * @since 1.0.0
  */
 public class ImageTaskExecutor {
-	protected static final Logger LOGGER = LoggerFactory.getLogger(ImageTaskExecutor.class);
-
 	/**
 	 * 图像处理模板。
 	 * <p>封装具体的图像处理策略（解析、操作、输出）。</p>
@@ -132,7 +128,7 @@ public class ImageTaskExecutor {
 		} catch (IOException | UnSupportedTypeException | ImageParsingException | ImageOperationException e) {
 			throw e;
 		} catch (Exception e) {
-			LOGGER.error("图像处理任务执行失败，输入文件：{}", inputFile.getAbsolutePath(), e);
+			throw new ImageTaskExecutionException("图像处理任务执行失败，输入文件：" + inputFile.getAbsolutePath(), e);
 		}
 	}
 
@@ -173,7 +169,7 @@ public class ImageTaskExecutor {
 		} catch (IOException | UnSupportedTypeException | ImageParsingException | ImageOperationException | TimeoutException e) {
 			throw e;
 		} catch (Exception e) {
-			LOGGER.error("图像处理任务执行失败，输入文件：{}", inputFile.getAbsolutePath(), e);
+			throw new ImageTaskExecutionException("图像处理任务执行失败，输入文件：" + inputFile.getAbsolutePath(), e);
 		}
 	}
 
@@ -208,7 +204,7 @@ public class ImageTaskExecutor {
 		} catch (IOException | UnSupportedTypeException | ImageParsingException | ImageOperationException e) {
 			throw e;
 		} catch (Exception e) {
-			LOGGER.error("图像处理任务执行失败，输入文件：{}", imageFile.getFile().getAbsolutePath(), e);
+			throw new ImageTaskExecutionException("图像处理任务执行失败，输入文件：" + imageFile.getFile().getAbsolutePath(), e);
 		}
 	}
 
@@ -246,7 +242,7 @@ public class ImageTaskExecutor {
 		} catch (IOException | UnSupportedTypeException | ImageParsingException | ImageOperationException | TimeoutException e) {
 			throw e;
 		} catch (Exception e) {
-			LOGGER.error("图像处理任务执行失败，输入文件：{}", imageFile.getFile().getAbsolutePath(), e);
+			throw new ImageTaskExecutionException("图像处理任务执行失败，输入文件：" + imageFile.getFile().getAbsolutePath(), e);
 		}
 	}
 

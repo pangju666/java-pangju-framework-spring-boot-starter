@@ -33,6 +33,7 @@ import io.github.pangju666.framework.boot.image.lang.ImageConstants;
 import io.github.pangju666.framework.boot.image.model.BufferedImageOperation;
 import io.github.pangju666.framework.boot.image.model.ImageFile;
 import io.github.pangju666.framework.boot.image.model.ImageOperation;
+import io.github.pangju666.framework.boot.image.utils.ImageOperationBuilders;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.tika.Tika;
@@ -73,8 +74,8 @@ import java.util.Objects;
  *
  * <p><b>格式支持</b></p>
  * <ul>
- *   <li>读取类型以 {@link ImageConstants#getSupportReadImageTypes()} 判定。</li>
- *   <li>写出格式以 {@link ImageConstants#getSupportWriteImageFormats()} 判定。</li>
+ *   <li>读取类型以 {@link ImageConstants#getSupportedReadImageTypes()} 判定。</li>
+ *   <li>写出格式以 {@link ImageConstants#getSupportedWriteImageFormats()} 判定。</li>
  *   <li>输出格式通过扩展名解析并在必要时创建父目录。</li>
  * </ul>
  *
@@ -103,7 +104,7 @@ public class BufferedImageTemplate implements ImageTemplate {
  	@Override
  	public ImageFile read(File file) throws IOException {
 		ImageFile imageFile = new ImageFile(file);
-		if (!ImageConstants.getSupportReadImageTypes().contains(imageFile.getMimeType())) {
+		if (!ImageConstants.getSupportedReadImageTypes().contains(imageFile.getMimeType())) {
 			throw new UnSupportedTypeException("不支持读取 " + imageFile.getMimeType() + " 类型图片");
 		}
 
@@ -139,9 +140,9 @@ public class BufferedImageTemplate implements ImageTemplate {
 		 ImageFile imageFile = read(inputFile);
 		 try {
 			 doProcess(imageFile, outputFile, outputImageFormat, ObjectUtils.getIfNull(
-				 operation, ImageOperation.EMPTY));
+				 operation, ImageOperationBuilders.EMPTY));
 		 } catch (IOException e) {
-			throw new ImageOperationException("图像操作失败", e);
+			throw new ImageOperationException(inputFile, "操作执行失败", e);
 		 }
 	}
 
@@ -168,9 +169,9 @@ public class BufferedImageTemplate implements ImageTemplate {
 				mimeType = FileUtils.getMimeType(imageFile.getFile());
 			}
 		} catch (IOException e) {
-			throw new ImageParsingException("图像类型解析失败", e);
+			throw new ImageParsingException(imageFile.getFile(), "类型解析失败", e);
 		}
-		if (!ImageConstants.getSupportReadImageTypes().contains(mimeType)) {
+		if (!ImageConstants.getSupportedReadImageTypes().contains(mimeType)) {
 			throw new UnSupportedTypeException("不支持读取 " + mimeType + " 类型图片");
 		}
 
@@ -178,7 +179,7 @@ public class BufferedImageTemplate implements ImageTemplate {
 			imageFile = read(imageFile.getFile());
 		}
 		doProcess(imageFile, outputFile, outputImageFormat, ObjectUtils.getIfNull(operation,
-			ImageOperation.EMPTY));
+			ImageOperationBuilders.EMPTY));
 	}
 
 	/**
@@ -191,7 +192,7 @@ public class BufferedImageTemplate implements ImageTemplate {
 	@Override
 	public boolean canRead(File file) throws IOException {
 		String mimeType = FileUtils.getMimeType(file);
-		return ImageConstants.getSupportReadImageTypes().contains(mimeType);
+		return ImageConstants.getSupportedReadImageTypes().contains(mimeType);
 	}
 
 	/**
@@ -203,7 +204,7 @@ public class BufferedImageTemplate implements ImageTemplate {
 	@Override
 	public boolean canWrite(String format) {
 		Assert.hasText(format, "format 不可为空");
-		return ImageConstants.getSupportWriteImageFormats().contains(format);
+		return ImageConstants.getSupportedWriteImageFormats().contains(format);
 	}
 
  	/**
@@ -220,7 +221,7 @@ public class BufferedImageTemplate implements ImageTemplate {
 		if (StringUtils.isBlank(outputImageFormat)) {
 			throw new UnSupportedTypeException("未知的输出格式");
 		}
-		if (!ImageConstants.getSupportWriteImageFormats().contains(outputImageFormat)) {
+		if (!ImageConstants.getSupportedWriteImageFormats().contains(outputImageFormat)) {
 			throw new UnSupportedTypeException("不支持输出为" + outputImageFormat + "格式");
 		}
 		return outputImageFormat;

@@ -28,6 +28,7 @@ import io.github.pangju666.framework.boot.image.lang.ImageConstants;
 import io.github.pangju666.framework.boot.image.model.GMImageOperation;
 import io.github.pangju666.framework.boot.image.model.ImageFile;
 import io.github.pangju666.framework.boot.image.model.ImageOperation;
+import io.github.pangju666.framework.boot.image.utils.ImageOperationBuilders;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.tika.Tika;
@@ -73,8 +74,8 @@ import java.util.Objects;
  *
  * <p><b>格式支持</b></p>
  * <ul>
- *   <li>读取格式：{@link ImageConstants#GRAPHICS_MAGICK_SUPPORT_READ_IMAGE_FORMAT_SET}。</li>
- *   <li>写出格式：{@link ImageConstants#GRAPHICS_MAGICK_SUPPORT_WRITE_IMAGE_FORMAT_SET}。</li>
+ *   <li>读取格式：{@link ImageConstants#GRAPHICS_MAGICK_SUPPORTED_READ_IMAGE_FORMAT_SET}。</li>
+ *   <li>写出格式：{@link ImageConstants#GRAPHICS_MAGICK_SUPPORTED_WRITE_IMAGE_FORMAT_SET}。</li>
  * </ul>
  *
  * <p><b>异常与容错</b></p>
@@ -88,6 +89,8 @@ import java.util.Objects;
  * @see GMImageOperation
  */
 public class GMImageTemplate implements ImageTemplate {
+
+
 	/**
 	 * 日志记录器。
 	 *
@@ -136,7 +139,7 @@ public class GMImageTemplate implements ImageTemplate {
 	@Override
 	public ImageFile read(File file) throws IOException {
 		ImageFile imageFile = new ImageFile(file);
-		if (!ImageConstants.GRAPHICS_MAGICK_SUPPORT_READ_IMAGE_FORMAT_SET.contains(imageFile.getFormat())) {
+		if (!ImageConstants.GRAPHICS_MAGICK_SUPPORTED_READ_IMAGE_FORMAT_SET.contains(imageFile.getFormat())) {
 			throw new UnSupportedTypeException("不支持读取 " + imageFile.getFormat() + " 格式图片");
 		}
 
@@ -192,7 +195,7 @@ public class GMImageTemplate implements ImageTemplate {
 
 		ImageFile imageFile = read(inputFile);
 		doProcess(imageFile, outputFile, ObjectUtils.getIfNull(operation,
-			ImageOperation.EMPTY));
+			ImageOperationBuilders.EMPTY));
 	}
 
 	/**
@@ -214,7 +217,7 @@ public class GMImageTemplate implements ImageTemplate {
 
 		String format = StringUtils.defaultIfBlank(imageFile.getFormat(),
 			FilenameUtils.getExtension(imageFile.getFile().getName()));
-		if (!ImageConstants.GRAPHICS_MAGICK_SUPPORT_READ_IMAGE_FORMAT_SET.contains(format)) {
+		if (!ImageConstants.GRAPHICS_MAGICK_SUPPORTED_READ_IMAGE_FORMAT_SET.contains(format)) {
 			throw new UnSupportedTypeException("不支持读取 " + format + " 格式图片");
 		}
 
@@ -223,7 +226,7 @@ public class GMImageTemplate implements ImageTemplate {
 		}
 
 		doProcess(imageFile, outputFile, ObjectUtils.getIfNull(operation,
-			ImageOperation.EMPTY));
+			ImageOperationBuilders.EMPTY));
 	}
 
 	/**
@@ -238,7 +241,7 @@ public class GMImageTemplate implements ImageTemplate {
 		FileUtils.check(file, "file 不可为 null");
 
 		String fileFormat = FilenameUtils.getExtension(file.getName());
-		return ImageConstants.GRAPHICS_MAGICK_SUPPORT_READ_IMAGE_FORMAT_SET.contains(fileFormat);
+		return ImageConstants.GRAPHICS_MAGICK_SUPPORTED_READ_IMAGE_FORMAT_SET.contains(fileFormat);
 	}
 
 	/**
@@ -250,7 +253,7 @@ public class GMImageTemplate implements ImageTemplate {
 	@Override
 	public boolean canWrite(String format) {
 		Assert.hasText(format, "format 不可为空");
-		return ImageConstants.GRAPHICS_MAGICK_SUPPORT_WRITE_IMAGE_FORMAT_SET.contains(format);
+		return ImageConstants.GRAPHICS_MAGICK_SUPPORTED_WRITE_IMAGE_FORMAT_SET.contains(format);
 	}
 
 	/**
@@ -628,7 +631,7 @@ public class GMImageTemplate implements ImageTemplate {
 		if (StringUtils.isBlank(outputImageFormat)) {
 			throw new UnSupportedTypeException("未知的输出格式");
 		}
-		if (!ImageConstants.GRAPHICS_MAGICK_SUPPORT_WRITE_IMAGE_FORMAT_SET.contains(outputImageFormat)) {
+		if (!ImageConstants.GRAPHICS_MAGICK_SUPPORTED_WRITE_IMAGE_FORMAT_SET.contains(outputImageFormat)) {
 			throw new UnSupportedTypeException("不支持输出为" + outputImageFormat + "格式");
 		}
 	}

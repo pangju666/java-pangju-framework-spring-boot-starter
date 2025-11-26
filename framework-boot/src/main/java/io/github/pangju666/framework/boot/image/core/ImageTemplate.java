@@ -38,7 +38,7 @@ import java.io.IOException;
  * @since 1.0.0
  */
 public interface ImageTemplate {
- 	/**
+	/**
 	 * 读取并返回图像信息（尺寸、格式、MIME 类型、文件大小等）。
  	 *
  	 * @param file 待解析的图像文件

@@ -17,7 +17,6 @@
 package io.github.pangju666.framework.boot.image.model;
 
 import io.github.pangju666.commons.image.model.TextWatermarkOption;
-import io.github.pangju666.commons.io.utils.FileUtils;
 import io.github.pangju666.framework.boot.image.core.impl.BufferedImageTemplate;
 import io.github.pangju666.framework.boot.image.enums.FlipDirection;
 import io.github.pangju666.framework.boot.image.enums.ResampleFilter;
@@ -27,13 +26,12 @@ import org.springframework.util.CollectionUtils;
 
 import java.awt.*;
 import java.awt.image.ImageFilter;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
 
 /**
- * 面向 {@link BufferedImageTemplate} 的图像操作配置，扩展文字水印与缩放重采样能力，
+ * 面向 {@link BufferedImageTemplate} 的图像操作配置，扩展文字水印与缩放重采样策略能力，
  * 并提供模糊/锐化/对比度/亮度调整与自定义滤镜管线。
  * 使用构建器模式设置参数，供图像处理组件读取并执行。
  *
@@ -114,6 +112,9 @@ public class BufferedImageOperation extends ImageOperation {
 	 */
 	protected Collection<ImageFilter> filters = new ArrayList<>();
 
+	protected BufferedImageOperation() {
+	}
+
 	/**
 	 * 获取模糊半径。
 	 *
@@ -165,16 +166,6 @@ public class BufferedImageOperation extends ImageOperation {
 	}
 
 	/**
-	 * 创建 {@link BuffedImageOperationBuilder} 构建器实例。
-	 *
-	 * @return 构建器实例
-	 * @since 1.0.0
-	 */
-	public static BufferedImageOperation.BuffedImageOperationBuilder builder() {
-		return new BufferedImageOperation.BuffedImageOperationBuilder();
-	}
-
-	/**
 	 * 获取文字水印内容（与图片水印互斥）。
 	 *
 	 * @return 文字水印文本，未设置或被图片水印清空时为 {@code null}
@@ -209,8 +200,8 @@ public class BufferedImageOperation extends ImageOperation {
 	 *
 	 * @since 1.0.0
 	 */
-	public static class BuffedImageOperationBuilder extends ImageOperationBuilder<BuffedImageOperationBuilder, BufferedImageOperation> {
-		public BuffedImageOperationBuilder() {
+	public static class BufferedImageOperationBuilder extends ImageOperationBuilder<BufferedImageOperationBuilder, BufferedImageOperation> {
+		public BufferedImageOperationBuilder() {
 			super(new BufferedImageOperation());
 		}
 
@@ -223,30 +214,16 @@ public class BufferedImageOperation extends ImageOperation {
 		 * @return 构建器本身
 		 * @since 1.0.0
 		 */
-		public BuffedImageOperationBuilder scaleFilter(ResampleFilter resampleFilter) {
+		public BufferedImageOperationBuilder resampleFilter(ResampleFilter resampleFilter) {
 			if (Objects.nonNull(resampleFilter)) {
 				imageOperation.resampleFilterType = resampleFilter.getFilterType();
 			}
 			return this;
 		}
 
-		/**
-		 * 使用图片水印（与文字水印互斥）。
-		 *
-		 * <p>参数校验规则：如果 {@code watermarkImage} 为 null或文件不存在，则不设置；
-		 * 设置后将文字水印设为 null。</p>
-		 *
-		 * @param watermarkImage 水印图片文件
-		 * @return 构建器本身
-		 * @since 1.0.0
-		 */
 		@Override
-		public BuffedImageOperationBuilder watermarkImage(File watermarkImage) {
-			if (FileUtils.existFile(watermarkImage)) {
-				imageOperation.watermarkImage = watermarkImage;
-				imageOperation.watermarkText = null;
-			}
-			return this;
+		protected void onSetWatermarkImage() {
+			imageOperation.watermarkText = null;
 		}
 
 		/**
@@ -258,7 +235,7 @@ public class BufferedImageOperation extends ImageOperation {
 		 * @return 构建器本身
 		 * @since 1.0.0
 		 */
-		public BuffedImageOperationBuilder watermarkText(String watermarkText) {
+		public BufferedImageOperationBuilder watermarkText(String watermarkText) {
 			if (StringUtils.isNotBlank(watermarkText)) {
 				imageOperation.watermarkText = watermarkText;
 				imageOperation.watermarkImage = null;
@@ -275,7 +252,7 @@ public class BufferedImageOperation extends ImageOperation {
 		 * @return 构建器本身
 		 * @since 1.0.0
 		 */
-		public BuffedImageOperationBuilder watermarkTextOpacity(Float opacity) {
+		public BufferedImageOperationBuilder watermarkTextOpacity(Float opacity) {
 			if (Objects.nonNull(opacity)) {
 				imageOperation.watermarkTextOption.setOpacity(opacity);
 			}
@@ -291,7 +268,7 @@ public class BufferedImageOperation extends ImageOperation {
 		 * @return 构建器本身
 		 * @since 1.0.0
 		 */
-		public BuffedImageOperationBuilder watermarkTextFont(Font font) {
+		public BufferedImageOperationBuilder watermarkTextFont(Font font) {
 			if (Objects.nonNull(font)) {
 				imageOperation.watermarkTextOption.setFont(font);
 			}
@@ -307,7 +284,7 @@ public class BufferedImageOperation extends ImageOperation {
 		 * @return 构建器本身
 		 * @since 1.0.0
 		 */
-		public BuffedImageOperationBuilder watermarkTextFillColor(Color fillColor) {
+		public BufferedImageOperationBuilder watermarkTextFillColor(Color fillColor) {
 			if (Objects.nonNull(fillColor)) {
 				imageOperation.watermarkTextOption.setFillColor(fillColor);
 			}
@@ -323,7 +300,7 @@ public class BufferedImageOperation extends ImageOperation {
 		 * @return 构建器本身
 		 * @since 1.0.0
 		 */
-		public BuffedImageOperationBuilder watermarkTextStrokeColor(Color strokeColor) {
+		public BufferedImageOperationBuilder watermarkTextStrokeColor(Color strokeColor) {
 			if (Objects.nonNull(strokeColor)) {
 				imageOperation.watermarkTextOption.setStrokeColor(strokeColor);
 			}
@@ -339,7 +316,7 @@ public class BufferedImageOperation extends ImageOperation {
 		 * @return 构建器本身
 		 * @since 1.0.0
 		 */
-		public BuffedImageOperationBuilder watermarkTextStrokeWidth(Float strokeWidth) {
+		public BufferedImageOperationBuilder watermarkTextStrokeWidth(Float strokeWidth) {
 			if (Objects.nonNull(strokeWidth)) {
 				imageOperation.watermarkTextOption.setStrokeWidth(strokeWidth);
 			}
@@ -355,7 +332,7 @@ public class BufferedImageOperation extends ImageOperation {
 		 * @return 构建器本身
 		 * @since 1.0.0
 		 */
-		public BuffedImageOperationBuilder watermarkTextStroke(Boolean stroke) {
+		public BufferedImageOperationBuilder watermarkTextStroke(Boolean stroke) {
 			if (Objects.nonNull(stroke)) {
 				imageOperation.watermarkTextOption.setStroke(stroke);
 			}
@@ -370,7 +347,7 @@ public class BufferedImageOperation extends ImageOperation {
 		 * @return 构建器本身
 		 * @since 1.0.0
 		 */
-		public BuffedImageOperationBuilder blur() {
+		public BufferedImageOperationBuilder blur() {
 			imageOperation.blurRadius = 1.5f;
 			return this;
 		}
@@ -384,7 +361,7 @@ public class BufferedImageOperation extends ImageOperation {
 		 * @return 构建器本身
 		 * @since 1.0.0
 		 */
-		public BuffedImageOperationBuilder blur(Float radius) {
+		public BufferedImageOperationBuilder blur(Float radius) {
 			if (Objects.nonNull(radius) && radius > 1) {
 				imageOperation.blurRadius = radius;
 			}
@@ -399,7 +376,7 @@ public class BufferedImageOperation extends ImageOperation {
 		 * @return 构建器本身
 		 * @since 1.0.0
 		 */
-		public BuffedImageOperationBuilder sharpen() {
+		public BufferedImageOperationBuilder sharpen() {
 			imageOperation.sharpenAmount = 0.3f;
 			return this;
 		}
@@ -413,7 +390,7 @@ public class BufferedImageOperation extends ImageOperation {
 		 * @return 构建器本身
 		 * @since 1.0.0
 		 */
-		public BuffedImageOperationBuilder sharpen(Float amount) {
+		public BufferedImageOperationBuilder sharpen(Float amount) {
 			if (Objects.nonNull(amount) && amount != 0) {
 				imageOperation.sharpenAmount = amount;
 			}
@@ -428,7 +405,7 @@ public class BufferedImageOperation extends ImageOperation {
 		 * @return 构建器本身
 		 * @since 1.0.0
 		 */
-		public BuffedImageOperationBuilder contrast() {
+		public BufferedImageOperationBuilder contrast() {
 			imageOperation.contrastAmount = 0.3f;
 			return this;
 		}
@@ -442,7 +419,7 @@ public class BufferedImageOperation extends ImageOperation {
 		 * @return 构建器本身
 		 * @since 1.0.0
 		 */
-		public BuffedImageOperationBuilder contrast(Float amount) {
+		public BufferedImageOperationBuilder contrast(Float amount) {
 			if (Objects.nonNull(amount) && amount != 0 && amount <= 1.0 && amount >= -1.0) {
 				imageOperation.contrastAmount = amount;
 			}
@@ -458,7 +435,7 @@ public class BufferedImageOperation extends ImageOperation {
 		 * @return 构建器本身
 		 * @since 1.0.0
 		 */
-		public BuffedImageOperationBuilder brightness(Float amount) {
+		public BufferedImageOperationBuilder brightness(Float amount) {
 			if (Objects.nonNull(amount) && amount != 0 && amount <= 2.0 && amount >= -2.0) {
 				imageOperation.brightnessAmount = amount;
 			}
@@ -474,7 +451,7 @@ public class BufferedImageOperation extends ImageOperation {
 		 * @return 构建器本身
 		 * @since 1.0.0
 		 */
-		public BuffedImageOperationBuilder addFilter(ImageFilter imageFilter) {
+		public BufferedImageOperationBuilder addFilter(ImageFilter imageFilter) {
 			if (Objects.nonNull(imageFilter)) {
 				imageOperation.filters.add(imageFilter);
 			}
@@ -490,7 +467,7 @@ public class BufferedImageOperation extends ImageOperation {
 		 * @return 构建器本身
 		 * @since 1.0.0
 		 */
-		public BuffedImageOperationBuilder addFilters(Collection<ImageFilter> imageFilters) {
+		public BufferedImageOperationBuilder addFilters(Collection<ImageFilter> imageFilters) {
 			if (!CollectionUtils.isEmpty(imageFilters)) {
 				imageOperation.filters.addAll(imageFilters);
 			}
@@ -506,7 +483,7 @@ public class BufferedImageOperation extends ImageOperation {
 		 * @return 构建器本身
 		 * @since 1.0.0
 		 */
-		public BuffedImageOperationBuilder setFilters(Collection<ImageFilter> imageFilters) {
+		public BufferedImageOperationBuilder setFilters(Collection<ImageFilter> imageFilters) {
 			if (Objects.nonNull(imageFilters)) {
 				imageOperation.filters = imageFilters;
 			}

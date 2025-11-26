@@ -30,8 +30,8 @@ import java.util.Set;
  *
  * <p><b>字段</b></p>
  * <ul>
- *   <li>{@link #GRAPHICS_MAGICK_SUPPORT_WRITE_IMAGE_FORMAT_SET}：GraphicsMagick 可写出的图像格式扩展名集合。</li>
- *   <li>{@link #GRAPHICS_MAGICK_SUPPORT_READ_IMAGE_FORMAT_SET}：GraphicsMagick 可读取的图像格式扩展名集合。</li>
+ *   <li>{@link #GRAPHICS_MAGICK_SUPPORTED_WRITE_IMAGE_FORMAT_SET}：GraphicsMagick 可写出的图像格式扩展名集合。</li>
+ *   <li>{@link #GRAPHICS_MAGICK_SUPPORTED_READ_IMAGE_FORMAT_SET}：GraphicsMagick 可读取的图像格式扩展名集合。</li>
  * </ul>
  *
  * <p><b>备注</b></p>
@@ -52,7 +52,7 @@ public class ImageConstants extends io.github.pangju666.commons.image.lang.Image
 	 * <p>说明：集合元素为文件扩展名（如 {@code jpg}、{@code png}），非 MIME 类型。</p>
 	 * @since 1.0.0
 	 */
-	public static final Set<String> GRAPHICS_MAGICK_SUPPORT_WRITE_IMAGE_FORMAT_SET = Set.of(
+	public static final Set<String> GRAPHICS_MAGICK_SUPPORTED_WRITE_IMAGE_FORMAT_SET = Set.of(
 		"aai", "art", "avs", "bmp", "cmyk", "dcx", "dib", "dpx", "epdf", "epi", "eps", "eps2", "eps3", "epsf", "epsi",
 		"ept", "fax", "fits", "fpx", "gif", "gray", "graya", "html", "hrz", "jbig", "bie", "jpg", "jng",  "jp2", "jpc",
 		"jpeg", "jxl", "mat", "miff", "mono", "mng", "mpeg", "m2v", "mpc", "msl", "mtv", "mvg", "otb", "p7", "palm",
@@ -68,7 +68,7 @@ public class ImageConstants extends io.github.pangju666.commons.image.lang.Image
 	 * <p>说明：集合元素为文件扩展名（如 {@code jpg}、{@code png}），非 MIME 类型。</p>
 	 * @since 1.0.0
 	 */
-	public static final Set<String> GRAPHICS_MAGICK_SUPPORT_READ_IMAGE_FORMAT_SET = Set.of(
+	public static final Set<String> GRAPHICS_MAGICK_SUPPORTED_READ_IMAGE_FORMAT_SET = Set.of(
 		"aai", "art", "avif", "avs", "bmp", "cals", "cin", "cgm", "cmyk", "cur", "cut", "dcm", "dcx", "dib", "dpx",
 		"emf", "epdf", "epi", "eps", "epsf", "epsi", "ept", "fax", "fig", "fits", "fpx", "gif", "gray", "graya", "heif",
 		"hpgl", "html", "hrz", "ico", "jbig", "bie", "jpg", "jng",  "jp2", "jpc", "jpeg", "jxl", "man", "mat",
