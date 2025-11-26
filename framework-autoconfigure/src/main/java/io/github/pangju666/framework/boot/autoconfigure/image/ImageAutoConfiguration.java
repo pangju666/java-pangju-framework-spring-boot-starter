@@ -90,7 +90,7 @@ public class ImageAutoConfiguration {
 	@ConditionalOnMissingBean(ImageTaskExecutor.class)
 	@ConditionalOnBean({ImageTemplate.class, OnceTaskExecutor.class, AsyncTaskExecutor.class})
 	@Bean
-	public ImageTaskExecutor imageTaskExecutor(ImageTemplate<?> template, OnceTaskExecutor executor,
+	public ImageTaskExecutor imageTaskExecutor(ImageTemplate template, OnceTaskExecutor executor,
 											   BeanFactory beanFactory, ImageProperties properties) {
 		return new ImageTaskExecutor(template, executor, beanFactory.getBean(
 			properties.getAsyncTaskExecutorRef(), AsyncTaskExecutor.class));

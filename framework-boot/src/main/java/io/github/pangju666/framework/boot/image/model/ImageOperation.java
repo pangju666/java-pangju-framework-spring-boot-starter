@@ -18,16 +18,19 @@ package io.github.pangju666.framework.boot.image.model;
 
 import io.github.pangju666.commons.image.enums.WatermarkDirection;
 import io.github.pangju666.commons.image.model.ImageWatermarkOption;
+import io.github.pangju666.framework.boot.image.core.ImageTemplate;
 import io.github.pangju666.framework.boot.image.enums.CropType;
+import io.github.pangju666.framework.boot.image.enums.FlipDirection;
+import io.github.pangju666.framework.boot.image.enums.RotateDirection;
 import org.apache.commons.lang3.ObjectUtils;
+import org.springframework.lang.Nullable;
 
-import javax.annotation.Nullable;
 import java.io.File;
 import java.util.Objects;
 
 /**
- * 图像处理操作配置模型，支持裁剪、缩放及图片水印。
- * 使用构建器模式设置参数，供图像处理组件读取并执行。
+ * 图像处理操作配置模型，支持裁剪、缩放、图片水印、旋转、翻转与灰度化。
+ * 使用构建器模式设置参数，供{@link ImageTemplate}读取并执行。
  *
  * <p><strong>使用说明</strong>：通过构建器链式设置参数；不满足校验规则的参数将被忽略。</p>
  * <p><strong>互斥规则</strong>：水印方向与坐标互斥；设置其中之一会清空另一种配置。</p>
@@ -35,13 +38,21 @@ import java.util.Objects;
  * <p><strong>裁剪规则</strong>：支持中心裁剪、偏移裁剪与矩形裁剪；如果裁剪参数为空、非正数或越界，则不设置裁剪。</p>
  * <p><strong>缩放规则</strong>：{@code forceScale(width,height)} 强制缩放到指定尺寸；按比例/按宽/按高缩放为等比，并会关闭强制缩放且清空其它尺寸/比例。</p>
  * <p><strong>透明度范围</strong>：取值区间 [0,1]；水印透明度遵循该范围。</p>
+ * <p><strong>旋转/翻转</strong>：旋转角度正数表示顺时针、负数表示逆时针；翻转方向由 {@link FlipDirection} 指定。</p>
+ * <p><strong>灰度化</strong>：当开启灰度化时，输出图像为灰度模式。</p>
+ *
+ * <p><strong>子类扩展</strong>：如 {@link BufferedImageOperation} 在本模型基础上扩展文字水印、
+ * 缩放重采样滤镜以及模糊/锐化/对比度/亮度调节与自定义滤镜管线。</p>
  *
  * @author pangju666
  * @since 1.0.0
+ * @see ImageTemplate
  */
 public abstract class ImageOperation {
 	/**
-	 * 空图像操作
+	 * 空图像操作。
+	 *
+	 * <p>用途：仅进行图片格式转换时使用，不包含裁剪、缩放、图片水印、旋转、翻转、灰度等其它操作。</p>
 	 *
 	 * @since 1.0.0
 	 */
@@ -173,7 +184,61 @@ public abstract class ImageOperation {
 	 *
 	 * @since 1.0.0
 	 */
-	protected Integer cropRectHeight;
+    protected Integer cropRectHeight;
+    /**
+     * 旋转角度（单位：度）。
+     *
+     * <p>符号含义：正数顺时针，负数逆时针；当设置此值时将按照给定角度旋转。</p>
+     *
+     * @since 1.0.0
+     */
+    protected Double rotateAngle;
+    /**
+     * 翻转方向。
+     *
+     * <p>取值为水平或垂直翻转，具体见 {@link FlipDirection}。</p>
+     *
+     * @since 1.0.0
+     */
+    protected FlipDirection flipDirection;
+    /**
+     * 是否灰度化。
+     *
+     * <p>开启后输出图像为灰度模式。</p>
+     *
+     * @since 1.0.0
+     */
+    protected boolean grayscale = false;
+
+    /**
+     * 是否启用灰度化输出。
+     *
+     * @return {@code true} 表示灰度化输出
+     * @since 1.0.0
+     */
+    public boolean isGrayscale() {
+        return grayscale;
+    }
+
+    /**
+     * 获取翻转方向。
+     *
+     * @return 翻转方向，未设置则为 {@code null}
+     * @since 1.0.0
+     */
+    public @Nullable FlipDirection getFlipDirection() {
+        return flipDirection;
+    }
+
+    /**
+     * 获取旋转角度（度）。
+     *
+     * @return 角度值，正数顺时针、负数逆时针；未设置则为 {@code null}
+     * @since 1.0.0
+     */
+    public @Nullable Double getRotateAngle() {
+        return rotateAngle;
+    }
 
 	/**
 	 * 获取裁剪类型。
@@ -694,6 +759,81 @@ public abstract class ImageOperation {
 			}
 			return self();
 		}
+
+        /**
+         * 按固定方向旋转。
+         *
+         * <p>参数校验规则：如果 {@code direction} 为 null，则不设置。</p>
+         *
+         * @param direction 旋转方向枚举（包含角度值）
+         * @return 构建器本身
+         * @since 1.0.0
+         */
+        public T rotate(RotateDirection direction) {
+            if (Objects.nonNull(direction)) {
+                imageOperation.rotateAngle = direction.getAngle();
+            }
+            return self();
+        }
+
+        /**
+         * 按给定角度旋转。
+         *
+         * <p>参数校验规则：如果 {@code angle} 为 null，则不设置；正数表示顺时针，负数表示逆时针。</p>
+         *
+         * @param angle 旋转角度（度）
+         * @return 构建器本身
+         * @since 1.0.0
+         */
+        public T rotate(Double angle) {
+            if (Objects.nonNull(angle)) {
+                imageOperation.rotateAngle = angle;
+            }
+            return self();
+        }
+
+        /**
+         * 按方向进行翻转。
+         *
+         * <p>参数校验规则：如果 {@code direction} 为 null，则不设置。</p>
+         *
+         * @param direction 翻转方向（水平/垂直）
+         * @return 构建器本身
+         * @since 1.0.0
+         */
+        public T flip(FlipDirection direction) {
+            if (Objects.nonNull(direction)) {
+                imageOperation.flipDirection = direction;
+            }
+            return self();
+        }
+
+        /**
+         * 启用灰度化输出。
+         *
+         * @return 构建器本身
+         * @since 1.0.0
+         */
+        public T grayscale() {
+            imageOperation.grayscale = true;
+            return self();
+        }
+
+        /**
+         * 设置是否启用灰度化输出。
+         *
+         * <p>参数校验规则：如果 {@code grayscale} 为 null，则不设置。</p>
+         *
+         * @param grayscale 是否灰度化
+         * @return 构建器本身
+         * @since 1.0.0
+         */
+        public T grayscale(Boolean grayscale) {
+            if (Objects.nonNull(grayscale)) {
+                imageOperation.grayscale = grayscale;
+            }
+            return self();
+        }
 
 		/**
 		 * 构建并返回 {@link ImageOperation} 对象。

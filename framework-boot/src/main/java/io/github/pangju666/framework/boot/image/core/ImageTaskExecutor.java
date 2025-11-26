@@ -67,7 +67,7 @@ public class ImageTaskExecutor {
 	 *
 	 * @since 1.0.0
 	 */
-	protected final ImageTemplate<?> template;
+	protected final ImageTemplate template;
 	/**
 	 * 单次任务执行器。
 	 * <p>按任务键保证同一键在同一时间仅执行一次，并提供超时控制。</p>
@@ -91,7 +91,7 @@ public class ImageTaskExecutor {
 	 * @param asyncTaskExecutor 异步任务执行器
 	 * @since 1.0.0
 	 */
-	public ImageTaskExecutor(ImageTemplate<?> template, OnceTaskExecutor executor, AsyncTaskExecutor asyncTaskExecutor) {
+	public ImageTaskExecutor(ImageTemplate template, OnceTaskExecutor executor, AsyncTaskExecutor asyncTaskExecutor) {
 		this.template = template;
 		this.executor = executor;
 		this.asyncTaskExecutor = asyncTaskExecutor;
