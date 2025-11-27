@@ -681,17 +681,17 @@ public abstract class ImageOperation {
 		}
 
 		/**
-		 * 设置图片水印的缩放比例。
+		 * 设置图片水印的缩放比例（相对原图尺寸）。
 		 *
 		 * <p>参数校验规则：如果 {@code ratio} 为 null 或者 &le; 0，则不设置。</p>
 		 *
-		 * @param ratio 缩放比例
+		 * @param relativeScale 相对缩放比例
 		 * @return 构建器本身
 		 * @since 1.0.0
 		 */
-		public T watermarkImageScale(Float ratio) {
-			if (Objects.nonNull(ratio)) {
-				this.imageOperation.watermarkImageOption.setScale(ratio);
+		public T watermarkImageRelativeScale(Float relativeScale) {
+			if (Objects.nonNull(relativeScale)) {
+				this.imageOperation.watermarkImageOption.setRelativeScale(relativeScale);
 			}
 			return self();
 		}

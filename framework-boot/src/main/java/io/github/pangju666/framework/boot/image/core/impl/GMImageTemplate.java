@@ -48,13 +48,14 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * 基于 GraphicsMagick 的图像处理实现。
+ * 基于 <a href="http://www.graphicsmagick.org/index.html">GraphicsMagick</a> 的图像处理实现。
+ *
+ * <p>GraphicsMagick 版本需要 &ge; 1.30</p>
  *
  * <p><b>概述</b></p>
  * <ul>
  *   <li>使用 {@link Tika} 进行图像类型解析。</li>
  *   <li>使用 GM 命令（identify/convert/composite）进行信息读取与图像处理。</li>
- *   <li>读取尺寸与 EXIF 方向并封装为 {@link ImageFile}。</li>
  * </ul>
  *
  * <p><b>约束</b></p>
@@ -63,14 +64,94 @@ import java.util.Objects;
  *   <li>线程安全：调用方与连接池共同确保资源正确使用。</li>
  *   <li>裁剪限制：绘制“图片水印”路径下不支持裁剪（在执行顺序中说明）。</li>
  *   <li>双阶段执行：当图片水印与下列操作并存时采用 {@code convert + composite} 两次命令：裁剪、翻转、EXIF 非正常方向、模糊。</li>
- *   <li>路径限制：GM 输入/输出文件路径不支持中文或非 ASCII 字符，建议使用纯英文路径，否则可能导致命令执行失败。</li>
+ *   <li>路径限制：GM 输入/输出文件路径不支持中文或非 ASCII 字符，需要使用纯英文路径，否则可能导致命令执行失败。</li>
  *   <li>异常策略：GM 命令或通信错误统一抛出 {@link ImageOperationException}。</li>
  * </ul>
  *
  * <p><b>执行顺序（本实现）</b></p>
- * <ul>
- *   <li>计算目标尺寸 →（根据场景选择 convert/composite）→ 方向矫正 → 裁剪/缩放/旋转/翻转/灰度化/锐化/模糊 → 水印（文字/图片）→ 去除元数据 → 设置质量 → 输出。</li>
- * </ul>
+ * <p>整体处理逻辑根据是否包含图片水印以及是否存在复杂变换（如裁剪、旋转、EXIF 矫正等），
+ * 动态选择使用 {@code convert}、{@code composite} 或两者组合的方式执行。</p>
+ *
+ * <h2>主流程</h2>
+ * <ol>
+ *   <li><b>计算目标尺寸</b>：基于原始图像尺寸与用户指定的缩放/裁剪策略，确定输出图像的目标宽高。</li>
+ *   <li><b>判断是否需要添加图像水印</b>：
+ *     <ul>
+ *       <li>若 <b>不需要</b> 图像水印，则直接执行 {@code convert} 命令完成全部处理。</li>
+ *     <li>若 <b>需要</b> 图像水印，则进入下一步判断。</li>
+ *     </ul>
+ *   </li>
+ *   <li><b>判断是否存在高级图像操作</b>（满足任一即视为“存在”）：
+ *     <ul>
+ *       <li>裁剪（Crop）</li>
+ *       <li>旋转（非 0°）</li>
+ *       <li>EXIF 方向非正常（Orientation ≠ 1）</li>
+ *       <li>模糊（Blur）</li>
+ *     </ul>
+ *     <ul>
+ *       <li>若 <b>不存在</b> 上述操作，则直接使用 {@code composite} 命令叠加图片水印并输出。</li>
+ *       <li>若 <b>存在</b> 上述任一操作，则需分两阶段处理（见下文）。</li>
+ *     </ul>
+ *   </li>
+ *   <li><b>两阶段处理（{@code convert} + {@code composite}）</b>：
+ *     <ol>
+ *       <li>先通过 {@code convert} 命令完成所有基础图像变换，并输出至临时文件；</li>
+ *       <li>再通过 {@code composite} 命令将图片水印叠加到临时文件上；</li>
+ *       <li>最终输出结果文件，并清理临时文件。</li>
+ *     </ol>
+ *   </li>
+ * </ol>
+ *
+ * <h2>{@code convert} 命令操作执行顺序</h2>
+ * <p>当仅使用 {@code convert}（无图片水印或无需复合处理）时，操作按以下顺序执行：</p>
+ * <ol>
+ *   <li>依据 EXIF Orientation 矫正图像方向；</li>
+ *   <li>设置重采样滤镜类型（Resample Filter）；</li>
+ *   <li>执行裁剪（Crop）；</li>
+ *   <li>执行缩放（Resize）；</li>
+ *   <li>执行旋转（Rotate）；</li>
+ *   <li>执行翻转（Flip / Flop，垂直或水平）；</li>
+ *   <li>灰度化（Grayscale）；</li>
+ *   <li>图像增强（按顺序）：
+ *     <ol type="a">
+ *       <li>锐化（Sharpen）</li>
+ *       <li>模糊（Blur）</li>
+ *     </ol>
+ *   </li>
+ *   <li>添加文字水印（按指定方向或坐标放置）；</li>
+ *   <li>设置输出图像质量（Quality）；</li>
+ *   <li>设置输出 DPI；</li>
+ *   <li>根据配置决定是否剥离元数据（Strip Metadata）；</li>
+ *   <li>输出到目标文件。</li>
+ * </ol>
+ *
+ * <h2>{@code composite} 命令操作执行顺序</h2>
+ * <p>当仅需叠加图片水印且无复杂变换时，使用 {@code composite} 命令，操作顺序如下：</p>
+ * <ol>
+ *   <li>添加图片水印（按指定方向或坐标放置）；</li>
+ *   <li>设置重采样滤镜类型；</li>
+ *   <li>执行缩放；</li>
+ *   <li>执行旋转；</li>
+ *   <li>灰度化；</li>
+ *   <li>锐化；</li>
+ *   <li>设置输出图像质量；</li>
+ *   <li>设置输出 DPI；</li>
+ *   <li>根据配置决定是否剥离元数据；</li>
+ *   <li>输出到目标文件。</li>
+ * </ol>
+ *
+ * <h2>{@code convert} + {@code composite} 联合操作流程</h2>
+ * <p>当同时存在图片水印与复杂图像操作时，采用两阶段处理：</p>
+ * <ol>
+ *   <li>执行完整的 {@code convert} 操作流程（见上文），输出至临时文件；</li>
+ *   <li>将临时文件作为输入，执行 {@code composite} 操作，仅保留以下步骤：
+ *     <ol>
+ *       <li>添加图片水印（按方向或坐标放置）；</li>
+ *       <li>输出到最终目标文件。</li>
+ *     </ol>
+ *   </li>
+ *   <li>删除临时文件。</li>
+ * </ol>
  *
  * <p><b>格式支持</b></p>
  * <ul>
@@ -85,12 +166,10 @@ import java.util.Objects;
  * </ul>
  *
  * @author pangju666
- * @since 1.0.0
  * @see GMImageOperation
+ * @since 1.0.0
  */
 public class GMImageTemplate implements ImageTemplate {
-
-
 	/**
 	 * 日志记录器。
 	 *
@@ -138,7 +217,7 @@ public class GMImageTemplate implements ImageTemplate {
 	 */
 	@Override
 	public ImageFile read(File file) throws IOException {
-		ImageFile imageFile = new ImageFile(file);
+		ImageFile imageFile = ImageFile.fromFile(file);
 		if (!ImageConstants.GRAPHICS_MAGICK_SUPPORTED_READ_IMAGE_FORMAT_SET.contains(imageFile.getFormat())) {
 			throw new UnSupportedTypeException("不支持读取 " + imageFile.getFormat() + " 格式图片");
 		}
@@ -172,6 +251,7 @@ public class GMImageTemplate implements ImageTemplate {
 			}
 		}
 
+		// 返回经 EXIF Orientation 矫正后的显示尺寸（视觉尺寸）
 		if (imageFile.getOrientation() >= 5 && imageFile.getOrientation() <= 8) {
 			imageFile.setImageSize(new ImageSize(imageFile.getImageSize().getHeight(), imageFile.getImageSize().getWidth()));
 		}
@@ -180,6 +260,91 @@ public class GMImageTemplate implements ImageTemplate {
 
 	/**
 	 * 执行图像操作（输入文件形式）。
+	 *
+	 * <p><b>执行顺序（本实现）</b></p>
+	 * <p>整体处理逻辑根据是否包含图片水印以及是否存在复杂变换（如裁剪、旋转、EXIF 矫正等），
+	 * 动态选择使用 {@code convert}、{@code composite} 或两者组合的方式执行。</p>
+	 *
+	 * <h2>主流程</h2>
+	 * <ol>
+	 *   <li><b>计算目标尺寸</b>：基于原始图像尺寸与用户指定的缩放/裁剪策略，确定输出图像的目标宽高。</li>
+	 *   <li><b>判断是否需要添加图像水印</b>：
+	 *     <ul>
+	 *       <li>若 <b>不需要</b> 图像水印，则直接执行 {@code convert} 命令完成全部处理。</li>
+	 *     <li>若 <b>需要</b> 图像水印，则进入下一步判断。</li>
+	 *     </ul>
+	 *   </li>
+	 *   <li><b>判断是否存在高级图像操作</b>（满足任一即视为“存在”）：
+	 *     <ul>
+	 *       <li>裁剪（Crop）</li>
+	 *       <li>旋转（非 0°）</li>
+	 *       <li>EXIF 方向非正常（Orientation ≠ 1）</li>
+	 *       <li>模糊（Blur）</li>
+	 *     </ul>
+	 *     <ul>
+	 *       <li>若 <b>不存在</b> 上述操作，则直接使用 {@code composite} 命令叠加图片水印并输出。</li>
+	 *       <li>若 <b>存在</b> 上述任一操作，则需分两阶段处理（见下文）。</li>
+	 *     </ul>
+	 *   </li>
+	 *   <li><b>两阶段处理（{@code convert} + {@code composite}）</b>：
+	 *     <ol>
+	 *       <li>先通过 {@code convert} 命令完成所有基础图像变换，并输出至临时文件；</li>
+	 *       <li>再通过 {@code composite} 命令将图片水印叠加到临时文件上；</li>
+	 *       <li>最终输出结果文件，并清理临时文件。</li>
+	 *     </ol>
+	 *   </li>
+	 * </ol>
+	 *
+	 * <h2>{@code convert} 命令操作执行顺序</h2>
+	 * <p>当仅使用 {@code convert}（无图片水印或无需复合处理）时，操作按以下顺序执行：</p>
+	 * <ol>
+	 *   <li>依据 EXIF Orientation 矫正图像方向；</li>
+	 *   <li>设置重采样滤镜类型（Resample Filter）；</li>
+	 *   <li>执行裁剪（Crop）；</li>
+	 *   <li>执行缩放（Resize）；</li>
+	 *   <li>执行旋转（Rotate）；</li>
+	 *   <li>执行翻转（Flip / Flop，垂直或水平）；</li>
+	 *   <li>灰度化（Grayscale）；</li>
+	 *   <li>图像增强（按顺序）：
+	 *     <ol type="a">
+	 *       <li>锐化（Sharpen）</li>
+	 *       <li>模糊（Blur）</li>
+	 *     </ol>
+	 *   </li>
+	 *   <li>添加文字水印（按指定方向或坐标放置）；</li>
+	 *   <li>设置输出图像质量（Quality）；</li>
+	 *   <li>设置输出 DPI；</li>
+	 *   <li>根据配置决定是否剥离元数据（Strip Metadata）；</li>
+	 *   <li>输出到目标文件。</li>
+	 * </ol>
+	 *
+	 * <h2>{@code composite} 命令操作执行顺序</h2>
+	 * <p>当仅需叠加图片水印且无复杂变换时，使用 {@code composite} 命令，操作顺序如下：</p>
+	 * <ol>
+	 *   <li>添加图片水印（按指定方向或坐标放置）；</li>
+	 *   <li>设置重采样滤镜类型；</li>
+	 *   <li>执行缩放；</li>
+	 *   <li>执行旋转；</li>
+	 *   <li>灰度化；</li>
+	 *   <li>锐化；</li>
+	 *   <li>设置输出图像质量；</li>
+	 *   <li>设置输出 DPI；</li>
+	 *   <li>根据配置决定是否剥离元数据；</li>
+	 *   <li>输出到目标文件。</li>
+	 * </ol>
+	 *
+	 * <h2>{@code convert} + {@code composite} 联合操作流程</h2>
+	 * <p>当同时存在图片水印与复杂图像操作时，采用两阶段处理：</p>
+	 * <ol>
+	 *   <li>执行完整的 {@code convert} 操作流程（见上文），输出至临时文件；</li>
+	 *   <li>将临时文件作为输入，执行 {@code composite} 操作，仅保留以下步骤：
+	 *     <ol>
+	 *       <li>添加图片水印（按方向或坐标放置）；</li>
+	 *       <li>输出到最终目标文件。</li>
+	 *     </ol>
+	 *   </li>
+	 *   <li>删除临时文件。</li>
+	 * </ol>
 	 *
 	 * @param inputFile  输入文件
 	 * @param outputFile 输出文件
@@ -201,6 +366,91 @@ public class GMImageTemplate implements ImageTemplate {
 	/**
 	 * 执行图像操作（已解析信息形式）。
 	 *
+	 * <p><b>执行顺序（本实现）</b></p>
+	 * <p>整体处理逻辑根据是否包含图片水印以及是否存在复杂变换（如裁剪、旋转、EXIF 矫正等），
+	 * 动态选择使用 {@code convert}、{@code composite} 或两者组合的方式执行。</p>
+	 *
+	 * <h2>主流程</h2>
+	 * <ol>
+	 *   <li><b>计算目标尺寸</b>：基于原始图像尺寸与用户指定的缩放/裁剪策略，确定输出图像的目标宽高。</li>
+	 *   <li><b>判断是否需要添加图像水印</b>：
+	 *     <ul>
+	 *       <li>若 <b>不需要</b> 图像水印，则直接执行 {@code convert} 命令完成全部处理。</li>
+	 *     <li>若 <b>需要</b> 图像水印，则进入下一步判断。</li>
+	 *     </ul>
+	 *   </li>
+	 *   <li><b>判断是否存在高级图像操作</b>（满足任一即视为“存在”）：
+	 *     <ul>
+	 *       <li>裁剪（Crop）</li>
+	 *       <li>旋转（非 0°）</li>
+	 *       <li>EXIF 方向非正常（Orientation ≠ 1）</li>
+	 *       <li>模糊（Blur）</li>
+	 *     </ul>
+	 *     <ul>
+	 *       <li>若 <b>不存在</b> 上述操作，则直接使用 {@code composite} 命令叠加图片水印并输出。</li>
+	 *       <li>若 <b>存在</b> 上述任一操作，则需分两阶段处理（见下文）。</li>
+	 *     </ul>
+	 *   </li>
+	 *   <li><b>两阶段处理（{@code convert} + {@code composite}）</b>：
+	 *     <ol>
+	 *       <li>先通过 {@code convert} 命令完成所有基础图像变换，并输出至临时文件；</li>
+	 *       <li>再通过 {@code composite} 命令将图片水印叠加到临时文件上；</li>
+	 *       <li>最终输出结果文件，并清理临时文件。</li>
+	 *     </ol>
+	 *   </li>
+	 * </ol>
+	 *
+	 * <h2>{@code convert} 命令操作执行顺序</h2>
+	 * <p>当仅使用 {@code convert}（无图片水印或无需复合处理）时，操作按以下顺序执行：</p>
+	 * <ol>
+	 *   <li>依据 EXIF Orientation 矫正图像方向；</li>
+	 *   <li>设置重采样滤镜类型（Resample Filter）；</li>
+	 *   <li>执行裁剪（Crop）；</li>
+	 *   <li>执行缩放（Resize）；</li>
+	 *   <li>执行旋转（Rotate）；</li>
+	 *   <li>执行翻转（Flip / Flop，垂直或水平）；</li>
+	 *   <li>灰度化（Grayscale）；</li>
+	 *   <li>图像增强（按顺序）：
+	 *     <ol type="a">
+	 *       <li>锐化（Sharpen）</li>
+	 *       <li>模糊（Blur）</li>
+	 *     </ol>
+	 *   </li>
+	 *   <li>添加文字水印（按指定方向或坐标放置）；</li>
+	 *   <li>设置输出图像质量（Quality）；</li>
+	 *   <li>设置输出 DPI；</li>
+	 *   <li>根据配置决定是否剥离元数据（Strip Metadata）；</li>
+	 *   <li>输出到目标文件。</li>
+	 * </ol>
+	 *
+	 * <h2>{@code composite} 命令操作执行顺序</h2>
+	 * <p>当仅需叠加图片水印且无复杂变换时，使用 {@code composite} 命令，操作顺序如下：</p>
+	 * <ol>
+	 *   <li>添加图片水印（按指定方向或坐标放置）；</li>
+	 *   <li>设置重采样滤镜类型；</li>
+	 *   <li>执行缩放；</li>
+	 *   <li>执行旋转；</li>
+	 *   <li>灰度化；</li>
+	 *   <li>锐化；</li>
+	 *   <li>设置输出图像质量；</li>
+	 *   <li>设置输出 DPI；</li>
+	 *   <li>根据配置决定是否剥离元数据；</li>
+	 *   <li>输出到目标文件。</li>
+	 * </ol>
+	 *
+	 * <h2>{@code convert} + {@code composite} 联合操作流程</h2>
+	 * <p>当同时存在图片水印与复杂图像操作时，采用两阶段处理：</p>
+	 * <ol>
+	 *   <li>执行完整的 {@code convert} 操作流程（见上文），输出至临时文件；</li>
+	 *   <li>将临时文件作为输入，执行 {@code composite} 操作，仅保留以下步骤：
+	 *     <ol>
+	 *       <li>添加图片水印（按方向或坐标放置）；</li>
+	 *       <li>输出到最终目标文件。</li>
+	 *     </ol>
+	 *   </li>
+	 *   <li>删除临时文件。</li>
+	 * </ol>
+	 *
 	 * @param imageFile  已解析的图像信息
 	 * @param outputFile 输出文件
 	 * @param operation  操作配置，可为 {@code null}
@@ -212,11 +462,10 @@ public class GMImageTemplate implements ImageTemplate {
 	@Override
 	public void process(ImageFile imageFile, File outputFile, ImageOperation operation) throws IOException {
 		Assert.notNull(imageFile, "imageFile 不可为 null");
-		FileUtils.checkFile(imageFile.getFile(), "imageFile 未设置 file 属性");
 		checkOutputFile(outputFile);
 
 		String format = StringUtils.defaultIfBlank(imageFile.getFormat(),
-			FilenameUtils.getExtension(imageFile.getFile().getName()));
+			FilenameUtils.getExtension(imageFile.getFile().getName()).toUpperCase());
 		if (!ImageConstants.GRAPHICS_MAGICK_SUPPORTED_READ_IMAGE_FORMAT_SET.contains(format)) {
 			throw new UnSupportedTypeException("不支持读取 " + format + " 格式图片");
 		}
@@ -240,7 +489,7 @@ public class GMImageTemplate implements ImageTemplate {
 	public boolean canRead(File file) throws IOException {
 		FileUtils.check(file, "file 不可为 null");
 
-		String fileFormat = FilenameUtils.getExtension(file.getName());
+		String fileFormat = FilenameUtils.getExtension(file.getName()).toUpperCase();
 		return ImageConstants.GRAPHICS_MAGICK_SUPPORTED_READ_IMAGE_FORMAT_SET.contains(fileFormat);
 	}
 
@@ -253,7 +502,7 @@ public class GMImageTemplate implements ImageTemplate {
 	@Override
 	public boolean canWrite(String format) {
 		Assert.hasText(format, "format 不可为空");
-		return ImageConstants.GRAPHICS_MAGICK_SUPPORTED_WRITE_IMAGE_FORMAT_SET.contains(format);
+		return ImageConstants.GRAPHICS_MAGICK_SUPPORTED_WRITE_IMAGE_FORMAT_SET.contains(format.toUpperCase());
 	}
 
 	/**
@@ -363,23 +612,99 @@ public class GMImageTemplate implements ImageTemplate {
 		}
 	}
 
- /**
-  * 执行具体处理逻辑。
-  *
-  * <p><b>流程</b>：计算目标尺寸 -> 分支：</p>
-  * <p>· 双阶段条件：存在裁剪/翻转/EXIF 非正常方向/模糊之一 -> 走 {@code convert + composite} 双阶段；否则 -> 直接 {@code composite} 单阶段。</p>
-  * <p>· 无图片水印：convert 路径 -> 方向矫正 -> 输入文件 -> 可选重采样滤镜 -> 可选裁剪 -> 可选统一缩放（! 强制） ->
-  * 可选旋转 -> 可选翻转（垂直/水平） -> 可选灰度化 -> 可选锐化/模糊 -> 可选文字水印（方向或坐标） -> 输出参数（质量/DPI/剥离） -> 执行。</p>
-  * <p>· 有图片水印：
-  * ① 直接 composite（条件：无裁剪/翻转，EXIF 正常方向，未设置模糊）-> 合成命令 -> 可选重采样滤镜 -> 可选统一缩放（! 强制） ->
-  * 可选旋转 -> 可选灰度化 -> 可选锐化 -> 输出参数（质量/DPI/剥离） -> 追加输出文件 -> 执行；
-  * ② convert + composite（否则）-> 先 convert 到临时文件 -> 再 composite 添加图片水印 -> 清理临时文件。</p>
+	/**
+	 * 执行具体处理逻辑。
+	 *
+	 * <p><b>执行顺序（本实现）</b></p>
+	 * <p>整体处理逻辑根据是否包含图片水印以及是否存在复杂变换（如裁剪、旋转、EXIF 矫正等），
+	 * 动态选择使用 {@code convert}、{@code composite} 或两者组合的方式执行。</p>
+	 *
+	 * <h2>主流程</h2>
+	 * <ol>
+	 *   <li><b>计算目标尺寸</b>：基于原始图像尺寸与用户指定的缩放/裁剪策略，确定输出图像的目标宽高。</li>
+	 *   <li><b>判断是否需要添加图像水印</b>：
+	 *     <ul>
+	 *       <li>若 <b>不需要</b> 图像水印，则直接执行 {@code convert} 命令完成全部处理。</li>
+	 *     <li>若 <b>需要</b> 图像水印，则进入下一步判断。</li>
+	 *     </ul>
+	 *   </li>
+	 *   <li><b>判断是否存在高级图像操作</b>（满足任一即视为“存在”）：
+	 *     <ul>
+	 *       <li>裁剪（Crop）</li>
+	 *       <li>旋转（非 0°）</li>
+	 *       <li>EXIF 方向非正常（Orientation ≠ 1）</li>
+	 *       <li>模糊（Blur）</li>
+	 *     </ul>
+	 *     <ul>
+	 *       <li>若 <b>不存在</b> 上述操作，则直接使用 {@code composite} 命令叠加图片水印并输出。</li>
+	 *       <li>若 <b>存在</b> 上述任一操作，则需分两阶段处理（见下文）。</li>
+	 *     </ul>
+	 *   </li>
+	 *   <li><b>两阶段处理（{@code convert} + {@code composite}）</b>：
+	 *     <ol>
+	 *       <li>先通过 {@code convert} 命令完成所有基础图像变换，并输出至临时文件；</li>
+	 *       <li>再通过 {@code composite} 命令将图片水印叠加到临时文件上；</li>
+	 *       <li>最终输出结果文件，并清理临时文件。</li>
+	 *     </ol>
+	 *   </li>
+	 * </ol>
+	 *
+	 * <h2>{@code convert} 命令操作执行顺序</h2>
+	 * <p>当仅使用 {@code convert}（无图片水印或无需复合处理）时，操作按以下顺序执行：</p>
+	 * <ol>
+	 *   <li>依据 EXIF Orientation 矫正图像方向；</li>
+	 *   <li>设置重采样滤镜类型（Resample Filter）；</li>
+	 *   <li>执行裁剪（Crop）；</li>
+	 *   <li>执行缩放（Resize）；</li>
+	 *   <li>执行旋转（Rotate）；</li>
+	 *   <li>执行翻转（Flip / Flop，垂直或水平）；</li>
+	 *   <li>灰度化（Grayscale）；</li>
+	 *   <li>图像增强（按顺序）：
+	 *     <ol type="a">
+	 *       <li>锐化（Sharpen）</li>
+	 *       <li>模糊（Blur）</li>
+	 *     </ol>
+	 *   </li>
+	 *   <li>添加文字水印（按指定方向或坐标放置）；</li>
+	 *   <li>设置输出图像质量（Quality）；</li>
+	 *   <li>设置输出 DPI；</li>
+	 *   <li>根据配置决定是否剥离元数据（Strip Metadata）；</li>
+	 *   <li>输出到目标文件。</li>
+	 * </ol>
+	 *
+	 * <h2>{@code composite} 命令操作执行顺序</h2>
+	 * <p>当仅需叠加图片水印且无复杂变换时，使用 {@code composite} 命令，操作顺序如下：</p>
+	 * <ol>
+	 *   <li>添加图片水印（按指定方向或坐标放置）；</li>
+	 *   <li>设置重采样滤镜类型；</li>
+	 *   <li>执行缩放；</li>
+	 *   <li>执行旋转；</li>
+	 *   <li>灰度化；</li>
+	 *   <li>锐化；</li>
+	 *   <li>设置输出图像质量；</li>
+	 *   <li>设置输出 DPI；</li>
+	 *   <li>根据配置决定是否剥离元数据；</li>
+	 *   <li>输出到目标文件。</li>
+	 * </ol>
+	 *
+	 * <h2>{@code convert} + {@code composite} 联合操作流程</h2>
+	 * <p>当同时存在图片水印与复杂图像操作时，采用两阶段处理：</p>
+	 * <ol>
+	 *   <li>执行完整的 {@code convert} 操作流程（见上文），输出至临时文件；</li>
+	 *   <li>将临时文件作为输入，执行 {@code composite} 操作，仅保留以下步骤：
+	 *     <ol>
+	 *       <li>添加图片水印（按方向或坐标放置）；</li>
+	 *       <li>输出到最终目标文件。</li>
+	 *     </ol>
+	 *   </li>
+	 *   <li>删除临时文件。</li>
+	 * </ol>
 	 *
 	 * @param imageFile  图像信息
 	 * @param outputFile 输出文件
 	 * @param operation  操作配置
 	 * @throws ImageOperationException GM命令执行失败或与GM进程通信错误时抛出
-	 * @throws IOException 输出文件父级目录创建失败时抛出
+	 * @throws IOException             输出文件父级目录创建失败时抛出
 	 * @since 1.0.0
 	 */
 	protected void doProcess(ImageFile imageFile, File outputFile, ImageOperation operation) throws IOException {
@@ -405,8 +730,7 @@ public class GMImageTemplate implements ImageTemplate {
 
 		// 如果不需要添加图片水印，则直接执行convert命令
 		if (Objects.isNull(operation.getWatermarkImage())) {
-			executeConvert(imageFile.getFile(), imageFile.getOrientation(), imageSize, outputFile, operation,
-				gmImageOperation);
+			executeConvert(imageFile.getFile(), imageSize, outputFile, operation, gmImageOperation);
 		} else {
 			// 不需要裁剪、翻转、矫正方向和模糊时可以直接执行composite命令完成操作
 			if (ObjectUtils.allNull(operation.getCropType(), operation.getFlipDirection()) &&
@@ -416,8 +740,7 @@ public class GMImageTemplate implements ImageTemplate {
 			} else {
 				File tmpOuputFile = new File(FileUtils.getTempDirectory(), outputFile.getName());
 				// 先执行convert命令
-				executeConvert(imageFile.getFile(), imageFile.getOrientation(), imageSize,
-					tmpOuputFile, operation, gmImageOperation);
+				executeConvert(imageFile.getFile(), imageSize, tmpOuputFile, operation, gmImageOperation);
 
 				// 再执行composite命令添加图片水印
 				GMOperation watermarkGMOperation = createCompositeGMOperation(imageSize, operation);
@@ -437,19 +760,19 @@ public class GMImageTemplate implements ImageTemplate {
 		}
 	}
 
- /**
-  * 执行图片水印合成（composite）。
-  *
-  * <p><b>流程</b>：创建合成命令 -> 可选设置重采样滤镜 -> 统一缩放到输入尺寸
-  * -> 旋转 -> 灰度化 -> 锐化 -> 写入输出参数（质量/DPI/元数据剥离）
-  * -> 追加输出文件 -> 执行命令。</p>
-  * <p><b>适用场景</b>：使用图片作为水印进行叠加；适用于单次 {@code composite} 路径。</p>
-  * <p><b>双阶段说明</b>：当与裁剪/翻转/EXIF 非正常方向/模糊并存时，不直接使用本方法完成全部处理，应先执行 {@code convert} 再执行 {@code composite}。</p>
-  *
-  * @param inputFile        输入文件
-  * @param imageSize        输入图像尺寸
-  * @param outputFile       输出文件
-  * @param operation        基础操作配置
+	/**
+	 * 执行图片水印合成（composite）。
+	 *
+	 * <p><b>流程</b>：创建合成命令 -> 可选设置重采样滤镜 -> 统一缩放到输入尺寸
+	 * -> 旋转 -> 灰度化 -> 锐化 -> 写入输出参数（质量/DPI/元数据剥离）
+	 * -> 追加输出文件 -> 执行命令。</p>
+	 * <p><b>适用场景</b>：使用图片作为水印进行叠加；适用于单次 {@code composite} 路径。</p>
+	 * <p><b>双阶段说明</b>：当与裁剪/翻转/EXIF 非正常方向/模糊并存时，不直接使用本方法完成全部处理，应先执行 {@code convert} 再执行 {@code composite}。</p>
+	 *
+	 * @param inputFile        输入文件
+	 * @param imageSize        输入图像尺寸
+	 * @param outputFile       输出文件
+	 * @param operation        基础操作配置
 	 * @param gmImageOperation GM 扩展配置（滤镜/灰度/锐化/质量/DPI/剥离等）
 	 * @throws IOException 输出文件父级目录创建失败时抛出
 	 */
@@ -501,21 +824,20 @@ public class GMImageTemplate implements ImageTemplate {
 	 * -> 写入输出参数（质量/DPI/元数据剥离）-> 执行命令。</p>
 	 *
 	 * @param inputFile        输入文件
-	 * @param orientation      EXIF 方向
 	 * @param imageSize        输入图像尺寸
 	 * @param outputFile       输出文件
 	 * @param operation        基础操作配置（裁剪/缩放/旋转/翻转/水印等）
 	 * @param gmImageOperation GM 扩展配置（滤镜/灰度/锐化/模糊/质量/DPI/剥离等）
 	 * @throws IOException 输出文件父级目录创建失败时抛出
 	 */
-	protected void executeConvert(File inputFile, int orientation, ImageSize imageSize, File outputFile,
+	protected void executeConvert(File inputFile, ImageSize imageSize, File outputFile,
 								  ImageOperation operation, GMImageOperation gmImageOperation) throws IOException {
 		GMOperation gmOperation = new GMOperation();
 		gmOperation.addRawArg("convert");
-		// 方向矫正
-		setCorrectOrientationArgs(orientation, gmOperation);
 		// 传入输入文件
 		gmOperation.addImage(inputFile);
+		// 方向矫正
+		gmOperation.addRawArg("-auto-orient");
 
 		// 判断是否需要修改重采样过滤器
 		if (Objects.nonNull(gmImageOperation) && Objects.nonNull(gmImageOperation.getResizeFilter())) {
@@ -565,12 +887,12 @@ public class GMImageTemplate implements ImageTemplate {
 			gmImageOperation.getWatermarkTextFontName(), gmImageOperation.getWatermarkText())) {
 			if (Objects.nonNull(operation.getWatermarkDirection())) {
 				setGravityArg(operation, gmOperation);
-				setTextWatermarkArgs(gmImageOperation, gmOperation);
+				setTextWatermarkArgs(imageSize, gmImageOperation, gmOperation);
 				gmOperation.draw(String.format(DRAW_TEXT_ARG_FORMAT, 20, 20, gmImageOperation.getWatermarkText()));
 			} else if (ObjectUtils.allNotNull(operation.getWatermarkX(), operation.getWatermarkY())) {
 				// 设置左上角为原点
 				gmOperation.gravity(GMOperation.Gravity.NorthWest);
-				setTextWatermarkArgs(gmImageOperation, gmOperation);
+				setTextWatermarkArgs(imageSize, gmImageOperation, gmOperation);
 				gmOperation.draw(String.format(DRAW_TEXT_ARG_FORMAT, operation.getWatermarkX(),
 					operation.getWatermarkY(), gmImageOperation.getWatermarkText()));
 			}
@@ -627,7 +949,7 @@ public class GMImageTemplate implements ImageTemplate {
 	 */
 	protected void checkOutputFile(File outputFile) {
 		FileUtils.checkFileIfExist(outputFile, "outputImageFile 不可为 null");
-		String outputImageFormat = FilenameUtils.getExtension(outputFile.getName());
+		String outputImageFormat = FilenameUtils.getExtension(outputFile.getName()).toUpperCase();
 		if (StringUtils.isBlank(outputImageFormat)) {
 			throw new UnSupportedTypeException("未知的输出格式");
 		}
@@ -689,52 +1011,21 @@ public class GMImageTemplate implements ImageTemplate {
 	}
 
 	/**
-	 * 根据 EXIF 方向设置 GM 方向矫正指令。
-	 *
-	 * @param orientation EXIF 方向码（1-8）
-	 * @param gmOperation GM 操作对象
-	 * @since 1.0.0
-	 */
-	protected void setCorrectOrientationArgs(int orientation, GMOperation gmOperation) {
-		switch (orientation) {
-			case 2:
-				gmOperation.flop();
-				break;
-			case 3:
-				gmOperation.rotate(180d);
-				break;
-			case 4:
-				gmOperation.flip();
-				break;
-			case 5:
-				gmOperation.rotate(90d);
-				gmOperation.flop();
-				break;
-			case 6:
-				gmOperation.rotate(90d);
-				break;
-			case 7:
-				gmOperation.rotate(-90d);
-				gmOperation.flop();
-				break;
-			case 8:
-				gmOperation.rotate(-90d);
-				break;
-			default:
-				break;
-		}
-	}
-
-	/**
 	 * 设置文字水印相关参数（字体、字号、填充颜色等）。
 	 *
+	 * @param imageSize 原始图片尺寸
 	 * @param operation   操作配置
 	 * @param gmOperation GM 操作对象
 	 * @since 1.0.0
 	 */
-	protected void setTextWatermarkArgs(GMImageOperation operation, GMOperation gmOperation) {
+	protected void setTextWatermarkArgs(ImageSize imageSize, GMImageOperation operation, GMOperation gmOperation) {
 		gmOperation.font(operation.getWatermarkTextFontName());
-		gmOperation.pointsize(operation.getWatermarkTextFontSize());
+		// 计算字体大小
+		if (imageSize.getWidth() > imageSize.getHeight()) {
+			gmOperation.pointsize((int) Math.round(imageSize.getWidth() * operation.getWatermarkTextFontSizeRatio()));
+		} else {
+			gmOperation.pointsize((int) Math.round(imageSize.getHeight() * operation.getWatermarkTextFontSizeRatio()));
+		}
 
 		String fillColor = FILL_COLOR_FORMAT.formatted(operation.getWatermarkTextColor().getRed(),
 			operation.getWatermarkTextColor().getGreen(),
@@ -784,7 +1075,7 @@ public class GMImageTemplate implements ImageTemplate {
 	 */
 	protected void setWatermarkImageGeometryArg(ImageSize inputImageSize, ImageOperation operation, Integer x, Integer y,
 												GMOperation gmOperation) {
-		ImageSize scaleWatermarkImageSize = inputImageSize.scale(operation.getWatermarkImageOption().getScale());
+		ImageSize scaleWatermarkImageSize = inputImageSize.scale(operation.getWatermarkImageOption().getRelativeScale());
 		if (scaleWatermarkImageSize.getWidth() > scaleWatermarkImageSize.getHeight()) {
 			if (scaleWatermarkImageSize.getWidth() > operation.getWatermarkImageOption().getMaxWidth()) {
 				gmOperation.addRawArg("-geometry " + operation.getWatermarkImageOption().getMaxWidth() +

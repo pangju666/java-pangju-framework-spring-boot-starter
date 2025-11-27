@@ -14,8 +14,9 @@
  *    limitations under the License.
  */
 
-package io.github.pangju666.framework.boot.task;
+package io.github.pangju666.framework.boot.task.impl;
 
+import io.github.pangju666.framework.boot.task.OnceTaskExecutor;
 import org.springframework.core.task.AsyncTaskExecutor;
 import org.springframework.util.Assert;
 

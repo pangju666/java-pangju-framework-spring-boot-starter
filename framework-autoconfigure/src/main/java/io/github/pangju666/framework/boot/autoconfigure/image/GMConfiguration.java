@@ -31,7 +31,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.util.Assert;
 
 /**
- * GraphicsMagick 自动配置。
+ * <a href="http://www.graphicsmagick.org/index.html">GraphicsMagick</a> 自动配置。
  *
  * <p><strong>概述</strong></p>
  * <ul>
@@ -70,16 +70,26 @@ class GMConfiguration {
         Assert.hasText(properties.getGm().getPath(), "gm执行文件路径不可为空");
 
         GMConnectionPoolConfig config = new GMConnectionPoolConfig();
-        config.setGMPath(properties.getGm().getPath());
+		config.setGMPath(properties.getGm().getPath());
         config.setMaxActive(properties.getGm().getPool().getMaxActive());
-		config.setMaxIdle(properties.getGm().getPool().getMaxIdle());
-		config.setMinIdle(properties.getGm().getPool().getMinIdle());
-		config.setMinEvictableIdleTimeMillis(properties.getGm().getPool().getMinEvictableIdleTimeMillis());
-		config.setWhenExhaustedAction(WhenExhaustedAction.valueOf(properties.getGm().getPool()
-			.getWhenExhaustedAction().name()));
-		config.setMaxWait(properties.getGm().getPool().getMaxWait().toMillis());
-		config.setTestWhileIdle(properties.getGm().getPool().isTestWhileIdle());
-		config.setTimeBetweenEvictionRunsMillis(properties.getGm().getPool().getTimeBetweenEvictionRunsMillis());
+		WhenExhaustedAction whenExhaustedAction = switch (properties.getGm().getPool().getWhenExhaustedAction()) {
+			case BLOCK -> WhenExhaustedAction.BLOCK;
+			case GROW -> WhenExhaustedAction.GROW;
+				case FAIL -> WhenExhaustedAction.FAIL;
+		};
+        config.setWhenExhaustedAction(whenExhaustedAction);
+        config.setMaxWait(properties.getGm().getPool().getMaxWaitMills());
+        config.setMaxIdle(properties.getGm().getPool().getMaxIdle());
+        config.setMinIdle(properties.getGm().getPool().getMinIdle());
+        config.setTestOnGet(properties.getGm().getPool().isTestOnGet());
+        config.setTestOnReturn(properties.getGm().getPool().isTestOnReturn());
+        config.setTimeBetweenEvictionRunsMillis(properties.getGm().getPool().getTimeBetweenEvictionRunsMillis());
+        config.setNumTestsPerEvictionRun(properties.getGm().getPool().getNumTestsPerEvictionRun());
+        config.setMinEvictableIdleTimeMillis(properties.getGm().getPool().getMinEvictableIdleTimeMillis());
+        config.setSoftMinEvictableIdleTimeMillis(properties.getGm().getPool().getSoftMinEvictableIdleTimeMillis());
+        config.setTestWhileIdle(properties.getGm().getPool().isTestWhileIdle());
+        config.setLifo(properties.getGm().getPool().isLifo());
+        config.setEvictAfterNumberOfUse(properties.getGm().getPool().getEvictAfterNumberOfUse());
 		return new PooledGMService(config);
 	}
 
@@ -87,6 +97,8 @@ class GMConfiguration {
 	 * 创建 GM 图像处理模板实现。
 	 *
 	 * <p>条件：当类型为 {@code GM}、已存在连接池且未定义其它模板实现时注入。</p>
+	 *
+	 * <p>GraphicsMagick 版本需要 &ge; 1.30</p>
 	 *
 	 * @param pooledGMService GM 连接池服务
 	 * @return GM 图像处理模板

@@ -44,19 +44,19 @@ import java.util.Objects;
  * <p><strong>质量设置</strong>：部分格式支持，如 JPEG。</p>
  * <p><strong>移除元数据</strong>：移除 Profile/EXIF/IPTC 等。</p>
  * <p><strong>GM 缩放滤镜</strong>：支持滤镜类型选择以控制缩放质量与性能。</p>
- * <p><strong>文字水印</strong>：字体/大小/颜色/透明度配置；与图片水印互斥。</p>
+ * <p><strong>文字水印</strong>：字体/大小比例（相对原图的长边）/颜色/透明度配置；与图片水印互斥。</p>
  * <p><strong>模糊/锐化</strong>：支持半径与标准差参数。</p>
  * <p><strong>DPI 设置</strong>：设置输出图像的每英寸点数。</p>
  * <p>注意：绘制文字水印必须设置字体，否则将不生效。</p>
  *
  * <p><strong>GM 兼容性限制</strong>：</p>
- * <p>· 水印图片路径：不支持包含中文或非 ASCII 字符的路径，建议使用纯英文路径。</p>
+ * <p>· 水印图片路径：不支持包含中文或非 ASCII 字符的路径，需要使用纯英文路径。</p>
  * <p>· 字体名称：不支持中文字体名称；若要显示中文，需要在 GM 运行环境安装可用的中文字体并以可识别的英文名称引用。</p>
  * <p>· 中文水印文本：在未正确安装中文字体或编码不兼容的情况下可能显示为空或乱码，建议优先使用英文文本；若必须使用中文，请确保环境字体与编码配置正确。</p>
  *
  * @author pangju666
- * @since 1.0.0
  * @see GMImageTemplate
+ * @since 1.0.0
  */
 public class GMImageOperation extends ImageOperation {
 	/**
@@ -88,13 +88,13 @@ public class GMImageOperation extends ImageOperation {
 	 */
 	protected String watermarkTextFontName;
 	/**
-	 * 文字水印字体大小。
+	 * 文字水印字体大小比例（相对原图的长边）。
 	 *
-	 * <p>默认值：{@code 12}</p>
+	 * <p>默认值：{@code 0.04}</p>
 	 *
 	 * @since 1.0.0
 	 */
-	protected int watermarkTextFontSize = 12;
+	protected double watermarkTextFontSizeRatio = 0.04;
 	/**
 	 * 文字水印颜色。
 	 *
@@ -230,13 +230,13 @@ public class GMImageOperation extends ImageOperation {
 	}
 
 	/**
-	 * 获取文字水印字体大小。
+	 * 文字水印字体大小比例（相对原图的长边）。
 	 *
 	 * @return 字体大小
 	 * @since 1.0.0
 	 */
-	public int getWatermarkTextFontSize() {
-		return watermarkTextFontSize;
+	public double getWatermarkTextFontSizeRatio() {
+		return watermarkTextFontSizeRatio;
 	}
 
 	/**
@@ -347,17 +347,18 @@ public class GMImageOperation extends ImageOperation {
 		}
 
 		/**
-		 * 设置文字水印字体大小。
+		 * 设置文字水印字体大小比例（相对原图的长边）。
 		 *
-		 * <p>参数校验规则：如果 {@code fontSize} 为 null或 ≤ 0，则不设置。</p>
+		 * <p>参数校验规则：如果 {@code fontSizeRatio} 为 null或 ≤ 0，则不设置。</p>
+		 * <p>取值说明：比例为正数，比例越大字号越大。</p>
 		 *
-		 * @param fontSize 字体大小
+		 * @param fontSizeRatio 字体大小
 		 * @return 构建器本身
 		 * @since 1.0.0
 		 */
-		public GMImageOperationBuilder watermarkTextFontSize(Integer fontSize) {
-			if (Objects.nonNull(fontSize) && fontSize > 0) {
-				imageOperation.watermarkTextFontSize = fontSize;
+		public GMImageOperationBuilder watermarkTextFontSizeRatio(Double fontSizeRatio) {
+			if (Objects.nonNull(fontSizeRatio) && fontSizeRatio > 0) {
+				imageOperation.watermarkTextFontSizeRatio = fontSizeRatio;
 			}
 			return this;
 		}
@@ -389,6 +390,8 @@ public class GMImageOperation extends ImageOperation {
 		 *
 		 * <p>参数校验规则：如果 {@code resampleFilter} 为 null，则不设置。</p>
 		 *
+		 * <p>GraphicsMagick 默认为{@link ResampleFilter#LANCZOS}，一般情况下不需要设置这个。</p>
+		 *
 		 * @param resampleFilter 滤镜类型
 		 * @return 构建器本身
 		 * @since 1.0.0
@@ -405,6 +408,18 @@ public class GMImageOperation extends ImageOperation {
 		 *
 		 * <p>参数校验规则：如果 {@code quality} 为 null 或不在 [1,100]，则不设置。</p>
 		 *
+		 * <p>GraphicsMagick 默认为 75，一般情况下不需要设置这个。</p>
+		 *
+		 * <p><b>取值建议</b>：
+		 * <ul>
+		 *   <li>{@code quality = 1~30}：低质量，文件极小，适用于缩略图或带宽受限场景，但可见压缩伪影（块状、模糊）；</li>
+		 *   <li>{@code quality = 31~60}：中等质量，平衡文件大小与视觉效果，适合网页展示；</li>
+		 *   <li>{@code quality = 61~85}：<b>推荐范围</b>，高质量且文件合理，人眼难以察觉失真；</li>
+		 *   <li>{@code quality = 86~95}：接近无损，适用于对画质要求较高的场景（如电商主图）；</li>
+		 *   <li>{@code quality = 96~100}：最高质量，文件显著增大，但提升有限（JPEG 本质是有损格式）；</li>
+		 *   <li><b>注意</b>：PNG、GIF 等无损格式忽略此参数；实际效果还受图像内容影响（如照片 vs 线条图）。</li>
+		 * </ul></p>
+		 *
 		 * @param quality 质量值（1-100）
 		 * @return 构建器本身
 		 * @since 1.0.0
@@ -419,15 +434,24 @@ public class GMImageOperation extends ImageOperation {
 		/**
 		 * 设置高斯模糊（仅指定标准差）。
 		 *
-		 * <p>参数校验规则：如果 {@code sigma} 为 null 或 ≤ 0，则不设置；
+		 * <p>参数校验规则：如果 {@code sigma} 为 null 或 &lt; 0，则不设置；
 		 * 半径将使用 {@code 0} 以由 GM 自动推导。</p>
 		 *
-		 * @param sigma 标准差（>0）
+		 * <p><b>标准差取值建议</b>：
+		 * <ul>
+		 *   <li>{@code sigma ∈ (0, 0.5)}：极轻微模糊，几乎不可见；</li>
+		 *   <li>{@code sigma ∈ [0.5, 1.5]}：自然柔化，适用于人像或降噪；</li>
+		 *   <li>{@code sigma ∈ (1.5, 3.0]}：明显模糊，适合背景虚化；</li>
+		 *   <li>{@code sigma > 3.0}：强烈模糊，可能产生“雾化”效果；</li>
+		 *   <li>通常推荐范围：{@code 0.5 ~ 2.0}。</li>
+		 * </ul></p>
+		 *
+		 * @param sigma 标准差（>=0）
 		 * @return 构建器本身
 		 * @since 1.0.0
 		 */
 		public GMImageOperationBuilder blur(Double sigma) {
-			if (Objects.nonNull(sigma) && sigma > 0) {
+			if (Objects.nonNull(sigma) && sigma >= 0) {
 				imageOperation.blurPair = Pair.of(0d, sigma);
 			}
 			return this;
@@ -436,15 +460,31 @@ public class GMImageOperation extends ImageOperation {
 		/**
 		 * 设置高斯模糊（指定半径与标准差）。
 		 *
-		 * <p>参数校验规则：如果任一参数为 null，或 {@code sigma} &le; 1，或 {@code radius} &lt; 0，则不设置。</p>
+		 * <p>参数校验规则：如果任一参数为 null，或 {@code sigma} &lt; 0，或 {@code radius} &lt; 0，则不设置。</p>
+		 *
+		 * <p><b>半径取值建议</b>：
+		 * <ul>
+		 *   <li>一般情况下，建议使用单参数版本（radius=0），让 GM 自动计算核大小；</li>
+		 *   <li>若需手动指定，{@code radius} 应 ≥ {@code sigma}，且通常为整数（如 2, 3）；</li>
+		 *   <li>过大的 {@code radius} 会显著增加处理时间。</li>
+		 * </ul></p>
+		 *
+		 * <p><b>标准差取值建议</b>：
+		 * <ul>
+		 *   <li>{@code sigma ∈ (0, 0.5)}：极轻微模糊，几乎不可见；</li>
+		 *   <li>{@code sigma ∈ [0.5, 1.5]}：自然柔化，适用于人像或降噪；</li>
+		 *   <li>{@code sigma ∈ (1.5, 3.0]}：明显模糊，适合背景虚化；</li>
+		 *   <li>{@code sigma > 3.0}：强烈模糊，可能产生“雾化”效果；</li>
+		 *   <li>通常推荐范围：{@code 0.5 ~ 2.0}。</li>
+		 * </ul></p>
 		 *
 		 * @param radius 半径（≥0）
-		 * @param sigma  标准差（>1）
+		 * @param sigma  标准差（>=0）
 		 * @return 构建器本身
 		 * @since 1.0.0
 		 */
 		public GMImageOperationBuilder blur(Double radius, Double sigma) {
-			if (ObjectUtils.allNotNull(radius, sigma) && sigma > 1 && radius >= 0) {
+			if (ObjectUtils.allNotNull(radius, sigma) && sigma >= 0 && radius >= 0) {
 				imageOperation.blurPair = Pair.of(radius, sigma);
 			}
 			return this;
@@ -453,15 +493,24 @@ public class GMImageOperation extends ImageOperation {
 		/**
 		 * 设置锐化（仅指定标准差）。
 		 *
-		 * <p>参数校验规则：如果 {@code sigma} 为 null 或 ≤ 1，则不设置；
+		 * <p>参数校验规则：如果 {@code sigma} 为 null 或 &lt; 0，则不设置；
 		 * 半径将使用 {@code 0} 以由 GM 自动推导。</p>
+		 *
+		 * <p><b>标准差取值建议</b>：
+		 * <ul>
+		 *   <li>{@code sigma ∈ (0, 0.8]}：轻微锐化，安全无 artifacts；</li>
+		 *   <li>{@code sigma ∈ (0.8, 1.5]}：中等锐化，提升清晰度，推荐默认值；</li>
+		 *   <li>{@code sigma ∈ (1.5, 2.0]}：较强锐化，可能出现边缘光晕（halo）；</li>
+		 *   <li>{@code sigma > 2.0}：过度锐化，放大噪点，图像失真；</li>
+		 *   <li>通常推荐范围：{@code 0.6 ~ 1.2}。</li>
+		 * </ul></p>
 		 *
 		 * @param sigma 标准差（>1）
 		 * @return 构建器本身
 		 * @since 1.0.0
 		 */
 		public GMImageOperationBuilder sharpen(Double sigma) {
-			if (Objects.nonNull(sigma) && sigma > 1) {
+			if (Objects.nonNull(sigma) && sigma >= 0) {
 				imageOperation.sharpenPair = Pair.of(0d, sigma);
 			}
 			return this;
@@ -470,7 +519,24 @@ public class GMImageOperation extends ImageOperation {
 		/**
 		 * 设置锐化（指定半径与标准差）。
 		 *
-		 * <p>参数校验规则：如果任一参数为 null，或 {@code sigma} ≤ 1，或 {@code radius} < 0，则不设置。</p>
+		 * <p>参数校验规则：如果任一参数为 null，或 {@code sigma} &lt; 0，或 {@code radius} &lt; 0，则不设置。</p>
+		 *
+		 * <p><b>半径取值建议</b>：
+		 * <ul>
+		 *   <li>绝大多数场景应使用单参数版本（radius=0）；</li>
+		 *   <li>手动指定 {@code radius} 仅在特殊需求下使用（如控制边缘响应宽度）；</li>
+		 *   <li>{@code radius} 通常取 1~3；</li>
+		 *   <li>过大的组合会导致严重伪影。</li>
+		 * </ul></p>
+		 *
+		 * <p><b>标准差取值建议</b>：
+		 * <ul>
+		 *   <li>{@code sigma ∈ (0, 0.8]}：轻微锐化，安全无 artifacts；</li>
+		 *   <li>{@code sigma ∈ (0.8, 1.5]}：中等锐化，提升清晰度，推荐默认值；</li>
+		 *   <li>{@code sigma ∈ (1.5, 2.0]}：较强锐化，可能出现边缘光晕（halo）；</li>
+		 *   <li>{@code sigma > 2.0}：过度锐化，放大噪点，图像失真；</li>
+		 *   <li>通常推荐范围：{@code 0.6 ~ 1.2}。</li>
+		 * </ul></p>
 		 *
 		 * @param radius 半径（≥0）
 		 * @param sigma  标准差（>1）
@@ -478,7 +544,7 @@ public class GMImageOperation extends ImageOperation {
 		 * @since 1.0.0
 		 */
 		public GMImageOperationBuilder sharpen(Double radius, Double sigma) {
-			if (ObjectUtils.allNotNull(radius, sigma) && sigma > 1 && radius >= 0) {
+			if (ObjectUtils.allNotNull(radius, sigma) && sigma >= 0 && radius >= 0) {
 				imageOperation.sharpenPair = Pair.of(radius, sigma);
 			}
 			return this;
@@ -489,7 +555,19 @@ public class GMImageOperation extends ImageOperation {
 		 *
 		 * <p>参数校验规则：如果 {@code dpi} 为 null 或 ≤ 0，则不设置。</p>
 		 *
-		 * @param dpi 每英寸点数（>0）
+		 * <p>如果不是明确需要修改输出图像的DPI，请不要设置这个。</p>
+		 *
+		 * <p><b>取值建议</b>：
+		 * <ul>
+		 *   <li>{@code dpi = 72}：标准屏幕显示（Web 图像默认）；</li>
+		 *   <li>{@code dpi = 150}：普通打印质量；</li>
+		 *   <li>{@code dpi = 300}：高质量印刷（推荐用于照片/出版物）；</li>
+		 *   <li>{@code dpi ∈ [72, 600]}：常见有效范围；</li>
+		 *   <li>超过 600 通常无实际意义，且可能增大文件体积；</li>
+		 *   <li>注意：DPI 不改变像素尺寸，仅影响物理打印尺寸。</li>
+		 * </ul></p>
+		 *
+		 * @param dpi 每英寸点数（>0），典型值 72（屏幕）、150（普通打印）、300（高清印刷）
 		 * @return 构建器本身
 		 * @since 1.0.0
 		 */

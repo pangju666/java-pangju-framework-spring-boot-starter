@@ -86,8 +86,8 @@ import java.util.Objects;
  * </ul>
  *
  * @author pangju666
- * @since 1.0.0
  * @see BufferedImageOperation
+ * @since 1.0.0
  */
 public class BufferedImageTemplate implements ImageTemplate {
 	/**
@@ -98,12 +98,12 @@ public class BufferedImageTemplate implements ImageTemplate {
 	 * @param file 待解析图像文件
 	 * @return 图像信息
 	 * @throws UnSupportedTypeException 图像类型不受支持时抛出
-	 * @throws ImageParsingException       图像类型、摘要或尺寸解析失败时抛出
-	 * @throws IOException                 文件读取或图像解码失败时抛出
+	 * @throws ImageParsingException    图像类型、摘要或尺寸解析失败时抛出
+	 * @throws IOException              文件读取或图像解码失败时抛出
 	 */
- 	@Override
- 	public ImageFile read(File file) throws IOException {
-		ImageFile imageFile = new ImageFile(file);
+	@Override
+	public ImageFile read(File file) throws IOException {
+		ImageFile imageFile = ImageFile.fromFile(file);
 		if (!ImageConstants.getSupportedReadImageTypes().contains(imageFile.getMimeType())) {
 			throw new UnSupportedTypeException("不支持读取 " + imageFile.getMimeType() + " 类型图片");
 		}
@@ -123,46 +123,56 @@ public class BufferedImageTemplate implements ImageTemplate {
 		return imageFile;
 	}
 
- 	/**
- 	 * 执行图像操作（输入文件形式）。
- 	 *
- 	 * @param inputFile 输入文件
- 	 * @param outputFile 输出文件
- 	 * @param operation 操作配置，可为 {@code null}
- 	 * @throws UnSupportedTypeException 图像类型不受支持时抛出
- 	 * @throws ImageParsingException       图像类型、摘要或尺寸解析失败时抛出
- 	 * @throws ImageOperationException     ImageIO操作失败时抛出
- 	 * @throws IOException                 文件读取或图像解码失败时抛出
- 	 */
- 	@Override
- 	public void process(File inputFile, File outputFile, ImageOperation operation) throws IOException {
-		 String outputImageFormat = getOutputFormat(outputFile);
-		 ImageFile imageFile = read(inputFile);
-		 try {
-			 doProcess(imageFile, outputFile, outputImageFormat, ObjectUtils.getIfNull(
-				 operation, ImageOperationBuilders.EMPTY));
-		 } catch (IOException e) {
+	/**
+	 * 执行图像操作（输入文件形式）。
+	 *
+	 * <p><b>执行顺序</b>：矫正方向 -> 设置输出格式 -> 裁剪 -> 重采样滤镜类型设置 -> 缩放 -> 旋转 -> 翻转 -> 灰度化 -> 图像增强（亮度 -> 对比度 ->
+	 * 锐化 -> 模糊） -> 水印（文字优先，否则图片；按方向或坐标放置） -> 输出到文件。</p>
+	 *
+	 * @param inputFile  输入文件
+	 * @param outputFile 输出文件
+	 * @param operation  操作配置，可为 {@code null}
+	 * @throws UnSupportedTypeException 图像类型不受支持时抛出
+	 * @throws ImageParsingException    图像类型、摘要或尺寸解析失败时抛出
+	 * @throws ImageOperationException  ImageIO操作失败时抛出
+	 * @throws IOException              文件读取或图像解码失败时抛出
+	 */
+	@Override
+	public void process(File inputFile, File outputFile, ImageOperation operation) throws IOException {
+		String outputImageFormat = getOutputFormat(outputFile);
+		ImageFile imageFile = read(inputFile);
+		try {
+			doProcess(imageFile, outputFile, outputImageFormat, ObjectUtils.getIfNull(
+				operation, ImageOperationBuilders.EMPTY));
+		} catch (IOException e) {
 			throw new ImageOperationException(inputFile, "操作执行失败", e);
-		 }
+		}
 	}
 
- 	/**
- 	 * 执行图像操作（已解析信息形式）。
- 	 *
- 	 * @param imageFile 已解析的图像信息
- 	 * @param outputFile 输出文件
- 	 * @param operation 操作配置，可为 {@code null}
- 	 * @throws UnSupportedTypeException 图像类型不受支持时抛出
- 	 * @throws ImageParsingException       图像类型、摘要或尺寸解析失败时抛出
- 	 * @throws ImageOperationException     ImageIO操作失败时抛出
- 	 * @throws IOException                 文件读取或图像解码失败时抛出
- 	 */
- 	@Override
- 	public void process(ImageFile imageFile, File outputFile, ImageOperation operation) throws IOException {
+	/**
+	 * 执行图像操作（已解析信息形式）。
+	 *
+	 * <p><b>执行顺序</b>：矫正方向 -> 设置输出格式 -> 裁剪 -> 重采样滤镜类型设置 -> 缩放 -> 旋转 -> 翻转 -> 灰度化 -> 图像增强（亮度 -> 对比度 ->
+	 * 锐化 -> 模糊） -> 水印（文字优先，否则图片；按方向或坐标放置） -> 输出到文件。</p>
+	 *
+	 * @param imageFile  已解析的图像信息
+	 * @param outputFile 输出文件
+	 * @param operation  操作配置，可为 {@code null}
+	 * @throws UnSupportedTypeException 图像类型不受支持时抛出
+	 * @throws ImageParsingException    图像类型、摘要或尺寸解析失败时抛出
+	 * @throws ImageOperationException  ImageIO操作失败时抛出
+	 * @throws IOException              文件读取或图像解码失败时抛出
+	 */
+	@Override
+	public void process(ImageFile imageFile, File outputFile, ImageOperation operation) throws IOException {
 		Assert.notNull(imageFile, "imageFile 不可为 null");
-		FileUtils.checkFile(imageFile.getFile(), "imageFile 未设置 file 属性");
 
 		String outputImageFormat = getOutputFormat(outputFile);
+
+		if (imageFile.getOrientation() < 1 || imageFile.getOrientation() > 8 || Objects.isNull(imageFile.getImageSize())) {
+			imageFile = read(imageFile.getFile());
+		}
+
 		String mimeType = imageFile.getMimeType();
 		try {
 			if (StringUtils.isBlank(mimeType)) {
@@ -175,11 +185,12 @@ public class BufferedImageTemplate implements ImageTemplate {
 			throw new UnSupportedTypeException("不支持读取 " + mimeType + " 类型图片");
 		}
 
-		if (imageFile.getOrientation() < 1 || imageFile.getOrientation() > 8 || Objects.isNull(imageFile.getImageSize())) {
-			imageFile = read(imageFile.getFile());
+		try {
+			doProcess(imageFile, outputFile, outputImageFormat, ObjectUtils.getIfNull(operation,
+				ImageOperationBuilders.EMPTY));
+		} catch (IOException e) {
+			throw new ImageOperationException(imageFile.getFile(), "操作执行失败", e);
 		}
-		doProcess(imageFile, outputFile, outputImageFormat, ObjectUtils.getIfNull(operation,
-			ImageOperationBuilders.EMPTY));
 	}
 
 	/**
@@ -192,7 +203,7 @@ public class BufferedImageTemplate implements ImageTemplate {
 	@Override
 	public boolean canRead(File file) throws IOException {
 		String mimeType = FileUtils.getMimeType(file);
-		return ImageConstants.getSupportedReadImageTypes().contains(mimeType);
+		return ImageConstants.getSupportedReadImageTypes().contains(mimeType.toLowerCase());
 	}
 
 	/**
@@ -204,20 +215,20 @@ public class BufferedImageTemplate implements ImageTemplate {
 	@Override
 	public boolean canWrite(String format) {
 		Assert.hasText(format, "format 不可为空");
-		return ImageConstants.getSupportedWriteImageFormats().contains(format);
+		return ImageConstants.getSupportedWriteImageFormats().contains(format.toUpperCase());
 	}
 
- 	/**
- 	 * 解析并校验输出格式。
- 	 *
- 	 * <p>参数校验规则：{@code outputFile} 不可为 {@code null}；扩展名不能为空且需在可写集合中。</p>
- 	 *
- 	 * @param outputFile 输出文件
- 	 * @return 输出格式扩展名
+	/**
+	 * 解析并校验输出格式。
+	 *
+	 * <p>参数校验规则：{@code outputFile} 不可为 {@code null}；扩展名不能为空且需在可写集合中。</p>
+	 *
+	 * @param outputFile 输出文件
+	 * @return 输出格式扩展名
 	 */
- 	protected String getOutputFormat(File outputFile) {
+	protected String getOutputFormat(File outputFile) {
 		FileUtils.checkFileIfExist(outputFile, "outputFile 不可为 null");
-		String outputImageFormat = FilenameUtils.getExtension(outputFile.getName());
+		String outputImageFormat = FilenameUtils.getExtension(outputFile.getName()).toUpperCase();
 		if (StringUtils.isBlank(outputImageFormat)) {
 			throw new UnSupportedTypeException("未知的输出格式");
 		}
@@ -233,14 +244,14 @@ public class BufferedImageTemplate implements ImageTemplate {
 	 * <p><b>执行顺序</b>：矫正方向 -> 设置输出格式 -> 裁剪 -> 重采样滤镜类型设置 -> 缩放 -> 旋转 -> 翻转 -> 灰度化 -> 图像增强（亮度 -> 对比度 ->
 	 * 锐化 -> 模糊） -> 水印（文字优先，否则图片；按方向或坐标放置） -> 输出到文件。</p>
 	 *
-	 * @param imageFile 图像信息
-	 * @param outputFile 输出文件
+	 * @param imageFile    图像信息
+	 * @param outputFile   输出文件
 	 * @param outputFormat 输出格式扩展名
-	 * @param operation 操作配置
+	 * @param operation    操作配置
 	 * @throws UnSupportedTypeException 水印图片类型不受支持时抛出
-	 * @throws IOException                 ImageIO操作失败时抛出
+	 * @throws IOException              ImageIO操作失败时抛出
 	 */
- 	protected void doProcess(ImageFile imageFile, File outputFile, String outputFormat, ImageOperation operation) throws IOException {
+	protected void doProcess(ImageFile imageFile, File outputFile, String outputFormat, ImageOperation operation) throws IOException {
 		ImageEditor imageEditor = ImageEditor.of(imageFile.getFile())
 			// 矫正方向
 			.correctOrientation(imageFile.getOrientation())

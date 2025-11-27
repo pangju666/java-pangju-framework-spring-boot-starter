@@ -206,9 +206,11 @@ public class BufferedImageOperation extends ImageOperation {
 		}
 
 		/**
-		 * 设置缩放重采样滤镜类型（一般不建议设置这个，底层实现中我已经设置了合适的默认值）。
+		 * 设置缩放重采样滤镜类型。
 		 *
 		 * <p>参数校验规则：如果 {@code resampleFilter} 为 null，则不设置。</p>
+		 *
+		 * <p>底层实现中我已经默认设置为{@link ResampleFilter#LANCZOS}，一般情况下不需要设置这个。</p>
 		 *
 		 * @param resampleFilter 重采样滤镜类型
 		 * @return 构建器本身
@@ -260,17 +262,49 @@ public class BufferedImageOperation extends ImageOperation {
 		}
 
 		/**
-		 * 设置文字水印的字体。
+		 * 设置文字水印字体名称。
 		 *
-		 * <p>参数校验规则：如果 {@code font} 为 null，则不设置。</p>
+		 * <p>参数校验规则：无空值校验，直接写入；建议传入非空白的可用字体名称，以避免字体解析失败。</p>
 		 *
-		 * @param font 字体
+		 * @param fontName 字体名称（建议非空白）
 		 * @return 构建器本身
 		 * @since 1.0.0
 		 */
-		public BufferedImageOperationBuilder watermarkTextFont(Font font) {
-			if (Objects.nonNull(font)) {
-				imageOperation.watermarkTextOption.setFont(font);
+		public BufferedImageOperationBuilder watermarkTextFontName(String fontName) {
+			imageOperation.watermarkTextOption.setFontName(fontName);
+			return this;
+		}
+
+		/**
+		 * 设置文字水印字体样式。
+		 *
+		 * <p>参数校验规则：如果 {@code fontStyle} 为 null，则不设置。</p>
+		 * <p>取值说明：样式码为整数（例如常见的粗体/斜体等，具体取值由实现定义）。</p>
+		 *
+		 * @param fontStyle 字体样式码（整数）
+		 * @return 构建器本身
+		 * @since 1.0.0
+		 */
+		public BufferedImageOperationBuilder watermarkTextFontStyle(Integer fontStyle) {
+			if (Objects.nonNull(fontStyle)) {
+				imageOperation.watermarkTextOption.setFontStyle(fontStyle);
+			}
+			return this;
+		}
+
+		/**
+		 * 设置文字水印字体大小比例（相对原图的长边）。
+		 *
+		 * <p>参数校验规则：如果 {@code fontSizeRatio} 为 null 或 &le; 0，则不设置。</p>
+		 * <p>取值说明：比例为正数，比例越大字号越大。</p>
+		 *
+		 * @param fontSizeRatio 字号比例
+		 * @return 构建器本身
+		 * @since 1.0.0
+		 */
+		public BufferedImageOperationBuilder watermarkTextFontSizeRatio(Double fontSizeRatio) {
+			if (Objects.nonNull(fontSizeRatio) && fontSizeRatio > 0) {
+				imageOperation.watermarkTextOption.setFontSizeRatio(fontSizeRatio);
 			}
 			return this;
 		}
@@ -344,6 +378,8 @@ public class BufferedImageOperation extends ImageOperation {
 		 *
 		 * <p>默认半径：{@code 1.5} 像素。</p>
 		 *
+		 * <p><b>效果说明</b>：使用高斯模糊核，半径越大越模糊；1.5 像素提供轻微柔化，适合降噪或 UI 图标处理。</p>
+		 *
 		 * @return 构建器本身
 		 * @since 1.0.0
 		 */
@@ -356,6 +392,15 @@ public class BufferedImageOperation extends ImageOperation {
 		 * 设置模糊半径。
 		 *
 		 * <p>参数校验规则：如果 {@code radius} 为 null 或 ≤ 1，则不设置。</p>
+		 *
+		 * <p><b>取值建议</b>：
+		 * <ul>
+		 *   <li>{@code radius ∈ (1, 2]}：轻微模糊，适用于轻微柔化或抗锯齿；</li>
+		 *   <li>{@code radius ∈ (2, 4]}：中等模糊，适合背景虚化或隐私遮挡；</li>
+		 *   <li>{@code radius > 4}：强烈模糊，计算开销显著增加，且可能显得“涂抹”；</li>
+		 *   <li>注意：实际模糊核大小 ≈ {@code 2 * radius + 1}，过大会导致性能下降；</li>
+		 *   <li>推荐范围：{@code 1.5 ~ 3.0}。</li>
+		 * </ul></p>
 		 *
 		 * @param radius 模糊半径
 		 * @return 构建器本身
@@ -373,6 +418,8 @@ public class BufferedImageOperation extends ImageOperation {
 		 *
 		 * <p>默认强度：{@code 0.3}。</p>
 		 *
+		 * <p><b>效果说明</b>：基于非锐化掩模（Unsharp Mask）原理，0.3 提供自然清晰度提升，无明显光晕。</p>
+		 *
 		 * @return 构建器本身
 		 * @since 1.0.0
 		 */
@@ -385,6 +432,15 @@ public class BufferedImageOperation extends ImageOperation {
 		 * 设置锐化强度。
 		 *
 		 * <p>参数校验规则：如果 {@code amount} 为 null 或 = 0，则不设置。</p>
+		 *
+		 * <p><b>取值建议</b>：
+		 * <ul>
+		 *   <li>{@code amount ∈ (0, 0.5]}：安全锐化，提升细节而不引入伪影；</li>
+		 *   <li>{@code amount ∈ (0.5, 1.0]}：较强锐化，边缘可能出现轻微白边（halo）；</li>
+		 *   <li>{@code amount > 1.0}：过度锐化，放大噪点，图像失真；</li>
+		 *   <li>负值表示“反向锐化”（即额外模糊），但通常不推荐；</li>
+		 *   <li>推荐范围：{@code 0.2 ~ 0.6}。</li>
+		 * </ul></p>
 		 *
 		 * @param amount 锐化强度（≠ 0）
 		 * @return 构建器本身
@@ -402,6 +458,8 @@ public class BufferedImageOperation extends ImageOperation {
 		 *
 		 * <p>默认幅度：{@code 0.3}。</p>
 		 *
+		 * <p><b>效果说明</b>：0.3 表示对比度提升约 30%，使明暗更分明，适用于灰蒙图像。</p>
+		 *
 		 * @return 构建器本身
 		 * @since 1.0.0
 		 */
@@ -414,6 +472,16 @@ public class BufferedImageOperation extends ImageOperation {
 		 * 设置对比度调整幅度。
 		 *
 		 * <p>参数校验规则：如果 {@code amount} 为 null，则不设置；取值范围为 [-1, 1]，且不等于 0。</p>
+		 *
+		 * <p><b>取值建议</b>：
+		 * <ul>
+		 *   <li>{@code amount ∈ (0, 0.5]}：适度增强对比度，自然观感；</li>
+		 *   <li>{@code amount ∈ (0.5, 1.0]}：高对比度，适合艺术效果或低动态范围图像；</li>
+		 *   <li>{@code amount ∈ [-0.5, 0)}：降低对比度，营造“朦胧”或“褪色”风格；</li>
+		 *   <li>{@code amount = -1}：完全去对比度（灰度均一化）；</li>
+		 *   <li>避免极端值（如 ±1），可能导致细节丢失；</li>
+		 *   <li>推荐范围：{@code -0.3 ~ 0.6}。</li>
+		 * </ul></p>
 		 *
 		 * @param amount 对比度调整幅度
 		 * @return 构建器本身
@@ -430,6 +498,16 @@ public class BufferedImageOperation extends ImageOperation {
 		 * 设置亮度调整幅度。
 		 *
 		 * <p>参数校验规则：如果 {@code amount} 为 null，则不设置；取值范围为 [-2, 2]，且不等于 0。</p>
+		 *
+		 * <p><b>取值建议</b>：
+		 * <ul>
+		 *   <li>{@code amount ∈ (0, 1]}：提亮图像，1.0 表示亮度翻倍（可能过曝）；</li>
+		 *   <li>{@code amount ∈ [-1, 0)}：降低亮度，-1.0 表示完全变黑；</li>
+		 *   <li>{@code amount > 1}：极度提亮，高光区域严重溢出（纯白）；</li>
+		 *   <li>{@code amount < -1}：极度压暗，阴影细节完全丢失；</li>
+		 *   <li>日常调整建议：{@code -0.5 ~ 0.8}；</li>
+		 *   <li>注意：亮度调整是线性加法（RGB += amount），非感知均匀。</li>
+		 * </ul></p>
 		 *
 		 * @param amount 亮度调整幅度
 		 * @return 构建器本身

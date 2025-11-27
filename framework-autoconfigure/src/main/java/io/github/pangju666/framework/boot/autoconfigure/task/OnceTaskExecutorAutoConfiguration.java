@@ -16,7 +16,7 @@
 
 package io.github.pangju666.framework.boot.autoconfigure.task;
 
-import io.github.pangju666.framework.boot.task.FutureOnceTaskExecutor;
+import io.github.pangju666.framework.boot.task.impl.FutureOnceTaskExecutor;
 import io.github.pangju666.framework.boot.task.OnceTaskExecutor;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;

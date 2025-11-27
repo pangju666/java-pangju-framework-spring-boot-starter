@@ -21,6 +21,7 @@ import io.github.pangju666.commons.io.utils.FileUtils;
 import io.github.pangju666.commons.io.utils.FilenameUtils;
 import io.github.pangju666.framework.boot.image.exception.ImageParsingException;
 import io.github.pangju666.framework.boot.image.lang.ImageConstants;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -45,10 +46,17 @@ import java.io.IOException;
  *   <li>{@link #file} 图像对应的本地文件引用。</li>
  * </ul>
  *
- * <p><b>备注</b></p>
+ * <p><b>来源与构建</b></p>
  * <ul>
- *   <li>当图像来源非文件系统或为流式处理场景时，{@link #file} 可能为空。</li>
- *   <li>{@link #orientation} 的具体取值含义依赖于上游解析逻辑（例如 EXIF 1–8 值或角度）。</li>
+ *   <li>构造：文件校验 -> 解析扩展名为格式（大写） -> 记录文件大小。</li>
+ *   <li>工厂：{@link #fromFile(File)} -> 解析 MIME 类型 -> 计算摘要 -> 返回实例。</li>
+ * </ul>
+ *
+ * <p><b>约束</b></p>
+ * <ul>
+ *   <li>文件不可为 {@code null} 且必须存在。</li>
+ *   <li>格式通过扩展名解析并统一为大写；MIME 类型为小写。</li>
+ *   <li>方向默认正常（参见常量），具体取值含义由上游解析定义。</li>
  * </ul>
  *
  * @author pangju666
@@ -60,7 +68,7 @@ public class ImageFile {
      *
      * @since 1.0.0
      */
-    private String digest;
+	private String digest;
 	/**
 	 * 图像尺寸（宽、高）。
 	 *
@@ -96,50 +104,52 @@ public class ImageFile {
 	 *
 	 * @since 1.0.0
 	 */
-	private File file;
+	protected final File file;
 
-	/**
-	 * 无参构造。
-	 *
-	 * @since 1.0.0
-	 */
-	public ImageFile() {
-	}
-
-	/**
-	 * 基于本地文件构造图像信息。
-	 * <p>
-	 * 初始化并填充文件相关元数据：MIME 类型、摘要、格式、大小与文件引用。
-	 * </p>
-	 * <ul>
-	 *     <li>MIME 类型通过 {@link io.github.pangju666.commons.io.utils.FileUtils#getMimeType(File)} 解析</li>
-	 *     <li>摘要通过 {@link io.github.pangju666.commons.io.utils.FileUtils#computeDigest(File)} 计算</li>
-	 *     <li>格式来源于文件扩展名（{@link io.github.pangju666.commons.io.utils.FilenameUtils#getExtension(String)}） </li>
-	 * </ul>
-	 *
-	 * @param file 图像文件
-	 * @throws IOException 文件校验或读取发生 I/O 错误
-	 * @throws ImageParsingException 当 MIME 类型解析或摘要计算失败时抛出
-	 * @since 1.0.0
-	 */
-	public ImageFile(File file) throws IOException {
+    /**
+     * 基于文件的构造函数：校验文件并初始化基本属性。
+     *
+     * <p><b>流程</b>：文件校验 -> 记录文件引用 -> 解析扩展名为格式（大写） -> 记录文件大小。</p>
+     *
+     * @param file 输入图片文件（不可为 {@code null}）
+     * @throws IOException 文件不存在或不可读取时抛出
+     * @since 1.0.0
+     */
+    public ImageFile(File file) throws IOException {
 		FileUtils.checkFile(file, "输入图片不可为null");
 
+		this.file = file;
+		this.format = FilenameUtils.getExtension(file.getName().toUpperCase());
+		this.fileSize = file.length();
+	}
+
+    /**
+     * 根据文件创建并补全 MIME 类型与摘要信息。
+     *
+     * <p><b>流程</b>：构造 {@link ImageFile} -> 解析 MIME 类型 -> 计算摘要 -> 返回。</p>
+     * <p><b>异常</b>：类型解析失败抛出 {@link ImageParsingException}；摘要计算失败抛出 {@link ImageParsingException}。</p>
+     *
+     * @param file 输入图片文件
+     * @return 含 MIME 与摘要的图像信息
+     * @throws IOException 文件不存在或不可读取时抛出
+     * @since 1.0.0
+     */
+    public static ImageFile fromFile(File file) throws IOException {
+		ImageFile imageFile = new ImageFile(file);
+
 		try {
-			this.mimeType = FileUtils.getMimeType(file);
+			imageFile.mimeType = FileUtils.getMimeType(file);
 		} catch (IOException e) {
 			throw new ImageParsingException(file, "类型解析失败", e);
 		}
 
 		try {
-			this.digest = FileUtils.computeDigest(file);
+			imageFile.digest = FileUtils.computeDigest(file);
 		} catch (IOException e) {
 			throw new ImageParsingException(file, "摘要计算失败", e);
 		}
 
-		this.format = FilenameUtils.getExtension(file.getName());
-		this.fileSize = file.length();
-		this.file = file;
+		return imageFile;
 	}
 
 	/**
@@ -240,6 +250,9 @@ public class ImageFile {
 	 */
 	public void setFormat(String format) {
 		this.format = format;
+		if (StringUtils.isNotBlank(format)) {
+			this.format = format.toUpperCase();
+		}
 	}
 
 	/**
@@ -260,6 +273,9 @@ public class ImageFile {
 	 */
 	public void setMimeType(String mimeType) {
 		this.mimeType = mimeType;
+		if (StringUtils.isNotBlank(mimeType)) {
+			this.format = mimeType.toLowerCase();
+		}
 	}
 
 	/**
@@ -270,15 +286,5 @@ public class ImageFile {
 	 */
 	public File getFile() {
 		return file;
-	}
-
-	/**
-	 * 设置图像对应的本地文件引用。
-	 *
-	 * @param file 图像文件引用
-	 * @since 1.0.0
-	 */
-	public void setFile(File file) {
-		this.file = file;
 	}
 }
