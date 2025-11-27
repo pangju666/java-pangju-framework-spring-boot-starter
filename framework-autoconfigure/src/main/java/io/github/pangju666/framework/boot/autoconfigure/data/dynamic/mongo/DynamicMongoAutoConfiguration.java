@@ -78,7 +78,6 @@ import org.springframework.data.mongodb.gridfs.GridFsTemplate;
  */
 @AutoConfiguration(before = MongoDataAutoConfiguration.class)
 @ConditionalOnClass({MongoClient.class, MongoTemplate.class, GridFsTemplate.class, SimpleBaseMongoRepository.class})
-//@ConditionalOnProperty(prefix = DynamicMongoProperties.PREFIX, value = "databases")
 @EnableConfigurationProperties(DynamicMongoProperties.class)
 @Import({DynamicMongoRegistrar.class, DynamicMongoRepositoriesRegistrar.class})
 public class DynamicMongoAutoConfiguration {

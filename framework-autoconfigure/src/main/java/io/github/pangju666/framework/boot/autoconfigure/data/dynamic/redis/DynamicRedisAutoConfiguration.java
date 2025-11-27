@@ -69,7 +69,6 @@ import org.springframework.data.redis.core.RedisOperations;
  */
 @AutoConfiguration(before = RedisAutoConfiguration.class, after = ClientResourcesAutoConfiguration.class)
 @ConditionalOnClass(RedisOperations.class)
-//@ConditionalOnProperty(prefix = DynamicRedisProperties.PREFIX, value = "databases")
 @EnableConfigurationProperties(DynamicRedisProperties.class)
 @Import(DynamicRedisRegistrar.class)
 public class DynamicRedisAutoConfiguration {

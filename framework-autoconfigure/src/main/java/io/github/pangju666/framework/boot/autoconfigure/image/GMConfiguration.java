@@ -28,7 +28,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 /**
  * <a href="http://www.graphicsmagick.org/index.html">GraphicsMagick</a> 自动配置。
@@ -53,24 +53,27 @@ import org.springframework.util.Assert;
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnClass({PooledGMService.class, GMOperation.class})
 class GMConfiguration {
-	/**
-	 * 创建 GraphicsMagick 连接池服务。
-	 *
-	 * <p>参数校验规则：如果 {@code properties.gm.path} 为空，则抛出异常；
-	 * 其它连接池参数来自 {@code properties.gm.pool}。</p>
-	 *
-	 * @param properties 自动配置属性
-	 * @return GM 连接池服务
-	 * @since 1.0.0
-	 */
+    /**
+     * 创建 GraphicsMagick 连接池服务。
+     * <p>当 {@code properties.gm.path} 为空白时不创建 Bean，
+	 * 配合 {@link org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean}
+     * 保持按需注册）。</p>
+     *
+     * @param properties 自动配置属性
+     * @return GM 连接池服务；当 GM 路径为空白时返回 {@code null}
+     * @since 1.0.0
+     */
 	@ConditionalOnMissingBean(PooledGMService.class)
-	@ConditionalOnProperty(prefix = "pangju.image.gm", name = "path")
     @Bean
     public PooledGMService pooledGMService(ImageProperties properties) {
-        Assert.hasText(properties.getGm().getPath(), "gm执行文件路径不可为空");
+		String gmPath = properties.getGm().getPath();
+		if (!StringUtils.hasText(gmPath)) {
+			// 未配置有效 GM 路径，跳过创建
+			return null;
+		}
 
         GMConnectionPoolConfig config = new GMConnectionPoolConfig();
-		config.setGMPath(properties.getGm().getPath());
+		config.setGMPath(gmPath);
         config.setMaxActive(properties.getGm().getPool().getMaxActive());
 		WhenExhaustedAction whenExhaustedAction = switch (properties.getGm().getPool().getWhenExhaustedAction()) {
 			case BLOCK -> WhenExhaustedAction.BLOCK;
