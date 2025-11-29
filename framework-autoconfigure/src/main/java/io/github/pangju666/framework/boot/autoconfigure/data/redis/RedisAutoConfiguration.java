@@ -74,7 +74,7 @@ public class RedisAutoConfiguration {
 	@Bean
 	@ConditionalOnMissingBean(name = "scanRedisTemplate")
 	@ConditionalOnSingleCandidate(RedisConnectionFactory.class)
-	public ScanRedisTemplate<Object> scanRedisTemplate(RedisConnectionFactory connectionFactory) {
+	public JsonScanRedisTemplate scanRedisTemplate(RedisConnectionFactory connectionFactory) {
 		return new JsonScanRedisTemplate(connectionFactory);
 	}
 }

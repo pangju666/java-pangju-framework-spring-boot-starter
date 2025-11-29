@@ -99,6 +99,11 @@
 			<artifactId>spring-data-redis</artifactId>
 			<optional>true</optional>
 		</dependency>
+		<dependency>
+			<groupId>io.github.pangju666.framework</groupId>
+			<artifactId>framework-data-redis</artifactId>
+			<optional>true</optional>
+		</dependency>
 
 		<!-- Web -->
 		<dependency>

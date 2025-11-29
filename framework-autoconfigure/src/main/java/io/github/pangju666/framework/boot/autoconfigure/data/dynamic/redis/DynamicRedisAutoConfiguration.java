@@ -25,41 +25,49 @@ import org.springframework.context.annotation.Import;
 import org.springframework.data.redis.core.RedisOperations;
 
 /**
- * 动态Redis自动配置类
- * <p>
- * 该类用于在Spring Boot应用启动时自动配置多数据源Redis功能。
- * 通过导入{@link DynamicRedisRegistrar}，实现动态注册多个Redis连接相关的Bean。
- * </p>
- * <p>
- * 主要功能：
+ * 动态 Redis 自动配置。
+ *
+ * <p><strong>概述</strong></p>
  * <ul>
- *     <li>启用{@link DynamicRedisProperties}配置属性的支持</li>
- *     <li>导入{@link DynamicRedisRegistrar}以实现动态Bean注册</li>
- *     <li>支持多个Redis数据源的配置和管理</li>
- *     <li>自动选择主数据源</li>
+ *   <li>启用 {@link DynamicRedisProperties} 属性绑定。</li>
+ *   <li>导入 {@link DynamicRedisRegistrar}，在启动阶段动态注册多数据源相关 Bean。</li>
+ *   <li>支持按数据源名称生成统一命名的 Bean，并为主数据源设置 {@code primary} 标志。</li>
  * </ul>
- * </p>
- * <p>
- * <p>
- * 生成的Bean：
+ *
+ * <p><strong>条件</strong></p>
  * <ul>
- *     <li>{name}RedisConnectionDetails - 每个数据源的连接详情</li>
- *     <li>{name}RedisConnectionFactory - 每个数据源的连接工厂</li>
- *     <li>{name}RedisTemplate - 每个数据源的模板</li>
+ *   <li>类路径存在 {@link org.springframework.data.redis.core.RedisOperations}（{@link ConditionalOnClass}）。</li>
+ *   <li>在 {@link RedisAutoConfiguration} 之前、{@link ClientResourcesAutoConfiguration} 之后执行（{@link AutoConfiguration}）。</li>
  * </ul>
- * </p>
- * <p>
- * 使用示例：
+ *
+ * <p><strong>流程</strong>：启用属性绑定 -> 导入注册器 -> 解析配置并注册 Bean -> 标记主数据源 -> 完成装配。</p>
+ *
+ * <p><strong>生成的 Bean</strong>（每个数据源各一份）</p>
+ * <ul>
+ *   <li>{name}RedisConnectionDetails：连接详情。</li>
+ *   <li>{name}RedisConnectionFactory：连接工厂。</li>
+ *   <li>{name}RedisTemplate：对象键值模板。</li>
+ *   <li>{name}StringRedisTemplate：字符串键值模板。</li>
+ *   <li>{name}ScanRedisTemplate：支持游标扫描的模板。</li>
+ *   <li>{name}StringScanRedisTemplate：支持游标扫描的字符串模板。</li>
+ * </ul>
+ *
+ * <p><strong>使用示例</strong></p>
  * <pre>{@code
  * // 使用主数据源（自动注入）
  * @Autowired
  * private RedisTemplate<Object, Object> redisTemplate;
  *
+ * // 指定数据源名称
  * @Autowired
  * @Qualifier("db2RedisTemplate")
  * private RedisTemplate<Object, Object> redisTemplate2;
- * }</pre>
- * </p>
+ *
+ * @Autowired
+ * @Qualifier("db2StringRedisTemplate")
+ * private StringRedisTemplate stringRedisTemplate2;
+ * }
+ * </pre>
  *
  * @author pangju666
  * @see DynamicRedisProperties

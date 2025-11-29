@@ -17,6 +17,8 @@
 package io.github.pangju666.framework.boot.autoconfigure.data.dynamic.redis;
 
 import io.github.pangju666.framework.boot.data.dynamic.redis.DynamicRedisUtils;
+import io.github.pangju666.framework.data.redis.core.ScanRedisTemplate;
+import io.github.pangju666.framework.data.redis.core.StringScanRedisTemplate;
 import io.lettuce.core.resource.ClientResources;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -45,6 +47,7 @@ import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
@@ -53,32 +56,25 @@ import java.util.NoSuchElementException;
 import java.util.function.Supplier;
 
 /**
- * 动态Redis Bean注册器
- * <p>
- * 该类实现了Spring的{@link ImportBeanDefinitionRegistrar}接口，
- * 用于在运行时动态注册多个Redis连接相关的Bean。
- * 支持多个Redis数据源的配置和管理，可自动选择Jedis或Lettuce作为客户端库。
- * </p>
- * <p>
- * 主要功能包括：
+ * 动态 Redis Bean 注册器。
+ *
+ * <p><strong>概述</strong></p>
  * <ul>
- *     <li>解析{@link DynamicRedisProperties}配置属性</li>
- *     <li>为每个数据源注册{@link RedisConnectionDetails} Bean</li>
- *     <li>为每个数据源注册{@link RedisConnectionFactory} Bean</li>
- *     <li>为每个数据源注册{@link RedisTemplate} Bean</li>
- *     <li>根据主数据源配置创建主Bean</li>
- *     <li>支持虚拟线程（Java 21+）</li>
- *     <li>支持Jedis和Lettuce两种客户端</li>
+ *   <li>实现 {@link ImportBeanDefinitionRegistrar}，在容器启动阶段动态注册多个 Redis 相关 Bean。</li>
+ *   <li>解析 {@link DynamicRedisProperties}，按数据源名称为每个数据源注册连接详情、连接工厂与多种模板。</li>
+ *   <li>支持 Jedis 与 Lettuce 客户端库，并在满足条件时启用虚拟线程（Java 21+）。</li>
+ *   <li>根据主数据源配置为相关 Bean 设置 {@code primary} 标志，提供默认注入指向。</li>
  * </ul>
- * </p>
- * <p>
- * Bean命名规则：
+ *
+ * <p><strong>命名规则</strong>（与 {@link DynamicRedisUtils} 保持一致）</p>
  * <ul>
- *     <li>{name}RedisConnectionDetails - Redis连接详情Bean</li>
- *     <li>{name}RedisConnectionFactory - Redis连接工厂Bean</li>
- *     <li>{name}RedisTemplate - Redis模板Bean</li>
+ *   <li>{name}RedisConnectionDetails：连接详情 Bean。</li>
+ *   <li>{name}RedisConnectionFactory：连接工厂 Bean。</li>
+ *   <li>{name}RedisTemplate：对象键值模板 Bean。</li>
+ *   <li>{name}StringRedisTemplate：字符串键值模板 Bean。</li>
+ *   <li>{name}ScanRedisTemplate：支持游标扫描的模板 Bean。</li>
+ *   <li>{name}StringScanRedisTemplate：支持游标扫描的字符串模板 Bean。</li>
  * </ul>
- * </p>
  *
  * @author pangju666
  * @see DynamicRedisProperties
@@ -94,15 +90,12 @@ class DynamicRedisRegistrar implements EnvironmentAware, BeanFactoryAware, Impor
 	 * @since 1.0.0
 	 */
 	private static final Logger log = LoggerFactory.getLogger(DynamicRedisRegistrar.class);
-	/**
-	 * Redis连接详情Bean名称模板
-	 * <p>
-	 * 格式为：{name}RedisConnectionDetails
-	 * </p>
-	 *
-	 * @since 1.0.0
-	 */
-	private static final String CONNECTION_DETAILS_BEAN_NAME_TEMPLATE = "%sRedisConnectionDetails";
+    /**
+     * 连接详情 Bean 名称模板（{name}RedisConnectionDetails）。
+     *
+     * @since 1.0.0
+     */
+    private static final String CONNECTION_DETAILS_BEAN_NAME_TEMPLATE = "%sRedisConnectionDetails";
 
 	/**
 	 * Spring Bean工厂
@@ -133,44 +126,17 @@ class DynamicRedisRegistrar implements EnvironmentAware, BeanFactoryAware, Impor
 		this.beanFactory = beanFactory;
 	}
 
-	/**
-	 * 注册Bean定义
-	 * <p>
-	 * 该方法在Spring容器初始化时被调用，用于动态注册Redis相关Bean。
-	 * 执行流程如下：
-	 * </p>
-	 * <ol>
-	 *     <li>从配置中解析{@link DynamicRedisProperties}
-	 *         <ul>
-	 *             <li>如果配置不存在，直接返回</li>
-	 *         </ul>
-	 *     </li>
-	 *     <li>验证配置的有效性
-	 *         <ul>
-	 *             <li>数据源集合不可为空</li>
-	 *             <li>主数据源名称不可为空</li>
-	 *             <li>主数据源必须存在于数据源集合中</li>
-	 *         </ul>
-	 *     </li>
-	 *     <li>为每个配置的Redis数据源注册Bean定义
-	 *         <ul>
-	 *             <li>注册{@link RedisConnectionDetails} Bean</li>
-	 *             <li>根据客户端类型选择Jedis或Lettuce创建{@link RedisConnectionFactory} Bean</li>
-	 *             <li>根据序列化器配置创建{@link RedisTemplate} Bean</li>
-	 *         </ul>
-	 *     </li>
-	 *     <li>为主数据源的Bean设置primary标志
-	 *         <ul>
-	 *             <li>为主RedisConnectionDetails设置primary=true</li>
-	 *             <li>为主RedisConnectionFactory设置primary=true</li>
-	 *             <li>创建"redisTemplate"的primary Bean指向主数据源</li>
-	 *         </ul>
-	 *     </li>
-	 * </ol>
-	 *
-	 * @param importingClassMetadata 导入类的注解元数据
-	 * @param beanDefinitionRegistry Bean定义注册表，用于注册新的Bean定义
-	 */
+    /**
+     * 注册 Bean 定义。
+     *
+     * <p><b>流程</b>：解析 {@code spring.data.redis.dynamic} -> 校验配置（非空、主库存在）->
+     * 为每个数据源注册连接详情 -> 选择 Jedis/Lettuce 创建连接工厂（按虚拟线程能力）->
+     * 注册模板（对象/字符串/扫描/字符串扫描）并依赖连接工厂 -> 为主数据源设置 {@code primary} 标志 -> 记录日志。</p>
+     * <p><b>约束</b>：当未配置属性或缺失绑定时不进行注册；命名与依赖遵循统一模板与注册顺序。</p>
+     *
+     * @param importingClassMetadata 导入类的注解元数据
+     * @param beanDefinitionRegistry Bean 定义注册表
+     */
 	@SuppressWarnings("rawtypes")
 	@Override
 	public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry beanDefinitionRegistry) {
@@ -200,7 +166,7 @@ class DynamicRedisRegistrar implements EnvironmentAware, BeanFactoryAware, Impor
 				beanDefinitionRegistry.registerBeanDefinition(connectionDetailsBeanName, connectionDetailsBeanDefinition);
 
 				// 注册 RedisConnectionFactory
-				String connectionFactoryBeanName = DynamicRedisUtils.getConnectionFactoryBeanName(name);
+				String connectionFactoryBeanName = DynamicRedisUtils.getRedisConnectionFactoryBeanName(name);
 				BeanDefinitionBuilder connectionFactoryBeanBuilder;
 				// JedisConnectionFactory
 				if (redisProperties.getClientType() == DynamicRedisProperties.RedisProperties.ClientType.JEDIS) {
@@ -265,7 +231,39 @@ class DynamicRedisRegistrar implements EnvironmentAware, BeanFactoryAware, Impor
 					RedisTemplate.class, redisTemplateSupplier);
 				redisTemplateBeanBuilder.addDependsOn(connectionFactoryBeanName);
 				AbstractBeanDefinition redisTemplateBeanDefinition = redisTemplateBeanBuilder.getBeanDefinition();
-				beanDefinitionRegistry.registerBeanDefinition(DynamicRedisUtils.getTemplateBeanName(name), redisTemplateBeanDefinition);
+				beanDefinitionRegistry.registerBeanDefinition(DynamicRedisUtils.getRedisTemplateBeanName(name), redisTemplateBeanDefinition);
+
+				// 注册 StringRedisTemplate
+				Supplier<StringRedisTemplate> stringRedisTemplateSupplier = () ->
+					new StringRedisTemplate(beanFactory.getBean(connectionFactoryBeanName, RedisConnectionFactory.class));
+				BeanDefinitionBuilder stringRedisTemplateBeanBuilder = BeanDefinitionBuilder.genericBeanDefinition(
+					StringRedisTemplate.class, stringRedisTemplateSupplier);
+				stringRedisTemplateBeanBuilder.addDependsOn(connectionFactoryBeanName);
+				AbstractBeanDefinition stringRedisTemplateBeanDefinition = stringRedisTemplateBeanBuilder.getBeanDefinition();
+				beanDefinitionRegistry.registerBeanDefinition(DynamicRedisUtils.getStringRedisTemplateBeanName(name), stringRedisTemplateBeanDefinition);
+
+				// 注册 ScanRedisTemplate
+				Supplier<ScanRedisTemplate> scanRedisTemplateSupplier = () -> {
+					ScanRedisTemplate<Object> scanRedisTemplate = new ScanRedisTemplate<>();
+					scanRedisTemplate.setValueSerializer(redisProperties.getValueSerializer().getSerializer());
+					scanRedisTemplate.setHashValueSerializer(redisProperties.getHashValueSerializer().getSerializer());
+					scanRedisTemplate.setConnectionFactory(beanFactory.getBean(connectionFactoryBeanName, RedisConnectionFactory.class));
+					return scanRedisTemplate;
+				};
+				BeanDefinitionBuilder scanRedisTemplateBeanBuilder = BeanDefinitionBuilder.genericBeanDefinition(
+					ScanRedisTemplate.class, scanRedisTemplateSupplier);
+				scanRedisTemplateBeanBuilder.addDependsOn(connectionFactoryBeanName);
+				AbstractBeanDefinition scanRedisTemplateBeanDefinition = scanRedisTemplateBeanBuilder.getBeanDefinition();
+				beanDefinitionRegistry.registerBeanDefinition(DynamicRedisUtils.getScanRedisTemplateBeanName(name), scanRedisTemplateBeanDefinition);
+
+				// 注册 StringScanRedisTemplate
+				Supplier<StringScanRedisTemplate> stringScanRedisTemplateSupplier = () ->
+					new StringScanRedisTemplate(beanFactory.getBean(connectionFactoryBeanName, RedisConnectionFactory.class));
+				BeanDefinitionBuilder stringScanRedisTemplateBeanBuilder = BeanDefinitionBuilder.genericBeanDefinition(
+					StringScanRedisTemplate.class, stringScanRedisTemplateSupplier);
+				stringScanRedisTemplateBeanBuilder.addDependsOn(connectionFactoryBeanName);
+				AbstractBeanDefinition stringScanRedisTemplateBeanDefinition = stringScanRedisTemplateBeanBuilder.getBeanDefinition();
+				beanDefinitionRegistry.registerBeanDefinition(DynamicRedisUtils.getStringRedisScanTemplateBeanName(name), stringScanRedisTemplateBeanDefinition);
 
 				if (dynamicRedisProperties.getPrimary().equals(name)) {
 					connectionDetailsBeanDefinition.setPrimary(true);
@@ -274,6 +272,18 @@ class DynamicRedisRegistrar implements EnvironmentAware, BeanFactoryAware, Impor
 					GenericBeanDefinition primaryRedisTemplateBeanDefinition = new GenericBeanDefinition(redisTemplateBeanDefinition);
 					primaryRedisTemplateBeanDefinition.setPrimary(true);
 					beanDefinitionRegistry.registerBeanDefinition("redisTemplate", primaryRedisTemplateBeanDefinition);
+
+					GenericBeanDefinition primaryScanRedisTemplateBeanDefinition = new GenericBeanDefinition(scanRedisTemplateBeanDefinition);
+					primaryScanRedisTemplateBeanDefinition.setPrimary(true);
+					beanDefinitionRegistry.registerBeanDefinition("scanRedisTemplate", primaryScanRedisTemplateBeanDefinition);
+
+					GenericBeanDefinition primaryStringRedisTemplateBeanDefinition = new GenericBeanDefinition(stringRedisTemplateBeanDefinition);
+					primaryStringRedisTemplateBeanDefinition.setPrimary(true);
+					beanDefinitionRegistry.registerBeanDefinition("stringRedisTemplate", primaryStringRedisTemplateBeanDefinition);
+
+					GenericBeanDefinition primaryStringScanRedisTemplateBeanDefinition = new GenericBeanDefinition(stringScanRedisTemplateBeanDefinition);
+					primaryStringScanRedisTemplateBeanDefinition.setPrimary(true);
+					beanDefinitionRegistry.registerBeanDefinition("stringScanRedisTemplate", primaryStringScanRedisTemplateBeanDefinition);
 				}
 
 				log.info("dynamic-redis - add a database named [{}] success", name);
