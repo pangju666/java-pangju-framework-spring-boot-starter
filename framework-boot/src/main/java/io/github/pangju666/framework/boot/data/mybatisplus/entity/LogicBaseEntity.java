@@ -14,11 +14,11 @@
  *    limitations under the License.
  */
 
-package io.github.pangju666.framework.boot.data.mybatisplus.model.entity;
+package io.github.pangju666.framework.boot.data.mybatisplus.entity;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableLogic;
-import io.github.pangju666.framework.boot.data.mybatisplus.TableLogicFill;
+import io.github.pangju666.framework.boot.data.mybatisplus.annotation.TableLogicFill;
 import io.github.pangju666.framework.data.mybatisplus.model.entity.BaseEntity;
 
 import java.util.Date;
@@ -36,7 +36,7 @@ import java.util.Date;
  */
 public abstract class LogicBaseEntity<ID> extends BaseEntity {
 	/**
-	 * 删除时间
+	 * 删除时间（逻辑删除时自动填充为当前时间）
 	 *
 	 * @since 1.0.0
 	 */

@@ -17,53 +17,42 @@
 package io.github.pangju666.framework.boot.autoconfigure.data.mybatisplus;
 
 import com.baomidou.mybatisplus.annotation.DbType;
-import com.baomidou.mybatisplus.extension.plugins.handler.DataPermissionHandler;
-import com.baomidou.mybatisplus.extension.plugins.handler.TableNameHandler;
-import com.baomidou.mybatisplus.extension.plugins.handler.TenantLineHandler;
-import com.baomidou.mybatisplus.extension.plugins.pagination.dialects.IDialect;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
- * MyBatis-Plus插件配置属性类
- * <p>
- * 用于配置MyBatis-Plus的各种插件，包括分页、多租户、动态表名、乐观锁、防全表更新与删除、数据权限等。
- * 通过在配置文件中设置相应的属性，可以启用或禁用这些插件，并配置它们的行为。
- * </p>
- * <p>
- * 配置示例：
+ * MyBatis-Plus 插件配置属性。
+ *
+ * <p><strong>前缀</strong>：{@code mybatis-plus.plugins}</p>
+ * <p><strong>概述</strong></p>
+ * <ul>
+ *   <li>配置并启用以下内置插件：分页、乐观锁、防全表更新与删除。</li>
+ *   <li>通过属性控制插件的开关与行为（数据库类型、Wrapper 模式等）。</li>
+ * </ul>
+ *
+ * <p><strong>属性映射（含默认值）</strong></p>
+ * <ul>
+ *   <li>{@code mybatis-plus.plugins.pagination.enabled}：是否启用分页，默认 {@code true}。</li>
+ *   <li>{@code mybatis-plus.plugins.pagination.db-type}：数据库类型，默认 {@code MYSQL}（{@link com.baomidou.mybatisplus.annotation.DbType}）。</li>
+ *   <li>{@code mybatis-plus.plugins.optimistic-locker.enabled}：是否启用乐观锁，默认 {@code true}。</li>
+ *   <li>{@code mybatis-plus.plugins.optimistic-locker.wrapper-mode}：是否启用 Wrapper 模式，默认 {@code true}。</li>
+ *   <li>{@code mybatis-plus.plugins.block-attack.enabled}：是否启用防全表更新与删除，默认 {@code true}。</li>
+ * </ul>
+ *
+ * <p><strong>配置示例</strong></p>
  * <pre>
  * mybatis-plus:
  *   plugins:
- *     # 分页插件配置
  *     pagination:
  *       enabled: true
  *       db-type: MYSQL
- *       dialect: # 自定义方言类，不配置时使用默认方言
- *     # 多租户插件配置
- *     tenant-line:
- *       enabled: false
- *       handler: # 租户处理器实现类
- *     # 动态表名插件配置
- *     dynamic-table-name:
- *       enabled: false
- *       jsql-parser: true
- *       handler: # 表名处理器实现类
- *     # 乐观锁插件配置
  *     optimistic-locker:
  *       enabled: true
  *       wrapper-mode: true
- *     # 防全表更新与删除插件配置
  *     block-attack:
  *       enabled: true
- *     # 数据权限插件配置
- *     data-permission:
- *       enabled: false
- *       handler: # 数据权限处理器实现类
  * </pre>
- * </p>
  *
  * @author pangju666
- * @see com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor
  * @since 1.0.0
  */
 @ConfigurationProperties(prefix = "mybatis-plus.plugins")
@@ -79,30 +68,6 @@ public class MybatisPlusInterceptorProperties {
 	 * @since 1.0.0
 	 */
 	private Pagination pagination = new Pagination();
-	/**
-	 * 多租户插件配置
-	 * <p>
-	 * 用于配置MyBatis-Plus的多租户插件，默认关闭。
-	 * 通过指定租户处理器来实现多租户数据隔离。
-	 * </p>
-	 *
-	 * @see com.baomidou.mybatisplus.extension.plugins.inner.TenantLineInnerInterceptor
-	 * @see com.baomidou.mybatisplus.extension.plugins.handler.TenantLineHandler
-	 * @since 1.0.0
-	 */
-	private TenantLine tenantLine = new TenantLine();
-	/**
-	 * 动态表名插件配置
-	 * <p>
-	 * 用于配置MyBatis-Plus的动态表名插件，默认关闭。
-	 * 支持在运行时动态修改表名，适用于分表场景。
-	 * </p>
-	 *
-	 * @see com.baomidou.mybatisplus.extension.plugins.inner.DynamicTableNameInnerInterceptor
-	 * @see com.baomidou.mybatisplus.extension.plugins.inner.DynamicTableNameJsqlParserInnerInterceptor
-	 * @since 1.0.0
-	 */
-	private DynamicTableName dynamicTableName = new DynamicTableName();
 	/**
 	 * 乐观锁插件配置
 	 * <p>
@@ -125,26 +90,6 @@ public class MybatisPlusInterceptorProperties {
 	 * @since 1.0.0
 	 */
 	private BlockAttack blockAttack = new BlockAttack();
-	/**
-	 * 数据权限插件配置
-	 * <p>
-	 * 用于配置MyBatis-Plus的数据权限插件，默认关闭。
-	 * 通过指定数据权限处理器来实现细粒度的数据访问控制。
-	 * </p>
-	 *
-	 * @see com.baomidou.mybatisplus.extension.plugins.inner.DataPermissionInterceptor
-	 * @see com.baomidou.mybatisplus.extension.plugins.handler.DataPermissionHandler
-	 * @since 1.0.0
-	 */
-	private DataPermission dataPermission = new DataPermission();
-
-	public DataPermission getDataPermission() {
-		return dataPermission;
-	}
-
-	public void setDataPermission(DataPermission dataPermission) {
-		this.dataPermission = dataPermission;
-	}
 
 	public Pagination getPagination() {
 		return pagination;
@@ -152,22 +97,6 @@ public class MybatisPlusInterceptorProperties {
 
 	public void setPagination(Pagination pagination) {
 		this.pagination = pagination;
-	}
-
-	public TenantLine getTenantLine() {
-		return tenantLine;
-	}
-
-	public void setTenantLine(TenantLine tenantLine) {
-		this.tenantLine = tenantLine;
-	}
-
-	public DynamicTableName getDynamicTableName() {
-		return dynamicTableName;
-	}
-
-	public void setDynamicTableName(DynamicTableName dynamicTableName) {
-		this.dynamicTableName = dynamicTableName;
 	}
 
 	public OptimisticLocker getOptimisticLocker() {
@@ -205,12 +134,6 @@ public class MybatisPlusInterceptorProperties {
 		 * @since 1.0.0
 		 */
 		private DbType dbType = DbType.MYSQL;
-		/**
-		 * 自定义分页方言实现类
-		 *
-		 * @since 1.0.0
-		 */
-		private Class<? extends IDialect> dialect;
 
 		public boolean isEnabled() {
 			return enabled;
@@ -227,105 +150,6 @@ public class MybatisPlusInterceptorProperties {
 		public void setDbType(DbType dbType) {
 			this.dbType = dbType;
 		}
-
-		public Class<? extends IDialect> getDialect() {
-			return dialect;
-		}
-
-		public void setDialect(Class<? extends IDialect> dialect) {
-			this.dialect = dialect;
-		}
-	}
-
-	/**
-	 * 多租户插件配置内部类
-	 *
-	 * @author pangju666
-	 * @since 1.0.0
-	 */
-	public static class TenantLine {
-		/**
-		 * 是否启用多租户插件，默认为false
-		 *
-		 * @since 1.0.0
-		 */
-		private boolean enabled = false;
-		/**
-		 * 租户处理器实现类
-		 *
-		 * @since 1.0.0
-		 */
-		private Class<? extends TenantLineHandler> handler;
-
-		public boolean isEnabled() {
-			return enabled;
-		}
-
-		public void setEnabled(boolean enabled) {
-			this.enabled = enabled;
-		}
-
-		public Class<? extends TenantLineHandler> getHandler() {
-			return handler;
-		}
-
-		public void setHandler(Class<? extends TenantLineHandler> handler) {
-			this.handler = handler;
-		}
-	}
-
-	/**
-	 * 动态表名插件配置内部类
-	 *
-	 * @author pangju666
-	 * @since 1.0.0
-	 */
-	public static class DynamicTableName {
-		/**
-		 * 是否启用动态表名插件，默认为false
-		 *
-		 * @since 1.0.0
-		 */
-		private boolean enabled = false;
-		/**
-		 * 是否使用JSqlParser实现，默认为true
-		 * <p>
-		 * 启用JSqlParser实现可以处理复杂SQL中的表名替换，但性能略低
-		 * </p>
-		 *
-		 * @since 1.0.0
-		 */
-		private boolean jsqlParser = true;
-		/**
-		 * 表名处理器实现类
-		 *
-		 * @since 1.0.0
-		 */
-		private Class<? extends TableNameHandler> handler;
-
-		public boolean isEnabled() {
-			return enabled;
-		}
-
-		public void setEnabled(boolean enabled) {
-			this.enabled = enabled;
-		}
-
-		public Class<? extends TableNameHandler> getHandler() {
-			return handler;
-		}
-
-		public void setHandler(Class<? extends TableNameHandler> handler) {
-			this.handler = handler;
-		}
-
-		public boolean isJsqlParser() {
-			return jsqlParser;
-		}
-
-		public void setJsqlParser(boolean jsqlParser) {
-			this.jsqlParser = jsqlParser;
-		}
 	}
 
 	/**
@@ -336,11 +160,11 @@ public class MybatisPlusInterceptorProperties {
 	 */
 	public static class OptimisticLocker {
 		/**
-		 * 是否启用乐观锁插件，默认为false
+		 * 是否启用乐观锁插件，默认为true
 		 *
 		 * @since 1.0.0
 		 */
-		private boolean enabled = false;
+		private boolean enabled = true;
 		/**
 		 * 是否启用wrapper模式，默认为true
 		 * <p>
@@ -388,43 +212,6 @@ public class MybatisPlusInterceptorProperties {
 
 		public void setEnabled(boolean enabled) {
 			this.enabled = enabled;
-		}
-	}
-
-	/**
-	 * 数据权限插件配置内部类
-	 *
-	 * @author pangju666
-	 * @since 1.0.0
-	 */
-	public static class DataPermission {
-		/**
-		 * 是否启用数据权限插件，默认为false
-		 *
-		 * @since 1.0.0
-		 */
-		private boolean enabled = false;
-		/**
-		 * 数据权限处理器实现类
-		 *
-		 * @since 1.0.0
-		 */
-		private Class<? extends DataPermissionHandler> handler;
-
-		public boolean isEnabled() {
-			return enabled;
-		}
-
-		public void setEnabled(boolean enabled) {
-			this.enabled = enabled;
-		}
-
-		public Class<? extends DataPermissionHandler> getHandler() {
-			return handler;
-		}
-
-		public void setHandler(Class<? extends DataPermissionHandler> handler) {
-			this.handler = handler;
 		}
 	}
 }
