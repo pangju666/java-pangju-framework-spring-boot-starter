@@ -29,6 +29,7 @@ import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.beans.factory.support.GenericBeanDefinition;
 import org.springframework.boot.autoconfigure.mongo.*;
 import org.springframework.boot.context.properties.PropertyMapper;
 import org.springframework.boot.context.properties.bind.Binder;
@@ -364,8 +365,14 @@ class DynamicMongoRegistrar implements EnvironmentAware, BeanFactoryAware, Impor
 					connectionDetailsBeanDefinition.setPrimary(true);
 					mongoClientBeanDefinition.setPrimary(true);
 					mongoDatabaseFactoryBeanDefinition.setPrimary(true);
-					mongoTemplateBeanDefinition.setPrimary(true);
-					gridFsTemplateBeanDefinition.setPrimary(true);
+
+					GenericBeanDefinition primaryMongoTemplateBeanDefinition = new GenericBeanDefinition(mongoTemplateBeanDefinition);
+					primaryMongoTemplateBeanDefinition.setPrimary(true);
+					beanDefinitionRegistry.registerBeanDefinition("mongoTemplate", primaryMongoTemplateBeanDefinition);
+
+					GenericBeanDefinition primaryGridFsTemplateBeanDefinition = new GenericBeanDefinition(gridFsTemplateBeanDefinition);
+					primaryGridFsTemplateBeanDefinition.setPrimary(true);
+					beanDefinitionRegistry.registerBeanDefinition("gridFsTemplate", primaryGridFsTemplateBeanDefinition);
 				}
 				log.info("dynamic-mongodb - add a database named [{}] success", name);
 			});
