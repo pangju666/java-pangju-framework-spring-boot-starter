@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package io.github.pangju666.framework.boot.autoconfigure.web.crypto;
+package io.github.pangju666.framework.boot.autoconfigure.web.advice.crypto;
 
 import io.github.pangju666.commons.crypto.key.RSAKeyPair;
 import io.github.pangju666.commons.lang.pool.Constants;
