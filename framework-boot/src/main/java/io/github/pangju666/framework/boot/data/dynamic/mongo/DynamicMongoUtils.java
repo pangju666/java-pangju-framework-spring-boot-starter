@@ -17,7 +17,7 @@
 package io.github.pangju666.framework.boot.data.dynamic.mongo;
 
 import com.mongodb.client.MongoClient;
-import org.springframework.beans.factory.BeanFactory;
+import io.github.pangju666.framework.boot.spring.StaticSpringContext;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.data.mongodb.MongoDatabaseFactory;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -107,13 +107,13 @@ public class DynamicMongoUtils {
 	 * 从Bean工厂中获取指定名称的MongoDB客户端
 	 *
 	 * @param name        数据源名称
-	 * @param beanFactory Spring Bean工厂
 	 * @return MongoDB客户端实例
 	 * @throws NoSuchBeanDefinitionException 当指定名称的Bean不存在时抛出
 	 * @since 1.0.0
 	 */
-	public static MongoClient getMongoClient(String name, BeanFactory beanFactory) {
-		return beanFactory.getBean(CLIENT_BEAN_NAME_TEMPLATE.formatted(name), MongoClient.class);
+	public static MongoClient getMongoClient(String name) {
+		return StaticSpringContext.getBeanFactory().getBean(CLIENT_BEAN_NAME_TEMPLATE.formatted(name),
+			MongoClient.class);
 	}
 
 	/**
@@ -131,13 +131,13 @@ public class DynamicMongoUtils {
 	 * 从Bean工厂中获取指定名称的MongoDB数据库工厂
 	 *
 	 * @param name        数据源名称
-	 * @param beanFactory Spring Bean工厂
 	 * @return MongoDB数据库工厂实例
 	 * @throws NoSuchBeanDefinitionException 当指定名称的Bean不存在时抛出
 	 * @since 1.0.0
 	 */
-	public static MongoDatabaseFactory getMongoDatabaseFactory(String name, BeanFactory beanFactory) {
-		return beanFactory.getBean(DATABASE_FACTORY_BEAN_NAME_TEMPLATE.formatted(name), MongoDatabaseFactory.class);
+	public static MongoDatabaseFactory getMongoDatabaseFactory(String name) {
+		return StaticSpringContext.getBeanFactory().getBean(DATABASE_FACTORY_BEAN_NAME_TEMPLATE.formatted(name),
+			MongoDatabaseFactory.class);
 	}
 
 	/**
@@ -155,13 +155,13 @@ public class DynamicMongoUtils {
 	 * 从Bean工厂中获取指定名称的MongoDB操作模板
 	 *
 	 * @param name        数据源名称
-	 * @param beanFactory Spring Bean工厂
 	 * @return MongoDB操作模板实例
 	 * @throws NoSuchBeanDefinitionException 当指定名称的Bean不存在时抛出
 	 * @since 1.0.0
 	 */
-	public static MongoTemplate getMongoTemplate(String name, BeanFactory beanFactory) {
-		return beanFactory.getBean(TEMPLATE_BEAN_NAME_TEMPLATE.formatted(name), MongoTemplate.class);
+	public static MongoTemplate getMongoTemplate(String name) {
+		return StaticSpringContext.getBeanFactory().getBean(TEMPLATE_BEAN_NAME_TEMPLATE.formatted(name),
+			MongoTemplate.class);
 	}
 
 	/**
@@ -179,12 +179,12 @@ public class DynamicMongoUtils {
 	 * 从Bean工厂中获取指定名称的MongoDB GridFS操作模板
 	 *
 	 * @param name        数据源名称
-	 * @param beanFactory Spring Bean工厂
 	 * @return MongoDB GridFS操作模板实例
 	 * @throws NoSuchBeanDefinitionException 当指定名称的Bean不存在时抛出
 	 * @since 1.0.0
 	 */
-	public static GridFsTemplate getGridFsTemplate(String name, BeanFactory beanFactory) {
-		return beanFactory.getBean(GRID_FS_TEMPLATE_BEAN_NAME_TEMPLATE.formatted(name), GridFsTemplate.class);
+	public static GridFsTemplate getGridFsTemplate(String name) {
+		return StaticSpringContext.getBeanFactory().getBean(GRID_FS_TEMPLATE_BEAN_NAME_TEMPLATE.formatted(name),
+			GridFsTemplate.class);
 	}
 }

@@ -16,9 +16,7 @@
 
 package io.github.pangju666.framework.boot.autoconfigure.data.dynamic.mongo;
 
-import com.mongodb.ClientSessionOptions;
 import com.mongodb.MongoClientSettings;
-import com.mongodb.client.ClientSession;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoDatabase;
 import io.github.pangju666.framework.boot.data.dynamic.mongo.DynamicMongoUtils;
@@ -31,7 +29,6 @@ import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
-import org.springframework.beans.factory.support.GenericBeanDefinition;
 import org.springframework.boot.autoconfigure.mongo.*;
 import org.springframework.boot.context.properties.PropertyMapper;
 import org.springframework.boot.context.properties.bind.Binder;
@@ -41,7 +38,6 @@ import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.core.env.Environment;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.dao.DataAccessException;
-import org.springframework.dao.support.PersistenceExceptionTranslator;
 import org.springframework.data.mapping.model.FieldNamingStrategy;
 import org.springframework.data.mongodb.MongoDatabaseFactory;
 import org.springframework.data.mongodb.MongoManagedTypes;
@@ -242,8 +238,8 @@ class DynamicMongoRegistrar implements EnvironmentAware, BeanFactoryAware, Impor
 		if (!CollectionUtils.isEmpty(mongoDatabases)) {
 			mongoDatabases.forEach((name, mongoProperties) -> {
 				// 注册 MongoConnectionDetails
-				Supplier<MongoConnectionDetails> connectionDetailsSupplier = () -> new PropertiesMongoConnectionDetails(
-					mongoProperties, beanFactory.getBeanProvider(SslBundles.class).getIfAvailable());
+				Supplier<MongoConnectionDetails> connectionDetailsSupplier = () -> new DynamicPropertiesMongoConnectionDetails(
+					mongoProperties, beanFactory.getBeanProvider(SslBundles.class), null);
 				String connectionDetailsBeanName = CONNECTION_DETAILS_BEAN_NAME_TEMPLATE.formatted(name);
 				BeanDefinitionBuilder connectionDetailsBeanBuilder = BeanDefinitionBuilder.genericBeanDefinition(
 					MongoConnectionDetails.class, connectionDetailsSupplier);
@@ -348,8 +344,8 @@ class DynamicMongoRegistrar implements EnvironmentAware, BeanFactoryAware, Impor
 						MongoDatabaseFactory.class);
 					GridFsMongoDatabaseFactory gridFsDatabaseFactory = new GridFsMongoDatabaseFactory(databaseFactory,
 						connectionDetails);
-					return new GridFsTemplate(gridFsDatabaseFactory,
-						beanFactory.getBean(mongoTemplateBeanName, MongoTemplate.class).getConverter(),
+					MongoTemplate mongoTemplate = beanFactory.getBean(mongoTemplateBeanName, MongoTemplate.class);
+					return new GridFsTemplate(gridFsDatabaseFactory, mongoTemplate.getConverter(),
 						(connectionDetails.getGridFs() != null) ? connectionDetails.getGridFs().getBucket() : null);
 				};
 				String gridFsTemplateBeanName = DynamicMongoUtils.getGridFsTemplateBeanName(name);
@@ -365,27 +361,11 @@ class DynamicMongoRegistrar implements EnvironmentAware, BeanFactoryAware, Impor
 					mongoClientSettingsBeanDefinition.setPrimary(true);
 					mongoMappingContextBeanDefinition.setPrimary(true);
 					mongoConverterBeanDefinition.setPrimary(true);
-
-					GenericBeanDefinition primaryConnectionDetailsBeanDefinition = new GenericBeanDefinition(connectionDetailsBeanDefinition);
-					primaryConnectionDetailsBeanDefinition.setPrimary(true);
-					beanDefinitionRegistry.registerBeanDefinition("mongoConnectionDetails", primaryConnectionDetailsBeanDefinition);
-
-					GenericBeanDefinition primaryMongoClientBeanDefinition = new GenericBeanDefinition(mongoClientBeanDefinition);
-					primaryMongoClientBeanDefinition.setPrimary(true);
-					beanDefinitionRegistry.registerBeanDefinition("mongo", primaryMongoClientBeanDefinition);
-
-					GenericBeanDefinition primaryMongoDatabaseFactoryBeanDefinition = new GenericBeanDefinition(mongoDatabaseFactoryBeanDefinition);
-					primaryMongoDatabaseFactoryBeanDefinition.setPrimary(true);
-					beanDefinitionRegistry.registerBeanDefinition("mongoDatabaseFactory", primaryMongoDatabaseFactoryBeanDefinition);
-
-					GenericBeanDefinition primaryMongoTemplateBeanDefinition = new GenericBeanDefinition(mongoTemplateBeanDefinition);
-					primaryMongoTemplateBeanDefinition.setPrimary(true);
-					beanDefinitionRegistry.registerBeanDefinition("mongoTemplate", primaryMongoTemplateBeanDefinition);
-
-					// 解开注释报错
-					/*GenericBeanDefinition primaryGridFsTemplateBeanDefinition = new GenericBeanDefinition(gridFsTemplateBeanDefinition);
-					primaryGridFsTemplateBeanDefinition.setPrimary(true);
-					beanDefinitionRegistry.registerBeanDefinition("gridFsTemplate", primaryGridFsTemplateBeanDefinition);*/
+					connectionDetailsBeanDefinition.setPrimary(true);
+					mongoClientBeanDefinition.setPrimary(true);
+					mongoDatabaseFactoryBeanDefinition.setPrimary(true);
+					mongoTemplateBeanDefinition.setPrimary(true);
+					gridFsTemplateBeanDefinition.setPrimary(true);
 				}
 				log.info("dynamic-mongodb - add a database named [{}] success", name);
 			});
@@ -394,59 +374,12 @@ class DynamicMongoRegistrar implements EnvironmentAware, BeanFactoryAware, Impor
 		}
 	}
 
-	/**
-	 * MongoDB GridFS数据库工厂内部类
-	 *
-	 * <p>来源于 org.springframework.boot.autoconfigure.data.mongo.MongoDatabaseFactoryDependentConfiguration.GridFsMongoDatabaseFactory</p>
-	 *
-	 * @since 1.0.0
-	 */
-	static class GridFsMongoDatabaseFactory implements MongoDatabaseFactory {
-
-		private final MongoDatabaseFactory mongoDatabaseFactory;
-
-		private final MongoConnectionDetails connectionDetails;
-
-		GridFsMongoDatabaseFactory(MongoDatabaseFactory mongoDatabaseFactory,
-								   MongoConnectionDetails connectionDetails) {
-			Assert.notNull(mongoDatabaseFactory, "'mongoDatabaseFactory' must not be null");
-			Assert.notNull(connectionDetails, "'connectionDetails' must not be null");
-			this.mongoDatabaseFactory = mongoDatabaseFactory;
-			this.connectionDetails = connectionDetails;
+	protected MongoDatabase getMongoDatabase(MongoDatabaseFactory mongoDatabaseFactory,
+											 MongoConnectionDetails connectionDetails) throws DataAccessException {
+		String gridFsDatabase = (connectionDetails.getGridFs() != null) ? connectionDetails.getGridFs().getDatabase() : null;
+		if (StringUtils.hasText(gridFsDatabase)) {
+			return mongoDatabaseFactory.getMongoDatabase(gridFsDatabase);
 		}
-
-		@Override
-		public MongoDatabase getMongoDatabase() throws DataAccessException {
-			String gridFsDatabase = getGridFsDatabase(this.connectionDetails);
-			if (StringUtils.hasText(gridFsDatabase)) {
-				return this.mongoDatabaseFactory.getMongoDatabase(gridFsDatabase);
-			}
-			return this.mongoDatabaseFactory.getMongoDatabase();
-		}
-
-		@Override
-		public MongoDatabase getMongoDatabase(String dbName) throws DataAccessException {
-			return this.mongoDatabaseFactory.getMongoDatabase(dbName);
-		}
-
-		@Override
-		public PersistenceExceptionTranslator getExceptionTranslator() {
-			return this.mongoDatabaseFactory.getExceptionTranslator();
-		}
-
-		@Override
-		public ClientSession getSession(ClientSessionOptions options) {
-			return this.mongoDatabaseFactory.getSession(options);
-		}
-
-		@Override
-		public MongoDatabaseFactory withSession(ClientSession session) {
-			return this.mongoDatabaseFactory.withSession(session);
-		}
-
-		private String getGridFsDatabase(MongoConnectionDetails connectionDetails) {
-			return (connectionDetails.getGridFs() != null) ? connectionDetails.getGridFs().getDatabase() : null;
-		}
-
+		return mongoDatabaseFactory.getMongoDatabase();
 	}
 }

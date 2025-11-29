@@ -9,6 +9,7 @@ io.github.pangju666.framework.boot.autoconfigure.data.mongo.MongoRepositoriesAut
 io.github.pangju666.framework.boot.autoconfigure.data.dynamic.redis.DynamicRedisAutoConfiguration
 io.github.pangju666.framework.boot.autoconfigure.data.dynamic.redis.ClientResourcesAutoConfiguration
 io.github.pangju666.framework.boot.autoconfigure.data.dynamic.mongo.DynamicMongoAutoConfiguration
+io.github.pangju666.framework.boot.autoconfigure.data.dynamic.mongo.DynamicMongoRepositoriesAutoConfiguration
 io.github.pangju666.framework.boot.autoconfigure.web.advice.bind.RequestParamBindingAdvice
 io.github.pangju666.framework.boot.autoconfigure.web.advice.wrapper.ResponseBodyWrapperAdvice
 io.github.pangju666.framework.boot.autoconfigure.web.advice.exception.GlobalDataExceptionAdvice

@@ -1,21 +1,6 @@
-/*
- * Copyright 2012-present the original author or authors.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      https://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package io.github.pangju666.framework.boot.autoconfigure.data.dynamic.redis;
 
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.data.redis.RedisConnectionDetails;
 import org.springframework.boot.autoconfigure.data.redis.RedisProperties;
 import org.springframework.boot.ssl.SslBundle;
@@ -27,6 +12,8 @@ import java.util.List;
 
 /**
  * Adapts {@link RedisProperties} to {@link RedisConnectionDetails}.
+ *
+ * <p>我将{@link SslBundles}做了延迟获取，防止提早创建 {@link RedisConnectionDetails} Bean，导致 {@link SslBundles} Bean 初始化失败</p>
  *
  * <p>copy from org.springframework.boot.autoconfigure.data.redis.PropertiesRedisConnectionDetails</p>
  *
@@ -41,11 +28,11 @@ class PropertiesRedisConnectionDetails implements RedisConnectionDetails {
 
 	private final RedisProperties properties;
 
-	private final SslBundles sslBundles;
+	private final ObjectProvider<SslBundles> sslBundlesObjectProvider;
 
-	PropertiesRedisConnectionDetails(RedisProperties properties, SslBundles sslBundles) {
+	PropertiesRedisConnectionDetails(RedisProperties properties, ObjectProvider<SslBundles> sslBundlesObjectProvider) {
 		this.properties = properties;
-		this.sslBundles = sslBundles;
+		this.sslBundlesObjectProvider = sslBundlesObjectProvider;
 	}
 
 	@Override
@@ -75,8 +62,9 @@ class PropertiesRedisConnectionDetails implements RedisConnectionDetails {
 		}
 		String bundleName = this.properties.getSsl().getBundle();
 		if (StringUtils.hasLength(bundleName)) {
-			Assert.notNull(this.sslBundles, "SSL bundle name has been set but no SSL bundles found in context");
-			return this.sslBundles.getBundle(bundleName);
+			SslBundles sslBundles = this.sslBundlesObjectProvider.getIfAvailable();
+			Assert.notNull(sslBundles, "SSL bundle name has been set but no SSL bundles found in context");
+			return sslBundles.getBundle(bundleName);
 		}
 		return SslBundle.systemDefault();
 	}

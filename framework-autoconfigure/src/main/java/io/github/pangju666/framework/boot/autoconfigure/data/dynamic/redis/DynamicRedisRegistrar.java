@@ -158,7 +158,7 @@ class DynamicRedisRegistrar implements EnvironmentAware, BeanFactoryAware, Impor
 			redisDatabases.forEach((name, redisProperties) -> {
 				// 注册 RedisConnectionDetails
 				Supplier<RedisConnectionDetails> connectionDetailsSupplier = () -> new PropertiesRedisConnectionDetails(
-					redisProperties, beanFactory.getBeanProvider(SslBundles.class).getIfAvailable());
+					redisProperties, beanFactory.getBeanProvider(SslBundles.class));
 				String connectionDetailsBeanName = CONNECTION_DETAILS_BEAN_NAME_TEMPLATE.formatted(name);
 				BeanDefinitionBuilder connectionDetailsBeanBuilder = BeanDefinitionBuilder.genericBeanDefinition(
 					RedisConnectionDetails.class, connectionDetailsSupplier);
@@ -268,6 +268,8 @@ class DynamicRedisRegistrar implements EnvironmentAware, BeanFactoryAware, Impor
 				if (dynamicRedisProperties.getPrimary().equals(name)) {
 					connectionDetailsBeanDefinition.setPrimary(true);
 					connectionFactoryBeanDefinition.setPrimary(true);
+					stringRedisTemplateBeanDefinition.setPrimary(true);
+					stringScanRedisTemplateBeanDefinition.setPrimary(true);
 
 					GenericBeanDefinition primaryRedisTemplateBeanDefinition = new GenericBeanDefinition(redisTemplateBeanDefinition);
 					primaryRedisTemplateBeanDefinition.setPrimary(true);
@@ -276,14 +278,6 @@ class DynamicRedisRegistrar implements EnvironmentAware, BeanFactoryAware, Impor
 					GenericBeanDefinition primaryScanRedisTemplateBeanDefinition = new GenericBeanDefinition(scanRedisTemplateBeanDefinition);
 					primaryScanRedisTemplateBeanDefinition.setPrimary(true);
 					beanDefinitionRegistry.registerBeanDefinition("scanRedisTemplate", primaryScanRedisTemplateBeanDefinition);
-
-					GenericBeanDefinition primaryStringRedisTemplateBeanDefinition = new GenericBeanDefinition(stringRedisTemplateBeanDefinition);
-					primaryStringRedisTemplateBeanDefinition.setPrimary(true);
-					beanDefinitionRegistry.registerBeanDefinition("stringRedisTemplate", primaryStringRedisTemplateBeanDefinition);
-
-					GenericBeanDefinition primaryStringScanRedisTemplateBeanDefinition = new GenericBeanDefinition(stringScanRedisTemplateBeanDefinition);
-					primaryStringScanRedisTemplateBeanDefinition.setPrimary(true);
-					beanDefinitionRegistry.registerBeanDefinition("stringScanRedisTemplate", primaryStringScanRedisTemplateBeanDefinition);
 				}
 
 				log.info("dynamic-redis - add a database named [{}] success", name);

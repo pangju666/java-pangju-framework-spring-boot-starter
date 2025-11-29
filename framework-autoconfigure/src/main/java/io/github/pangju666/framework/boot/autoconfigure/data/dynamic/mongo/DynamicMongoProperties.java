@@ -33,12 +33,16 @@ import java.util.Map;
  *   data:
  *     mongodb:
  *       dynamic:
- *         primary: primary
+ *         primary: mongo1
  *         databases:
- *           primary:
- *             uri: mongodb://user:password@localhost:27017/primary_db
- *           secondary:
- *             uri: mongodb://user:password@192.168.1.100:27017/secondary_db
+ *           mongo1:
+ *             host: 127.0.0.1
+ *             port: 27017
+ *             database: xxx
+ *           mongo2:
+ *             host: 127.0.0.1
+ *             port: 27017
+ *             database: xxx
  * </pre>
  * </p>
  *
