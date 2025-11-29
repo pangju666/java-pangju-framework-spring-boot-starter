@@ -59,16 +59,39 @@ import org.springframework.data.mongodb.gridfs.GridFsTemplate;
  *
  * <p><strong>使用示例</strong></p>
  * <pre>{@code
- * // 使用主数据源（自动注入）
- * @Autowired
- * private MongoTemplate mongoTemplate;
+ * @Service
+ * public class MongoService {
+ * 	public MongoService(// 注入主数据源的 MongoClient
+ * 						MongoClient mongoClient,
+ * 						// 注入主数据源的 MongoDatabaseFactory
+ * 						MongoDatabaseFactory mongoDatabaseFactory,
+ * 						// 注入主数据源的 MongoTemplate
+ * 						MongoTemplate mongoTemplate,
+ * 						// 注入主数据源的 GridFsTemplate
+ * 						GridFsTemplate gridFsTemplate,
+ * 						// 注入 redis2 数据源的 MongoClient
+ * 						                        @Qualifier("test2MongoClient")
+ *                        MongoClient mongoClient2,
+ * 						// 注入 redis2 数据源的 MongoDatabaseFactory
+ *                        @Qualifier("test2MongoDatabaseFactory")
+ *                        MongoDatabaseFactory mongoDatabaseFactory2,
+ * 						// 注入 redis2 数据源的 MongoTemplate
+ *                        @Qualifier("test2MongoTemplate")
+ *                        MongoTemplate mongoTemplate2,
+ * 						// 注入 redis2 数据源的 GridFsTemplate
+ *                        @Qualifier("test2GridFsTemplate")
+ *                        GridFsTemplate gridFsTemplate) {
+ * 	}
  *
- * // 使用指定数据源
- * @Autowired
- * @Qualifier("db2MongoTemplate")
- * private MongoTemplate mongoTemplate2;
+ * 	// 通过`DynamicMongoUtils`获取
+ * 	public void test() {
+ * 		MongoClient mongoClient = DynamicMongoUtils.getMongoClient("test2")
+ * 		MongoDatabaseFactory mongoDatabaseFactory = DynamicMongoUtils.getMongoDatabaseFactory("test2");
+ * 		MongoTemplate mongoTemplate = DynamicMongoUtils.getMongoTemplate("test2");
+ * 		GridFsTemplate gridFsTemplate = DynamicMongoUtils.getGridFsTemplate("test");
+ * 	}
  * }
- * </pre>
+ * }</pre>
  *
  * @author pangju666
  * @see DynamicMongoProperties

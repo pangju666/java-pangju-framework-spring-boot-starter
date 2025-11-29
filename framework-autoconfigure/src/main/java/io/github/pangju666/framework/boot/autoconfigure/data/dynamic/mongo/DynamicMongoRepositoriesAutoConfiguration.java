@@ -52,6 +52,16 @@ import org.springframework.data.mongodb.repository.support.MongoRepositoryFactor
  *   <li>在 {@link MongoRepositoriesAutoConfiguration} 之前、{@link DynamicMongoAutoConfiguration} 之后执行。</li>
  * </ul>
  *
+ * <p><strong>使用示例</strong></p>
+ * <pre>{@code
+ * @DynamicMongo("db1") // 指定数据源名称
+ * @Repository
+ * public interface UserRepository extends BaseMongoRepository<UserDocument, String> {
+ * }
+ * }
+ * </pre>
+ * <p>其中 {@code db1} 为数据源名称，需要与 {@code spring.data.mongodb.dynamic.databases} 中的键一致。</p>
+ *
  * @author pangju666
  * @see DynamicMongoRepositoriesRegistrar
  * @see OnDynamicMongoCondition

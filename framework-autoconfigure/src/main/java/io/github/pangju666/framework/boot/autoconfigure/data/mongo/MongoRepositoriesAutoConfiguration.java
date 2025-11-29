@@ -45,6 +45,15 @@ import org.springframework.data.mongodb.repository.support.MongoRepositoryFactor
  *     <li>仓库类型为 {@code mongodb} 且为命令式（{@link org.springframework.boot.autoconfigure.data.RepositoryType#IMPERATIVE}）</li>
  * </ul>
  * </p>
+ * <p>
+ * 使用示例：
+ * <pre>{@code
+ * @Repository
+ * public interface UserRepository extends BaseMongoRepository<UserDocument, String> {
+ * }
+ * }
+ * </pre>
+ * </p>
  *
  * @author pangju666
  * @see MongoRepositoriesRegistrar

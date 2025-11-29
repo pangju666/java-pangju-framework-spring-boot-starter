@@ -54,20 +54,45 @@ import org.springframework.data.redis.core.RedisOperations;
  *
  * <p><strong>使用示例</strong></p>
  * <pre>{@code
- * // 使用主数据源（自动注入）
- * @Autowired
- * private RedisTemplate<Object, Object> redisTemplate;
+ * @Service
+ * public class RedisService {
+ * 	public RedisService(// 注入主数据源的 RedisConnectionFactory
+ * 						RedisConnectionFactory redisConnectionFactory,
+ * 						// 注入主数据源的 RedisTemplate
+ * 						RedisTemplate<Object, Object> redisTemplate,
+ * 						// 注入 注入主数据源的 ScanRedisTemplate
+ * 						ScanRedisTemplate<Object> scanRedisTemplate,
+ * 						// 注入 注入主数据源的 StringRedisTemplate
+ * 						StringRedisTemplate stringRedisTemplate,
+ * 						// 注入 注入主数据源的 StringScanRedisTemplate
+ * 						StringScanRedisTemplate stringScanRedisTemplate,
+ * 						// 注入 redis2 数据源的 RedisConnectionFactory
+ * 						                        @Qualifier("redis2RedisConnectionFactory")
+ *                        RedisConnectionFactory redisConnectionFactory2,
+ * 						// 注入 redis2 数据源的 RedisTemplate
+ *                        @Qualifier("redis2RedisTemplate")
+ *                        RedisTemplate<Object, Object> redisTemplate2,
+ * 						// 注入 redis2 数据源的 StringRedisTemplate
+ *                        @Qualifier("redis2StringRedisTemplate")
+ *                        StringRedisTemplate stringRedisTemplate2,
+ * 						// 注入 redis2 数据源的 ScanRedisTemplate
+ *                        @Qualifier("redis2ScanRedisTemplate")
+ *                        ScanRedisTemplate<Object> scanRedisTemplate2,
+ * 						// 注入 redis2 数据源的 StringScanRedisTemplate
+ *                        @Qualifier("redis2StringScanRedisTemplate")
+ *                        StringScanRedisTemplate stringScanRedisTemplate) {
+ * 	}
  *
- * // 指定数据源名称
- * @Autowired
- * @Qualifier("db2RedisTemplate")
- * private RedisTemplate<Object, Object> redisTemplate2;
- *
- * @Autowired
- * @Qualifier("db2StringRedisTemplate")
- * private StringRedisTemplate stringRedisTemplate2;
+ * 	// 通过`DynamicRedisUtils`获取
+ * 	public void test() {
+ * 		RedisConnectionFactory redisConnectionFactory = DynamicRedisUtils.getRedisConnectionFactory("redis1");
+ * 		RedisTemplate<Object, Object> redisTemplate = DynamicRedisUtils.getRedisTemplate("redis1");
+ * 		ScanRedisTemplate<Object> scanRedisTemplate = DynamicRedisUtils.getScanRedisTemplate("redis1");
+ * 		StringRedisTemplate stringRedisTemplate = DynamicRedisUtils.getStringRedisTemplate("redis1");
+ * 		StringScanRedisTemplate stringScanRedisTemplate = DynamicRedisUtils.getStringScanRedisTemplate("redis");
+ * 	}
  * }
- * </pre>
+ * }</pre>
  *
  * @author pangju666
  * @see DynamicRedisProperties
