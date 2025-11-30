@@ -49,7 +49,7 @@ import java.util.Objects;
  * 启用与排除：
  * <ul>
  *   <li>仅在Servlet类型Web应用，且Classpath存在{@link Servlet}与{@link DispatcherServlet}时启用</li>
- *   <li>启用条件：配置项{@code pangju.web.advice.wrapper=true}（默认启用）</li>
+ *   <li>启用条件：配置项{@code pangju.web.advice.enable-wrapper=true}（默认启用）</li>
  *   <li>排除：返回类型为{@link ResponseEntity}或{@link Result}、方法标注{@link ResponseBodyWrapperIgnore}</li>
  * </ul>
  * </p>
@@ -64,7 +64,7 @@ import java.util.Objects;
  * <p>
  * 包装规则：
  * <ul>
- *   <li>String：设置Content-Type为application/json，返回{@code Result.ok(body).toString()}内容</li>
+ *   <li>String：设置{@code Content-Type}为{@code application/json}，返回{@code Result.ok(body).toString()}内容</li>
  *   <li>其他类型：包装为{@code Result.ok(body)}</li>
  * </ul>
  * </p>
@@ -77,7 +77,7 @@ import java.util.Objects;
  */
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @ConditionalOnClass({Servlet.class, DispatcherServlet.class, Result.class})
-@ConditionalOnBooleanProperty(prefix = "pangju.web.advice", value = "wrapper", matchIfMissing = true)
+@ConditionalOnBooleanProperty(prefix = "pangju.web.advice", value = "enable-wrapper", matchIfMissing = true)
 @RestControllerAdvice
 public class ResponseBodyWrapperAdvice implements ResponseBodyAdvice<Object> {
 	/**

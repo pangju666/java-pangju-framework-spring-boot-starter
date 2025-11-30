@@ -17,6 +17,8 @@
 package io.github.pangju666.framework.boot.autoconfigure.web.advice;
 
 import io.github.pangju666.framework.boot.autoconfigure.web.advice.bind.RequestParamBindingAdvice;
+import io.github.pangju666.framework.boot.autoconfigure.web.advice.exception.*;
+import io.github.pangju666.framework.boot.autoconfigure.web.advice.wrapper.ResponseBodyWrapperAdvice;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
@@ -40,7 +42,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  *     advice:
  *       binder: true
  *       exception: true
- *       wrapper: true
+ *       response-wrapper: true
  * </pre>
  * </p>
  *
@@ -56,52 +58,48 @@ public class AdviceProperties {
 	 * 启用后自动将毫秒时间戳绑定为 {@code Date}、{@code LocalDate}、{@code LocalDateTime}。
 	 * 由 {@link RequestParamBindingAdvice} 生效。
 	 * </p>
-	 *
-	 * @since 1.0.0
 	 */
-	private boolean binder = true;
+	private boolean enableBinder = true;
+
 	/**
 	 * 是否启用全局异常处理（默认：true）
 	 * <p>
 	 * 启用后统一处理应用异常并返回一致的错误响应结构。
-	 * 由 {@link io.github.pangju666.framework.boot.autoconfigure.web.advice.exception} 生效。
+	 * 由 {@link GlobalTomcatFileUploadExceptionAdvice}、{@link GlobalValidationExceptionAdvice}、
+	 * {@link GlobalDataExceptionAdvice}、{@link GlobalWebExceptionAdvice}、{@link GlobalInternalExceptionAdvice} 生效。
 	 * </p>
-	 *
-	 * @since 1.0.0
 	 */
-	private boolean exception = true;
+	private boolean enableException = true;
+
 	/**
 	 * 是否启用响应体统一包装（默认：true）
 	 * <p>
-	 * 控制 {@link io.github.pangju666.framework.boot.autoconfigure.web.advice.wrapper.ResponseBodyWrapperAdvice}
-	 * 是否生效，统一输出含 code、message、data 的响应结构。
+	 * 控制 {@link ResponseBodyWrapperAdvice} 是否生效。
 	 * </p>
-	 *
-	 * @since 1.0.0
 	 */
-	private boolean wrapper = true;
+	private boolean enableWrapper = true;
 
-	public boolean isBinder() {
-		return binder;
+	public boolean isEnableBinder() {
+		return enableBinder;
 	}
 
-	public void setBinder(boolean binder) {
-		this.binder = binder;
+	public void setEnableBinder(boolean enableBinder) {
+		this.enableBinder = enableBinder;
 	}
 
-	public boolean isException() {
-		return exception;
+	public boolean isEnableException() {
+		return enableException;
 	}
 
-	public void setException(boolean exception) {
-		this.exception = exception;
+	public void setEnableException(boolean enableException) {
+		this.enableException = enableException;
 	}
 
-	public boolean isWrapper() {
-		return wrapper;
+	public boolean isEnableWrapper() {
+		return enableWrapper;
 	}
 
-	public void setWrapper(boolean wrapper) {
-		this.wrapper = wrapper;
+	public void setEnableWrapper(boolean enableWrapper) {
+		this.enableWrapper = enableWrapper;
 	}
 }

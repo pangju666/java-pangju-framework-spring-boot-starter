@@ -40,7 +40,7 @@ import java.util.stream.Collectors;
  * <p><strong>启用条件</strong></p>
  * <ul>
  *   <li>Servlet Web 应用，类路径存在 {@code Servlet}、{@code DispatcherServlet}、{@code ConstraintViolationException}</li>
- *   <li>配置项 {@code pangju.web.advice.exception=true}（默认启用）</li>
+ *   <li>配置项 {@code pangju.web.advice.enable-exception=true}（默认启用）</li>
  * </ul>
  *
  * <p><strong>行为说明</strong></p>
@@ -67,7 +67,7 @@ import java.util.stream.Collectors;
 @Order(Ordered.HIGHEST_PRECEDENCE + 2)
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @ConditionalOnClass({Servlet.class, DispatcherServlet.class, ConstraintViolationException.class, Result.class})
-@ConditionalOnBooleanProperty(prefix = "pangju.web.advice", value = "exception", matchIfMissing = true)
+@ConditionalOnBooleanProperty(prefix = "pangju.web.advice", value = "enable-exception", matchIfMissing = true)
 @RestControllerAdvice
 public class GlobalValidationExceptionAdvice {
 	// ============ 400 Bad Request: 参数绑定与校验 ============

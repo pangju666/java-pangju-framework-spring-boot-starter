@@ -18,6 +18,7 @@ package io.github.pangju666.framework.boot.autoconfigure.web.advice;
 
 import io.github.pangju666.framework.boot.autoconfigure.web.advice.bind.RequestParamBindingAdvice;
 import io.github.pangju666.framework.boot.autoconfigure.web.advice.exception.*;
+import io.github.pangju666.framework.boot.autoconfigure.web.advice.wrapper.ResponseBodyWrapperAdvice;
 import io.github.pangju666.framework.web.model.Result;
 import jakarta.servlet.Servlet;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -36,9 +37,9 @@ import org.springframework.web.servlet.DispatcherServlet;
  *
  * <p><strong>配置项（{@code pangju.web.advice.*}）</strong></p>
  * <ul>
- *   <li>{@code binder}（默认启用）：请求参数绑定增强</li>
- *   <li>{@code exception}（默认启用）：全局异常处理</li>
- *   <li>{@code wrapper}（默认启用）：统一响应包装</li>
+ *   <li>{@code enable-binder}（默认启用）：请求参数绑定增强</li>
+ *   <li>{@code enable-exception}（默认启用）：全局异常处理</li>
+ *   <li>{@code enable-wrapper}（默认启用）：统一响应包装</li>
  * </ul>
  *
  * <p><strong>行为说明</strong></p>
@@ -49,7 +50,7 @@ import org.springframework.web.servlet.DispatcherServlet;
  *       <li>请求参数绑定增强：{@link RequestParamBindingAdvice}</li>
  *       <li>全局异常处理：{@link GlobalTomcatFileUploadExceptionAdvice}、{@link GlobalValidationExceptionAdvice}、
  *       {@link GlobalDataExceptionAdvice}、{@link GlobalWebExceptionAdvice}、{@link GlobalInternalExceptionAdvice}</li>
- *       <li>统一响应包装：{@link io.github.pangju666.framework.boot.autoconfigure.web.advice.wrapper.ResponseBodyWrapperAdvice}</li>
+ *       <li>统一响应包装：{@link ResponseBodyWrapperAdvice}</li>
  *     </ul>
  *   </li>
  * </ul>

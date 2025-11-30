@@ -41,7 +41,7 @@ import org.springframework.web.servlet.DispatcherServlet;
  * 启用与条件：
  * <ul>
  *   <li>Servlet 类型 Web 应用，且类路径存在 {@link Servlet}、{@link DispatcherServlet}、{@link DataAccessException}</li>
- *   <li>配置项 {@code pangju.web.advice.exception=true}（默认启用）</li>
+ *   <li>配置项 {@code pangju.web.advice.enable-exception=true}（默认启用）</li>
  * </ul>
  * </p>
  * <p>
@@ -65,7 +65,7 @@ import org.springframework.web.servlet.DispatcherServlet;
 @Order(Ordered.HIGHEST_PRECEDENCE + 2)
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @ConditionalOnClass({Servlet.class, DispatcherServlet.class, DataAccessException.class, Result.class})
-@ConditionalOnBooleanProperty(prefix = "pangju.web.advice", value = "exception", matchIfMissing = true)
+@ConditionalOnBooleanProperty(prefix = "pangju.web.advice", value = "enable-exception", matchIfMissing = true)
 @RestControllerAdvice
 public class GlobalDataExceptionAdvice {
 	/**

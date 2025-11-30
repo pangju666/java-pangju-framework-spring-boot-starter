@@ -16,12 +16,7 @@
 
 package io.github.pangju666.framework.boot.autoconfigure.web;
 
-import io.github.pangju666.framework.boot.autoconfigure.web.log.WebLogProperties;
-import io.github.pangju666.framework.boot.web.crypto.EncryptRequestParamArgumentResolver;
-import io.github.pangju666.framework.boot.web.limit.interceptor.RateLimitInterceptor;
-import io.github.pangju666.framework.boot.web.log.interceptor.WebLogInterceptor;
 import io.github.pangju666.framework.boot.web.resolver.EnumRequestParamArgumentResolver;
-import io.github.pangju666.framework.boot.web.signature.interceptor.SignatureInterceptor;
 import io.github.pangju666.framework.web.servlet.BaseHttpInterceptor;
 import jakarta.servlet.Servlet;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -39,8 +34,8 @@ import java.util.List;
  *
  * <p><strong>概述</strong></p>
  * <ul>
- *   <li>增强 Spring MVC：注册常用拦截器与参数解析器，实现统一的请求/响应处理。</li>
- *   <li>支持扩展拦截器（{@link BaseHttpInterceptor}）的动态注册，便于按需增强。</li>
+ *   <li>增强 Spring MVC：注册常用参数解析器与用户自定义拦截器。</li>
+ *   <li>支持扩展拦截器（{@link BaseHttpInterceptor}）的动态注册，按需增强请求处理能力。</li>
  * </ul>
  *
  * <p><strong>条件</strong></p>
@@ -51,38 +46,15 @@ import java.util.List;
  *
  * <p><strong>行为</strong></p>
  * <ul>
- *   <li>参数解析：始终注册 {@link EnumRequestParamArgumentResolver}，并追加由构造方法注入的外部解析器集合（例如加密参数解析器）。</li>
- *   <li>拦截器：在具备依赖时注册签名校验与限流拦截器；仅当启用 Web 日志功能时注册 Web 日志拦截器并应用排除路径（拦截器构造不携带排除路径，统一由注册表的 {@code excludePathPatterns} 应用）。</li>
- *   <li>自定义：遍历并注册用户扩展的 {@link BaseHttpInterceptor}，按其定义的 {@link BaseHttpInterceptor#getOrder()} 顺序。</li>
- * </ul>
- *
- * <p><strong>配置示例（application.yml）</strong></p>
- * <pre>
- * pangju:
- *   web:
- *     signature:
- *       secret-keys:
- *         app1: secretKey1
- *         app2: secretKey2
- *     log:
- *       enabled: true
- *       exclude-path-patterns:
- *         - /actuator/**
- *         - /swagger-ui/**
- * </pre>
- *
- * <p><strong>备注</strong></p>
- * <ul>
- *   <li>内置拦截器（签名/限流/日志）按注册表默认顺序执行；用户扩展拦截器通过其 {@code order} 控制执行顺序。</li>
- *   <li>Web 日志拦截器的排除路径来自 {@link WebLogProperties#getExcludePathPatterns()}，并由注册表应用。</li>
+ *   <li>参数解析：始终注册 {@link EnumRequestParamArgumentResolver}，并追加由构造方法注入的外部参数解析器集合。</li>
+ *   <li>拦截器：遍历并注册通过依赖注入提供的 {@link BaseHttpInterceptor}，应用其包含/排除路径与执行顺序（{@link BaseHttpInterceptor#getOrder()}）。</li>
  * </ul>
  *
  * @author pangju666
  * @see WebMvcConfigurer
- * @see RateLimitInterceptor
- * @see SignatureInterceptor
+ * @see BaseHttpInterceptor
  * @see EnumRequestParamArgumentResolver
- * @see EncryptRequestParamArgumentResolver
+ * @see HandlerMethodArgumentResolver
  * @since 1.0.0
  */
 @AutoConfiguration(after = org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration.class)
@@ -114,7 +86,8 @@ public class WebMvcAutoConfiguration implements WebMvcConfigurer {
     /**
      * 构造方法，初始化 Web MVC 配置。
      *
-     * @param interceptors        自定义 HTTP 拦截器列表
+     * @param interceptors 自定义 HTTP 拦截器列表
+     * @param resolvers    外部参数解析器列表
      * @since 1.0.0
      */
     public WebMvcAutoConfiguration(List<BaseHttpInterceptor> interceptors, List<HandlerMethodArgumentResolver> resolvers) {
@@ -141,10 +114,9 @@ public class WebMvcAutoConfiguration implements WebMvcConfigurer {
      *
      * <p><b>行为</b></p>
      * <ul>
-     *   <li>在存在密钥存储器时注册 {@link SignatureInterceptor}（应用其自身的包含/排除路径）。</li>
-     *   <li>在存在限流器时注册 {@link RateLimitInterceptor}（应用其自身的包含/排除路径）。</li>
-     *   <li>注册 {@link WebLogInterceptor}，并使用 {@link WebLogProperties#getExcludePathPatterns()} 作为排除路径。</li>
-     *   <li>遍历并注册用户扩展的 {@link BaseHttpInterceptor}，按其定义的 {@link BaseHttpInterceptor#getOrder()} 顺序。</li>
+     *   <li>遍历并注册通过依赖注入提供的 {@link BaseHttpInterceptor}。</li>
+     *   <li>应用拦截器自身的包含路径（{@link BaseHttpInterceptor#getPatterns()}）与排除路径（{@link BaseHttpInterceptor#getExcludePathPatterns()}）。</li>
+     *   <li>按拦截器定义的顺序（{@link BaseHttpInterceptor#getOrder()}）进行注册。</li>
      * </ul>
      *
      * @param registry MVC 拦截器注册表
