@@ -17,20 +17,13 @@
 package io.github.pangju666.framework.boot.autoconfigure.web;
 
 import io.github.pangju666.framework.boot.autoconfigure.web.log.WebLogProperties;
-import io.github.pangju666.framework.boot.autoconfigure.web.signature.SignatureProperties;
-import io.github.pangju666.framework.boot.web.limit.interceptor.RateLimitInterceptor;
-import io.github.pangju666.framework.boot.web.limit.limiter.RateLimiter;
-import io.github.pangju666.framework.boot.web.log.interceptor.WebLogInterceptor;
 import io.github.pangju666.framework.boot.web.crypto.EncryptRequestParamArgumentResolver;
+import io.github.pangju666.framework.boot.web.limit.interceptor.RateLimitInterceptor;
+import io.github.pangju666.framework.boot.web.log.interceptor.WebLogInterceptor;
 import io.github.pangju666.framework.boot.web.resolver.EnumRequestParamArgumentResolver;
-import io.github.pangju666.framework.boot.web.signature.configuration.SignatureConfiguration;
 import io.github.pangju666.framework.boot.web.signature.interceptor.SignatureInterceptor;
-import io.github.pangju666.framework.boot.web.signature.storer.SignatureSecretKeyStorer;
-import io.github.pangju666.framework.web.model.Result;
 import io.github.pangju666.framework.web.servlet.BaseHttpInterceptor;
 import jakarta.servlet.Servlet;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
@@ -39,33 +32,31 @@ import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * Web MVC 自动配置。
  *
- * <p><b>概述</b></p>
+ * <p><strong>概述</strong></p>
  * <ul>
  *   <li>增强 Spring MVC：注册常用拦截器与参数解析器，实现统一的请求/响应处理。</li>
  *   <li>支持扩展拦截器（{@link BaseHttpInterceptor}）的动态注册，便于按需增强。</li>
  * </ul>
  *
- * <p><b>条件</b></p>
+ * <p><strong>条件</strong></p>
  * <ul>
  *   <li>仅在 Servlet Web 环境：{@link ConditionalOnWebApplication @ConditionalOnWebApplication(type = SERVLET)}。</li>
- *   <li>必须存在核心类：{@link Servlet}、{@link DispatcherServlet}、{@link WebMvcConfigurer}。</li>
+ *   <li>必须存在核心类：{@link Servlet}、{@link DispatcherServlet}、{@link WebMvcConfigurer}（{@link ConditionalOnClass}）。</li>
  * </ul>
  *
- * <p><b>行为</b></p>
+ * <p><strong>行为</strong></p>
  * <ul>
- *   <li>参数解析：注册枚举解析器与（按需）加密参数解析器。</li>
+ *   <li>参数解析：始终注册 {@link EnumRequestParamArgumentResolver}，并追加由构造方法注入的外部解析器集合（例如加密参数解析器）。</li>
  *   <li>拦截器：在具备依赖时注册签名校验与限流拦截器；仅当启用 Web 日志功能时注册 Web 日志拦截器并应用排除路径（拦截器构造不携带排除路径，统一由注册表的 {@code excludePathPatterns} 应用）。</li>
- *   <li>自定义：遍历并注册用户扩展的 {@link BaseHttpInterceptor}，按其定义的顺序执行。</li>
+ *   <li>自定义：遍历并注册用户扩展的 {@link BaseHttpInterceptor}，按其定义的 {@link BaseHttpInterceptor#getOrder()} 顺序。</li>
  * </ul>
  *
- * <p><b>配置示例（application.yml）</b></p>
+ * <p><strong>配置示例（application.yml）</strong></p>
  * <pre>
  * pangju:
  *   web:
@@ -80,10 +71,10 @@ import java.util.Objects;
  *         - /swagger-ui/**
  * </pre>
  *
- * <p><b>备注</b></p>
+ * <p><strong>备注</strong></p>
  * <ul>
- *   <li>加密参数解析器按需注册：仅当类路径存在所需加密 Key 类型时才启用。</li>
- *   <li>仅当 {@link WebLogProperties#isEnabled()} 为 {@code true} 时注册 Web 日志拦截器；排除路径来自 {@link WebLogProperties#getExcludePathPatterns()}，并通过注册表的 {@code excludePathPatterns} 应用。</li>
+ *   <li>内置拦截器（签名/限流/日志）按注册表默认顺序执行；用户扩展拦截器通过其 {@code order} 控制执行顺序。</li>
+ *   <li>Web 日志拦截器的排除路径来自 {@link WebLogProperties#getExcludePathPatterns()}，并由注册表应用。</li>
  * </ul>
  *
  * @author pangju666
@@ -96,7 +87,7 @@ import java.util.Objects;
  */
 @AutoConfiguration(after = org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration.class)
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
-@ConditionalOnClass({Servlet.class, DispatcherServlet.class, WebMvcConfigurer.class, Result.class})
+@ConditionalOnClass({Servlet.class, DispatcherServlet.class, WebMvcConfigurer.class, BaseHttpInterceptor.class})
 public class WebMvcAutoConfiguration implements WebMvcConfigurer {
 	/**
 	 * 自定义 HTTP 请求拦截器列表
@@ -109,40 +100,16 @@ public class WebMvcAutoConfiguration implements WebMvcConfigurer {
 	 * @since 1.0.0
 	 */
 	private final List<BaseHttpInterceptor> interceptors;
+	/**
+	 * 外部参数解析器集合。
+	 *
+	 * <p>通过构造方法注入的解析器列表，将在
+	 * {@link #addArgumentResolvers(List)} 中按序追加到 MVC 的参数解析器链，
+	 * 用于扩展如加密参数、特殊类型解析等能力。</p>
+	 *
+	 * @since 1.0.0
+	 */
 	private final List<HandlerMethodArgumentResolver> resolvers;
-    /**
-     * 签名属性配置。
-     *
-     * <p>包含与签名校验相关的全局设置（如算法、校验策略等），用于 {@link SignatureInterceptor}。</p>
-     *
-     * @since 1.0.0
-     */
-    private final SignatureConfiguration signatureConfiguration;
-    /**
-     * 限流器。
-     *
-     * <p>提供请求限流能力，当存在时启用 {@link RateLimitInterceptor} 以按规则限制访问。</p>
-     *
-     * @since 1.0.0
-     */
-    private RateLimiter rateLimiter;
-    /**
-     * 签名密钥存储器。
-     *
-     * <p>管理客户端与服务端之间的密钥，用于签名验证；供 {@link SignatureInterceptor} 使用。</p>
-     *
-     * @since 1.0.0
-     */
-    private SignatureSecretKeyStorer secretKeyStorer;
-    /**
-     * Web 日志属性配置。
-     *
-     * <p>提供 Web 日志采集范围与排除路径等设置，供 {@link WebLogInterceptor} 使用。</p>
-     *
-     * @since 1.0.0
-     */
-    private WebLogProperties webLogProperties;
-	private EncryptRequestParamArgumentResolver  encryptRequestParamArgumentResolver;
 
     /**
      * 构造方法，初始化 Web MVC 配置。
@@ -150,44 +117,15 @@ public class WebMvcAutoConfiguration implements WebMvcConfigurer {
      * @param interceptors        自定义 HTTP 拦截器列表
      * @since 1.0.0
      */
-    public WebMvcAutoConfiguration(List<BaseHttpInterceptor> interceptors, List<HandlerMethodArgumentResolver> resolvers,
-								   SignatureProperties properties) {
+    public WebMvcAutoConfiguration(List<BaseHttpInterceptor> interceptors, List<HandlerMethodArgumentResolver> resolvers) {
 		this.interceptors = interceptors;
 		this.resolvers = resolvers;
-
-		SignatureConfiguration signatureConfiguration = new SignatureConfiguration();
-		BeanUtils.copyProperties(properties, signatureConfiguration);
-		this.signatureConfiguration = signatureConfiguration;
-	}
-
-	@Autowired(required = false)
-	public void setRateLimiter(RateLimiter rateLimiter) {
-		this.rateLimiter = rateLimiter;
-	}
-
-	@Autowired(required = false)
-	public void setWebLogProperties(WebLogProperties properties) {
-		this.webLogProperties = properties;
-	}
-
-	@Autowired(required = false)
-	public void setSecretKeyStorer(SignatureSecretKeyStorer secretKeyStorer) {
-		this.secretKeyStorer = secretKeyStorer;
-	}
-
-	@Autowired(required = false)
-	public void setEncryptRequestParamArgumentResolver(EncryptRequestParamArgumentResolver encryptRequestParamArgumentResolver) {
-		this.encryptRequestParamArgumentResolver = encryptRequestParamArgumentResolver;
 	}
 
     /**
      * 注册请求参数解析器。
      *
-     * <p><b>行为</b></p>
-     * <ul>
-     *   <li>始终注册枚举参数解析器 {@link EnumRequestParamArgumentResolver}。</li>
-     *   <li>按需注册加密参数解析器 {@link EncryptRequestParamArgumentResolver}（类路径存在所需加密 Key 时）。</li>
-     * </ul>
+     * <p><b>流程</b>：注册枚举解析器 -> 追加外部解析器集合（通过构造方法注入，例如加密参数解析器）。</p>
      *
      * @param resolvers 参数解析器集合（由 MVC 框架注入）
      * @since 1.0.0
@@ -214,28 +152,6 @@ public class WebMvcAutoConfiguration implements WebMvcConfigurer {
      */
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-		if (Objects.nonNull(secretKeyStorer)) {
-			SignatureInterceptor signatureInterceptor = new SignatureInterceptor(signatureConfiguration, secretKeyStorer);
-			registry.addInterceptor(signatureInterceptor)
-				.addPathPatterns(signatureInterceptor.getPatterns())
-				.excludePathPatterns(signatureInterceptor.getExcludePathPatterns());
-		}
-
-		if (Objects.nonNull(rateLimiter)) {
-			RateLimitInterceptor rateLimitInterceptor = new RateLimitInterceptor(rateLimiter);
-			registry.addInterceptor(rateLimitInterceptor)
-				.addPathPatterns(rateLimitInterceptor.getPatterns())
-				.excludePathPatterns(rateLimitInterceptor.getExcludePathPatterns());
-		}
-
-        // 仅当开启 Web 日志功能时注册拦截器；排除路径由注册表应用
-        if (Objects.nonNull(webLogProperties) && webLogProperties.isEnabled()) {
-            WebLogInterceptor webLogInterceptor = new WebLogInterceptor(Collections.emptySet());
-            registry.addInterceptor(webLogInterceptor)
-                .addPathPatterns(webLogInterceptor.getPatterns())
-                .excludePathPatterns(List.copyOf(webLogProperties.getExcludePathPatterns()));
-	   }
-
 		for (BaseHttpInterceptor interceptor : this.interceptors) {
 			registry.addInterceptor(interceptor)
 				.addPathPatterns(interceptor.getPatterns())

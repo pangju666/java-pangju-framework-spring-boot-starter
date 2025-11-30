@@ -17,16 +17,21 @@
 package io.github.pangju666.framework.boot.autoconfigure.web.signature;
 
 import io.github.pangju666.framework.boot.autoconfigure.web.WebMvcAutoConfiguration;
+import io.github.pangju666.framework.boot.web.signature.configuration.SignatureConfiguration;
+import io.github.pangju666.framework.boot.web.signature.interceptor.SignatureInterceptor;
 import io.github.pangju666.framework.boot.web.signature.storer.SignatureSecretKeyStorer;
 import io.github.pangju666.framework.boot.web.signature.storer.impl.DefaultSignatureSecretKeyStorer;
 import io.github.pangju666.framework.web.model.Result;
 import jakarta.servlet.Servlet;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.web.servlet.DispatcherServlet;
 
 /**
@@ -74,5 +79,18 @@ public class SignatureAutoConfiguration {
 	@Bean
 	public DefaultSignatureSecretKeyStorer defaultSignatureSecretKeyStorer(SignatureProperties properties) {
 		return new DefaultSignatureSecretKeyStorer(properties.getSecretKeys());
+	}
+
+	@Order(Ordered.HIGHEST_PRECEDENCE + 1)
+	@ConditionalOnBean(SignatureSecretKeyStorer.class)
+	@Bean
+	public SignatureInterceptor signatureInterceptor(SignatureSecretKeyStorer secretKeyStorer, SignatureProperties properties) {
+		SignatureConfiguration signatureConfiguration = new SignatureConfiguration();
+		signatureConfiguration.setSignatureHeaderName(properties.getSignatureHeaderName());
+		signatureConfiguration.setAppIdHeaderName(properties.getAppIdHeaderName());
+		signatureConfiguration.setTimestampHeaderName(properties.getTimestampHeaderName());
+		signatureConfiguration.setSignatureParamName(properties.getSignatureParamName());
+		signatureConfiguration.setAppIdParamName(properties.getAppIdParamName());
+		return new SignatureInterceptor(signatureConfiguration, secretKeyStorer);
 	}
 }

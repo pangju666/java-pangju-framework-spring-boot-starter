@@ -24,18 +24,19 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.ConversionNotSupportedException;
+import org.springframework.beans.TypeMismatchException;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpInputMessage;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.converter.HttpMessageNotWritableException;
-import org.springframework.validation.BindingResult;
+import org.springframework.http.converter.json.MappingJacksonInputMessage;
+import org.springframework.validation.BindException;
 import org.springframework.validation.FieldError;
-import org.springframework.validation.ObjectError;
 import org.springframework.web.HttpMediaTypeNotAcceptableException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
@@ -51,7 +52,7 @@ import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
-import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 全局处理通用 HTTP 与系统异常。
@@ -98,6 +99,7 @@ public class GlobalWebExceptionAdvice {
 	 */
 	private static final Logger LOGGER = LoggerFactory.getLogger(GlobalWebExceptionAdvice.class);
 
+	// ============ 自定义异常 ============
 	/**
 	 * 处理自定义 HTTP 异常。
 	 *
@@ -116,6 +118,312 @@ public class GlobalWebExceptionAdvice {
 		HttpResponseBuilder.from(response).writeHttpException(e);
 	}
 
+	// ============ 400 Bad Request: 参数绑定与校验 ============
+	/**
+	 * 处理缺少请求参数异常。
+	 *
+	 * <p><strong>行为</strong></p>
+	 * <ul>
+	 *   <li>返回统一失败响应，HTTP 400（{@link HttpStatus#BAD_REQUEST}）</li>
+	 *   <li>提示缺少的请求参数名称</li>
+	 * </ul>
+	 *
+	 * @param e 异常实例
+	 * @return 统一失败响应
+	 * @since 1.0.0
+	 */
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	@ExceptionHandler(value = MissingServletRequestParameterException.class)
+	public Result<Void> handleMissingServletRequestParameterException(MissingServletRequestParameterException e) {
+		return Result.fail("缺少请求参数：" + e.getParameterName());
+	}
+
+	/**
+	 * 处理缺少请求头异常。
+	 *
+	 * <p><strong>行为</strong></p>
+	 * <ul>
+	 *   <li>返回统一失败响应，HTTP 400（{@link HttpStatus#BAD_REQUEST}）</li>
+	 *   <li>提示缺少的请求头名称</li>
+	 * </ul>
+	 *
+	 * @param e 异常实例
+	 * @return 统一失败响应
+	 * @since 1.0.0
+	 */
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	@ExceptionHandler(value = MissingRequestHeaderException.class)
+	public Result<Void> handleMissingRequestHeaderException(MissingRequestHeaderException e) {
+		return Result.fail("缺少请求头：" + e.getHeaderName());
+	}
+
+    /**
+     * 处理缺少路径变量异常。
+     *
+     * <p><strong>行为</strong></p>
+     * <ul>
+     *   <li>返回统一失败响应，HTTP 400（{@link HttpStatus#BAD_REQUEST}）</li>
+     *   <li>提示缺少的路径变量名称</li>
+     * </ul>
+     *
+     * @param e 异常实例
+     * @return 统一失败响应
+     * @since 1.0.0
+     */
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	@ExceptionHandler(value = MissingPathVariableException.class)
+	public Result<Void> handleMissingPathVariableException(MissingPathVariableException e) {
+		return Result.fail("缺少路径变量：" + e.getVariableName());
+	}
+
+    /**
+     * 处理缺少请求值异常。
+     *
+     * <p><strong>行为</strong></p>
+     * <ul>
+     *   <li>返回统一失败响应，HTTP 400（{@link HttpStatus#BAD_REQUEST}）</li>
+     *   <li>返回统一文案提示：“缺少请求值”；并以 WARN 级别记录日志</li>
+     * </ul>
+     *
+     * @param e 异常实例
+     * @return 统一失败响应
+     * @since 1.0.0
+     */
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	@ExceptionHandler(value = MissingRequestValueException.class)
+	public Result<Void> handleMissingRequestValueException(MissingRequestValueException e) {
+		LOGGER.warn("缺少请求值异常", e);
+		return Result.fail("缺少请求值");
+	}
+
+	/**
+	 * 处理缺少请求表单参数异常。
+	 *
+	 * <p><strong>行为</strong></p>
+	 * <ul>
+	 *   <li>返回统一失败响应，HTTP 400（{@link HttpStatus#BAD_REQUEST}）。</li>
+	 *   <li>提示缺少的表单部件（part）名称。</li>
+	 * </ul>
+	 *
+	 * <p><strong>说明</strong></p>
+	 * <ul>
+	 *   <li>发生在 multipart 请求缺失必要的部件时（{@link MissingServletRequestPartException}）。</li>
+	 * </ul>
+	 *
+	 * @param e 异常实例
+	 * @return 统一失败响应
+	 * @since 1.0.0
+	 */
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	@ExceptionHandler(value = MissingServletRequestPartException.class)
+	public Result<Void> handleMissingServletRequestPartException(MissingServletRequestPartException e) {
+		return Result.fail("缺少表单参数：" + e.getRequestPartName());
+	}
+
+	/**
+	 * 处理方法参数类型不匹配异常。
+	 *
+	 * <p><strong>行为</strong></p>
+	 * <ul>
+	 *   <li>返回统一失败响应，HTTP 400（{@link HttpStatus#BAD_REQUEST}）</li>
+	 *   <li>提示不匹配的参数名称</li>
+	 * </ul>
+	 *
+	 * @param e 异常实例
+	 * @return 统一失败响应
+	 * @since 1.0.0
+	 */
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	@ExceptionHandler(value = MethodArgumentTypeMismatchException.class)
+	public Result<Void> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException e) {
+		String name = e.getName();
+		if (StringUtils.isBlank(name)) {
+			return Result.fail("请求参数类型不正确");
+		} else {
+			return Result.fail("请求参数：" + name + "类型不正确");
+		}
+	}
+
+	/**
+	 * 处理类型不匹配异常。
+	 *
+	 * <p><strong>行为</strong></p>
+	 * <ul>
+	 *   <li>返回统一失败响应，HTTP 400（{@link HttpStatus#BAD_REQUEST}）。</li>
+	 *   <li>当存在属性名时提示“参数：{propertyName} 类型不正确”，否则返回“请求参数类型不正确”。</li>
+	 * </ul>
+	 *
+	 * @param e 异常实例
+	 * @return 统一失败响应
+	 * @since 1.0.0
+	 */
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	@ExceptionHandler(TypeMismatchException.class)
+	public Result<Void> handleTypeMismatchException(TypeMismatchException e) {
+		String propertyName = e.getPropertyName();
+		if (StringUtils.isNotBlank(propertyName)) {
+			return Result.fail("参数：" + propertyName + "类型不正确");
+		}
+		return Result.fail("请求参数类型不正确");
+	}
+
+    /**
+     * 处理请求参数绑定异常。
+     *
+     * <p><strong>行为</strong></p>
+     * <ul>
+     *   <li>记录 WARN 级别日志</li>
+     *   <li>返回统一失败响应，HTTP 400（{@link HttpStatus#BAD_REQUEST}）</li>
+     * </ul>
+     *
+     * @param e 异常实例
+     * @return 统一失败响应
+     * @since 1.0.0
+     */
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	@ExceptionHandler(value = ServletRequestBindingException.class)
+	public Result<Void> handleServletRequestBindingException(ServletRequestBindingException e) {
+		LOGGER.warn("请求参数绑定异常", e);
+		return Result.fail("请求参数绑定错误");
+	}
+
+    /**
+     * 处理请求内容不可读异常。
+     *
+     * <p><strong>行为</strong></p>
+     * <ul>
+     *   <li>记录 WARN 级别日志</li>
+     *   <li>返回统一失败响应，HTTP 400（{@link HttpStatus#BAD_REQUEST}）</li>
+     *   <li>若为 JSON 映射错误（{@link MappingJacksonInputMessage}），提示“请求数据格式错误，请检查是否为有效的 JSON”；否则提示“请求数据格式错误”</li>
+     * </ul>
+     *
+     * @param e 异常实例
+     * @return 统一失败响应
+     * @since 1.0.0
+     */
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	@ExceptionHandler(value = HttpMessageNotReadableException.class)
+	public Result<Void> handleHttpMessageNotReadableException(HttpMessageNotReadableException e) {
+		LOGGER.warn("请求内容读取失败", e);
+		HttpInputMessage httpInputMessage = e.getHttpInputMessage();
+		if (httpInputMessage instanceof MappingJacksonInputMessage) {
+			return Result.fail("请求数据格式错误，请检查是否为有效的 JSON");
+		} else {
+			return Result.fail("请求数据格式错误");
+		}
+	}
+
+    /**
+     * 处理方法参数验证异常（Bean Validation）。
+     *
+     * <p><strong>行为</strong></p>
+     * <ul>
+     *   <li>返回统一失败响应，HTTP 400（{@link HttpStatus#BAD_REQUEST}）</li>
+     *   <li>聚合所有字段错误的默认消息（过滤空白），以分号连接</li>
+     *   <li>无可用提示时返回“请求参数验证不合法”</li>
+     * </ul>
+     *
+     * @param e 异常实例
+     * @return 统一失败响应
+     * @since 1.0.0
+     */
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	@ExceptionHandler(value = MethodArgumentNotValidException.class)
+	public Result<Void> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
+		String allMessages = e.getBindingResult()
+			.getFieldErrors()
+			.stream()
+			.map(FieldError::getDefaultMessage)
+			.filter(StringUtils::isNotBlank)
+			.collect(Collectors.joining("；"));
+		return Result.fail(StringUtils.defaultIfBlank(allMessages, "请求参数验证不合法"));
+	}
+
+	/**
+	 * 处理表单绑定异常（BindException）。
+	 *
+	 * <p><strong>行为</strong></p>
+	 * <ul>
+	 *   <li>返回统一失败响应，HTTP 400（{@link HttpStatus#BAD_REQUEST}）。</li>
+	 *   <li>聚合所有字段错误的默认消息（过滤空白），以分号连接；无提示时返回“请求参数验证不合法”。</li>
+	 * </ul>
+	 *
+	 * @param e 异常实例
+	 * @return 统一失败响应
+	 * @since 1.0.0
+	 */
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	@ExceptionHandler(value = BindException.class)
+	public Result<Void> handleBindException(BindException e) {
+		String allMessages = e.getBindingResult()
+			.getFieldErrors()
+			.stream()
+			.map(FieldError::getDefaultMessage)
+			.filter(StringUtils::isNotBlank)
+			.collect(Collectors.joining("；"));
+		return Result.fail(StringUtils.defaultIfBlank(allMessages, "请求参数验证不合法"));
+	}
+
+    /**
+     * 处理文件上传失败异常。
+     *
+     * <p><strong>行为</strong></p>
+     * <ul>
+     *   <li>记录 WARN 级别日志</li>
+     *   <li>返回统一失败响应，HTTP 400（{@link HttpStatus#BAD_REQUEST}）</li>
+     * </ul>
+     *
+     * @param e 异常实例
+     * @return 统一失败响应
+     * @since 1.0.0
+     */
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	@ExceptionHandler(value = MultipartException.class)
+	public Result<Void> handleMultipartException(MultipartException e) {
+		LOGGER.warn("文件上传异常", e);
+		return Result.fail("文件上传失败");
+	}
+
+	// ============ 404 Not Found: 路径与资源 ============
+	/**
+	 * 处理请求路径不存在异常。
+	 *
+	 * <p><strong>行为</strong></p>
+	 * <ul>
+	 *   <li>返回统一失败响应，HTTP 404（{@link HttpStatus#NOT_FOUND}）</li>
+	 *   <li>提示不存在的请求路径</li>
+	 * </ul>
+	 *
+	 * @param e 异常实例
+	 * @return 统一失败响应
+	 * @since 1.0.0
+	 */
+	@ResponseStatus(HttpStatus.NOT_FOUND)
+	@ExceptionHandler(value = NoHandlerFoundException.class)
+	public Result<Void> handleNoHandlerFoundException(NoHandlerFoundException e) {
+		return Result.fail("请求路径：" + e.getRequestURL() + "不存在");
+	}
+
+	/**
+	 * 处理请求资源不存在异常。
+	 *
+	 * <p><strong>行为</strong></p>
+	 * <ul>
+	 *   <li>返回统一失败响应，HTTP 404（{@link HttpStatus#NOT_FOUND}）</li>
+	 *   <li>提示不存在的资源路径</li>
+	 * </ul>
+	 *
+	 * @param e 异常实例
+	 * @return 统一失败响应
+	 * @since 1.0.0
+	 */
+	@ResponseStatus(HttpStatus.NOT_FOUND)
+	@ExceptionHandler(value = NoResourceFoundException.class)
+	public Result<Void> handleNoResourceFoundException(NoResourceFoundException e) {
+		return Result.fail("请求资源：" + e.getResourcePath() + "不存在");
+	}
+
+	// ============ 405 Method Not Allowed ============
 	/**
 	 * 处理请求方法不支持异常。
 	 *
@@ -135,6 +443,7 @@ public class GlobalWebExceptionAdvice {
 		return Result.fail("预期的请求方法类型：" + StringUtils.join(e.getSupportedMethods(), "、"));
 	}
 
+	// ============ 406 / 415 媒体类型不支持 ============
 	/**
 	 * 处理请求的 Content-Type 不支持异常。
 	 *
@@ -173,283 +482,25 @@ public class GlobalWebExceptionAdvice {
 		return Result.fail("预期的响应数据类型：" + StringUtils.join(e.getSupportedMediaTypes(), "、"));
 	}
 
-	/**
-	 * 处理缺少路径变量异常。
-	 *
-	 * <p><strong>行为</strong></p>
-	 * <ul>
-	 *   <li>记录 ERROR 级别日志</li>
-	 *   <li>返回统一失败响应，HTTP 404（{@link HttpStatus#NOT_FOUND}）</li>
-	 * </ul>
-	 *
-	 * @param e 异常实例
-	 * @return 统一失败响应
-	 * @since 1.0.0
-	 */
-	@ResponseStatus(HttpStatus.NOT_FOUND)
-	@ExceptionHandler(value = MissingPathVariableException.class)
-	public Result<Void> handleMissingPathVariableException(MissingPathVariableException e) {
-		LOGGER.error("缺少路径变量", e);
-		return Result.fail("缺少路径变量: " + e.getVariableName());
-	}
-
-	/**
-	 * 处理缺少请求头异常。
-	 *
-	 * <p><strong>行为</strong></p>
-	 * <ul>
-	 *   <li>返回统一失败响应，HTTP 400（{@link HttpStatus#BAD_REQUEST}）</li>
-	 *   <li>提示缺少的请求头名称</li>
-	 * </ul>
-	 *
-	 * @param e 异常实例
-	 * @return 统一失败响应
-	 * @since 1.0.0
-	 */
-	@ResponseStatus(HttpStatus.BAD_REQUEST)
-	@ExceptionHandler(value = MissingRequestHeaderException.class)
-	public Result<Void> handleMissingRequestHeaderException(MissingRequestHeaderException e) {
-		return Result.fail("缺少请求头：" + e.getHeaderName());
-	}
-
-	/**
-	 * 处理缺少请求参数异常。
-	 *
-	 * <p><strong>行为</strong></p>
-	 * <ul>
-	 *   <li>返回统一失败响应，HTTP 400（{@link HttpStatus#BAD_REQUEST}）</li>
-	 *   <li>提示缺少的请求参数名称</li>
-	 * </ul>
-	 *
-	 * @param e 异常实例
-	 * @return 统一失败响应
-	 * @since 1.0.0
-	 */
-	@ResponseStatus(HttpStatus.BAD_REQUEST)
-	@ExceptionHandler(value = MissingServletRequestParameterException.class)
-	public Result<Void> handleMissingServletRequestParameterException(MissingServletRequestParameterException e) {
-		return Result.fail("缺少请求参数：" + e.getParameterName());
-	}
-
-	/**
-	 * 处理缺少请求值异常。
-	 *
-	 * <p><strong>行为</strong></p>
-	 * <ul>
-	 *   <li>返回统一失败响应，HTTP 400（{@link HttpStatus#BAD_REQUEST}）</li>
-	 *   <li>直接使用异常消息作为提示</li>
-	 * </ul>
-	 *
-	 * @param e 异常实例
-	 * @return 统一失败响应
-	 * @since 1.0.0
-	 */
-	@ResponseStatus(HttpStatus.BAD_REQUEST)
-	@ExceptionHandler(value = MissingRequestValueException.class)
-	public Result<Void> handleMissingRequestValueException(MissingRequestValueException e) {
-		return Result.fail(e.getMessage());
-	}
-
-	/**
-	 * 处理缺少请求文件异常。
-	 *
-	 * <p><strong>行为</strong></p>
-	 * <ul>
-	 *   <li>返回统一失败响应，HTTP 400（{@link HttpStatus#BAD_REQUEST}）</li>
-	 *   <li>提示缺少的文件部件名称</li>
-	 * </ul>
-	 *
-	 * @param e 异常实例
-	 * @return 统一失败响应
-	 * @since 1.0.0
-	 */
-	@ResponseStatus(HttpStatus.BAD_REQUEST)
-	@ExceptionHandler(value = MissingServletRequestPartException.class)
-	public Result<Void> handleMissingServletRequestPartException(MissingServletRequestPartException e) {
-		return Result.fail("缺少请求文件：" + e.getRequestPartName());
-	}
-
-	/**
-	 * 处理请求参数绑定异常。
-	 *
-	 * <p><strong>行为</strong></p>
-	 * <ul>
-	 *   <li>记录 ERROR 级别日志</li>
-	 *   <li>返回统一失败响应，HTTP 400（{@link HttpStatus#BAD_REQUEST}）</li>
-	 * </ul>
-	 *
-	 * @param e 异常实例
-	 * @return 统一失败响应
-	 * @since 1.0.0
-	 */
-	@ResponseStatus(HttpStatus.BAD_REQUEST)
-	@ExceptionHandler(value = ServletRequestBindingException.class)
-	public Result<Void> handleServletRequestBindingException(ServletRequestBindingException e) {
-		LOGGER.error("请求参数绑定异常", e);
-		return Result.fail("请求参数不正确");
-	}
-
-	/**
-	 * 处理请求参数转换不支持异常。
-	 *
-	 * <p><strong>行为</strong></p>
-	 * <ul>
-	 *   <li>记录 ERROR 级别日志</li>
-	 *   <li>返回统一失败响应，HTTP 400（{@link HttpStatus#BAD_REQUEST}）</li>
-	 * </ul>
-	 *
-	 * @param e 异常实例
-	 * @return 统一失败响应
-	 * @since 1.0.0
-	 */
-	@ResponseStatus(HttpStatus.BAD_REQUEST)
-	@ExceptionHandler(value = ConversionNotSupportedException.class)
-	public Result<Void> handleConversionNotSupportedException(ConversionNotSupportedException e) {
-		LOGGER.error("请求参数转换异常", e);
-		return Result.fail("请求参数转换失败");
-	}
-
-	/**
-	 * 处理方法参数类型不匹配异常。
-	 *
-	 * <p><strong>行为</strong></p>
-	 * <ul>
-	 *   <li>返回统一失败响应，HTTP 400（{@link HttpStatus#BAD_REQUEST}）</li>
-	 *   <li>提示不匹配的参数名称</li>
-	 * </ul>
-	 *
-	 * @param e 异常实例
-	 * @return 统一失败响应
-	 * @since 1.0.0
-	 */
-	@ResponseStatus(HttpStatus.BAD_REQUEST)
-	@ExceptionHandler(value = MethodArgumentTypeMismatchException.class)
-	public Result<Void> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException e) {
-		return Result.fail("参数：" + StringUtils.defaultString(e.getName()) + "类型不正确");
-	}
-
-	/**
-	 * 处理请求内容不可读异常。
-	 *
-	 * <p><strong>行为</strong></p>
-	 * <ul>
-	 *   <li>记录 ERROR 级别日志</li>
-	 *   <li>返回统一失败响应，HTTP 400（{@link HttpStatus#BAD_REQUEST}）</li>
-	 * </ul>
-	 *
-	 * @param e 异常实例
-	 * @return 统一失败响应
-	 * @since 1.0.0
-	 */
-	@ResponseStatus(HttpStatus.BAD_REQUEST)
-	@ExceptionHandler(value = HttpMessageNotReadableException.class)
-	public Result<Void> handleHttpMessageNotReadableException(HttpMessageNotReadableException e) {
-		LOGGER.error("请求内容读取失败", e);
-		return Result.fail("请求内容读取失败");
-	}
-
-	/**
-	 * 处理文件上传失败异常。
-	 *
-	 * <p><strong>行为</strong></p>
-	 * <ul>
-	 *   <li>记录 ERROR 级别日志</li>
-	 *   <li>返回统一失败响应，HTTP 400（{@link HttpStatus#BAD_REQUEST}）</li>
-	 * </ul>
-	 *
-	 * @param e 异常实例
-	 * @return 统一失败响应
-	 * @since 1.0.0
-	 */
-	@ResponseStatus(HttpStatus.BAD_REQUEST)
-	@ExceptionHandler(value = MultipartException.class)
-	public Result<Void> handleMultipartException(MultipartException e) {
-		LOGGER.error("上传文件失败", e);
-		return Result.fail("上传文件失败");
-	}
-
-	/**
-	 * 处理响应内容不可写异常。
-	 *
-	 * <p><strong>行为</strong></p>
-	 * <ul>
-	 *   <li>记录 ERROR 级别日志</li>
-	 *   <li>返回统一失败响应，HTTP 500（{@link HttpStatus#INTERNAL_SERVER_ERROR}）</li>
-	 * </ul>
-	 *
-	 * @param e 异常实例
-	 * @return 统一失败响应
-	 * @since 1.0.0
-	 */
+	// ============ 5xx 服务器错误 ============
+    /**
+     * 处理响应内容不可写异常。
+     *
+     * <p><strong>行为</strong></p>
+     * <ul>
+     *   <li>记录 WARN 级别日志</li>
+     *   <li>返回统一失败响应，HTTP 500（{@link HttpStatus#INTERNAL_SERVER_ERROR}）</li>
+     * </ul>
+     *
+     * @param e 异常实例
+     * @return 统一失败响应
+     * @since 1.0.0
+     */
 	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 	@ExceptionHandler(value = HttpMessageNotWritableException.class)
 	public Result<Void> handleHttpMessageNotWritableException(HttpMessageNotWritableException e) {
-		LOGGER.error("响应内容写入失败", e);
+		LOGGER.warn("响应内容写入异常", e);
 		return Result.fail("响应内容写入失败");
-	}
-
-	/**
-	 * 处理方法参数验证异常（Bean Validation）。
-	 *
-	 * <p><strong>行为</strong></p>
-	 * <ul>
-	 *   <li>返回统一失败响应，HTTP 400（{@link HttpStatus#BAD_REQUEST}）</li>
-	 *   <li>优先返回第一个字段错误的默认消息</li>
-	 *   <li>无可用提示时返回“请求参数验证不合法”</li>
-	 * </ul>
-	 *
-	 * @param e 异常实例
-	 * @return 统一失败响应
-	 * @since 1.0.0
-	 */
-	@ResponseStatus(HttpStatus.BAD_REQUEST)
-	@ExceptionHandler(value = MethodArgumentNotValidException.class)
-	public Result<Void> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
-		BindingResult bindingResult = e.getBindingResult();
-		List<ObjectError> objectErrors = bindingResult.getAllErrors();
-		if (!objectErrors.isEmpty()) {
-			FieldError fieldError = (FieldError) objectErrors.iterator().next();
-			return Result.fail(StringUtils.defaultString(fieldError.getDefaultMessage()));
-		}
-		return Result.fail("请求参数验证不合法");
-	}
-
-	/**
-	 * 处理请求路径不存在异常。
-	 *
-	 * <p><strong>行为</strong></p>
-	 * <ul>
-	 *   <li>返回统一失败响应，HTTP 404（{@link HttpStatus#NOT_FOUND}）</li>
-	 *   <li>提示不存在的请求路径</li>
-	 * </ul>
-	 *
-	 * @param e 异常实例
-	 * @return 统一失败响应
-	 * @since 1.0.0
-	 */
-	@ResponseStatus(HttpStatus.NOT_FOUND)
-	@ExceptionHandler(value = NoHandlerFoundException.class)
-	public Result<Void> handleNoHandlerFoundException(NoHandlerFoundException e) {
-		return Result.fail("请求路径：" + e.getRequestURL() + "不存在");
-	}
-
-	/**
-	 * 处理请求资源不存在异常。
-	 *
-	 * <p><strong>行为</strong></p>
-	 * <ul>
-	 *   <li>返回统一失败响应，HTTP 404（{@link HttpStatus#NOT_FOUND}）</li>
-	 *   <li>提示不存在的资源路径</li>
-	 * </ul>
-	 *
-	 * @param e 异常实例
-	 * @return 统一失败响应
-	 * @since 1.0.0
-	 */
-	@ResponseStatus(HttpStatus.NOT_FOUND)
-	@ExceptionHandler(value = NoResourceFoundException.class)
-	public Result<Void> handleNoResourceFoundException(NoResourceFoundException e) {
-		return Result.fail("请求资源：" + e.getResourcePath() + "不存在");
 	}
 
 	/**

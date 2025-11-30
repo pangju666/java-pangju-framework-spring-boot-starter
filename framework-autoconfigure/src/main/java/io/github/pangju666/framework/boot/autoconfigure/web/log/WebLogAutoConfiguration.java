@@ -22,6 +22,7 @@ import io.github.pangju666.framework.boot.web.log.handler.MediaTypeBodyHandler;
 import io.github.pangju666.framework.boot.web.log.handler.WebLogHandler;
 import io.github.pangju666.framework.boot.web.log.handler.impl.JsonBodyHandler;
 import io.github.pangju666.framework.boot.web.log.handler.impl.TextBodyHandler;
+import io.github.pangju666.framework.boot.web.log.interceptor.WebLogInterceptor;
 import io.github.pangju666.framework.boot.web.log.sender.WebLogSender;
 import io.github.pangju666.framework.web.lang.WebConstants;
 import io.github.pangju666.framework.web.model.Result;
@@ -30,12 +31,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.*;
-import org.springframework.boot.autoconfigure.web.servlet.ConditionalOnMissingFilterBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.InvalidMediaTypeException;
 import org.springframework.http.MediaType;
 import org.springframework.util.CollectionUtils;
@@ -169,7 +170,6 @@ public class WebLogAutoConfiguration {
 	 * @since 1.0.0
 	 */
 	@ConditionalOnBean(WebLogSender.class)
-	@ConditionalOnMissingFilterBean
 	@Bean
 	public FilterRegistrationBean<WebLogFilter> webLogFilterRegistrationBean(WebLogProperties properties,
 																			 WebLogSender webLogSender,
@@ -220,5 +220,11 @@ public class WebLogAutoConfiguration {
 		filterRegistrationBean.addUrlPatterns(WebConstants.FILTER_ANY_URL_PATTERN);
 		filterRegistrationBean.setOrder(Ordered.HIGHEST_PRECEDENCE + 2);
 		return filterRegistrationBean;
+	}
+
+	@Order(Ordered.HIGHEST_PRECEDENCE + 3)
+	@Bean
+	public WebLogInterceptor webLogInterceptor(WebLogProperties properties) {
+		return new WebLogInterceptor(properties.getExcludePathPatterns());
 	}
 }
