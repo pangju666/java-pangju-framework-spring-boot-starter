@@ -38,8 +38,8 @@ import java.util.List;
  * <p><b>字段</b></p>
  * <ul>
  *   <li>{@link #enabled} 是否启用异常统计功能。</li>
- *   <li>{@link #requestPath} 异常统计接口路径配置（类型汇总/列表）。</li>
- *   <li>{@link #packages} 自定义异常类的扫描包列表，用于扩展统计范围。</li>
+ *   <li>{@link #endpoints} 异常统计接口路径配置（类型汇总/列表）。</li>
+ *   <li>{@link #scanPackages} 自定义异常类的扫描包列表，用于扩展统计范围。</li>
  * </ul>
  *
  * <p><b>示例（application.yml）</b></p>
@@ -49,24 +49,24 @@ import java.util.List;
  *     exception:
  *       info:
  *         enabled: true
- *         request-path:
+ *         endpoints:
  *           types: /exception/types
  *           list: /exception/list
- *         packages:
+ *         scan-packages:
  *           - com.example.app.common.exception
  *           - com.example.app.feature.exception
  * </pre>
  *
  * <p><b>备注</b></p>
  * <ul>
- *   <li>当 {@link #packages} 为空或未配置时，默认仅统计框架内置异常类型。</li>
- *   <li>{@link #requestPath} 的路径值应避免与现有接口冲突，建议置于统一命名空间（如 {@code /exception/**}）。</li>
+ *   <li>当 {@link #scanPackages} 为空或未配置时，默认仅统计框架内置异常类型。</li>
+ *   <li>{@link #endpoints} 的路径值应避免与现有接口冲突，建议置于统一命名空间（如 {@code /exception/**}）。</li>
  * </ul>
  *
  * @author pangju666
  * @since 1.0.0
  */
-@ConfigurationProperties(prefix = "pangju.web.exception.info")
+@ConfigurationProperties(prefix = "pangju.web.exception.statistics")
 public class HttpExceptionInfoProperties {
 	/**
 	 * 是否启用异常统计功能。
@@ -83,7 +83,7 @@ public class HttpExceptionInfoProperties {
 	 *
 	 * @since 1.0.0
 	 */
-	private Path requestPath = new Path();
+	private Path endpoints = new Path();
 	/**
 	 * 自定义异常类的扫描包列表。
 	 *
@@ -91,7 +91,7 @@ public class HttpExceptionInfoProperties {
 	 *
 	 * @since 1.0.0
 	 */
-	private List<String> packages;
+	private List<String> scanPackages;
 
 	public boolean isEnabled() {
 		return enabled;
@@ -101,23 +101,23 @@ public class HttpExceptionInfoProperties {
 		this.enabled = enabled;
 	}
 
-	public Path getRequestPath() {
-		return requestPath;
+	public Path getEndpoints() {
+		return endpoints;
 	}
 
-	public void setRequestPath(Path requestPath) {
-		this.requestPath = requestPath;
+	public void setEndpoints(Path endpoints) {
+		this.endpoints = endpoints;
 	}
 
-	public List<String> getPackages() {
-		return packages;
+	public List<String> getScanPackages() {
+		return scanPackages;
 	}
 
-	public void setPackages(List<String> packages) {
-		this.packages = packages;
+	public void setScanPackages(List<String> scanPackages) {
+		this.scanPackages = scanPackages;
 	}
 
-    /**
+	/**
      * 异常统计接口路径配置。
      *
      * <p><b>概述</b></p>

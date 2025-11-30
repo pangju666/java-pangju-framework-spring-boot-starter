@@ -21,7 +21,7 @@ import io.github.pangju666.framework.boot.autoconfigure.web.signature.SignatureP
 import io.github.pangju666.framework.boot.web.limit.interceptor.RateLimitInterceptor;
 import io.github.pangju666.framework.boot.web.limit.limiter.RateLimiter;
 import io.github.pangju666.framework.boot.web.log.interceptor.WebLogInterceptor;
-import io.github.pangju666.framework.boot.web.resolver.EncryptRequestParamArgumentResolver;
+import io.github.pangju666.framework.boot.web.crypto.EncryptRequestParamArgumentResolver;
 import io.github.pangju666.framework.boot.web.resolver.EnumRequestParamArgumentResolver;
 import io.github.pangju666.framework.boot.web.signature.configuration.SignatureConfiguration;
 import io.github.pangju666.framework.boot.web.signature.interceptor.SignatureInterceptor;
@@ -109,6 +109,7 @@ public class WebMvcAutoConfiguration implements WebMvcConfigurer {
 	 * @since 1.0.0
 	 */
 	private final List<BaseHttpInterceptor> interceptors;
+	private final List<HandlerMethodArgumentResolver> resolvers;
     /**
      * 签名属性配置。
      *
@@ -149,8 +150,10 @@ public class WebMvcAutoConfiguration implements WebMvcConfigurer {
      * @param interceptors        自定义 HTTP 拦截器列表
      * @since 1.0.0
      */
-    public WebMvcAutoConfiguration(List<BaseHttpInterceptor> interceptors, SignatureProperties properties) {
+    public WebMvcAutoConfiguration(List<BaseHttpInterceptor> interceptors, List<HandlerMethodArgumentResolver> resolvers,
+								   SignatureProperties properties) {
 		this.interceptors = interceptors;
+		this.resolvers = resolvers;
 
 		SignatureConfiguration signatureConfiguration = new SignatureConfiguration();
 		BeanUtils.copyProperties(properties, signatureConfiguration);
@@ -192,9 +195,7 @@ public class WebMvcAutoConfiguration implements WebMvcConfigurer {
     @Override
     public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
 		resolvers.add(new EnumRequestParamArgumentResolver());
-		if (Objects.nonNull(encryptRequestParamArgumentResolver)) {
-			resolvers.add(encryptRequestParamArgumentResolver);
-		}
+		resolvers.addAll(this.resolvers);
 	}
 
     /**

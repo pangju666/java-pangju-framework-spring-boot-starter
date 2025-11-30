@@ -14,11 +14,12 @@
  *    limitations under the License.
  */
 
-package io.github.pangju666.framework.boot.web.resolver;
+package io.github.pangju666.framework.boot.web.crypto;
 
 import io.github.pangju666.framework.boot.crypto.factory.CryptoFactory;
 import io.github.pangju666.framework.boot.crypto.utils.CryptoUtils;
 import io.github.pangju666.framework.boot.spring.StaticSpringContext;
+import io.github.pangju666.framework.boot.web.annotation.EncryptRequestParam;
 import io.github.pangju666.framework.web.exception.base.ServerException;
 import io.github.pangju666.framework.web.exception.base.ServiceException;
 import org.apache.commons.codec.DecoderException;

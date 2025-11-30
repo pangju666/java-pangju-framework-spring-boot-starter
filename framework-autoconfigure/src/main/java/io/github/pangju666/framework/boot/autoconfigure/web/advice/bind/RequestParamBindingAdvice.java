@@ -75,46 +75,45 @@ import java.util.Date;
  * </p>
  * <p>
  * 使用示例：
- * <pre>
- * &#64;RestController
- * &#64;RequestMapping("/api/users")
+ * <pre>{@code
+ * @RestController
+ * @RequestMapping("/api/users")
  * public class UserController {
  *     // GET请求示例：/api/users/query?createTime=1704067200000
- *     &#64;GetMapping("/query")
- *     public Result&lt;?&gt; query(&#64;RequestParam Date createTime) {
+ *     @GetMapping("/query")
+ *     public ResponseEntity<?> query(@RequestParam Date createTime) {
  *         // createTime会被自动从时间戳转换为Date对象
- *         return Result.ok(createTime);
+ *         return ResponseEntity.ok.ok(createTime).build();
  *     }
  *
  *     // 支持LocalDate
- *     &#64;GetMapping("/search")
- *     public Result&lt;?&gt; search(&#64;RequestParam LocalDate birthDate) {
+ *     @GetMapping("/search")
+ *     public ResponseEntity<?> search(@RequestParam LocalDate birthDate) {
  *         // birthDate会被自动从时间戳转换为LocalDate对象
- *         return Result.ok(birthDate);
+ *         return ResponseEntity.ok.ok(birthDate).build();
  *     }
  *
  *     // 支持LocalDateTime
- *     &#64;GetMapping("/list")
- *     public Result&lt;?&gt; list(&#64;RequestParam LocalDateTime startTime) {
+ *     @GetMapping("/list")
+ *     public ResponseEntity<?> list(@RequestParam LocalDateTime startTime) {
  *         // startTime会被自动从时间戳转换为LocalDateTime对象
- *         return Result.ok(startTime);
+ *         return ResponseEntity.ok.ok(startTime).build();
  *     }
  * }
- * </pre>
+ * }</pre>
  * </p>
  * <p>
  * 参数转换规则：
  * <ul>
  *     <li>输入参数必须是毫秒级时间戳的字符串表示</li>
  *     <li>例如：1704067200000 表示 2024-01-01 00:00:00</li>
- *     <li>如果参数不是合法的数字字符串，会抛出IllegalArgumentException异常</li>
+ *     <li>如果参数不是合法的数字字符串，会抛出{@link IllegalArgumentException}异常</li>
  * </ul>
  * </p>
  * <p>
  * 异常处理：
  * <ul>
- *     <li>如果参数不能转换为Long类型，会抛出NumberFormatException</li>
- *     <li>该异常会被包装为IllegalArgumentException，由Spring的数据绑定机制处理</li>
+ *     <li>如果参数不能转换为Long类型，会抛出{@link IllegalArgumentException}，由Spring的数据绑定机制处理</li>
  *     <li>最终会导致请求返回400 Bad Request</li>
  * </ul>
  * </p>

@@ -16,7 +16,7 @@
 
 package io.github.pangju666.framework.boot.autoconfigure.web.advice.wrapper;
 
-import io.github.pangju666.framework.boot.web.advice.ResponseBodyWrapperIgnore;
+import io.github.pangju666.framework.boot.web.annotation.ResponseBodyWrapperIgnore;
 import io.github.pangju666.framework.web.model.Result;
 import jakarta.servlet.Servlet;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty;
@@ -50,7 +50,7 @@ import java.util.Objects;
  * <ul>
  *   <li>仅在Servlet类型Web应用，且Classpath存在{@link Servlet}与{@link DispatcherServlet}时启用</li>
  *   <li>启用条件：配置项{@code pangju.web.advice.wrapper=true}（默认启用）</li>
- *   <li>排除：返回类型为{@link ResponseEntity}、方法标注{@link ResponseBodyWrapperIgnore}、或响应体为byte[]</li>
+ *   <li>排除：返回类型为{@link ResponseEntity}或{@link Result}、方法标注{@link ResponseBodyWrapperIgnore}</li>
  * </ul>
  * </p>
  * <p>
@@ -65,7 +65,6 @@ import java.util.Objects;
  * 包装规则：
  * <ul>
  *   <li>String：设置Content-Type为application/json，返回{@code Result.ok(body).toString()}内容</li>
- *   <li>Result：原样返回</li>
  *   <li>其他类型：包装为{@code Result.ok(body)}</li>
  * </ul>
  * </p>
@@ -88,8 +87,7 @@ public class ResponseBodyWrapperAdvice implements ResponseBodyAdvice<Object> {
 	 * </p>
 	 * <ul>
 	 *   <li>支持的转换器：{@link MappingJackson2HttpMessageConverter}、{@link AbstractJsonHttpMessageConverter}、{@link StringHttpMessageConverter}</li>
-	 *   <li>不支持的转换器：{@link ByteArrayHttpMessageConverter}（原样返回字节，不参与包装）</li>
-	 *   <li>排除条件：返回类型为{@link ResponseEntity}，或方法标注{@link ResponseBodyWrapperIgnore}</li>
+	 *   <li>排除条件：返回类型为{@link ResponseEntity}或{@link Result}，或方法标注{@link ResponseBodyWrapperIgnore}</li>
 	 * </ul>
 	 * <p>
 	 * 满足支持且未触发排除时返回true，否则返回false。
@@ -107,7 +105,8 @@ public class ResponseBodyWrapperAdvice implements ResponseBodyAdvice<Object> {
 		if (MappingJackson2HttpMessageConverter.class.isAssignableFrom(converterType) ||
 			AbstractJsonHttpMessageConverter.class.isAssignableFrom(converterType) ||
 			StringHttpMessageConverter.class.isAssignableFrom(converterType)) {
-			return !returnType.getNestedParameterType().isAssignableFrom(ResponseEntity.class) &&
+			return !ResponseEntity.class.equals(returnType.getNestedParameterType()) &&
+				!Result.class.equals(returnType.getNestedParameterType()) &&
 				Objects.isNull(returnType.getMethodAnnotation(ResponseBodyWrapperIgnore.class));
 		}
 		return false;
@@ -139,8 +138,6 @@ public class ResponseBodyWrapperAdvice implements ResponseBodyAdvice<Object> {
 		if (StringHttpMessageConverter.class.isAssignableFrom(selectedConverterType)) {
 			response.getHeaders().setContentType(MediaType.APPLICATION_JSON);
 			return Result.ok(body).toString();
-		} else if (body instanceof Result<?>) {
-			return body;
 		} else {
 			return Result.ok(body);
 		}

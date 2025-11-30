@@ -1,8 +1,9 @@
-package io.github.pangju666.framework.boot.autoconfigure.web;
+package io.github.pangju666.framework.boot.autoconfigure.web.crypto;
 
 import io.github.pangju666.commons.crypto.key.RSAKeyPair;
+import io.github.pangju666.framework.boot.autoconfigure.web.WebMvcAutoConfiguration;
 import io.github.pangju666.framework.boot.crypto.factory.CryptoFactory;
-import io.github.pangju666.framework.boot.web.resolver.EncryptRequestParamArgumentResolver;
+import io.github.pangju666.framework.boot.web.crypto.EncryptRequestParamArgumentResolver;
 import io.github.pangju666.framework.web.exception.base.BaseHttpException;
 import io.github.pangju666.framework.web.model.Result;
 import jakarta.servlet.Servlet;

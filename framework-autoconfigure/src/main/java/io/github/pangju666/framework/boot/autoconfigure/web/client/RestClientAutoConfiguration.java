@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package io.github.pangju666.framework.boot.autoconfigure.web;
+package io.github.pangju666.framework.boot.autoconfigure.web.client;
 
 import io.github.pangju666.framework.web.client.BufferingResponseInterceptor;
 import io.github.pangju666.framework.web.client.RestRequestBuilder;
@@ -86,7 +86,7 @@ public class RestClientAutoConfiguration {
 	@Bean
 	public RestClient restClient(RestClient.Builder builder) {
 		return builder.requestInterceptors(interceptors ->
-			interceptors.add(0, new BufferingResponseInterceptor()))
+				interceptors.add(0, new BufferingResponseInterceptor()))
 			.build();
 	}
 }

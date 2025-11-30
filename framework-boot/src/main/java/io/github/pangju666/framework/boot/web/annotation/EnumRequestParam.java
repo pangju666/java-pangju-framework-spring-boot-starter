@@ -14,8 +14,9 @@
  *    limitations under the License.
  */
 
-package io.github.pangju666.framework.boot.web.resolver;
+package io.github.pangju666.framework.boot.web.annotation;
 
+import io.github.pangju666.framework.boot.web.resolver.EnumRequestParamArgumentResolver;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 
 import java.lang.annotation.*;
