@@ -75,6 +75,7 @@ public class GlobalDataExceptionAdvice {
 	 */
 	private static final Logger LOGGER = LoggerFactory.getLogger(GlobalDataExceptionAdvice.class);
 
+	// ============ 5xx 服务器错误 ============
 	/**
 	 * 处理数据访问异常
 	 * <p>

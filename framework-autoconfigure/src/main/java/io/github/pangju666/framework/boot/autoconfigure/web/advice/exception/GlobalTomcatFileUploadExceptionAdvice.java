@@ -19,8 +19,6 @@ package io.github.pangju666.framework.boot.autoconfigure.web.advice.exception;
 import io.github.pangju666.framework.web.model.Result;
 import jakarta.servlet.Servlet;
 import org.apache.tomcat.util.http.fileupload.impl.SizeLimitExceededException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
@@ -47,10 +45,11 @@ import java.util.Objects;
  *
  * <p><strong>行为说明</strong></p>
  * <ul>
- *   <li>捕获 {@link MaxUploadSizeExceededException} 并返回 HTTP 400</li>
+ *   <li>捕获 {@link MaxUploadSizeExceededException} 并返回 HTTP 400。</li>
  *   <li>当 {@code getMaxUploadSize() == -1} 时，尝试从嵌套的 {@link SizeLimitExceededException}
- *       读取允许大小；否则直接使用 {@code getMaxUploadSize()}</li>
- *   <li>使用 {@link Result#fail(String)} 返回错误消息，不向客户端暴露服务端堆栈</li>
+ *       读取允许大小；否则直接使用 {@code getMaxUploadSize()}。</li>
+ *   <li>大小按 MB 展示（{@link DataSize#ofBytes(long)} 转换后 {@code toMegabytes()}，为向下取整）。</li>
+ *   <li>使用 {@link Result#fail(String)} 返回错误消息，不向客户端暴露服务端堆栈。</li>
  * </ul>
  *
  * <p><strong>优先级</strong></p>
@@ -76,23 +75,16 @@ import java.util.Objects;
 @ConditionalOnBooleanProperty(prefix = "pangju.web.advice", value = "exception", matchIfMissing = true)
 @RestControllerAdvice
 public class GlobalTomcatFileUploadExceptionAdvice {
-    /**
-     * 用于记录文件上传异常的日志。
-     *
-     * @since 1.0.0
-     */
-    private static final Logger LOGGER = LoggerFactory.getLogger(GlobalTomcatFileUploadExceptionAdvice.class);
-
+	// ============ 400 Bad Request: 参数绑定与校验 ============
     /**
      * 处理上传文件大小超过限制异常。
      *
      * <p><strong>行为</strong></p>
      * <ul>
-     *   <li>记录 ERROR 级别日志（包含异常堆栈）</li>
-     *   <li>返回统一失败响应，HTTP 400（{@link HttpStatus#BAD_REQUEST}）</li>
+     *   <li>返回统一失败响应，HTTP 400（{@link HttpStatus#BAD_REQUEST}）。</li>
      *   <li>当 {@code e.getMaxUploadSize() == -1} 时，尝试解析嵌套的 {@link SizeLimitExceededException}
-     *       以获取允许大小；否则使用 {@code e.getMaxUploadSize()}</li>
-     *   <li>大小按 MB 展示（{@link DataSize#ofBytes(long)} 转换后 {@code toMegabytes()}）</li>
+     *       以获取允许大小；否则使用 {@code e.getMaxUploadSize()}。</li>
+     *   <li>大小按 MB 展示（{@link DataSize#ofBytes(long)} 转换后 {@code toMegabytes()}，为向下取整）。</li>
      * </ul>
      *
      * @param e 上传大小超限异常
@@ -102,7 +94,6 @@ public class GlobalTomcatFileUploadExceptionAdvice {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(value = MaxUploadSizeExceededException.class)
     public Result<Void> handleMaxUploadSizeExceededException(MaxUploadSizeExceededException e) {
-        LOGGER.error("上传文件大小超过限制", e);
         if (e.getMaxUploadSize() == -1) {
 			if (Objects.nonNull(e.getCause()) &&
 				e.getCause() instanceof IllegalStateException illegalStateException &&
@@ -115,10 +106,19 @@ public class GlobalTomcatFileUploadExceptionAdvice {
 		return Result.fail("上传文件大小超过" + DataSize.ofBytes(e.getMaxUploadSize()).toMegabytes() + "MB");
 	}
 
-	@ResponseStatus(HttpStatus.BAD_REQUEST)
-	@ExceptionHandler(value = SizeLimitExceededException.class)
-	public Result<Void> handleSizeLimitExceededException(SizeLimitExceededException e) {
-		LOGGER.error("上传文件大小超过限制", e);
-		return Result.fail("上传文件大小超过" + DataSize.ofBytes(e.getPermittedSize()).toMegabytes() + "MB");
-	}
+    /**
+     * 处理 Tomcat 的大小限制异常。
+     *
+     * <p><strong>行为</strong></p>
+     * 返回统一失败响应，HTTP 400（{@link HttpStatus#BAD_REQUEST}），并展示允许大小（MB，向下取整）。
+     *
+     * @param e Tomcat 提供的上传大小限制异常
+     * @return 统一失败响应
+     * @since 1.0.0
+     */
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(value = SizeLimitExceededException.class)
+    public Result<Void> handleSizeLimitExceededException(SizeLimitExceededException e) {
+        return Result.fail("上传文件大小超过" + DataSize.ofBytes(e.getPermittedSize()).toMegabytes() + "MB");
+    }
 }

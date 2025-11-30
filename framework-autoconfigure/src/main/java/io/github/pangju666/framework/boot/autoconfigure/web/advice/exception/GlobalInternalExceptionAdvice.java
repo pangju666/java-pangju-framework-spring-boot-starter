@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
+import org.springframework.core.NestedRuntimeException;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
@@ -30,8 +31,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.DispatcherServlet;
-
-import java.io.IOException;
 
 /**
  * 全局处理系统级内部异常。
@@ -44,9 +43,9 @@ import java.io.IOException;
  *
  * <p><strong>行为说明</strong></p>
  * <ul>
- *   <li>捕获系统级异常：{@link IOException}、{@link RuntimeException} 以及其他未被处理的 {@link Exception}</li>
- *   <li>记录 ERROR 级别日志（包含堆栈）</li>
- *   <li>返回统一失败响应：{@link Result#fail(String)}，HTTP 500（{@link HttpStatus#INTERNAL_SERVER_ERROR}），消息为通用文案“服务器内部错误”</li>
+ *   <li>优先处理 {@link NestedRuntimeException}，记录最具体的异常原因；兜底处理其他未被覆盖的 {@link Exception}（含 IO/运行时）。</li>
+ *   <li>记录 ERROR 级别日志（包含堆栈）。</li>
+ *   <li>返回统一失败响应：{@link Result#fail(String)}，HTTP 500（{@link HttpStatus#INTERNAL_SERVER_ERROR}），消息为通用文案“服务器内部错误”。</li>
  * </ul>
  *
  * <p><strong>优先级</strong></p>
@@ -81,44 +80,22 @@ public class GlobalInternalExceptionAdvice {
 	private static final Logger LOGGER = LoggerFactory.getLogger(GlobalInternalExceptionAdvice.class);
 
 	/**
-	 * 处理 IO 异常。
+	 * 处理嵌套运行时异常（NestedRuntimeException）。
 	 *
 	 * <p><strong>行为</strong></p>
 	 * <ul>
-	 *   <li>记录 ERROR 级别日志（包含堆栈）</li>
-	 *   <li>返回统一失败响应，HTTP 500（{@link HttpStatus#INTERNAL_SERVER_ERROR}）</li>
-	 *   <li>不暴露具体异常细节，统一文案“服务器内部错误”</li>
+	 *   <li>记录 ERROR 级别日志，输出最具体的异常原因（{@link NestedRuntimeException#getMostSpecificCause()}）。</li>
+	 *   <li>返回统一失败响应，HTTP 500（{@link HttpStatus#INTERNAL_SERVER_ERROR}），提示“服务器内部错误”。</li>
 	 * </ul>
 	 *
-	 * @param e 异常实例
+	 * @param e 嵌套运行时异常
 	 * @return 统一失败响应
 	 * @since 1.0.0
 	 */
 	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-	@ExceptionHandler(value = IOException.class)
-	public Result<Void> handleIOException(IOException e) {
-		LOGGER.error("IO异常", e);
-		return Result.fail("服务器内部错误");
-	}
-
-	/**
-	 * 处理运行时异常。
-	 *
-	 * <p><strong>行为</strong></p>
-	 * <ul>
-	 *   <li>记录 ERROR 级别日志（包含堆栈）</li>
-	 *   <li>返回统一失败响应，HTTP 500（{@link HttpStatus#INTERNAL_SERVER_ERROR}）</li>
-	 *   <li>不暴露具体异常细节，统一文案“服务器内部错误”</li>
-	 * </ul>
-	 *
-	 * @param e 异常实例
-	 * @return 统一失败响应
-	 * @since 1.0.0
-	 */
-	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-	@ExceptionHandler(value = RuntimeException.class)
-	public Result<Void> handleRuntimeException(RuntimeException e) {
-		LOGGER.error("运行时异常", e);
+	@ExceptionHandler(value = NestedRuntimeException.class)
+	public Result<Void> handleNestedRuntimeException(NestedRuntimeException e) {
+		LOGGER.error("嵌套运行时异常", e.getMostSpecificCause());
 		return Result.fail("服务器内部错误");
 	}
 
@@ -127,9 +104,9 @@ public class GlobalInternalExceptionAdvice {
 	 *
 	 * <p><strong>行为</strong></p>
 	 * <ul>
-	 *   <li>记录 ERROR 级别日志（包含堆栈）</li>
-	 *   <li>返回统一失败响应，HTTP 500（{@link HttpStatus#INTERNAL_SERVER_ERROR}）</li>
-	 *   <li>不暴露具体异常细节，统一文案“服务器内部错误”</li>
+	 *   <li>记录 ERROR 级别日志（包含堆栈）。</li>
+	 *   <li>返回统一失败响应，HTTP 500（{@link HttpStatus#INTERNAL_SERVER_ERROR}）。</li>
+	 *   <li>不暴露具体异常细节，统一文案“服务器内部错误”。</li>
 	 * </ul>
 	 *
 	 * @param e 异常实例

@@ -32,7 +32,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.DispatcherServlet;
 
-import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * 全局处理参数验证失败异常。
@@ -45,9 +45,9 @@ import java.util.Set;
  *
  * <p><strong>行为说明</strong></p>
  * <ul>
- *   <li>捕获 {@link ConstraintViolationException} 并返回 HTTP 400</li>
- *   <li>优先取第一个约束违例的 {@code message} 作为提示；无可用提示时返回“请求参数验证不合法”</li>
- *   <li>返回 {@link Result#fail(String)} 作为统一错误响应</li>
+ *   <li>捕获 {@link ConstraintViolationException} 并返回 HTTP 400。</li>
+ *   <li>聚合所有约束违例的 {@code message}（过滤空白），以分号连接；无可用提示时返回“请求参数验证不合法”。</li>
+ *   <li>返回 {@link Result#fail(String)} 作为统一错误响应。</li>
  * </ul>
  *
  * <p><strong>优先级</strong></p>
@@ -60,11 +60,8 @@ import java.util.Set;
  *   <li>适用于 Bean Validation 方法参数校验（如 {@code @Validated}、{@code @Valid}）抛出的约束违例</li>
  * </ul>
  *
- * @see RestControllerAdvice
  * @see ExceptionHandler
  * @see ConstraintViolationException
- * @see HttpStatus#BAD_REQUEST
- * @see Result
  * @since 1.0.0
  */
 @Order(Ordered.HIGHEST_PRECEDENCE + 2)
@@ -73,14 +70,14 @@ import java.util.Set;
 @ConditionalOnBooleanProperty(prefix = "pangju.web.advice", value = "exception", matchIfMissing = true)
 @RestControllerAdvice
 public class GlobalValidationExceptionAdvice {
+	// ============ 400 Bad Request: 参数绑定与校验 ============
     /**
      * 处理参数验证异常。
      *
      * <p><strong>行为</strong></p>
      * <ul>
-     *   <li>返回统一失败响应，HTTP 400（{@link HttpStatus#BAD_REQUEST}）</li>
-     *   <li>若存在约束违例，优先选择第一个违例的 {@code message} 作为提示</li>
-     *   <li>若无可用提示，返回“请求参数验证不合法”</li>
+     *   <li>返回统一失败响应，HTTP 400（{@link HttpStatus#BAD_REQUEST}）。</li>
+     *   <li>聚合所有约束违例的 {@code message}（过滤空白），以分号连接；无可用提示时返回“请求参数验证不合法”。</li>
      * </ul>
      *
      * @param e 参数验证异常
@@ -90,11 +87,11 @@ public class GlobalValidationExceptionAdvice {
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	@ExceptionHandler(value = ConstraintViolationException.class)
 	public Result<Void> handleConstraintViolationException(ConstraintViolationException e) {
-		Set<ConstraintViolation<?>> constraints = e.getConstraintViolations();
-		if (!constraints.isEmpty()) {
-			ConstraintViolation<?> constraint = constraints.iterator().next();
-			return Result.fail(StringUtils.defaultString(constraint.getMessage()));
-		}
-		return Result.fail("请求参数验证不合法");
+		String allMessages = e.getConstraintViolations()
+			.stream()
+			.map(ConstraintViolation::getMessage)
+			.filter(StringUtils::isNotBlank)
+			.collect(Collectors.joining("；"));
+		return Result.fail(StringUtils.defaultIfBlank(allMessages, "请求参数验证不合法"));
 	}
 }

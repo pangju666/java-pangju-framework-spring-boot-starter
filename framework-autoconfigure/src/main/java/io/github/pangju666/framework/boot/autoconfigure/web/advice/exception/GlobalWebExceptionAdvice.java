@@ -35,6 +35,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.converter.HttpMessageNotWritableException;
 import org.springframework.http.converter.json.MappingJacksonInputMessage;
+import org.springframework.util.unit.DataSize;
 import org.springframework.validation.BindException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.HttpMediaTypeNotAcceptableException;
@@ -46,6 +47,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.async.AsyncRequestTimeoutException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.multipart.MultipartException;
 import org.springframework.web.multipart.support.MissingServletRequestPartException;
 import org.springframework.web.servlet.DispatcherServlet;
@@ -80,10 +82,7 @@ import java.util.stream.Collectors;
  *   <li>此处理器与其他专用异常处理器（如参数验证、文件上传）协同工作，提供兜底与通用映射</li>
  * </ul>
  *
- * @see RestControllerAdvice
  * @see ExceptionHandler
- * @see BaseHttpException
- * @see Result
  * @since 1.0.0
  */
 @Order(Ordered.HIGHEST_PRECEDENCE + 3)
@@ -304,7 +303,7 @@ public class GlobalWebExceptionAdvice {
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	@ExceptionHandler(value = HttpMessageNotReadableException.class)
 	public Result<Void> handleHttpMessageNotReadableException(HttpMessageNotReadableException e) {
-		LOGGER.warn("请求内容读取失败", e);
+		LOGGER.warn("请求内容不可读异常", e);
 		HttpInputMessage httpInputMessage = e.getHttpInputMessage();
 		if (httpInputMessage instanceof MappingJacksonInputMessage) {
 			return Result.fail("请求数据格式错误，请检查是否为有效的 JSON");
@@ -364,6 +363,28 @@ public class GlobalWebExceptionAdvice {
 		return Result.fail(StringUtils.defaultIfBlank(allMessages, "请求参数验证不合法"));
 	}
 
+	/**
+	 * 处理上传文件大小超过限制异常。
+	 *
+	 * <p><strong>行为</strong></p>
+	 * <ul>
+	 *   <li>返回统一失败响应，HTTP 400（{@link HttpStatus#BAD_REQUEST}）。</li>
+	 *   <li>当 {@code e.getMaxUploadSize() == -1} 时返回“上传文件大小超过限制”；否则展示允许大小（MB，向下取整）。</li>
+	 * </ul>
+	 *
+	 * @param e 上传大小超限异常
+	 * @return 统一失败响应
+	 * @since 1.0.0
+	 */
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	@ExceptionHandler(value = MaxUploadSizeExceededException.class)
+	public Result<Void> handleMaxUploadSizeExceededException(MaxUploadSizeExceededException e) {
+		if (e.getMaxUploadSize() == -1) {
+			return Result.fail("上传文件大小超过限制");
+		}
+		return Result.fail("上传文件大小超过" + DataSize.ofBytes(e.getMaxUploadSize()).toMegabytes() + "MB");
+	}
+
     /**
      * 处理文件上传失败异常。
      *
@@ -380,7 +401,7 @@ public class GlobalWebExceptionAdvice {
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	@ExceptionHandler(value = MultipartException.class)
 	public Result<Void> handleMultipartException(MultipartException e) {
-		LOGGER.warn("文件上传异常", e);
+		LOGGER.warn("文件上传失败异常", e);
 		return Result.fail("文件上传失败");
 	}
 
@@ -488,7 +509,7 @@ public class GlobalWebExceptionAdvice {
      *
      * <p><strong>行为</strong></p>
      * <ul>
-     *   <li>记录 WARN 级别日志</li>
+     *   <li>记录 ERROR 级别日志</li>
      *   <li>返回统一失败响应，HTTP 500（{@link HttpStatus#INTERNAL_SERVER_ERROR}）</li>
      * </ul>
      *
@@ -499,7 +520,7 @@ public class GlobalWebExceptionAdvice {
 	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 	@ExceptionHandler(value = HttpMessageNotWritableException.class)
 	public Result<Void> handleHttpMessageNotWritableException(HttpMessageNotWritableException e) {
-		LOGGER.warn("响应内容写入异常", e);
+		LOGGER.error("响应内容不可写异常", e);
 		return Result.fail("响应内容写入失败");
 	}
 
@@ -519,7 +540,7 @@ public class GlobalWebExceptionAdvice {
 	@ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
 	@ExceptionHandler(value = AsyncRequestTimeoutException.class)
 	public Result<Void> handleAsyncRequestTimeoutException(AsyncRequestTimeoutException e) {
-		LOGGER.error("异步请求超时", e);
+		LOGGER.error("异步请求超时异常", e);
 		return Result.fail("异步请求超时");
 	}
 }
