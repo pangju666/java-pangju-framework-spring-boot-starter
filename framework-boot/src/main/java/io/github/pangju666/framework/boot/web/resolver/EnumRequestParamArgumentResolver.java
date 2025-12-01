@@ -122,7 +122,7 @@ public class EnumRequestParamArgumentResolver implements HandlerMethodArgumentRe
 				enumName = defaultValue;
 			} else {
 				if (annotation.required()) {
-					throw new MissingServletRequestParameterException(parameterName, enumClass.getName());
+					throw new MissingServletRequestParameterException(parameterName, enumClass.getSimpleName());
 				}
 				return null;
 			}
@@ -132,7 +132,6 @@ public class EnumRequestParamArgumentResolver implements HandlerMethodArgumentRe
 		if (Objects.isNull(enumValue)) {
 			throw new ValidationException("无效的" + annotation.description());
 		}
-		mavContainer.addAttribute(parameterName, enumValue);
 		return enumValue;
 	}
 }

@@ -21,9 +21,7 @@ import io.github.pangju666.commons.lang.utils.JsonUtils;
 import io.github.pangju666.framework.boot.crypto.enums.Encoding;
 import io.github.pangju666.framework.boot.crypto.factory.CryptoFactory;
 import io.github.pangju666.framework.boot.crypto.utils.CryptoUtils;
-import io.github.pangju666.framework.boot.spring.StaticSpringContext;
 import io.github.pangju666.framework.boot.web.annotation.EncryptResponseBody;
-import io.github.pangju666.framework.web.exception.base.BaseHttpException;
 import io.github.pangju666.framework.web.exception.base.ServerException;
 import io.github.pangju666.framework.web.model.Result;
 import jakarta.servlet.Servlet;
@@ -48,6 +46,9 @@ import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 
 import java.security.spec.InvalidKeySpecException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -82,7 +83,7 @@ import java.util.Objects;
  * <p>
  * 执行顺序：
  * <ul>
- *     <li>优先级为 {@link Ordered#HIGHEST_PRECEDENCE} + 5。</li>
+ *     <li>优先级为 {@link Ordered#HIGHEST_PRECEDENCE} + 2。</li>
  * </ul>
  * </p>
  * <p>
@@ -101,12 +102,21 @@ import java.util.Objects;
  * @see Result
  * @since 1.0.0
  */
-@Order(Ordered.HIGHEST_PRECEDENCE  + 5)
+@Order(Ordered.HIGHEST_PRECEDENCE  + 2)
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
-@ConditionalOnClass({Servlet.class, DispatcherServlet.class, RSAKeyPair.class, Result.class, BaseHttpException.class})
+@ConditionalOnClass({Servlet.class, DispatcherServlet.class, RSAKeyPair.class, Result.class})
 @ConditionalOnBean(CryptoFactory.class)
 @RestControllerAdvice
 public class ResponseBodyEncryptAdvice implements ResponseBodyAdvice<Object> {
+	private final Map<String, CryptoFactory> cryptoFactoryMap;
+
+	public ResponseBodyEncryptAdvice(List<CryptoFactory> cryptoFactories) {
+		this.cryptoFactoryMap = new HashMap<>(cryptoFactories.size());
+		for (CryptoFactory cryptoFactory : cryptoFactories) {
+			cryptoFactoryMap.put(cryptoFactory.getClass().getName(), cryptoFactory);
+		}
+	}
+
 	/**
 	 * 判断是否支持当前消息转换器并且存在加密注解
 	 * <p>
@@ -178,41 +188,44 @@ public class ResponseBodyEncryptAdvice implements ResponseBodyAdvice<Object> {
 			throw new ServerException(e);
 		}
 
-		// todo 改成list注入
-		CryptoFactory factory;
+		Class<? extends CryptoFactory> factoryClass;
 		if (ArrayUtils.isNotEmpty(annotation.factory())) {
-			factory = StaticSpringContext.getBeanFactory().getBean(annotation.factory()[0]);
+			factoryClass = annotation.factory()[0];
 		} else {
-			factory = StaticSpringContext.getBeanFactory().getBean( annotation.algorithm().getFactoryClass());
+			factoryClass = annotation.algorithm().getFactoryClass();
+		}
+		CryptoFactory cryptoFactory = cryptoFactoryMap.get(factoryClass.getName());
+		if (Objects.isNull(cryptoFactory)) {
+			throw new ServerException("未找到加密工厂：" + factoryClass.getSimpleName() + "，请检查是否已注册为 Spring Bean");
 		}
 
 		try {
 			if (StringHttpMessageConverter.class.isAssignableFrom(selectedConverterType) && body instanceof CharSequence charSequence) {
-				return CryptoUtils.encryptString(factory, charSequence.toString(), key, annotation.encoding());
+				return CryptoUtils.encryptString(cryptoFactory, charSequence.toString(), key, annotation.encoding());
 			} else if (ByteArrayHttpMessageConverter.class.isAssignableFrom(selectedConverterType) && body instanceof byte[] bytes) {
-				return CryptoUtils.encrypt(factory, bytes, key);
+				return CryptoUtils.encrypt(cryptoFactory, bytes, key);
 			} else if (body instanceof Result<?> result) {
 				if (Objects.isNull(result.data())) {
 					return body;
 				}
 				if (result.data() instanceof CharSequence charSequence) {
-					return new Result<>(result.code(), result.message(), CryptoUtils.encryptString(factory,
+					return new Result<>(result.code(), result.message(), CryptoUtils.encryptString(cryptoFactory,
 						charSequence.toString(), key, annotation.encoding()));
 				} else if (result.data() instanceof byte[] bytes) {
-					return new Result<>(result.code(), result.message(), CryptoUtils.encrypt(factory, bytes, key));
+					return new Result<>(result.code(), result.message(), CryptoUtils.encrypt(cryptoFactory, bytes, key));
 				} else {
 					String data = JsonUtils.toString(result.data());
-					return new Result<>(result.code(), result.message(), CryptoUtils.encryptString(factory, data,
+					return new Result<>(result.code(), result.message(), CryptoUtils.encryptString(cryptoFactory, data,
 						key, annotation.encoding()));
 				}
 			} else {
-				return Result.ok(CryptoUtils.encryptString(factory, JsonUtils.toString(body), key,
+				return Result.ok(CryptoUtils.encryptString(cryptoFactory, JsonUtils.toString(body), key,
 					annotation.encoding()));
 			}
 		} catch (EncryptionOperationNotPossibleException e) {
-			throw new ServerException("响应数据对象加密失败", e);
+			throw new ServerException("响应数据加密失败", e);
 		} catch (IllegalArgumentException e) {
-			throw new ServerException("无效的密钥", e);
+			throw new ServerException(e);
 		}
 	}
 }

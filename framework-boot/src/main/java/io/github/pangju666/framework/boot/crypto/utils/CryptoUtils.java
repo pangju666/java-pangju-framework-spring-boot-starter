@@ -93,7 +93,7 @@ public class CryptoUtils {
         }
         byte[] result = encrypt(factory, rawData.getBytes(), key);
         return switch (encoding) {
-            case BASE64 -> Base64.encodeBase64String(result);
+            case BASE64 -> Base64.encodeBase64URLSafeString(result);
             case HEX -> Hex.encodeHexString(result);
         };
     }

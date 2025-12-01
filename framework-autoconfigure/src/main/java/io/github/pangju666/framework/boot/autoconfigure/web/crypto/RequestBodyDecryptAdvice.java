@@ -20,11 +20,11 @@ import io.github.pangju666.commons.crypto.key.RSAKeyPair;
 import io.github.pangju666.commons.lang.pool.Constants;
 import io.github.pangju666.framework.boot.crypto.factory.CryptoFactory;
 import io.github.pangju666.framework.boot.crypto.utils.CryptoUtils;
-import io.github.pangju666.framework.boot.spring.StaticSpringContext;
 import io.github.pangju666.framework.boot.web.annotation.DecryptRequestBody;
-import io.github.pangju666.framework.web.exception.base.BaseHttpException;
+import io.github.pangju666.framework.boot.web.exception.RequestDataDecryptFailureException;
 import io.github.pangju666.framework.web.exception.base.ServerException;
 import io.github.pangju666.framework.web.exception.base.ServiceException;
+import io.github.pangju666.framework.web.exception.base.ValidationException;
 import jakarta.servlet.Servlet;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.lang3.ArrayUtils;
@@ -51,6 +51,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -98,10 +101,19 @@ import java.util.Objects;
  */
 @Order(Ordered.HIGHEST_PRECEDENCE + 2)
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
-@ConditionalOnClass({Servlet.class, DispatcherServlet.class, RSAKeyPair.class, BaseHttpException.class})
+@ConditionalOnClass({Servlet.class, DispatcherServlet.class, RSAKeyPair.class})
 @ConditionalOnBean(CryptoFactory.class)
 @RestControllerAdvice
 public class RequestBodyDecryptAdvice implements RequestBodyAdvice {
+	private final Map<String, CryptoFactory> cryptoFactoryMap;
+
+	public RequestBodyDecryptAdvice(List<CryptoFactory> cryptoFactories) {
+		this.cryptoFactoryMap = new HashMap<>(cryptoFactories.size());
+		for (CryptoFactory cryptoFactory : cryptoFactories) {
+			cryptoFactoryMap.put(cryptoFactory.getClass().getName(), cryptoFactory);
+		}
+	}
+
 	/**
 	 * 判断是否支持当前消息转换器并且存在解密注解
 	 * <p>
@@ -156,13 +168,24 @@ public class RequestBodyDecryptAdvice implements RequestBodyAdvice {
 		}
 
 		DecryptRequestBody annotation = parameter.getParameterAnnotation(DecryptRequestBody.class);
+
 		String key;
 		try {
 			key = CryptoUtils.getKey(annotation.key());
 		} catch (IllegalArgumentException e) {
 			throw new ServerException(e);
 		}
-		CryptoFactory factory = getCryptoFactory(annotation);
+
+		Class<? extends CryptoFactory> factoryClass;
+		if (ArrayUtils.isNotEmpty(annotation.factory())) {
+			factoryClass = annotation.factory()[0];
+		} else {
+			factoryClass = annotation.algorithm().getFactoryClass();
+		}
+		CryptoFactory cryptoFactory = cryptoFactoryMap.get(factoryClass.getName());
+		if (Objects.isNull(cryptoFactory)) {
+			throw new ServerException("未找到加密工厂：" + factoryClass.getSimpleName() + "，请检查是否已注册为 Spring Bean");
+		}
 
 		try (InputStream inputStream = inputMessage.getBody()) {
 			byte[] requestBody;
@@ -170,15 +193,15 @@ public class RequestBodyDecryptAdvice implements RequestBodyAdvice {
 			if (StringUtils.isBlank(rawRequestBodyStr)) {
 				requestBody = Constants.EMPTY_JSON_OBJECT_STR.getBytes();
 			} else {
-				requestBody = CryptoUtils.decryptString(factory, rawRequestBodyStr, key, annotation.encoding()).getBytes();
+				requestBody = CryptoUtils.decryptString(cryptoFactory, rawRequestBodyStr, key, annotation.encoding()).getBytes();
 			}
 			return new MappingJacksonInputMessage(new ByteArrayInputStream(requestBody), inputMessage.getHeaders());
 		} catch (EncryptionOperationNotPossibleException e) {
-			throw new ServiceException("无效的加密请求数据", "请求数据对象解密失败", e);
+			throw new RequestDataDecryptFailureException("无效的加密请求体", e);
 		} catch (DecoderException e) {
-			throw new ServiceException("无效的加密请求数据", "请求数据对象十六进制解码失败", e);
+			throw new ValidationException("加密请求体格式错误，请勿手动修改请求内容");
 		} catch (IllegalArgumentException e) {
-			throw new ServerException("无效的密钥", e);
+			throw new ServerException(e);
 		}
 	}
 
@@ -204,29 +227,37 @@ public class RequestBodyDecryptAdvice implements RequestBodyAdvice {
 		}
 
 		DecryptRequestBody annotation = parameter.getParameterAnnotation(DecryptRequestBody.class);
+
 		String key;
 		try {
 			key = CryptoUtils.getKey(annotation.key());
 		} catch (IllegalArgumentException e) {
 			throw new ServerException(e);
 		}
-		CryptoFactory factory = getCryptoFactory(annotation);
+
+		Class<? extends CryptoFactory> factoryClass;
+		if (ArrayUtils.isNotEmpty(annotation.factory())) {
+			factoryClass = annotation.factory()[0];
+		} else {
+			factoryClass = annotation.algorithm().getFactoryClass();
+		}
+		CryptoFactory cryptoFactory = cryptoFactoryMap.get(factoryClass.getName());
 
 		try {
 			if (body instanceof String string) {
 				if (StringUtils.isBlank(string)) {
 					return body;
 				}
-				return CryptoUtils.decryptString(factory, string, key, annotation.encoding());
+				return CryptoUtils.decryptString(cryptoFactory, string, key, annotation.encoding());
 			} else {
 				return body;
 			}
 		} catch (EncryptionOperationNotPossibleException e) {
-			throw new ServiceException("无效的加密请求数据", "请求数据对象解密失败", e);
+			throw new RequestDataDecryptFailureException("无效的加密请求体", e);
 		} catch (DecoderException e) {
-			throw new ServiceException("无效的加密请求数据", "请求数据对象十六进制解码失败", e);
+			throw new ValidationException("加密请求体格式错误，请勿手动修改请求内容");
 		} catch (IllegalArgumentException e) {
-			throw new ServerException("无效的密钥", e);
+			throw new ServerException(e);
 		}
 	}
 
@@ -244,14 +275,5 @@ public class RequestBodyDecryptAdvice implements RequestBodyAdvice {
 	public Object handleEmptyBody(Object body, HttpInputMessage inputMessage, MethodParameter parameter,
 								  Type targetType, Class<? extends HttpMessageConverter<?>> converterType) {
 		return body;
-	}
-
-	// todo 改成list注入
-	protected CryptoFactory getCryptoFactory(DecryptRequestBody annotation) {
-		if (ArrayUtils.isNotEmpty(annotation.factory())) {
-			return StaticSpringContext.getBeanFactory().getBean(annotation.factory()[0]);
-		} else {
-			return StaticSpringContext.getBeanFactory().getBean( annotation.algorithm().getFactoryClass());
-		}
 	}
 }

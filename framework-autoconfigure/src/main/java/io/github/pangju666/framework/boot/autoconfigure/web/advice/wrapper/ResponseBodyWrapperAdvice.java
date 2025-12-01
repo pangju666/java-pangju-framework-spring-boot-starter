@@ -23,6 +23,8 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProp
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.core.MethodParameter;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.ByteArrayHttpMessageConverter;
@@ -62,6 +64,12 @@ import java.util.Objects;
  * </ul>
  * </p>
  * <p>
+ * 执行顺序：
+ * <ul>
+ *     <li>优先级为 {@link Ordered#HIGHEST_PRECEDENCE} + 1。</li>
+ * </ul>
+ * </p>
+ * <p>
  * 包装规则：
  * <ul>
  *   <li>String：设置{@code Content-Type}为{@code application/json}，返回{@code Result.ok(body).toString()}内容</li>
@@ -75,6 +83,7 @@ import java.util.Objects;
  * @see Result
  * @since 1.0.0
  */
+@Order(Ordered.HIGHEST_PRECEDENCE  + 1)
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @ConditionalOnClass({Servlet.class, DispatcherServlet.class, Result.class})
 @ConditionalOnBooleanProperty(prefix = "pangju.web.advice", value = "enable-wrapper", matchIfMissing = true)

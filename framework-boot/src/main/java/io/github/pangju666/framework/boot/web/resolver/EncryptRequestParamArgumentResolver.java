@@ -14,14 +14,15 @@
  *    limitations under the License.
  */
 
-package io.github.pangju666.framework.boot.web.crypto;
+package io.github.pangju666.framework.boot.web.resolver;
 
 import io.github.pangju666.framework.boot.crypto.factory.CryptoFactory;
 import io.github.pangju666.framework.boot.crypto.utils.CryptoUtils;
-import io.github.pangju666.framework.boot.spring.StaticSpringContext;
 import io.github.pangju666.framework.boot.web.annotation.EncryptRequestParam;
+import io.github.pangju666.framework.boot.web.exception.RequestDataDecryptFailureException;
 import io.github.pangju666.framework.web.exception.base.ServerException;
 import io.github.pangju666.framework.web.exception.base.ServiceException;
+import io.github.pangju666.framework.web.exception.base.ValidationException;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -32,6 +33,11 @@ import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * 加密请求参数解析器。
@@ -69,37 +75,46 @@ import org.springframework.web.method.support.ModelAndViewContainer;
  * @since 1.0.0
  */
 public class EncryptRequestParamArgumentResolver implements HandlerMethodArgumentResolver {
-    /**
-     * 判断是否支持当前方法参数。
-     * <p>
-     * 同时满足：参数标注 {@link EncryptRequestParam} 且类型为 {@link String}。
-     * </p>
-     *
-     * @param parameter 方法参数
-     * @return 支持返回 true，否则返回 false
-     */
+	private final Map<String, CryptoFactory> cryptoFactoryMap;
+
+	public EncryptRequestParamArgumentResolver(List<CryptoFactory> cryptoFactories) {
+		this.cryptoFactoryMap = new HashMap<>(cryptoFactories.size());
+		for (CryptoFactory cryptoFactory : cryptoFactories) {
+			cryptoFactoryMap.put(cryptoFactory.getClass().getName(), cryptoFactory);
+		}
+	}
+
+	/**
+	 * 判断是否支持当前方法参数。
+	 * <p>
+	 * 同时满足：参数标注 {@link EncryptRequestParam} 且类型为 {@link String}。
+	 * </p>
+	 *
+	 * @param parameter 方法参数
+	 * @return 支持返回 true，否则返回 false
+	 */
 	@Override
 	public boolean supportsParameter(MethodParameter parameter) {
 		return parameter.hasParameterAnnotation(EncryptRequestParam.class) &&
-			parameter.getParameterType().isAssignableFrom(String.class);
+			String.class.isAssignableFrom(parameter.getParameterType());
 	}
 
-    /**
-     * 解析并解密加密的字符串请求参数。
-     * <p>
-     * 步骤：读取参数名 → 获取参数值 → 处理缺失（必需抛异常/可选取默认值）→ 解析密钥与工厂 → 解密 → 写入模型并返回。
-     * </p>
-     *
-     * @param parameter     方法参数
-     * @param mavContainer  模型与视图容器
-     * @param webRequest    当前 HTTP 请求
-     * @param binderFactory 数据绑定工厂（未使用）
-     * @return 解密后的字符串；当可选且缺失时返回默认值
-     * @throws MissingServletRequestParameterException 缺少必需参数
-     * @throws ServerException                         密钥配置无效或获取失败
-     * @throws ServiceException                        解密或十六进制解码失败
-     * @throws Exception                               其他处理异常
-     */
+	/**
+	 * 解析并解密加密的字符串请求参数。
+	 * <p>
+	 * 步骤：读取参数名 → 获取参数值 → 处理缺失（必需抛异常/可选取默认值）→ 解析密钥与工厂 → 解密 → 写入模型并返回。
+	 * </p>
+	 *
+	 * @param parameter     方法参数
+	 * @param mavContainer  模型与视图容器
+	 * @param webRequest    当前 HTTP 请求
+	 * @param binderFactory 数据绑定工厂（未使用）
+	 * @return 解密后的字符串；当可选且缺失时返回默认值
+	 * @throws MissingServletRequestParameterException 缺少必需参数
+	 * @throws ServerException                         密钥配置无效或获取失败
+	 * @throws ServiceException                        解密或十六进制解码失败
+	 * @throws Exception                               其他处理异常
+	 */
 	@Override
 	public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
 								  NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
@@ -112,30 +127,39 @@ public class EncryptRequestParamArgumentResolver implements HandlerMethodArgumen
 		String parameterValue = webRequest.getParameter(parameterName);
 		if (StringUtils.isBlank(parameterValue)) {
 			if (annotation.required()) {
-				throw new MissingServletRequestParameterException(parameterName, String.class.getName());
+				throw new MissingServletRequestParameterException(parameterName, String.class.getSimpleName());
 			}
 			return annotation.defaultValue();
 		}
 
-		String key = CryptoUtils.getKey(annotation.key());
+		String key;
+		try {
+			key = CryptoUtils.getKey(annotation.key());
+		} catch (IllegalArgumentException e) {
+			throw new ServerException(e);
+		}
 
-		// todo 改成list注入
-		CryptoFactory factory;
+		Class<? extends CryptoFactory> factoryClass;
 		if (ArrayUtils.isNotEmpty(annotation.factory())) {
-			factory = StaticSpringContext.getBeanFactory().getBean(annotation.factory()[0]);
+			factoryClass = annotation.factory()[0];
 		} else {
-			factory = StaticSpringContext.getBeanFactory().getBean( annotation.algorithm().getFactoryClass());
+			factoryClass = annotation.algorithm().getFactoryClass();
+		}
+		CryptoFactory cryptoFactory = cryptoFactoryMap.get(factoryClass.getName());
+		if (Objects.isNull(cryptoFactory)) {
+			throw new ServerException("未找到加密工厂：" + factoryClass.getSimpleName() + "，请检查是否已注册为 Spring Bean");
 		}
 
 		try {
-			parameterValue = CryptoUtils.decryptString(factory, parameterValue, key, annotation.encoding());
+			parameterValue = CryptoUtils.decryptString(cryptoFactory, parameterValue, key, annotation.encoding());
 		} catch (EncryptionOperationNotPossibleException e) {
-			throw new ServiceException("无效的加密请求参数", "请求参数解密失败", e);
+			throw new RequestDataDecryptFailureException("加密请求参数：" + parameterName + " 无效，请勿手动修改请求内容", e);
 		} catch (DecoderException e) {
-			throw new ServiceException("无效的加密请求参数", "请求参数十六进制解码失败", e);
+			throw new ValidationException("加密请求参数：" + parameterName + " 格式错误，请勿手动修改请求内容");
+		} catch (IllegalArgumentException e) {
+			throw new ServerException("无效的密钥", e);
 		}
 
-		mavContainer.addAttribute(parameterName, parameterValue);
 		return parameterValue;
 	}
 }
