@@ -20,7 +20,6 @@ import io.github.pangju666.framework.boot.crypto.enums.CryptoAlgorithm;
 import io.github.pangju666.framework.boot.crypto.enums.Encoding;
 import io.github.pangju666.framework.boot.crypto.factory.CryptoFactory;
 import io.github.pangju666.framework.boot.web.resolver.EncryptRequestParamArgumentResolver;
-import io.github.pangju666.framework.web.exception.base.ServiceException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 
 import java.lang.annotation.*;
@@ -42,7 +41,10 @@ import java.lang.annotation.*;
  * <p>
  * 异常说明：
  * <li>当 {@link #required()} 为 true 且请求中缺少参数时，抛出{@link MissingServletRequestParameterException}。</li>
- * <li>密钥配置缺失或无效、占位符解析失败、加密失败等，将抛出 {@link ServiceException}</li>
+ * <li>密钥配置缺失或无效、占位符解析失败、解密失败或编码错误等，
+ * 将分别抛出 {@link io.github.pangju666.framework.web.exception.base.ServerException}、
+ * {@link io.github.pangju666.framework.boot.web.exception.RequestDataDecryptFailureException} 或
+ * {@link io.github.pangju666.framework.web.exception.base.ValidationException}</li>
  * </p>
  * <p>
  * 注意事项：仅支持字符串类型参数；请确保客户端与服务端在算法与编码方式上保持一致。
@@ -56,7 +58,7 @@ import java.lang.annotation.*;
  *     @EncryptRequestParam(
  *         value = "userData",
  *         key = "${app.encryption.key}",
- *         algorithm = Algorithm.AES256,
+ *         algorithm = CryptoAlgorithm.AES256,
  *         encoding = Encoding.BASE64,
  *         required = true
  *     ) String decryptedUserData

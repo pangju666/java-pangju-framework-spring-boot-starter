@@ -305,7 +305,7 @@ public class RSACryptoFactory implements CryptoFactory {
 	 * 获取并缓存文本解密器（使用私钥）。
 	 *
 	 * @param protectedKey Base64 编码的 PKCS#8 格式私钥字符串
-	 * @return 二进制解密器
+	 * @return 文本解密器
 	 * @since 1.0.0
 	 */
 	@Override

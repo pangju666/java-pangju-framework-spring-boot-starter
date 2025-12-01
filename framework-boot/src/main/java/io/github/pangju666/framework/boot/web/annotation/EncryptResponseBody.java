@@ -66,7 +66,7 @@ import java.lang.annotation.*;
  * @PostMapping("/echo")
  * @EncryptResponseBody(
  *     key = "${app.encryption.key}",
- *     algorithm = Algorithm.AES256,
+ *     algorithm = CryptoAlgorithm.AES256,
  *     encoding = Encoding.BASE64
  * )
  * public String echo() {
@@ -123,7 +123,7 @@ public @interface EncryptResponseBody {
 	 * 默认使用AES256算法
 	 * </p>
 	 *
-	 * @return 解密算法
+	 * @return 加密算法
 	 * @since 1.0.0
 	 */
 	CryptoAlgorithm algorithm() default CryptoAlgorithm.AES256;

@@ -720,7 +720,7 @@ public class GMImageTemplate implements ImageTemplate {
 		} else if (Objects.nonNull(operation.getTargetWidth())) {
 			imageSize = imageSize.scaleByWidth(operation.getTargetWidth());
 		} else if (Objects.nonNull(operation.getTargetHeight())) {
-			imageSize = imageSize.scaleByWidth(operation.getTargetHeight());
+			imageSize = imageSize.scaleByHeight(operation.getTargetHeight());
 		}
 
 		GMImageOperation gmImageOperation = null;

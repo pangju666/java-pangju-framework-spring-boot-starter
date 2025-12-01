@@ -57,6 +57,7 @@ public final class LocalDateJsonSerializer extends JsonSerializer<LocalDate> {
     public void serialize(LocalDate value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
 		if (Objects.isNull(value)) {
 			gen.writeNull();
+			return;
 		}
 		gen.writeNumber(DateUtils.toDate(value).getTime());
     }

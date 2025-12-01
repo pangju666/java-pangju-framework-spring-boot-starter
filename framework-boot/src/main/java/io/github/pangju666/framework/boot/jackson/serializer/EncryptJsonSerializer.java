@@ -338,10 +338,10 @@ public final class EncryptJsonSerializer extends JsonSerializer<Object> implemen
 			} else if (entry.getValue() instanceof Map<?, ?> map) {
 				gen.writeFieldName(Objects.toString(entry.getKey()));
 				writeMap(map, gen);
-			} else if (value instanceof BigDecimal bigDecimal) {
+			} else if (entry.getValue() instanceof BigDecimal bigDecimal) {
 				gen.writeFieldName(Objects.toString(entry.getKey()));
 				writeBigDecimal(bigDecimal, gen);
-			} else if (value instanceof BigInteger bigInteger) {
+			} else if (entry.getValue() instanceof BigInteger bigInteger) {
 				gen.writeFieldName(Objects.toString(entry.getKey()));
 				writeBigInteger(bigInteger, gen);
 			} else {

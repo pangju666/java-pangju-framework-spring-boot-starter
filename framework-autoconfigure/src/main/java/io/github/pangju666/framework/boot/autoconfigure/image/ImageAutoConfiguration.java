@@ -33,11 +33,11 @@ import org.springframework.context.annotation.Import;
  *   <li>按条件导入 {@link GMConfiguration} 与 {@link ImageIOConfiguration} 两个子配置（{@link Import}）。</li>
  * </ul>
  *
- * <p><strong>生效条件</strong></p>
- * <ul>
- *   <li>GM：配置 {@code pangju.image.gm.path} 且类型为 {@code GM}。</li>
- *   <li>IMAGEIO：类路径存在 {@code ImageEditor} 且类型为 {@code IMAGEIO}（默认）。</li>
- * </ul>
+	 * <p><strong>生效条件</strong></p>
+	 * <ul>
+	 *   <li>GraphicsMagick：配置 {@code pangju.image.gm.path} 且类型为 {@code GRAPHICS_MAGICK}。</li>
+	 *   <li>IMAGEIO：类路径存在 {@code ImageEditor} 且类型为 {@code IMAGEIO}（默认）。</li>
+	 * </ul>
  *
  * @since 1.0.0
  * @author pangju666

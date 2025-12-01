@@ -63,7 +63,7 @@ import java.lang.annotation.*;
  * public String submit(
  *     @DecryptRequestBody(
  *         key = "${app.encryption.key}",
- *         algorithm = Algorithm.AES256,
+ *         algorithm = CryptoAlgorithm.AES256,
  *         encoding = Encoding.BASE64
  *     ) @RequestBody String string
  * ) {

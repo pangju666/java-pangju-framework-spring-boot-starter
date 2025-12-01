@@ -82,7 +82,8 @@ import java.util.Objects;
  * 异常说明：
  * <ul>
  *     <li>{@link ServerException}：密钥为空或格式无效、请求体读取异常。</li>
- *     <li>{@link ServiceException}：解密失败或十六进制解码失败。</li>
+ *     <li>{@link RequestDataDecryptFailureException}：解密失败。</li>
+ *     <li>{@link ValidationException}：十六进制解码失败或加密请求体格式错误。</li>
  * </ul>
  * </p>
  * <p>

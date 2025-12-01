@@ -59,7 +59,8 @@ import java.util.Objects;
  * <ul>
  *   <li>缺少必需参数：抛出 {@link org.springframework.web.bind.MissingServletRequestParameterException}。</li>
  *   <li>密钥获取失败或配置无效：抛出 {@link ServerException}。</li>
- *   <li>解密失败或十六进制解码错误：抛出 {@link ServiceException}。</li>
+ *   <li>解密失败：抛出 {@link RequestDataDecryptFailureException}。</li>
+ *   <li>十六进制解码或格式错误：抛出 {@link ValidationException}。</li>
  * </ul>
  *
  * <p><strong>注意事项</strong></p>

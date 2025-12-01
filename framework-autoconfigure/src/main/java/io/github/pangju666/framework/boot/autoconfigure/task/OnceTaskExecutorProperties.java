@@ -63,8 +63,6 @@ public class OnceTaskExecutorProperties {
     /**
      * 设置同步任务映射初始容量。
      *
-     * <p>参数校验规则：如果 {@code syncInitialCapacity} ≤ 0，则不设置或保留默认值。</p>
-     *
      * @param syncInitialCapacity 初始容量
      * @since 1.0.0
      */
@@ -84,8 +82,6 @@ public class OnceTaskExecutorProperties {
 
     /**
      * 设置异步任务映射初始容量。
-     *
-     * <p>参数校验规则：如果 {@code asyncInitialCapacity} ≤ 0，则不设置或保留默认值。</p>
      *
      * @param asyncInitialCapacity 初始容量
      * @since 1.0.0

@@ -34,7 +34,6 @@ import org.jasypt.util.text.TextEncryptor;
  * @see TextEncryptor
  * @see DecimalNumberEncryptor
  * @see IntegerNumberEncryptor
- * @see IntegerNumberEncryptor
  * @since 1.0.0
  */
 public interface CryptoFactory {
@@ -100,7 +99,7 @@ public interface CryptoFactory {
 	 * </p>
 	 *
 	 * @param key 密钥或口令
-	 * @return 文本加密器
+	 * @return 文本解密器
 	 * @throws IllegalArgumentException 密钥不可用或格式不合法时抛出
 	 * @since 1.0.0
 	 */

@@ -36,8 +36,8 @@ import org.springframework.util.StringUtils;
  * <p><strong>概述</strong></p>
  * <ul>
  *   <li>在检测到 GM 相关类存在时，按条件提供 GM 连接池与模板实现。</li>
- *   <li>当存在配置项 {@code pangju.image.gm.path} 时，创建 {@link PooledGMService}。</li>
- *   <li>当 {@code pangju.image.type=GM} 且已存在连接池时，创建 {@link GMImageTemplate}。</li>
+	 *   <li>当存在配置项 {@code pangju.image.gm.path} 时，创建 {@link PooledGMService}。</li>
+	 *   <li>当 {@code pangju.image.type=GRAPHICS_MAGICK} 且已存在连接池时，创建 {@link GMImageTemplate}。</li>
  * </ul>
  *
  * <p><strong>条件说明</strong></p>

@@ -41,7 +41,7 @@ import java.util.function.Function;
  * <p><strong>使用示例</strong></p>
  * <pre>
  * {@code
- * DigestAlgorithm algorithm = DigestAlgorithm.SHA256;
+ * SignatureAlgorithm algorithm = SignatureAlgorithm.SHA256;
  * String digest = algorithm.computeDigest("plain-text");
  * }
  * </pre>

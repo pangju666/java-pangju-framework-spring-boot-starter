@@ -232,10 +232,10 @@ public class SignatureInterceptor extends BaseHttpInterceptor {
 				return false;
 			}
 
-			String signature = request.getHeader(configuration.getSignatureParamName());
-			if (StringUtils.isBlank(signature)) {
-				throw new MissingRequestValueException("缺少请求头：" + configuration.getSignatureParamName());
-			}
+            String signature = request.getHeader(configuration.getSignatureHeaderName());
+            if (StringUtils.isBlank(signature)) {
+                throw new MissingRequestValueException("缺少请求头：" + configuration.getSignatureHeaderName());
+            }
 
 			String timestamp = request.getHeader(configuration.getTimestampHeaderName());
 			if (StringUtils.isBlank(timestamp)) {

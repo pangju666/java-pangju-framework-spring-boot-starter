@@ -52,7 +52,7 @@ import org.springframework.http.HttpStatus;
  * @see io.github.pangju666.framework.web.annotation.HttpException
  * @since 1.0.0
  */
-@HttpException(code = 510, type = HttpExceptionType.VALIDATION, description = "请求数据加密异常", status = HttpStatus.BAD_REQUEST)
+@HttpException(code = 510, type = HttpExceptionType.VALIDATION, description = "请求数据解密失败", status = HttpStatus.BAD_REQUEST)
 public class RequestDataDecryptFailureException extends ValidationException {
     /**
      * 基于描述信息构造解密异常。

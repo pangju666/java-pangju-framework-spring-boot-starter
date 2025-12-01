@@ -58,8 +58,9 @@ public final class LocalDateTimeJsonSerializer extends JsonSerializer<LocalDateT
     @Override
     public void serialize(LocalDateTime value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
         if (Objects.isNull(value)) {
-			gen.writeNull();
-		}
-		gen.writeNumber(DateUtils.toDate(value).getTime());
+            gen.writeNull();
+            return;
+        }
+        gen.writeNumber(DateUtils.toDate(value).getTime());
     }
 }
