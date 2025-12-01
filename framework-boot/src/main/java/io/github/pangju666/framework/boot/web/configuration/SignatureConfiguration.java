@@ -1,7 +1,7 @@
-package io.github.pangju666.framework.boot.web.signature.configuration;
+package io.github.pangju666.framework.boot.web.configuration;
 
-import io.github.pangju666.framework.boot.web.signature.enums.SignatureAlgorithm;
-import io.github.pangju666.framework.boot.web.signature.annotation.Signature;
+import io.github.pangju666.framework.boot.web.annotation.Signature;
+import io.github.pangju666.framework.boot.web.enums.SignatureAlgorithm;
 
 /**
  * HTTP 签名配置。

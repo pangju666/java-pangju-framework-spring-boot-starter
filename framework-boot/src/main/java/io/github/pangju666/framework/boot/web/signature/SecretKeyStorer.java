@@ -14,10 +14,10 @@
  *    limitations under the License.
  */
 
-package io.github.pangju666.framework.boot.web.signature.storer;
+package io.github.pangju666.framework.boot.web.signature;
 
-import io.github.pangju666.framework.boot.web.signature.annotation.Signature;
-import io.github.pangju666.framework.boot.web.signature.storer.impl.DefaultSignatureSecretKeyStorer;
+import io.github.pangju666.framework.boot.web.annotation.Signature;
+import io.github.pangju666.framework.boot.web.signature.impl.DefaultSecretKeyStorer;
 
 /**
  * 签名密钥存储器接口。
@@ -42,7 +42,7 @@ import io.github.pangju666.framework.boot.web.signature.storer.impl.DefaultSigna
  * <pre>
  * {@code
  * @Component
- * public class MySignatureSecretKeyStorer implements SignatureSecretKeyStorer {
+ * public class MySecretKeyStorer implements SecretKeyStorer {
  *     @Override
  *     public String loadSecretKey(String appId) {
  *         // 根据应用 ID 从数据库或配置中加载密钥
@@ -53,10 +53,10 @@ import io.github.pangju666.framework.boot.web.signature.storer.impl.DefaultSigna
  * </pre>
  *
  * @author pangju666
- * @see DefaultSignatureSecretKeyStorer
+ * @see DefaultSecretKeyStorer
  * @since 1.0.0
  */
-public interface SignatureSecretKeyStorer {
+public interface SecretKeyStorer {
 	/**
 	 * 根据应用 ID加载签名密钥。
 	 * <p>

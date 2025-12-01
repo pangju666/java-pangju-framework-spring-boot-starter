@@ -17,10 +17,10 @@
 package io.github.pangju666.framework.boot.autoconfigure.web.signature;
 
 import io.github.pangju666.framework.boot.autoconfigure.web.WebMvcAutoConfiguration;
-import io.github.pangju666.framework.boot.web.signature.configuration.SignatureConfiguration;
-import io.github.pangju666.framework.boot.web.signature.interceptor.SignatureInterceptor;
-import io.github.pangju666.framework.boot.web.signature.storer.SignatureSecretKeyStorer;
-import io.github.pangju666.framework.boot.web.signature.storer.impl.DefaultSignatureSecretKeyStorer;
+import io.github.pangju666.framework.boot.web.configuration.SignatureConfiguration;
+import io.github.pangju666.framework.boot.web.interceptor.SignatureInterceptor;
+import io.github.pangju666.framework.boot.web.signature.SecretKeyStorer;
+import io.github.pangju666.framework.boot.web.signature.impl.DefaultSecretKeyStorer;
 import io.github.pangju666.framework.web.model.Result;
 import jakarta.servlet.Servlet;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -35,28 +35,39 @@ import org.springframework.core.annotation.Order;
 import org.springframework.web.servlet.DispatcherServlet;
 
 /**
- * 签名功能的自动配置类。
- * <p>
- * 该类提供签名校验功能的自动化配置，主要作用是初始化签名密钥存储器，并加载签名功能相关的配置项。
- * 仅在 Servlet 类型的 Web 应用环境下生效。
- * </p>
+ * 签名功能自动配置。
  *
- * <p>配置条件：</p>
+ * <p><strong>概述</strong></p>
  * <ul>
- *     <li>当前是 Servlet 类型的 Web 应用。</li>
- *     <li>类路径中存在 {@code Servlet} 和 {@code DispatcherServlet}。</li>
+ *   <li>在 Servlet Web 应用中加载签名相关配置并提供必要 Bean。</li>
+ *   <li>按需提供默认密钥存储器与签名拦截器，拦截器的实际注册由 {@link WebMvcAutoConfiguration} 统一完成。</li>
  * </ul>
  *
- * <p>主要功能：</p>
+ * <p><strong>条件</strong></p>
  * <ul>
- *     <li>加载用户定义的签名配置 {@link SignatureProperties}，从配置文件提取签名字段名称及密钥信息。</li>
- *     <li>注册默认签名密钥存储器 {@link DefaultSignatureSecretKeyStorer}，用于根据应用 ID 动态加载签名密钥。</li>
+ *   <li>仅在 Servlet 类型的 Web 应用：{@link ConditionalOnWebApplication @ConditionalOnWebApplication(type = SERVLET)}。</li>
+ *   <li>类路径存在核心类：{@link Servlet}、{@link DispatcherServlet}、{@link Result}（{@link ConditionalOnClass}）。</li>
+ *   <li>启用配置绑定：{@link EnableConfigurationProperties @EnableConfigurationProperties}({@link SignatureProperties}).</li>
+ * </ul>
+ *
+ * <p><strong>行为</strong></p>
+ * <ul>
+ *   <li>当上下文中缺少 {@link SecretKeyStorer} 时，注册 {@link DefaultSecretKeyStorer}，从 {@link SignatureProperties#getSecretKeys()} 加载密钥映射。</li>
+ *   <li>当存在 {@link SecretKeyStorer} 时，创建并暴露 {@link SignatureInterceptor} Bean（优先级 {@link Ordered#HIGHEST_PRECEDENCE} + 1），其配置来自 {@link SignatureProperties}。</li>
+ * </ul>
+ *
+ * <p><strong>备注</strong></p>
+ * <ul>
+ *   <li>签名拦截器的包含/排除路径与最终注册顺序由拦截器与 MVC 配置共同决定。</li>
+ *   <li>密钥通过应用标识符（AppId）映射获取，请避免在日志中泄露敏感信息。</li>
  * </ul>
  *
  * @author pangju666
  * @see SignatureProperties
- * @see DefaultSignatureSecretKeyStorer
- * @see SignatureSecretKeyStorer
+ * @see DefaultSecretKeyStorer
+ * @see SecretKeyStorer
+ * @see SignatureInterceptor
+ * @see WebMvcAutoConfiguration
  * @since 1.0.0
  */
 @AutoConfiguration(before = WebMvcAutoConfiguration.class)
@@ -67,24 +78,39 @@ public class SignatureAutoConfiguration {
 	/**
 	 * 注册默认签名密钥存储器。
 	 * <p>
-	 * 如果 Spring 上下文中没有实现 {@link SignatureSecretKeyStorer} 的 Bean，则会自动注册
-	 * {@link DefaultSignatureSecretKeyStorer} 实例，并从签名配置中加载密钥映射关系。
+	 * 如果 Spring 上下文中没有实现 {@link SecretKeyStorer} 的 Bean，则会自动注册
+	 * {@link DefaultSecretKeyStorer} 实例，并从签名配置中加载密钥映射关系。
 	 * </p>
 	 *
 	 * @param properties 签名功能的配置属性 {@link SignatureProperties}。
-	 * @return 默认签名密钥存储器 {@link DefaultSignatureSecretKeyStorer} 实例。
+	 * @return 默认签名密钥存储器 {@link DefaultSecretKeyStorer} 实例。
 	 * @since 1.0.0
 	 */
-	@ConditionalOnMissingBean(SignatureSecretKeyStorer.class)
+	@ConditionalOnMissingBean(SecretKeyStorer.class)
 	@Bean
-	public DefaultSignatureSecretKeyStorer defaultSignatureSecretKeyStorer(SignatureProperties properties) {
-		return new DefaultSignatureSecretKeyStorer(properties.getSecretKeys());
+	public DefaultSecretKeyStorer defaultSignatureSecretKeyStorer(SignatureProperties properties) {
+		return new DefaultSecretKeyStorer(properties.getSecretKeys());
 	}
 
+	/**
+	 * 注册签名拦截器 Bean。
+	 *
+	 * <p><strong>行为</strong></p>
+	 * <ul>
+	 *   <li>根据 {@link SignatureProperties} 构建 {@link SignatureConfiguration}，包含头部与参数字段名。</li>
+	 *   <li>依赖 {@link SecretKeyStorer} 提供按 AppId 获取密钥的能力。</li>
+	 *   <li>拦截器优先级为 {@link Ordered#HIGHEST_PRECEDENCE} + 1；实际添加到 MVC 由 {@link WebMvcAutoConfiguration} 统一处理。</li>
+	 * </ul>
+	 *
+	 * @param secretKeyStorer 密钥存储器（按应用标识符提供签名密钥）
+	 * @param properties      签名配置属性（头部与参数字段名、密钥映射等）
+	 * @return 签名拦截器实例
+	 * @since 1.0.0
+	 */
 	@Order(Ordered.HIGHEST_PRECEDENCE + 1)
-	@ConditionalOnBean(SignatureSecretKeyStorer.class)
+	@ConditionalOnBean(SecretKeyStorer.class)
 	@Bean
-	public SignatureInterceptor signatureInterceptor(SignatureSecretKeyStorer secretKeyStorer, SignatureProperties properties) {
+	public SignatureInterceptor signatureInterceptor(SecretKeyStorer secretKeyStorer, SignatureProperties properties) {
 		SignatureConfiguration signatureConfiguration = new SignatureConfiguration();
 		signatureConfiguration.setSignatureHeaderName(properties.getSignatureHeaderName());
 		signatureConfiguration.setAppIdHeaderName(properties.getAppIdHeaderName());

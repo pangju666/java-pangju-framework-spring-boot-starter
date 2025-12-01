@@ -16,8 +16,8 @@
 
 package io.github.pangju666.framework.boot.autoconfigure.web.limit;
 
-import io.github.pangju666.framework.boot.web.limit.limiter.RateLimiter;
-import io.github.pangju666.framework.boot.web.limit.limiter.impl.RedissonRateLimiter;
+import io.github.pangju666.framework.boot.web.limit.RateLimiter;
+import io.github.pangju666.framework.boot.web.limit.impl.RedissonRateLimiter;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;

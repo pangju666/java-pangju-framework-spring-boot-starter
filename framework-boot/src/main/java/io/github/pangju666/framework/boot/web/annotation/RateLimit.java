@@ -14,11 +14,11 @@
  *    limitations under the License.
  */
 
-package io.github.pangju666.framework.boot.web.limit.annotation;
+package io.github.pangju666.framework.boot.web.annotation;
 
-import io.github.pangju666.framework.boot.web.limit.exception.RateLimitException;
-import io.github.pangju666.framework.boot.web.limit.source.RateLimitSourceExtractor;
-import io.github.pangju666.framework.boot.web.limit.source.impl.IpRateLimitSourceExtractor;
+import io.github.pangju666.framework.boot.web.exception.RateLimitException;
+import io.github.pangju666.framework.boot.web.limit.RateLimitSourceExtractor;
+import io.github.pangju666.framework.boot.web.limit.impl.IpRateLimitSourceExtractor;
 
 import java.lang.annotation.*;
 import java.util.concurrent.TimeUnit;
@@ -37,7 +37,7 @@ import java.util.concurrent.TimeUnit;
  *     <li>定义时间窗口内允许的最大请求数</li>
  *     <li>支持全局限流和基于源（IP、用户等）的限流</li>
  *     <li>支持自定义请求源提取器</li>
- *     <li>支持自定义限流键和前缀</li>
+ *     <li>支持自定义限流键</li>
  *     <li>支持自定义错误消息</li>
  * </ul>
  * </p>
@@ -108,13 +108,6 @@ import java.util.concurrent.TimeUnit;
  * 该异常会被自动转换为HTTP 429（Too Many Requests）响应。
  * </p>
  * </p>
- * <p>
- * 性能考虑：
- * <ul>
- *     <li>全局限流（GLOBAL）性能最好，仅需单个计数器</li>
- *     <li>基于源的限流（SOURCE）需要为每个源维护一个计数器，性能取决于源的数量</li>
- * </ul>
- * </p>
  *
  * @author pangju666
  * @see RateLimitScope
@@ -128,43 +121,19 @@ import java.util.concurrent.TimeUnit;
 @Target({ElementType.TYPE, ElementType.METHOD})
 public @interface RateLimit {
 	/**
-	 * 限流键的前缀
-	 * <p>
-	 * 用于在分布式限流实现（如Redis）中区分不同应用或模块的限流数据。
-	 * 完整的限流键格式为：{prefix}:{key}:{source}（当使用源隔离时）
-	 * 或 {prefix}:{key}（全局限流时）。
-	 * </p>
-	 * <p>
-	 * 如果不指定，框架会使用配置中的默认前缀（通常为"rate-limit"）。
-	 * </p>
-	 *
-	 * @return 限流键的前缀，默认为空字符串（使用全局默认前缀）
-	 * @since 1.0.0
-	 */
-	String prefix() default "";
-
-	/**
 	 * 限流的业务键
 	 * <p>
-	 * 用于标识一个特定的限流规则。同一个键会共享限流计数，
-	 * 不同的键维护独立的限流计数。
+	 * 用于标识一个特定的限流规则。同一个键会共享限流计数，不同的键维护独立的限流计数。
 	 * </p>
 	 * <p>
-	 * 支持使用SpEL表达式动态生成键，如：
+	 * 支持使用SpEL表达式动态生成键（计算失败时，直接使用表达式作为键），如：
 	 * <ul>
 	 *     <li>#{T(java.lang.System).currentTimeMillis()} - 使用系统时间戳</li>
 	 *     <li>#request.getParameter('param') - 使用请求参数</li>
 	 * </ul>
 	 * </p>
-	 * <p>
-	 * 如果不指定，框架会使用默认策略：
-	 * <ul>
-	 *     <li>方法级注解：使用类名 + 方法名</li>
-	 *     <li>类级注解：使用类名</li>
-	 * </ul>
-	 * </p>
 	 *
-	 * @return 限流的业务键，默认为空字符串（使用默认策略）
+	 * @return 限流的业务键，默认使用请求 URL + 请求方法
 	 * @since 1.0.0
 	 */
 	String key() default "";
@@ -251,7 +220,7 @@ public @interface RateLimit {
 	RateLimitScope scope() default RateLimitScope.GLOBAL;
 
 	/**
-	 * 请求源提取器类
+	 * 限流源提取器类
 	 * <p>
 	 * 当{@link #scope()}为{@link RateLimitScope#SOURCE}时，
 	 * 该属性指定的提取器用于从请求中提取源标识信息（如IP地址、用户ID等）。

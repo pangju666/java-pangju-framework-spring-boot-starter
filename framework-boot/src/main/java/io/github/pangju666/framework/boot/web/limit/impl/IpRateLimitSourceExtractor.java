@@ -14,11 +14,11 @@
  *    limitations under the License.
  */
 
-package io.github.pangju666.framework.boot.web.limit.source.impl;
+package io.github.pangju666.framework.boot.web.limit.impl;
 
-import io.github.pangju666.framework.boot.web.limit.annotation.RateLimit;
-import io.github.pangju666.framework.boot.web.limit.interceptor.RateLimitInterceptor;
-import io.github.pangju666.framework.boot.web.limit.source.RateLimitSourceExtractor;
+import io.github.pangju666.framework.boot.web.annotation.RateLimit;
+import io.github.pangju666.framework.boot.web.interceptor.RateLimitInterceptor;
+import io.github.pangju666.framework.boot.web.limit.RateLimitSourceExtractor;
 import io.github.pangju666.framework.web.servlet.utils.HttpRequestUtils;
 import jakarta.servlet.http.HttpServletRequest;
 

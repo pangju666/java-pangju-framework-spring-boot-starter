@@ -14,13 +14,13 @@
  *    limitations under the License.
  */
 
-package io.github.pangju666.framework.boot.web.limit.interceptor;
+package io.github.pangju666.framework.boot.web.interceptor;
 
 import io.github.pangju666.framework.boot.spring.StaticSpringContext;
-import io.github.pangju666.framework.boot.web.limit.annotation.RateLimit;
-import io.github.pangju666.framework.boot.web.limit.exception.RateLimitException;
-import io.github.pangju666.framework.boot.web.limit.limiter.RateLimiter;
-import io.github.pangju666.framework.boot.web.limit.source.RateLimitSourceExtractor;
+import io.github.pangju666.framework.boot.web.annotation.RateLimit;
+import io.github.pangju666.framework.boot.web.exception.RateLimitException;
+import io.github.pangju666.framework.boot.web.limit.RateLimitSourceExtractor;
+import io.github.pangju666.framework.boot.web.limit.RateLimiter;
 import io.github.pangju666.framework.web.exception.base.ServerException;
 import io.github.pangju666.framework.web.servlet.BaseHttpInterceptor;
 import io.github.pangju666.framework.web.servlet.HttpResponseBuilder;
@@ -28,7 +28,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.expression.EvaluationContext;
+import org.springframework.expression.EvaluationException;
 import org.springframework.expression.Expression;
+import org.springframework.expression.ParseException;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.web.method.HandlerMethod;
@@ -135,14 +137,17 @@ public class RateLimitInterceptor extends BaseHttpInterceptor {
      * @since 1.0.0
      */
     private String generateKey(RateLimit annotation, HttpServletRequest request) {
-		StringBuilder keyBuilder = new StringBuilder(annotation.prefix().trim());
+		StringBuilder keyBuilder = new StringBuilder();
 		if (StringUtils.isNotBlank(annotation.key())) {
 			EvaluationContext context = new StandardEvaluationContext();
 			context.setVariable("request", request);
-			Expression expression = parser.parseExpression(annotation.key());
-			keyBuilder.append(expression.getValue(context, String.class));
-		}
-		if (keyBuilder.isEmpty()) {
+			try {
+				Expression expression = parser.parseExpression(annotation.key());
+				keyBuilder.append(expression.getValue(context, String.class));
+			} catch (ParseException | EvaluationException e) {
+				keyBuilder.append(annotation.key());
+			}
+		} else {
 			keyBuilder
 				.append(request.getRequestURI())
 				.append("_")

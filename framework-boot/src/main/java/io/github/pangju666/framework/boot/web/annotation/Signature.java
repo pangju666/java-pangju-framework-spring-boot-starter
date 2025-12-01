@@ -14,10 +14,10 @@
  *    limitations under the License.
  */
 
-package io.github.pangju666.framework.boot.web.signature.annotation;
+package io.github.pangju666.framework.boot.web.annotation;
 
-import io.github.pangju666.framework.boot.web.signature.enums.SignatureAlgorithm;
-import io.github.pangju666.framework.boot.web.signature.interceptor.SignatureInterceptor;
+import io.github.pangju666.framework.boot.web.enums.SignatureAlgorithm;
+import io.github.pangju666.framework.boot.web.interceptor.SignatureInterceptor;
 
 import java.lang.annotation.*;
 import java.util.concurrent.TimeUnit;
@@ -78,14 +78,14 @@ public @interface Signature {
 	 * @return 应用 ID 数组。
 	 * @since 1.0.0
 	 */
-	String[] appId();
+	String[] appId() default {};
 
 	/**
-	 * 签名的存在位置。
+	 * 签名方式。
 	 * <p>
 	 * 可选值包括：
 	 * <ul>
-	 *     <li>{@link SignatureType#PARAMS}：从请求参数中读取签名。</li>
+	 *     <li>{@link SignatureType#PARAM}：从请求参数中读取签名。</li>
 	 *     <li>{@link SignatureType#HEADER}：从请求头中读取签名。</li>
 	 *     <li>{@link SignatureType#ANY}：允许从请求参数或请求头中读取签名。</li>
 	 * </ul>
@@ -148,7 +148,7 @@ public @interface Signature {
 		 *
 		 * @since 1.0.0
 		 */
-		PARAMS,
+		PARAM,
 		/**
 		 * 签名信息存储在请求头中。
 		 * <p>适用于高安全性环境，避免签名信息暴露在请求参数中。</p>

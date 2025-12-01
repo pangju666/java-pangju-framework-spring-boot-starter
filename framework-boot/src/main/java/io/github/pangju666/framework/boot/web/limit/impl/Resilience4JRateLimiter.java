@@ -14,10 +14,10 @@
  *    limitations under the License.
  */
 
-package io.github.pangju666.framework.boot.web.limit.limiter.impl;
+package io.github.pangju666.framework.boot.web.limit.impl;
 
-import io.github.pangju666.framework.boot.web.limit.annotation.RateLimit;
-import io.github.pangju666.framework.boot.web.limit.limiter.RateLimiter;
+import io.github.pangju666.framework.boot.web.annotation.RateLimit;
+import io.github.pangju666.framework.boot.web.limit.RateLimiter;
 import io.github.resilience4j.ratelimiter.RateLimiterConfig;
 import io.github.resilience4j.ratelimiter.RateLimiterRegistry;
 import jakarta.servlet.http.HttpServletRequest;
@@ -72,7 +72,6 @@ public class Resilience4JRateLimiter implements RateLimiter {
 	 * @param annotation 限流参数：时间窗口（interval + timeUnit）与速率（rate）
 	 * @param request    当前 HTTP 请求对象（此实现未使用）
 	 * @return 获取到权限返回 {@code true}；未获取到返回 {@code false}
-	 * @since 1.0.0
 	 */
 	@Override
 	public boolean tryAcquire(String key, RateLimit annotation, HttpServletRequest request) {

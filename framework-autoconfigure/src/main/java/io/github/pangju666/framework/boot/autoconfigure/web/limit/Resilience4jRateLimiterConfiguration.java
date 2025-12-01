@@ -16,8 +16,8 @@
 
 package io.github.pangju666.framework.boot.autoconfigure.web.limit;
 
-import io.github.pangju666.framework.boot.web.limit.limiter.RateLimiter;
-import io.github.pangju666.framework.boot.web.limit.limiter.impl.Resilience4JRateLimiter;
+import io.github.pangju666.framework.boot.web.limit.RateLimiter;
+import io.github.pangju666.framework.boot.web.limit.impl.Resilience4JRateLimiter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;

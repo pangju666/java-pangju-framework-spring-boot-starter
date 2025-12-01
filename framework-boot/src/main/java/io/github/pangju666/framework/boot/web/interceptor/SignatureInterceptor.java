@@ -14,12 +14,12 @@
  *    limitations under the License.
  */
 
-package io.github.pangju666.framework.boot.web.signature.interceptor;
+package io.github.pangju666.framework.boot.web.interceptor;
 
 import io.github.pangju666.commons.lang.utils.DateUtils;
-import io.github.pangju666.framework.boot.web.signature.annotation.Signature;
-import io.github.pangju666.framework.boot.web.signature.configuration.SignatureConfiguration;
-import io.github.pangju666.framework.boot.web.signature.storer.SignatureSecretKeyStorer;
+import io.github.pangju666.framework.boot.web.annotation.Signature;
+import io.github.pangju666.framework.boot.web.configuration.SignatureConfiguration;
+import io.github.pangju666.framework.boot.web.signature.SecretKeyStorer;
 import io.github.pangju666.framework.web.exception.base.ValidationException;
 import io.github.pangju666.framework.web.servlet.BaseHttpInterceptor;
 import io.github.pangju666.framework.web.servlet.HttpResponseBuilder;
@@ -50,7 +50,7 @@ import java.util.Objects;
  * <ul>
  *     <li>校验请求是否包含必要的签名字段（如 appId、签名值）。</li>
  *     <li>从 {@link SignatureConfiguration} 配置中获取签名字段名称，支持灵活自定义。</li>
- *     <li>通过 {@link SignatureSecretKeyStorer} 动态加载对应 appId 的签名密钥，计算签名并进行对比。</li>
+ *     <li>通过 {@link SecretKeyStorer} 动态加载对应 appId 的签名密钥，计算签名并进行对比。</li>
  *     <li>支持多种签名计算算法（如 MD5、SHA256）。</li>
  *     <li>检查签名的时效性，拒绝超时签名。</li>
  * </ul>
@@ -73,7 +73,7 @@ import java.util.Objects;
  * @author pangju666
  * @see Signature
  * @see SignatureConfiguration
- * @see SignatureSecretKeyStorer
+ * @see SecretKeyStorer
  * @see BaseHttpInterceptor
  * @since 1.0.0
  */
@@ -92,19 +92,19 @@ public class SignatureInterceptor extends BaseHttpInterceptor {
 	/**
 	 * 签名密钥存储器。
 	 * <p>
-	 * 该字段用于加载签名校验所需的密钥信息。通过 {@link SignatureSecretKeyStorer} 动态加载指定
+	 * 该字段用于加载签名校验所需的密钥信息。通过 {@link SecretKeyStorer} 动态加载指定
 	 * 应用 ID 的密钥，用于签名验证。
 	 * </p>
 	 *
-	 * @see SignatureSecretKeyStorer
+	 * @see SecretKeyStorer
 	 * @since 1.0.0
 	 */
-	private final SignatureSecretKeyStorer secretKeyStorer;
+	private final SecretKeyStorer secretKeyStorer;
 
 	/**
 	 * 构造函数，初始化拦截器。
 	 * <p>
-	 * 通过注入 {@link SignatureConfiguration} 配置和密钥存储器 {@link SignatureSecretKeyStorer}，
+	 * 通过注入 {@link SignatureConfiguration} 配置和密钥存储器 {@link SecretKeyStorer}，
 	 * 构建签名校验拦截器实例。
 	 * </p>
 	 *
@@ -112,7 +112,7 @@ public class SignatureInterceptor extends BaseHttpInterceptor {
 	 * @param secretKeyStorer 签名密钥存储器，用于根据 appId 动态加载签名密钥。
 	 * @since 1.0.0
 	 */
-	public SignatureInterceptor(SignatureConfiguration configuration, SignatureSecretKeyStorer secretKeyStorer) {
+	public SignatureInterceptor(SignatureConfiguration configuration, SecretKeyStorer secretKeyStorer) {
 		super(Collections.emptySet());
 		this.configuration = configuration;
 		this.secretKeyStorer = secretKeyStorer;
@@ -146,7 +146,7 @@ public class SignatureInterceptor extends BaseHttpInterceptor {
 
 			return switch (annotation.type()) {
 				case HEADER -> validateSignatureByHeaders(request, response, annotation);
-				case PARAMS -> validateSignatureByParams(request, response, annotation);
+				case PARAM -> validateSignatureByParams(request, response, annotation);
 				default -> {
 					String signatureHeader = request.getHeader(configuration.getSignatureHeaderName());
 					String timestampHeader = request.getHeader(configuration.getTimestampHeaderName());

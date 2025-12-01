@@ -14,10 +14,10 @@
  *    limitations under the License.
  */
 
-package io.github.pangju666.framework.boot.web.signature.storer.impl;
+package io.github.pangju666.framework.boot.web.signature.impl;
 
-import io.github.pangju666.framework.boot.web.signature.annotation.Signature;
-import io.github.pangju666.framework.boot.web.signature.storer.SignatureSecretKeyStorer;
+import io.github.pangju666.framework.boot.web.annotation.Signature;
+import io.github.pangju666.framework.boot.web.signature.SecretKeyStorer;
 
 import java.util.Collections;
 import java.util.Map;
@@ -49,7 +49,7 @@ import java.util.Objects;
  * secretKeys.put("app1", "secretKey1");
  * secretKeys.put("app2", "secretKey2");
  *
- * SignatureSecretKeyStorer storer = new DefaultSignatureSecretKeyStorer(secretKeys);
+ * SecretKeyStorer storer = new DefaultSecretKeyStorer(secretKeys);
  * String secretKey = storer.loadSecretKey("app1");  // 获取 "app1" 对应的密钥
  * }
  * </pre>
@@ -61,11 +61,11 @@ import java.util.Objects;
  * </ul>
  *
  * @author pangju666
- * @see SignatureSecretKeyStorer
+ * @see SecretKeyStorer
  * @see Signature
  * @since 1.0.0
  */
-public class DefaultSignatureSecretKeyStorer implements SignatureSecretKeyStorer {
+public class DefaultSecretKeyStorer implements SecretKeyStorer {
 	/**
 	 * 内存中维护的应用 ID 与签名密钥的映射表。
 	 *
@@ -82,7 +82,7 @@ public class DefaultSignatureSecretKeyStorer implements SignatureSecretKeyStorer
 	 * @param secretKeyMap 应用 ID 与密钥的对应关系，用于内存中存储的映射表。
 	 * @since 1.0.0
 	 */
-	public DefaultSignatureSecretKeyStorer(Map<String, String> secretKeyMap) {
+	public DefaultSecretKeyStorer(Map<String, String> secretKeyMap) {
 		this.secretKeyMap = Objects.isNull(secretKeyMap) ? Collections.emptyMap() : secretKeyMap;
 	}
 

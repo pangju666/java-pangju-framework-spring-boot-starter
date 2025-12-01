@@ -14,11 +14,11 @@
  *    limitations under the License.
  */
 
-package io.github.pangju666.framework.boot.web.idempotent.aspect;
+package io.github.pangju666.framework.boot.web.aspect;
 
-import io.github.pangju666.framework.boot.web.idempotent.annotation.Idempotent;
-import io.github.pangju666.framework.boot.web.idempotent.exception.IdempotentException;
-import io.github.pangju666.framework.boot.web.idempotent.validator.IdempotentValidator;
+import io.github.pangju666.framework.boot.web.annotation.Idempotent;
+import io.github.pangju666.framework.boot.web.exception.IdempotentException;
+import io.github.pangju666.framework.boot.web.idempotent.IdempotentValidator;
 import io.github.pangju666.framework.spring.utils.SpELUtils;
 import io.github.pangju666.framework.web.exception.base.ServerException;
 import org.apache.commons.lang3.StringUtils;
@@ -139,7 +139,7 @@ public class IdempotentAspect {
 	 */
 	@Before("(@within(org.springframework.web.bind.annotation.RestController) || " +
 		"@within(org.springframework.stereotype.Controller)) && " +
-		"@annotation(io.github.pangju666.framework.boot.web.idempotent.annotation.Idempotent)")
+		"@annotation(io.github.pangju666.framework.boot.web.annotation.Idempotent)")
 	public void doBefore(JoinPoint point) {
 		MethodSignature methodSignature = (MethodSignature) point.getSignature();
 		Method method = methodSignature.getMethod();

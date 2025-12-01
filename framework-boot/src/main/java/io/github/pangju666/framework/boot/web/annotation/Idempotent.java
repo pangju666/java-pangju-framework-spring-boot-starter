@@ -14,11 +14,11 @@
  *    limitations under the License.
  */
 
-package io.github.pangju666.framework.boot.web.idempotent.annotation;
+package io.github.pangju666.framework.boot.web.annotation;
 
-import io.github.pangju666.framework.boot.web.idempotent.aspect.IdempotentAspect;
-import io.github.pangju666.framework.boot.web.idempotent.exception.IdempotentException;
-import io.github.pangju666.framework.boot.web.idempotent.validator.IdempotentValidator;
+import io.github.pangju666.framework.boot.web.aspect.IdempotentAspect;
+import io.github.pangju666.framework.boot.web.exception.IdempotentException;
+import io.github.pangju666.framework.boot.web.idempotent.IdempotentValidator;
 
 import java.lang.annotation.*;
 import java.util.concurrent.TimeUnit;

@@ -14,25 +14,23 @@
  *    limitations under the License.
  */
 
-package io.github.pangju666.framework.boot.web.limit.exception;
+package io.github.pangju666.framework.boot.web.exception;
 
-import io.github.pangju666.framework.boot.web.limit.annotation.RateLimit;
+import io.github.pangju666.framework.boot.web.annotation.Idempotent;
 import io.github.pangju666.framework.web.annotation.HttpException;
 import io.github.pangju666.framework.web.enums.HttpExceptionType;
 import io.github.pangju666.framework.web.exception.base.ValidationException;
-import org.springframework.http.HttpStatus;
 
 /**
- * 速率限制异常
+ * 幂等性验证异常
  * <p>
- * 当请求超过设定的限流阈值时抛出该异常。
- * 该异常被标记为HTTP异常，会被自动转换为HTTP 429（Too Many Requests）响应。
+ * 当请求被判定为重复请求（违反幂等性约束）时抛出该异常。
+ * 该异常被标记为HTTP异常。
  * </p>
  * <p>
  * 异常特性：
  * <ul>
- *     <li>HTTP状态码：429 Too Many Requests</li>
- *     <li>异常代码：410</li>
+ *     <li>异常错误码：420</li>
  *     <li>异常类型：VALIDATION（验证类异常）</li>
  *     <li>日志记录：false（该异常不会被记录到应用日志中）</li>
  * </ul>
@@ -40,7 +38,7 @@ import org.springframework.http.HttpStatus;
  * <p>
  * 使用场景：
  * <ul>
- *     <li>通知客户端请求过于频繁，需要进行退避</li>
+ *     <li>通知客户端该请求已处理过，不应重复提交</li>
  * </ul>
  * </p>
  * <p>
@@ -48,38 +46,38 @@ import org.springframework.http.HttpStatus;
  * <pre>
  * {@code
  * {
- *   "code": 4410,
- *   "message": "请求次数已达上限，请稍候再试"
+ *   "code": 4420,
+ *   "message": "您的请求已处理，请勿重复提交"
  * }
  * }
  * </pre>
  * </p>
  *
  * @author pangju666
- * @see RateLimit
+ * @see Idempotent
  * @see ValidationException
  * @since 1.0.0
  */
-@HttpException(code = 410, type = HttpExceptionType.VALIDATION, description = "接口限流错误", log = false, status = HttpStatus.TOO_MANY_REQUESTS)
-public class RateLimitException extends ValidationException {
+@HttpException(code = 420, type = HttpExceptionType.VALIDATION, description = "接口幂等性错误", log = false)
+public class IdempotentException extends ValidationException {
 	/**
 	 * 使用错误消息构造异常
 	 *
-	 * @param message 错误消息，用于提示用户请求被限流。
+	 * @param message 错误消息，用于提示用户这是重复请求。
 	 *                该消息会被返回给客户端，建议提供友好的提示信息
 	 * @since 1.0.0
 	 */
-	public RateLimitException(String message) {
+	public IdempotentException(String message) {
 		super(message);
 	}
 
 	/**
-	 * 使用限流注解构造异常
+	 * 使用幂等性注解构造异常
 	 *
-	 * @param annotation {@link RateLimit}注解实例，提供限流配置和错误消息。从{@link RateLimit#message()}方法获取消息
+	 * @param annotation {@link Idempotent}注解实例，提供幂等性配置和错误消息。从{@link Idempotent#message()}方法获取消息
 	 * @since 1.0.0
 	 */
-	public RateLimitException(RateLimit annotation) {
+	public IdempotentException(Idempotent annotation) {
 		super(annotation.message());
 	}
 }

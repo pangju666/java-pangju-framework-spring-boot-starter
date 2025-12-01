@@ -17,9 +17,9 @@
 package io.github.pangju666.framework.boot.autoconfigure.web.limit;
 
 import io.github.pangju666.framework.boot.autoconfigure.web.WebMvcAutoConfiguration;
-import io.github.pangju666.framework.boot.web.limit.interceptor.RateLimitInterceptor;
-import io.github.pangju666.framework.boot.web.limit.limiter.RateLimiter;
-import io.github.pangju666.framework.boot.web.limit.source.impl.IpRateLimitSourceExtractor;
+import io.github.pangju666.framework.boot.web.interceptor.RateLimitInterceptor;
+import io.github.pangju666.framework.boot.web.limit.RateLimiter;
+import io.github.pangju666.framework.boot.web.limit.impl.IpRateLimitSourceExtractor;
 import io.github.pangju666.framework.web.exception.base.BaseHttpException;
 import io.github.pangju666.framework.web.model.Result;
 import jakarta.servlet.Servlet;

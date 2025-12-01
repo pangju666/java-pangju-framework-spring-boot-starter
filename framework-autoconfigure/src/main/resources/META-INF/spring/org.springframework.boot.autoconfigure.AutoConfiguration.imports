@@ -20,6 +20,7 @@ io.github.pangju666.framework.boot.autoconfigure.web.advice.exception.GlobalInte
 io.github.pangju666.framework.boot.autoconfigure.web.advice.AdviceAutoConfiguration
 io.github.pangju666.framework.boot.autoconfigure.web.crypto.RequestBodyDecryptAdvice
 io.github.pangju666.framework.boot.autoconfigure.web.crypto.ResponseBodyEncryptAdvice
+io.github.pangju666.framework.boot.autoconfigure.web.crypto.WebCryptoAutoConfiguration
 io.github.pangju666.framework.boot.autoconfigure.web.limit.RateLimiterAutoConfiguration
 io.github.pangju666.framework.boot.autoconfigure.web.idempotent.IdempotentAutoConfiguration
 io.github.pangju666.framework.boot.autoconfigure.web.signature.SignatureAutoConfiguration
@@ -27,5 +28,4 @@ io.github.pangju666.framework.boot.autoconfigure.web.log.WebLogAutoConfiguration
 io.github.pangju666.framework.boot.autoconfigure.web.exception.HttpExceptionInfoAutoConfiguration
 io.github.pangju666.framework.boot.autoconfigure.web.cors.CorsAutoConfiguration
 io.github.pangju666.framework.boot.autoconfigure.web.client.RestClientAutoConfiguration
-io.github.pangju666.framework.boot.autoconfigure.web.crypto.WebCryptoAutoConfiguration
 io.github.pangju666.framework.boot.autoconfigure.web.WebMvcAutoConfiguration

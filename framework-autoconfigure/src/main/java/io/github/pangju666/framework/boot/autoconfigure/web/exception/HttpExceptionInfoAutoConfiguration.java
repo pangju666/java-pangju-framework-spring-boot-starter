@@ -114,11 +114,13 @@ public class HttpExceptionInfoAutoConfiguration {
 		Assert.hasText(properties.getEndpoints().getTypes(), "异常类型汇总接口路径不可为空");
 		Assert.hasText(properties.getEndpoints().getList(), "异常列表查询接口路径不可为空");
 
-		List<String> packages = new ArrayList<>(3);
-		packages.add("io.github.pangju666.framework.boot.web.idempotent.exception");
-		packages.add("io.github.pangju666.framework.boot.web.limit.exception");
+		List<String> packages;
 		if (!CollectionUtils.isEmpty(properties.getScanPackages())) {
+			packages = new ArrayList<>(properties.getScanPackages().size());
+			packages.add("io.github.pangju666.framework.boot.web.exception");
 			packages.addAll(properties.getScanPackages());
+		} else {
+			packages = List.of("io.github.pangju666.framework.boot.web.exception");
 		}
 
 		HttpExceptionInfoFilter httpExceptionInfoFilter = new HttpExceptionInfoFilter(

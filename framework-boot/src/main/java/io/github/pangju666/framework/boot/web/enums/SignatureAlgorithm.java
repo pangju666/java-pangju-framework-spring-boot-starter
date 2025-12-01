@@ -14,9 +14,9 @@
  *    limitations under the License.
  */
 
-package io.github.pangju666.framework.boot.web.signature.enums;
+package io.github.pangju666.framework.boot.web.enums;
 
-import io.github.pangju666.framework.boot.web.signature.annotation.Signature;
+import io.github.pangju666.framework.boot.web.annotation.Signature;
 import org.apache.commons.codec.digest.DigestUtils;
 
 import java.util.function.Function;
