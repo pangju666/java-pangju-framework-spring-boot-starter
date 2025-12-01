@@ -61,7 +61,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnClass(io.github.resilience4j.ratelimiter.RateLimiter.class)
 @ConditionalOnProperty(prefix = "pangju.web.rate-limit", value = "type", havingValue = "RESILIENCE4J", matchIfMissing = true)
-public class Resilience4jRateLimiterConfiguration {
+public class Resilience4jConfiguration {
     /**
      * 创建并注册 {@link Resilience4JRateLimiter} Bean。
      *

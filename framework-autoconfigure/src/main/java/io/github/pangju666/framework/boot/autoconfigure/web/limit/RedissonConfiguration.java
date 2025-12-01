@@ -66,7 +66,7 @@ import org.springframework.util.StringUtils;
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnClass({RedissonClient.class})
 @ConditionalOnProperty(prefix = "pangju.web.rate-limit", value = "type", havingValue = "REDISSON")
-class RedissonRateLimiterConfiguration {
+class RedissonConfiguration {
     /**
      * 创建并注册 {@link RedissonRateLimiter} Bean。
      *

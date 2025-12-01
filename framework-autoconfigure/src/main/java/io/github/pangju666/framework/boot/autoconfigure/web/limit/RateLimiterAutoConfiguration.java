@@ -49,7 +49,7 @@ import org.springframework.web.servlet.DispatcherServlet;
  * <p><b>行为说明</b></p>
  * <ul>
  *   <li>启用 {@link RateLimitProperties} 属性绑定</li>
- *   <li>导入 {@link Resilience4jRateLimiterConfiguration} 与 {@link RedissonRateLimiterConfiguration}</li>
+ *   <li>导入 {@link Resilience4jConfiguration} 与 {@link RedissonConfiguration}</li>
  *   <li>实际生效的限流实现由各自配置类的条件与 {@code type} 属性共同决定</li>
  *   <li>注册 {@link IpRateLimitSourceExtractor}，供 {@link RateLimitInterceptor} 在 {@code SOURCE} 作用域下使用</li>
  * </ul>
@@ -64,15 +64,15 @@ import org.springframework.web.servlet.DispatcherServlet;
  * @see RateLimiter
  * @see RateLimitInterceptor
  * @see IpRateLimitSourceExtractor
- * @see Resilience4jRateLimiterConfiguration
- * @see RedissonRateLimiterConfiguration
+ * @see Resilience4jConfiguration
+ * @see RedissonConfiguration
  * @since 1.0.0
  */
 @AutoConfiguration(before = WebMvcAutoConfiguration.class)
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @ConditionalOnClass({Servlet.class, DispatcherServlet.class, Result.class, BaseHttpException.class})
 @EnableConfigurationProperties(RateLimitProperties.class)
-@Import({Resilience4jRateLimiterConfiguration.class, RedissonRateLimiterConfiguration.class})
+@Import({Resilience4jConfiguration.class, RedissonConfiguration.class})
 class RateLimiterAutoConfiguration {
 	/**
 	 * 注册基于 IP 的限流源提取器

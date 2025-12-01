@@ -165,18 +165,6 @@
 			<optional>true</optional>
 		</dependency>
 
-		<!-- Web idempotent -->
-		<dependency>
-			<groupId>org.aspectj</groupId>
-			<artifactId>aspectjweaver</artifactId>
-			<optional>true</optional>
-		</dependency>
-		<dependency>
-			<groupId>net.jodah</groupId>
-			<artifactId>expiringmap</artifactId>
-			<optional>true</optional>
-		</dependency>
-
 		<!-- Web limit -->
 		<dependency>
 			<groupId>org.redisson</groupId>

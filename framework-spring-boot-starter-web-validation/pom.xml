@@ -22,10 +22,6 @@
 			<groupId>io.github.pangju666.framework.boot</groupId>
 			<artifactId>framework-spring-boot-starter-web</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-aop</artifactId>
-		</dependency>
 
 		<dependency>
 			<groupId>commons-codec</groupId>
@@ -34,10 +30,6 @@
 		<dependency>
 			<groupId>io.github.resilience4j</groupId>
 			<artifactId>resilience4j-ratelimiter</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>net.jodah</groupId>
-			<artifactId>expiringmap</artifactId>
 		</dependency>
 	</dependencies>
 </project>
