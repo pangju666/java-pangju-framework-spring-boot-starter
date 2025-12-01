@@ -16,6 +16,7 @@
 
 package io.github.pangju666.framework.boot.autoconfigure.web.log;
 
+import io.github.pangju666.framework.boot.web.log.model.WebLog;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.http.MediaType;
 
@@ -477,7 +478,7 @@ public class WebLogProperties {
      *
      * <p><b>概述</b></p>
      * <ul>
-     *   <li>配置目标日志记录器名称，用于将采集的 {@link io.github.pangju666.framework.boot.web.log.model.WebLog} 写入日志系统。</li>
+     *   <li>配置目标日志记录器名称，用于将采集的 {@link WebLog} 写入日志系统。</li>
      *   <li>适配任意 SLF4J 兼容实现（Logback、Log4j2 等）。</li>
      * </ul>
 	 *
@@ -569,6 +570,11 @@ public class WebLogProperties {
      * @since 1.0.0
      */
     public static class Slf4j {
+		/**
+		 * 日志记录器名称
+		 *
+		 * @since 1.0.0
+		 */
 		private String logger;
 
 		public String getLogger() {
