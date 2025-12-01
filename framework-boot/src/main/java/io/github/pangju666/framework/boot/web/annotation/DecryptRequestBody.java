@@ -19,8 +19,9 @@ package io.github.pangju666.framework.boot.web.annotation;
 import io.github.pangju666.framework.boot.crypto.enums.CryptoAlgorithm;
 import io.github.pangju666.framework.boot.crypto.enums.Encoding;
 import io.github.pangju666.framework.boot.crypto.factory.CryptoFactory;
+import io.github.pangju666.framework.boot.web.exception.RequestDataDecryptFailureException;
 import io.github.pangju666.framework.web.exception.base.ServerException;
-import io.github.pangju666.framework.web.exception.base.ServiceException;
+import io.github.pangju666.framework.web.exception.base.ValidationException;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import java.lang.annotation.*;
@@ -44,7 +45,7 @@ import java.lang.annotation.*;
  * <p><strong>异常说明</strong></p>
  * <ul>
  *   <li>密钥为空或占位符解析失败：抛出 {@link ServerException}。</li>
- *   <li>解密失败或编码解码失败：抛出 {@link ServiceException}。</li>
+ *   <li>解密失败或编码解码失败：抛出 {@link RequestDataDecryptFailureException}或{@link ValidationException}。</li>
  *   <li>请求体读取异常或密钥格式非法：抛出 {@link ServerException}。</li>
  * </ul>
  *
@@ -59,7 +60,7 @@ import java.lang.annotation.*;
  * <pre>
  * {@code
  * @PostMapping("/submit")
- * public User submit(
+ * public String submit(
  *     @DecryptRequestBody(
  *         key = "${app.encryption.key}",
  *         algorithm = Algorithm.AES256,

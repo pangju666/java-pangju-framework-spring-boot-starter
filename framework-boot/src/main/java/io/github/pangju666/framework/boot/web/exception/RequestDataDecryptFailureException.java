@@ -27,16 +27,17 @@ import org.springframework.http.HttpStatus;
  * <p><strong>概述</strong></p>
  * <ul>
  *   <li>用于标识请求参数或请求体在解密过程中发生的校验类错误。</li>
- *   <li>典型场景：密文非法/被篡改、编码错误、算法或密钥不匹配等。</li>
+ *   <li>使用场景：密文解密失败或解码错误。</li>
  * </ul>
  *
- * <p><strong>行为</strong></p>
+ * 特点：
  * <ul>
- *   <li>异常类型：{@link HttpExceptionType#VALIDATION}。</li>
- *   <li>HTTP 状态：{@link HttpStatus#BAD_REQUEST}（400）。</li>
- *   <li>业务错误码：{@code 510}。</li>
- *   <li>错误描述：直接使用错误消息作为原因</li>
+ *     <li>错误码：-4510（{@link HttpExceptionType#VALIDATION} + 510）</li>
+ *     <li>HTTP状态码：400（{@link HttpStatus#BAD_REQUEST}）</li>
+ *     <li>记录日志</li>
+ *     <li>直接使用错误消息作为原因</li>
  * </ul>
+ * </p>
  *
  * <p><strong>说明</strong></p>
  * <ul>

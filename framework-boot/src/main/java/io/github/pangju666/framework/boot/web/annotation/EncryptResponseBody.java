@@ -77,7 +77,7 @@ import java.lang.annotation.*;
  * @RestController
  * @RequestMapping("/api")
  * @EncryptResponseBody(key = "${app.encryption.key}")
- * class DemoController {
+ * public class DemoController {
  *     @GetMapping("/text")
  *     public String text() { return "hello"; }
  *
@@ -134,7 +134,7 @@ public @interface EncryptResponseBody {
 	 * 默认使用BASE64编码。
 	 * </p>
 	 * <p>
-	 * 注意：仅在加密字符串时生效，对二进制类型不适用。
+	 * 注意：仅在加密字符串或JSON时生效，对二进制类型不适用。
 	 * </p>
 	 *
 	 * @return 编码方式

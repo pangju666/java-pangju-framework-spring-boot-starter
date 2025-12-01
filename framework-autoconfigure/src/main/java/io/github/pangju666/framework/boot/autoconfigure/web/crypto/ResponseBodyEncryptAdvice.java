@@ -223,7 +223,7 @@ public class ResponseBodyEncryptAdvice implements ResponseBodyAdvice<Object> {
 					annotation.encoding()));
 			}
 		} catch (EncryptionOperationNotPossibleException e) {
-			throw new ServerException("响应数据加密失败", e);
+			throw new ServerException("响应体加密失败", e);
 		} catch (IllegalArgumentException e) {
 			throw new ServerException(e);
 		}

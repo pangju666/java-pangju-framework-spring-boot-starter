@@ -253,9 +253,9 @@ public class RequestBodyDecryptAdvice implements RequestBodyAdvice {
 				return body;
 			}
 		} catch (EncryptionOperationNotPossibleException e) {
-			throw new RequestDataDecryptFailureException("无效的加密请求体", e);
+			throw new RequestDataDecryptFailureException("无效的加密请求数据，请勿手动修改请求内容", e);
 		} catch (DecoderException e) {
-			throw new ValidationException("加密请求体格式错误，请勿手动修改请求内容");
+			throw new ValidationException("加密请求数据格式错误，请勿手动修改请求内容");
 		} catch (IllegalArgumentException e) {
 			throw new ServerException(e);
 		}
