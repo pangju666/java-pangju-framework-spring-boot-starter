@@ -25,6 +25,7 @@ import io.github.pangju666.framework.boot.web.exception.RequestDataDecryptFailur
 import io.github.pangju666.framework.web.exception.base.ServerException;
 import io.github.pangju666.framework.web.exception.base.ServiceException;
 import io.github.pangju666.framework.web.exception.base.ValidationException;
+import io.github.pangju666.framework.web.model.Result;
 import jakarta.servlet.Servlet;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.lang3.ArrayUtils;
@@ -102,7 +103,7 @@ import java.util.Objects;
  */
 @Order(Ordered.HIGHEST_PRECEDENCE + 2)
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
-@ConditionalOnClass({Servlet.class, DispatcherServlet.class, RSAKeyPair.class})
+@ConditionalOnClass({Servlet.class, DispatcherServlet.class, RSAKeyPair.class, Result.class})
 @ConditionalOnBean(CryptoFactory.class)
 @RestControllerAdvice
 public class RequestBodyDecryptAdvice implements RequestBodyAdvice {
