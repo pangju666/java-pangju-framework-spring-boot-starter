@@ -27,12 +27,13 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.DispatcherServlet;
 
 import java.beans.PropertyEditorSupport;
+import java.time.Instant;
 import java.util.Date;
 
 /**
  * 请求参数时间戳绑定增强。
  * <p>
- * 为控制器方法的 {@link Date} 类型参数提供统一的转换：将毫秒级时间戳字符串自动转换为 {@link Date}。
+ * 为控制器方法的 {@link Date} 与 {@link Instant} 类型参数提供统一的转换：将毫秒级时间戳字符串自动转换为目标类型。
  * </p>
  * <p>
  * 适用场景：
@@ -54,9 +55,15 @@ import java.util.Date;
  * <p>
  * 示例：
  * <pre>{@code
- * @GetMapping("/query")
- * public ResponseEntity<?> query(@RequestParam Date createTime) {
- *     // /query?createTime=1704067200000 -> 自动转换为 Date
+ * @GetMapping("/query/date")
+ * public ResponseEntity<?> queryDate(@RequestParam Date createTime) {
+ *     // /query/date?createTime=1704067200000 -> 自动转换为 Date
+ *     return ResponseEntity.ok(createTime);
+ * }
+ *
+ * @GetMapping("/query/instant")
+ * public ResponseEntity<?> queryInstant(@RequestParam Instant createTime) {
+ *     // /query/instant?createTime=1704067200000 -> 自动转换为 Instant
  *     return ResponseEntity.ok(createTime);
  * }
  * }
@@ -88,6 +95,17 @@ public class RequestParamBindingAdvice {
 			public void setAsText(String text) throws IllegalArgumentException {
 				try {
 					setValue(DateUtils.toDate(Long.valueOf(text)));
+				} catch (NumberFormatException e) {
+					throw new IllegalArgumentException(e);
+				}
+			}
+		});
+
+		binder.registerCustomEditor(Instant.class, new PropertyEditorSupport() {
+			@Override
+			public void setAsText(String text) throws IllegalArgumentException {
+				try {
+					setValue(Instant.ofEpochMilli(Long.parseLong(text)));
 				} catch (NumberFormatException e) {
 					throw new IllegalArgumentException(e);
 				}
