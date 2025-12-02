@@ -154,12 +154,20 @@ public final class DecryptJsonDeserializer extends JsonDeserializer<Object> impl
 				return readString(p.getText());
 			} else if (targetType == BigDecimal.class) {
 				if (p.currentToken() == JsonToken.VALUE_STRING) {
-					return readBigDecimal(new BigDecimal(p.getText()));
+					try {
+						return readBigDecimal(new BigDecimal(p.getText()));
+					} catch (NumberFormatException ignored) {
+						return null;
+					}
 				}
 				return readBigDecimal(p.getDecimalValue());
 			} else if (targetType == BigInteger.class) {
 				if (p.currentToken() == JsonToken.VALUE_STRING) {
-					return readBigInteger(new BigInteger(p.getText()));
+					try {
+						return readBigInteger(new BigInteger(p.getText()));
+					} catch (NumberFormatException ignored) {
+						return null;
+					}
 				}
 				return readBigInteger(p.getBigIntegerValue());
 			} else if (propertyJavaType instanceof CollectionType collectionType) {
@@ -320,14 +328,22 @@ public final class DecryptJsonDeserializer extends JsonDeserializer<Object> impl
 				return readString((String) value);
 			} else if (targetType == BigDecimal.class) {
 				if (value instanceof String string) {
-					return readBigDecimal(new BigDecimal(string));
+					try {
+						return readBigDecimal(new BigDecimal(string));
+					} catch (NumberFormatException ignored) {
+						return null;
+					}
 				} else if (value instanceof BigInteger bigInteger) {
 					return readBigDecimal(new BigDecimal(bigInteger.toString()));
 				}
 				return readBigDecimal((BigDecimal) value);
 			} else if (targetType == BigInteger.class) {
 				if (value instanceof String string) {
-					return readBigInteger(new BigInteger(string));
+					try {
+						return readBigInteger(new BigInteger(string));
+					} catch (NumberFormatException ignored) {
+						return null;
+					}
 				}
 				return readBigInteger((BigInteger) value);
 			} else if (javaType instanceof CollectionType collectionType) {
