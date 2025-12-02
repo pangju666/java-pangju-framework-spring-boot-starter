@@ -226,9 +226,9 @@ public final class EncryptJsonSerializer extends JsonSerializer<Object> implemen
 	}
 
 	/**
-	 * 加密 {@link java.math.BigInteger} 并写入 JSON 数值
+	 * 加密 {@link java.math.BigInteger} 并写入 JSON 字符串
 	 * <p>
-	 * 当值为 null 时输出 JSON null；非空时加密后写入数值。
+	 * 当值为 null 时输出 JSON null；非空时加密后写入数值的字符串表示。
 	 * </p>
 	 *
 	 * @param value BigInteger 值
@@ -240,14 +240,15 @@ public final class EncryptJsonSerializer extends JsonSerializer<Object> implemen
 		if (Objects.isNull(value)) {
 			gen.writeNull();
 		} else {
-			gen.writeNumber(CryptoUtils.encryptBigInteger(cryptoFactory, value, key));
+			gen.writeString(Objects.requireNonNull(CryptoUtils.encryptBigInteger(cryptoFactory,
+				value, key)).toString());
 		}
 	}
 
 	/**
-	 * 加密 {@link java.math.BigDecimal} 并写入 JSON 数值
+	 * 加密 {@link java.math.BigDecimal} 并写入 JSON 字符串
 	 * <p>
-	 * 当值为 null 时输出 JSON null；非空时加密后写入数值。
+	 * 当值为 null 时输出 JSON null；非空时加密后写入数值的字符串表示。
 	 * </p>
 	 *
 	 * @param value BigDecimal 值
@@ -259,7 +260,8 @@ public final class EncryptJsonSerializer extends JsonSerializer<Object> implemen
 		if (Objects.isNull(value)) {
 			gen.writeNull();
 		} else {
-			gen.writeNumber(CryptoUtils.encryptBigDecimal(cryptoFactory, value, key));
+			gen.writeString(Objects.requireNonNull(CryptoUtils.encryptBigDecimal(cryptoFactory,
+				value, key)).toPlainString());
 		}
 	}
 

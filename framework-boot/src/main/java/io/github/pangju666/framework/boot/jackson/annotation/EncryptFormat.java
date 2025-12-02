@@ -28,6 +28,8 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 
 /**
  * JSON 字段加密注解，用于在序列化过程中对指定字段执行加密。
@@ -43,6 +45,8 @@ import java.lang.annotation.Target;
  *   <li>映射：{@link java.util.Map}&lt;?, T&gt;，其中 T 为上述受支持类型</li>
  * </ul>
  * <p>行为：不在列表的类型按 POJO 原样输出；值为 {@code null} 时输出 JSON null；字符串为空白（空或仅空白字符）时原样输出不加密。</p>
+ *
+ * <p>注意：加密后的{@link BigDecimal}和{@link BigInteger}是以字符串形式序列化，防止丢失精度。</p>
  *
  * @author pangju666
  * @see DecryptFormat

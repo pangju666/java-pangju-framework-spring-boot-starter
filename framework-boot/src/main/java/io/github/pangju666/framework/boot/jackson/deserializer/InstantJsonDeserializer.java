@@ -20,42 +20,40 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
-import io.github.pangju666.commons.lang.utils.DateUtils;
 
 import java.io.IOException;
-import java.time.LocalDate;
+import java.time.Instant;
 
 /**
- * LocalDate类型的JSON反序列化器
+ * Instant 类型的 JSON 反序列化器。
  * <p>
- * 该反序列化器用于将JSON中的时间戳（毫秒）转换为Java 8的LocalDate对象。
- * 通过{@link DateUtils#toLocalDate(Long)}方法进行转换，将毫秒时间戳转为对应的日期。
+ * 将 JSON 中的毫秒时间戳转换为 Java 8 的 {@link Instant} 对象。
+ * 类型处理：当当前 JSON token 为整型数值（毫秒时间戳）时解析；否则返回 {@code null}。
  * </p>
  *
  * @author pangju666
- * @see DateUtils
- * @see LocalDate
+ * @see Instant
  * @since 1.0.0
  */
-public final class LocalDateJsonDeserializer extends JsonDeserializer<LocalDate> {
-	/**
-	 * 将JSON中的毫秒时间戳反序列化为LocalDate对象
-	 * <p>
-	 * 从JSON解析器中读取长整型数值（毫秒时间戳），然后转换为LocalDate对象。
-	 * 空值/类型处理：当JSON token不是整型数值或值为空/缺失时，返回null，不抛出异常。
-	 * </p>
-	 *
-	 * @param p    用于读取JSON内容的解析器
+public final class InstantJsonDeserializer extends JsonDeserializer<Instant> {
+    /**
+     * 将 JSON 中的毫秒时间戳反序列化为 {@link Instant}。
+     * <p>
+     * 行为：当当前 token 为整型数值时，读取其长整型值（毫秒）并转换为 {@link Instant}；
+     * 当 token 非整型或值缺失时返回 {@code null}。
+     * </p>
+     *
+     * @param p    JSON 解析器
      * @param ctxt 反序列化上下文
-     * @return 对应的LocalDate对象
-     * @throws IOException     如果读取JSON内容时发生I/O错误
+     * @return 解析得到的 {@link Instant} 实例；不匹配时返回 {@code null}
+     * @throws IOException 读取 JSON 内容时发生 I/O 错误
      * @since 1.0.0
      */
     @Override
-    public LocalDate deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
+    public Instant deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
 		if (p.currentToken() != JsonToken.VALUE_NUMBER_INT) {
 			return null;
 		}
-		return DateUtils.toLocalDate(p.getLongValue());
+		return Instant.ofEpochMilli(p.getLongValue());
     }
 }

@@ -29,6 +29,7 @@ import io.github.pangju666.framework.boot.crypto.utils.CryptoUtils;
 import io.github.pangju666.framework.boot.jackson.annotation.DecryptFormat;
 import io.github.pangju666.framework.boot.jackson.utils.CryptoFactoryRegistry;
 import org.apache.commons.codec.DecoderException;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.ArrayUtils;
 import org.jasypt.exceptions.EncryptionOperationNotPossibleException;
 import org.slf4j.Logger;
@@ -311,6 +312,9 @@ public final class DecryptJsonDeserializer extends JsonDeserializer<Object> impl
 			if (Objects.isNull(value)) {
 				return null;
 			} else if (targetType == byte[].class) {
+				if (value instanceof String string) {
+					return readBytes(Base64.decodeBase64(string));
+				}
 				return readBytes((byte[]) value);
 			} else if (targetType == String.class) {
 				return readString((String) value);

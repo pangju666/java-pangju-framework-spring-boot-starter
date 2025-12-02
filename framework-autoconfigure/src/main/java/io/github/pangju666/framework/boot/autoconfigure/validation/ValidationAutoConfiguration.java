@@ -19,6 +19,7 @@ package io.github.pangju666.framework.boot.autoconfigure.validation;
 import jakarta.validation.executable.ExecutableValidator;
 import org.hibernate.validator.HibernateValidatorConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnResource;
 import org.springframework.boot.autoconfigure.validation.ValidationConfigurationCustomizer;
@@ -27,30 +28,32 @@ import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 
 /**
- * 验证自动配置类
+ * Validation 自动配置。
  * <p>
- * 该配置类在Spring Boot的标准验证配置之前执行，用于自定义Hibernate Validator的配置。
- * 主要功能是启用快速失败模式，当发现第一个验证错误时立即返回，不再继续验证其他属性。
+ * 在 Spring Boot 默认验证自动配置之前执行，按条件启用 Hibernate Validator 的快速失败模式（fail-fast）。
+ * 条件：当配置项 {@code pangju.validation.fail-fast=true} 或缺省时启用；
+ * 仅在存在 {@code ExecutableValidator}、{@code HibernateValidatorConfiguration}，且发现验证提供者资源
+ * {@code META-INF/services/jakarta.validation.spi.ValidationProvider} 时生效。
  * </p>
  *
  * @author pangju666
  * @since 1.0.0
  */
 @AutoConfiguration(before = org.springframework.boot.autoconfigure.validation.ValidationAutoConfiguration.class)
+@ConditionalOnBooleanProperty(prefix = "pangju.validation", name = "fail-fast", matchIfMissing = true)
 @ConditionalOnClass({ExecutableValidator.class, HibernateValidatorConfiguration.class})
 @ConditionalOnResource(resources = "classpath:META-INF/services/jakarta.validation.spi.ValidationProvider")
 public class ValidationAutoConfiguration {
-	/**
-	 * 创建Hibernate验证配置自定义器
-	 * <p>
-	 * 该Bean用于自定义Hibernate Validator的配置，启用快速失败模式。
-	 * 当验证过程中发现第一个错误时，验证过程将立即停止并返回错误，不再继续验证其他属性。
-	 * 这有助于提高验证性能，特别是在处理大型对象时。
-	 * </p>
-	 *
-	 * @return ValidationConfigurationCustomizer 验证配置自定义器实例
-	 * @since 1.0.0
-	 */
+    /**
+     * 注册验证配置自定义器，启用 Hibernate Validator 的 fail-fast。
+     * <p>
+     * 当存在 {@code HibernateValidatorConfiguration} 时设置 {@code failFast(true)}；
+     * 使验证在遇到首个错误即返回，提高复杂对象的校验效率。
+     * </p>
+     *
+     * @return 验证配置自定义器实例
+     * @since 1.0.0
+     */
 	@Order(Ordered.HIGHEST_PRECEDENCE)
 	@Bean
 	public ValidationConfigurationCustomizer hibernateValidationConfigurationCustomizer() {

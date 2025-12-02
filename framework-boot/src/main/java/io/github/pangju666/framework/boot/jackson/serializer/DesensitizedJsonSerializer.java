@@ -96,10 +96,10 @@ public final class DesensitizedJsonSerializer extends JsonSerializer<CharSequenc
                 if (suffix <= -1) {
                     return DesensitizationUtils.hidePassword(value);
                 }
-                return DesensitizationUtils.hideRight(value, suffix);
+                return DesensitizationUtils.hideLeft(value, suffix);
             }
             if (suffix <= -1) {
-                return DesensitizationUtils.hideLeft(value, prefix);
+                return DesensitizationUtils.hideRight(value, prefix);
             }
             return DesensitizationUtils.hideRound(value, prefix, suffix);
         };
