@@ -27,85 +27,46 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.DispatcherServlet;
 
 import java.beans.PropertyEditorSupport;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Date;
 
 /**
- * 请求参数绑定增强类
+ * 请求参数时间戳绑定增强。
  * <p>
- * 该类用于处理HTTP请求参数的类型绑定和转换。
- * 为控制器方法的日期时间类型参数提供统一的转换处理，
- * 支持将时间戳（毫秒级）自动转换为{@link Date}、{@link LocalDate}和{@link LocalDateTime}。
+ * 为控制器方法的 {@link Date} 类型参数提供统一的转换：将毫秒级时间戳字符串自动转换为 {@link Date}。
  * </p>
  * <p>
- * 主要功能：
+ * 适用场景：
  * <ul>
- *     <li>将请求参数中的时间戳（毫秒）转换为{@link Date}类型</li>
- *     <li>将请求参数中的时间戳（毫秒）转换为{@link LocalDate}类型</li>
- *     <li>将请求参数中的时间戳（毫秒）转换为{@link LocalDateTime}类型</li>
- *     <li>提供统一的日期时间参数处理方式</li>
- * </ul>
- * </p>
- * <p>
- * 支持的场景：
- * <ul>
- *     <li>GET请求的Query参数</li>
- *     <li>POST表单提交的参数</li>
- *     <li>Controller方法的@RequestParam参数</li>
- *     <li>所有通过WebDataBinder绑定的参数</li>
+ *   <li>GET 请求的 Query 参数</li>
+ *   <li>POST 表单提交参数</li>
+ *   <li>Controller 方法的 {@code @RequestParam} 参数</li>
+ *   <li>所有通过 {@link WebDataBinder} 绑定的参数</li>
  * </ul>
  * </p>
  * <p>
  * 配置条件：
  * <ul>
- *     <li>应用必须是Servlet类型的Web应用</li>
- *     <li>Classpath中必须存在Servlet和DispatcherServlet类</li>
- *     <li>配置属性{@code pangju.web.advice.enable-binder}必须为true（默认为true）</li>
+ *   <li>Servlet 类型 Web 应用</li>
+ *   <li>Classpath 中存在 {@link Servlet} 与 {@link DispatcherServlet}</li>
+ *   <li>配置项 {@code pangju.web.advice.enable-binder=true} 或缺省</li>
  * </ul>
  * </p>
  * <p>
- * 使用示例：
+ * 示例：
  * <pre>{@code
- * @RestController
- * @RequestMapping("/api/users")
- * public class UserController {
- *     // GET请求示例：/api/users/query?createTime=1704067200000
- *     @GetMapping("/query")
- *     public ResponseEntity<?> query(@RequestParam Date createTime) {
- *         // createTime会被自动从时间戳转换为Date对象
- *         return ResponseEntity.ok.ok(createTime).build();
- *     }
- *
- *     // 支持LocalDate
- *     @GetMapping("/search")
- *     public ResponseEntity<?> search(@RequestParam LocalDate birthDate) {
- *         // birthDate会被自动从时间戳转换为LocalDate对象
- *         return ResponseEntity.ok.ok(birthDate).build();
- *     }
- *
- *     // 支持LocalDateTime
- *     @GetMapping("/list")
- *     public ResponseEntity<?> list(@RequestParam LocalDateTime startTime) {
- *         // startTime会被自动从时间戳转换为LocalDateTime对象
- *         return ResponseEntity.ok.ok(startTime).build();
- *     }
+ * @GetMapping("/query")
+ * public ResponseEntity<?> query(@RequestParam Date createTime) {
+ *     // /query?createTime=1704067200000 -> 自动转换为 Date
+ *     return ResponseEntity.ok(createTime);
  * }
- * }</pre>
+ * }
+ * </pre>
  * </p>
  * <p>
- * 参数转换规则：
+ * 转换与异常：
  * <ul>
- *     <li>输入参数必须是毫秒级时间戳的字符串表示</li>
- *     <li>例如：1704067200000 表示 2024-01-01 00:00:00</li>
- *     <li>如果参数不是合法的数字字符串，会抛出{@link IllegalArgumentException}异常</li>
- * </ul>
- * </p>
- * <p>
- * 异常处理：
- * <ul>
- *     <li>如果参数不能转换为Long类型，会抛出{@link IllegalArgumentException}，由Spring的数据绑定机制处理</li>
- *     <li>最终会导致请求返回400 Bad Request</li>
+ *   <li>输入必须为毫秒级时间戳的字符串（如 1704067200000）</li>
+ *   <li>非法数字将抛出 {@link IllegalArgumentException}，由 Spring 数据绑定机制处理为 400</li>
  * </ul>
  * </p>
  *
@@ -127,28 +88,6 @@ public class RequestParamBindingAdvice {
 			public void setAsText(String text) throws IllegalArgumentException {
 				try {
 					setValue(DateUtils.toDate(Long.valueOf(text)));
-				} catch (NumberFormatException e) {
-					throw new IllegalArgumentException(e);
-				}
-			}
-		});
-
-		binder.registerCustomEditor(LocalDate.class, new PropertyEditorSupport() {
-			@Override
-			public void setAsText(String text) throws IllegalArgumentException {
-				try {
-					setValue(DateUtils.toLocalDate(Long.valueOf(text)));
-				} catch (NumberFormatException e) {
-					throw new IllegalArgumentException(e);
-				}
-			}
-		});
-
-		binder.registerCustomEditor(LocalDateTime.class, new PropertyEditorSupport() {
-			@Override
-			public void setAsText(String text) throws IllegalArgumentException {
-				try {
-					setValue(DateUtils.toLocalDateTime(Long.valueOf(text)));
 				} catch (NumberFormatException e) {
 					throw new IllegalArgumentException(e);
 				}
