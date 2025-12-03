@@ -5,10 +5,10 @@
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>io.github.pangju666.framework.boot</groupId>
-		<artifactId>framework-spring-boot-starter-parent</artifactId>
+		<artifactId>framework-starter-parent</artifactId>
 		<version>1.0.0</version>
 	</parent>
-	<artifactId>framework-spring-boot-starter-web-log</artifactId>
+	<artifactId>framework-starter-spring</artifactId>
 
 	<licenses>
 		<license>
@@ -20,16 +20,21 @@
 	<dependencies>
 		<dependency>
 			<groupId>io.github.pangju666.framework.boot</groupId>
-			<artifactId>framework-spring-boot-starter-web</artifactId>
+			<artifactId>framework-boot</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.github.pangju666.framework.boot</groupId>
+			<artifactId>framework-autoconfigure</artifactId>
 		</dependency>
 
 		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-collections4</artifactId>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter</artifactId>
 		</dependency>
+
 		<dependency>
-			<groupId>com.lmax</groupId>
-			<artifactId>disruptor</artifactId>
+			<groupId>io.github.pangju666.framework</groupId>
+			<artifactId>framework-spring</artifactId>
 		</dependency>
 	</dependencies>
 </project>

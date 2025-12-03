@@ -3,10 +3,10 @@
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>io.github.pangju666.framework.boot</groupId>
-		<artifactId>framework-spring-boot-starter-parent</artifactId>
+		<artifactId>framework-starter-parent</artifactId>
 		<version>1.0.0</version>
 	</parent>
-	<artifactId>framework-spring-boot-starter-test-spock</artifactId>
+	<artifactId>framework-starter-test-spock</artifactId>
 
 	<licenses>
 		<license>

@@ -1,14 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 xmlns="http://maven.apache.org/POM/4.0.0"
 		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>io.github.pangju666.framework.boot</groupId>
-		<artifactId>framework-spring-boot-starter-parent</artifactId>
+		<artifactId>framework-starter-parent</artifactId>
 		<version>1.0.0</version>
 	</parent>
-	<artifactId>framework-spring-boot-starter-crypto</artifactId>
+	<artifactId>framework-starter-json</artifactId>
+
+	<licenses>
+		<license>
+			<name>Apache License, Version 2.0</name>
+			<url>https://www.apache.org/licenses/LICENSE-2.0</url>
+		</license>
+	</licenses>
 
 	<dependencies>
 		<dependency>
@@ -22,16 +29,12 @@
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter</artifactId>
+			<artifactId>spring-boot-starter-json</artifactId>
 		</dependency>
 
 		<dependency>
 			<groupId>io.github.pangju666.commons</groupId>
-			<artifactId>commons-crypto</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.github.ben-manes.caffeine</groupId>
-			<artifactId>caffeine</artifactId>
+			<artifactId>commons-lang</artifactId>
 		</dependency>
 	</dependencies>
 </project>

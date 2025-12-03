@@ -5,10 +5,10 @@
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>io.github.pangju666.framework.boot</groupId>
-		<artifactId>framework-spring-boot-starter-parent</artifactId>
+		<artifactId>framework-starter-parent</artifactId>
 		<version>1.0.0</version>
 	</parent>
-	<artifactId>framework-spring-boot-starter</artifactId>
+	<artifactId>framework-starter-data-mongodb</artifactId>
 
 	<licenses>
 		<license>
@@ -29,12 +29,12 @@
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter</artifactId>
+			<artifactId>spring-boot-starter-data-mongodb</artifactId>
 		</dependency>
 
 		<dependency>
 			<groupId>io.github.pangju666.framework</groupId>
-			<artifactId>framework-spring</artifactId>
+			<artifactId>framework-data-mongodb</artifactId>
 		</dependency>
 	</dependencies>
 </project>

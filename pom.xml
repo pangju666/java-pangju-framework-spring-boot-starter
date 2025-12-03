@@ -9,7 +9,7 @@
 		<relativePath/>
 	</parent>
 	<groupId>io.github.pangju666.framework.boot</groupId>
-	<artifactId>framework-spring-boot-starter-parent</artifactId>
+	<artifactId>framework-starter-parent</artifactId>
 	<version>1.0.0</version>
 	<packaging>pom</packaging>
 	<description>胖橘框架 Spring Boot Starter 父级依赖</description>
@@ -18,21 +18,21 @@
 	<modules>
 		<module>framework-autoconfigure</module>
 		<module>framework-boot</module>
-		<module>framework-spring-boot-starter</module>
-		<module>framework-spring-boot-starter-crypto</module>
-		<module>framework-spring-boot-starter-data-mongodb</module>
-		<module>framework-spring-boot-starter-data-mybatis-plus</module>
-		<module>framework-spring-boot-starter-data-redis</module>
-		<module>framework-spring-boot-starter-image</module>
-		<module>framework-spring-boot-starter-json</module>
-		<module>framework-spring-boot-starter-json-crypto</module>
-		<module>framework-spring-boot-starter-test-spock</module>
-		<module>framework-spring-boot-starter-test</module>
-		<module>framework-spring-boot-starter-validation</module>
-		<module>framework-spring-boot-starter-web</module>
-		<module>framework-spring-boot-starter-web-crypto</module>
-		<module>framework-spring-boot-starter-web-log</module>
-		<module>framework-spring-boot-starter-web-validation</module>
+		<module>framework-starter-spring</module>
+		<module>framework-starter-crypto</module>
+		<module>framework-starter-data-mongodb</module>
+		<module>framework-starter-data-mybatis-plus</module>
+		<module>framework-starter-data-redis</module>
+		<module>framework-starter-image</module>
+		<module>framework-starter-json</module>
+		<module>framework-starter-json-crypto</module>
+		<module>framework-starter-test-spock</module>
+		<module>framework-starter-test</module>
+		<module>framework-starter-validation</module>
+		<module>framework-starter-web</module>
+		<module>framework-starter-web-crypto</module>
+		<module>framework-starter-web-log</module>
+		<module>framework-starter-web-validation</module>
 	</modules>
 
 	<properties>
@@ -88,79 +88,79 @@
 
 			<dependency>
 				<groupId>io.github.pangju666.framework.boot</groupId>
-				<artifactId>framework-spring-boot-starter</artifactId>
+				<artifactId>framework-starter-spring</artifactId>
 				<version>1.0.0</version>
 			</dependency>
 			<dependency>
 				<groupId>io.github.pangju666.framework.boot</groupId>
-				<artifactId>framework-spring-boot-starter-crypto</artifactId>
+				<artifactId>framework-starter-crypto</artifactId>
 				<version>1.0.0</version>
 			</dependency>
 			<dependency>
 				<groupId>io.github.pangju666.framework.boot</groupId>
-				<artifactId>framework-spring-boot-starter-data-mongodb</artifactId>
+				<artifactId>framework-starter-data-mongodb</artifactId>
 				<version>1.0.0</version>
 			</dependency>
 			<dependency>
 				<groupId>io.github.pangju666.framework.boot</groupId>
-				<artifactId>framework-spring-boot-starter-data-mybatis-plus</artifactId>
+				<artifactId>framework-starter-data-mybatis-plus</artifactId>
 				<version>1.0.0</version>
 			</dependency>
 			<dependency>
 				<groupId>io.github.pangju666.framework.boot</groupId>
-				<artifactId>framework-spring-boot-starter-data-redis</artifactId>
+				<artifactId>framework-starter-data-redis</artifactId>
 				<version>1.0.0</version>
 			</dependency>
 			<dependency>
 				<groupId>io.github.pangju666.framework.boot</groupId>
-				<artifactId>framework-spring-boot-starter-image</artifactId>
+				<artifactId>framework-starter-image</artifactId>
 				<version>1.0.0</version>
 			</dependency>
 			<dependency>
 				<groupId>io.github.pangju666.framework.boot</groupId>
-				<artifactId>framework-spring-boot-starter-json</artifactId>
+				<artifactId>framework-starter-json</artifactId>
 				<version>1.0.0</version>
 			</dependency>
 			<dependency>
 				<groupId>io.github.pangju666.framework.boot</groupId>
-				<artifactId>framework-spring-boot-starter-json-crypto</artifactId>
+				<artifactId>framework-starter-json-crypto</artifactId>
 				<version>1.0.0</version>
 			</dependency>
 			<dependency>
 				<groupId>io.github.pangju666.framework.boot</groupId>
-				<artifactId>framework-spring-boot-starter-test-spock</artifactId>
-				<version>1.0.0</version>
-				<scope>test</scope>
-			</dependency>
-			<dependency>
-				<groupId>io.github.pangju666.framework.boot</groupId>
-				<artifactId>framework-spring-boot-starter-test</artifactId>
+				<artifactId>framework-starter-test-spock</artifactId>
 				<version>1.0.0</version>
 				<scope>test</scope>
 			</dependency>
 			<dependency>
 				<groupId>io.github.pangju666.framework.boot</groupId>
-				<artifactId>framework-spring-boot-starter-validation</artifactId>
+				<artifactId>framework-starter-test</artifactId>
+				<version>1.0.0</version>
+				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>io.github.pangju666.framework.boot</groupId>
+				<artifactId>framework-starter-validation</artifactId>
 				<version>1.0.0</version>
 			</dependency>
 			<dependency>
 				<groupId>io.github.pangju666.framework.boot</groupId>
-				<artifactId>framework-spring-boot-starter-web</artifactId>
+				<artifactId>framework-starter-web</artifactId>
 				<version>1.0.0</version>
 			</dependency>
 			<dependency>
 				<groupId>io.github.pangju666.framework.boot</groupId>
-				<artifactId>framework-spring-boot-starter-web-crypto</artifactId>
+				<artifactId>framework-starter-web-crypto</artifactId>
 				<version>1.0.0</version>
 			</dependency>
 			<dependency>
 				<groupId>io.github.pangju666.framework.boot</groupId>
-				<artifactId>framework-spring-boot-starter-web-log</artifactId>
+				<artifactId>framework-starter-web-log</artifactId>
 				<version>1.0.0</version>
 			</dependency>
 			<dependency>
 				<groupId>io.github.pangju666.framework.boot</groupId>
-				<artifactId>framework-spring-boot-starter-web-validation</artifactId>
+				<artifactId>framework-starter-web-validation</artifactId>
 				<version>1.0.0</version>
 			</dependency>
 
