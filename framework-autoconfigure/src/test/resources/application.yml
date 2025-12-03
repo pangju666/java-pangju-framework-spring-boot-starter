@@ -1,0 +1,236 @@
+server:
+  servlet:
+    context-path: / # 上下文路径
+    encoding:
+      force: true # 强制编码请求和响应（默认使用utf-8，防止乱码）
+  port: 80   # 端口号设置
+  tomcat:
+    max-connections: 10000 # 最大连接数
+    threads:
+      max: 800 # 最大工作线程数
+      min-spare: 100 # 最小空闲线程数
+    accept-count: 100 # 等待队列长度
+    connection-timeout: 20000
+
+spring:
+  # 禁用 banner
+  main:
+    banner-mode: off
+  threads:
+    virtual:
+      enabled: true
+#  task:
+#    execution:
+#      pool:
+#        core-size: 8 # cpu密集型设置cpu核心数，io密集型则设置为cpu核心数的2-3倍
+#        max-size: 16
+#        queue-capacity: 100
+#        keep-alive: 60s
+#      thread-name-prefix: async-task-
+#    scheduling:
+#      pool:
+#        size: 4
+#      thread-name-prefix: scheduling-
+  servlet:
+    multipart:
+      max-file-size: 5GB  # 最大上传文件大小
+      max-request-size: 5130MB # 最大请求体大小（建议比最大上传文件大小大10MB)
+      file-size-threshold: 2KB
+      resolve-lazily: false
+  jackson:
+    # 设置时区
+    time-zone: GMT+8
+    # 设置时间格式
+    date-format: yyyy-MM-dd HH:mm:ss
+    # 设置语言
+    locale: CHINESE
+    # 序列化策略
+    serialization:
+      # Date对象序列化为时间戳
+      write-dates-as-timestamps: true
+      # 时间戳禁止精准到纳秒
+      write-date-timestamps-as-nanoseconds: false
+    generator:
+      # 浮点数过大时防止返回科学计数
+      write-bigdecimal-as-plain: true
+    mapper:
+      # 不区分枚举名称大小写
+      accept-case-insensitive-enums: true
+  #  datasource:
+#    driver-class-name: com.p6spy.engine.spy.P6SpyDriver
+#    url: jdbc:p6spy:mysql://127.0.0.1:3306/test?useUnicode=true&characterEncoding=utf-8&serverTimezone=GMT%2B8
+#    username: root
+#    password: 91291358
+#    hikari:
+#      maximum-pool-size: 50
+#      minimum-idle: 10
+#      connection-timeout: 30000
+#      idle-timeout: 600000
+#      max-lifetime: 1800000
+#      leak-detection-threshold: 60000
+#  cache:
+#     type: redis
+#     redis:
+#       cache-null-values: true
+#  data:
+#    redis:
+#      host: 127.0.0.1
+#      database: 0
+#      lettuce:
+#        cluster:
+#          refresh:
+#            adaptive: true
+#            period: 20
+#    mongodb:
+#      host: 127.0.0.1
+#      database: test1
+#    mongodb:
+#      dynamic:
+#        primary: test1
+#        databases:
+#          test1:
+#            host: 127.0.0.1
+#            port: 27017
+#            database: test1
+#          test2:
+#            host: 127.0.0.1
+#            port: 27017
+#            database: test2
+#    redis:
+#      dynamic:
+#        primary: redis1
+#        databases:
+#          redis1:
+#            host: 127.0.0.1
+#            database: 0
+#            key-serializer: string
+#            value-serializer: json
+#            hash-key-serializer: string
+#            hash-value-serializer: json
+#            lettuce:
+#              cluster:
+#                refresh:
+#                  adaptive: true
+#                  period: 20
+#          redis2:
+#            host: 127.0.0.1
+#            database: 1
+#            key-serializer: string
+#            value-serializer: json
+#            hash-key-serializer: string
+#            hash-value-serializer: json
+#            lettuce:
+#              cluster:
+#                refresh:
+#                  adaptive: true
+#                  period: 20
+  kafka:
+    bootstrap-servers: 127.0.0.1:9092
+    producer:
+      retries: 1
+      batch-size: 16384
+      buffer-memory: 1024000
+      acks: 1
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring:
+          json:
+            trusted:
+              packages: "*"
+    consumer:
+      group-id: gtz-invoice
+      enable-auto-commit: false
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring:
+          json:
+            trusted:
+              packages: "*"
+    listener:
+      ack-mode: manual_immediate
+
+mybatis-plus:
+  type-aliases-package: io.github.pangju666.test.entity
+  mapper-locations: classpath:mapper/*.xml
+  configuration:
+    shrink-whitespaces-in-sql: true
+  global-config:
+    banner: false
+    db-config:
+      column-format: "`%s`"
+      update-strategy: ALWAYS
+      id-type: auto
+
+pangju:
+  task:
+    execution:
+      once:
+        async-initial-capacity: 64
+        sync-initial-capacity: 64
+  web:
+    advice:
+      enable-binder: true
+      enable-exception: true
+      enable-wrapper: true
+    exception:
+      statistics:
+        enabled: true
+        endpoints:
+          list: /exception/list
+          types: /exception/types
+    rate-limit:
+      type: RESILIENCE4J
+    signature:
+      secret-keys:
+        test: test
+    log:
+      kafka:
+        topic: test
+      enabled: false
+      slf4j:
+        logger: WebLogLogger
+  image:
+    # 使用 GraphicsMagick 处理图像
+    type: imageio
+    # 使用 ImageIO 处理图像
+    # type: imageio
+    # GraphicsMagick 进程连接池配置
+    gm:
+      # GraphicsMagick 执行文件路径，默认为 gm（从系统环境解析）
+      path: gm
+      pool:
+        # 最大空闲连接数，默认 0
+        max-idle: 0
+        # 最小空闲连接数，默认 0
+        min-idle: 0
+        # 最大活跃连接数，默认 16（负数表示不限制）
+        max-active: 16
+        # 连接耗尽时阻塞等待毫秒数，默认 5 秒（≤0 表示无限期）。
+        max-wait-mills: 5000
+        # 耗尽动作（FAIL/BLOCK/GROW），默认 FAIL（抛出一个 NoSuchElementException）。
+        when-exhausted-action: fail
+        # 获取连接时是否校验，默认 true。
+        test-on-get: true
+        # 归还连接时是否校验，默认 false。
+        test-on-return: false
+        # 空闲时是否定期校验，默认 false。
+        test-while-idle: false
+        # 空闲资源检测周期毫秒数，默认 30 秒。
+        time-between-eviction-runs-millis: 30000
+        # 每次检测的最大连接数，默认 3（负数表示按比例）。
+        num-tests-per-eviction-run: 3
+        # 空闲最短驱逐毫秒数，默认 30 分钟。
+        min-evictable-idle-time-millis: 1800000
+        # 软驱逐空闲毫秒数，默认 -1（禁用）。
+        soft-min-evictable-idle-time-millis: -1
+        # 是否启用 LIFO，默认 true。
+        lifo: true
+        # 进程最大使用次数后驱逐，默认 100（≤0 表示禁用）。
+        evict-after-number-of-use: 100
+
+logging:
+  config: classpath:logback/local.xml
+  #config: classpath:log4j2/local.yml

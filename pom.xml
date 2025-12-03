@@ -26,7 +26,7 @@
 		<module>framework-spring-boot-starter-image</module>
 		<module>framework-spring-boot-starter-json</module>
 		<module>framework-spring-boot-starter-json-crypto</module>
-		<module>framework-spring-boot-starter-spock-test</module>
+		<module>framework-spring-boot-starter-test-spock</module>
 		<module>framework-spring-boot-starter-test</module>
 		<module>framework-spring-boot-starter-validation</module>
 		<module>framework-spring-boot-starter-web</module>
@@ -128,7 +128,7 @@
 			</dependency>
 			<dependency>
 				<groupId>io.github.pangju666.framework.boot</groupId>
-				<artifactId>framework-spring-boot-starter-spock-test</artifactId>
+				<artifactId>framework-spring-boot-starter-test-spock</artifactId>
 				<version>1.0.0</version>
 				<scope>test</scope>
 			</dependency>

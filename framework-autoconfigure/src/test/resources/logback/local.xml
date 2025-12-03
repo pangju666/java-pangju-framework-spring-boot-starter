@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true" scanPeriod="60 seconds">
+
+	<!-- 日志存储路径 -->
+	<property name="LOG_PATH" value="E:\logs"/>
+	<property name="APP_NAME" value="demo.log"/>
+
+	<!-- 控制台输出格式（无 ANSI 颜色，确保 %method 安全） -->
+	<property name="CONSOLE_PATTERN"
+			  value="%d{yyyy-MM-dd HH:mm:ss.SSS} %highlight([%-5level]) [%blue(%thread)] %cyan(%logger{20}) %yellow(%method\(%file:%line\)) - %msg%n"/>
+
+	<!-- 文件输出格式（含方法和行号） -->
+	<property name="FILE_PATTERN"
+			  value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36}.%method\(%file:%line\) - %msg%n"/>
+
+	<!-- 控制台 Appender -->
+	<appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<pattern>${CONSOLE_PATTERN}</pattern>
+			<charset>UTF-8</charset>
+		</encoder>
+	</appender>
+
+	<!-- 滚动文件 Appender（按天 + 按大小） -->
+	<appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>${LOG_PATH}/${APP_NAME}.log</file>
+		<rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+			<fileNamePattern>${LOG_PATH}/${APP_NAME}.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+			<maxFileSize>50MB</maxFileSize>
+			<maxHistory>30</maxHistory>
+			<totalSizeCap>10GB</totalSizeCap>
+		</rollingPolicy>
+		<encoder>
+			<pattern>${FILE_PATTERN}</pattern>
+			<charset>UTF-8</charset>
+		</encoder>
+	</appender>
+
+	<!-- 错误日志单独输出（可选） -->
+	<appender name="ERROR_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<filter class="ch.qos.logback.classic.filter.LevelFilter">
+			<level>INFO</level>
+			<onMatch>ACCEPT</onMatch>
+			<onMismatch>DENY</onMismatch>
+		</filter>
+		<file>${LOG_PATH}/${APP_NAME}_error.log</file>
+		<rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+			<fileNamePattern>${LOG_PATH}/${APP_NAME}_error.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+			<maxFileSize>50MB</maxFileSize>
+			<maxHistory>30</maxHistory>
+		</rollingPolicy>
+		<encoder>
+			<pattern>${FILE_PATTERN}</pattern>
+			<charset>UTF-8</charset>
+		</encoder>
+	</appender>
+
+	<!-- Root Logger -->
+	<root level="INFO">
+		<appender-ref ref="CONSOLE"/>
+		<appender-ref ref="FILE"/>
+		<appender-ref ref="ERROR_FILE"/>
+	</root>
+
+	<!-- 可选：关闭第三方库的 DEBUG 日志 -->
+	<logger name="org.springframework" level="WARN"/>
+	<logger name="org.apache.kafka" level="WARN"/>
+	<logger name="org.mongodb.driver" level="WARN"/>
+
+	<!-- 请求日志专用 Appender -->
+	<appender name="WEB_LOG_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>E:/logs/web/web.log</file>
+		<rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+			<fileNamePattern>E:/logs/web/web.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+			<maxFileSize>500MB</maxFileSize>
+			<maxHistory>30</maxHistory>
+			<totalSizeCap>10GB</totalSizeCap>
+		</rollingPolicy>
+		<encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+			<pattern>%msg%n</pattern>
+			<charset>UTF-8</charset>
+		</encoder>
+	</appender>
+	<!-- 绑定专用 Logger -->
+	<logger name="WebLogLogger" level="INFO" additivity="false">
+		<appender-ref ref="WEB_LOG_FILE"/>
+	</logger>
+
+</configuration>
