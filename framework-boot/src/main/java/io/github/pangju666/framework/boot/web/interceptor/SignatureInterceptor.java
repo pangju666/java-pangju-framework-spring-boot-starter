@@ -16,7 +16,7 @@
 
 package io.github.pangju666.framework.boot.web.interceptor;
 
-import io.github.pangju666.commons.lang.utils.DateUtils;
+import io.github.pangju666.commons.lang.concurrent.SystemClock;
 import io.github.pangju666.framework.boot.web.annotation.Signature;
 import io.github.pangju666.framework.boot.web.configuration.SignatureConfiguration;
 import io.github.pangju666.framework.boot.web.signature.SecretKeyStorer;
@@ -242,7 +242,7 @@ public class SignatureInterceptor extends BaseHttpInterceptor {
 				throw new MissingRequestValueException("缺少请求头：" + configuration.getTimestampHeaderName());
 			}
 			Long requestTimestamp = Long.parseLong(timestamp);
-			Long nowTimestamp = DateUtils.nowDate().getTime();
+			Long nowTimestamp = SystemClock.now();
 			if (nowTimestamp - requestTimestamp > annotation.timeUnit().toMillis(annotation.timeout())) {
 				HttpResponseBuilder.from(response).writeHttpException(new ValidationException("签名已过期"));
 				return false;
@@ -254,7 +254,7 @@ public class SignatureInterceptor extends BaseHttpInterceptor {
 				return false;
 			}
 
-			String requestUrl = URLEncoder.encode(request.getRequestURL().toString(), StandardCharsets.UTF_8);
+			String requestUrl = request.getRequestURL().toString();
 			String signStr = StringUtils.joinWith("&", appId, secretKey, requestUrl, timestamp);
 			String expectSignature = annotation.algorithm().computeDigest(signStr);
 
