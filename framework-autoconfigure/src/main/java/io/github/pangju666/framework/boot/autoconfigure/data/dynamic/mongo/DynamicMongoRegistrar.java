@@ -18,7 +18,6 @@ package io.github.pangju666.framework.boot.autoconfigure.data.dynamic.mongo;
 
 import com.mongodb.MongoClientSettings;
 import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoDatabase;
 import io.github.pangju666.framework.boot.data.dynamic.mongo.DynamicMongoUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,7 +37,6 @@ import org.springframework.context.EnvironmentAware;
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.core.env.Environment;
 import org.springframework.core.type.AnnotationMetadata;
-import org.springframework.dao.DataAccessException;
 import org.springframework.data.mapping.model.FieldNamingStrategy;
 import org.springframework.data.mongodb.MongoDatabaseFactory;
 import org.springframework.data.mongodb.MongoManagedTypes;
@@ -50,7 +48,6 @@ import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
 import org.springframework.data.mongodb.gridfs.GridFsTemplate;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 
 import java.util.Collections;
 import java.util.List;
@@ -379,14 +376,5 @@ class DynamicMongoRegistrar implements EnvironmentAware, BeanFactoryAware, Impor
 			log.info("dynamic-mongodb initial loaded [{}] database,primary database named [{}]", mongoDatabases.size(),
 				dynamicMongoProperties.getPrimary());
 		}
-	}
-
-	protected MongoDatabase getMongoDatabase(MongoDatabaseFactory mongoDatabaseFactory,
-											 MongoConnectionDetails connectionDetails) throws DataAccessException {
-		String gridFsDatabase = (connectionDetails.getGridFs() != null) ? connectionDetails.getGridFs().getDatabase() : null;
-		if (StringUtils.hasText(gridFsDatabase)) {
-			return mongoDatabaseFactory.getMongoDatabase(gridFsDatabase);
-		}
-		return mongoDatabaseFactory.getMongoDatabase();
 	}
 }
