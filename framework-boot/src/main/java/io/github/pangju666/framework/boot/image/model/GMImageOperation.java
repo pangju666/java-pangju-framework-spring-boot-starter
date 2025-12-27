@@ -17,45 +17,66 @@
 package io.github.pangju666.framework.boot.image.model;
 
 import io.github.pangju666.framework.boot.image.core.impl.GMImageTemplate;
-import io.github.pangju666.framework.boot.image.enums.FlipDirection;
 import io.github.pangju666.framework.boot.image.enums.ResampleFilter;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.lang.Nullable;
 
-import java.awt.*;
 import java.util.Objects;
 
 /**
- * 面向 {@link GMImageTemplate} 的图像操作配置，
- * 扩展文字水印、缩放重采样策略、输出质量、输出DPI与元数据清除能力，并提供模糊/锐化调整。
- * 使用构建器模式设置参数，供图像处理组件读取并执行。
+ * 面向 {@link GMImageTemplate} 的图像操作配置，继承通用操作并扩展 GraphicsMagick 专属能力。
+ * <p>该类基于 {@link ImageOperation}，结合 GraphicsMagick 命令行特性提供高性能图像处理功能。</p>
  *
- * <p><strong>使用说明</strong>：通过构建器链式设置参数；不满足校验规则的参数将被忽略。</p>
- * <p><strong>互斥规则</strong>：水印方向与坐标互斥；设置其中之一会清空另一种配置。</p>
- * <p><strong>定位规则</strong>：可使用 {@code watermarkDirection} 或 {@code watermarkPosition(x,y)}；坐标需为正数。</p>
- * <p><strong>裁剪规则</strong>：支持中心裁剪、偏移裁剪与矩形裁剪；如果裁剪参数为空、非正数或越界，则不设置裁剪。</p>
- * <p><strong>缩放规则</strong>：{@code forceScale(width,height)} 强制缩放到指定尺寸；按比例/按宽/按高缩放为等比，并会关闭强制缩放且清空其它尺寸/比例。</p>
- * <p><strong>透明度范围</strong>：取值区间 [0,1]；水印透明度遵循该范围。</p>
- * <p><strong>旋转/翻转</strong>：旋转角度正数表示顺时针、负数表示逆时针；翻转方向由 {@link FlipDirection} 指定。</p>
- * <p><strong>灰度化</strong>：当开启灰度化时，输出图像为灰度模式。</p>
+ * <h3>1. 基础图像操作（继承自 {@link ImageOperation}）</h3>
+ * <ul>
+ *   <li><strong>裁剪 (Crop)</strong>：支持中心裁剪、偏移裁剪（上下左右指定像素）与矩形区域裁剪。</li>
+ *   <li><strong>缩放 (Scale)</strong>：支持按比例、按宽/高、强制尺寸缩放；支持设置水印图片尺寸限制策略。</li>
+ *   <li><strong>水印 (Watermark)</strong>：
+ *     <ul>
+ *       <li>支持<strong>图片水印</strong>与<strong>文字水印</strong>（互斥）；</li>
+ *       <li>支持<strong>九宫格方位</strong>与<strong>坐标定位</strong>（互斥）；</li>
+ *       <li>支持设置水印透明度、相对缩放比例；</li>
+ *       <li>支持自定义水印文字大小计算策略与水印图片尺寸限制策略。</li>
+ *     </ul>
+ *   </li>
+ *   <li><strong>旋转与翻转 (Rotate &amp; Flip)</strong>：支持自定义角度旋转（顺/逆时针）与水平/垂直翻转。</li>
+ *   <li><strong>灰度化 (Grayscale)</strong>：支持将图像转换为灰度模式。</li>
+ * </ul>
  *
- * <p><strong>质量设置</strong>：部分格式支持，如 JPEG。</p>
- * <p><strong>移除元数据</strong>：移除 Profile/EXIF/IPTC 等。</p>
- * <p><strong>GM 缩放滤镜</strong>：支持滤镜类型选择以控制缩放质量与性能。</p>
- * <p><strong>文字水印</strong>：字体/大小比例（相对原图的长边）/颜色/透明度配置；与图片水印互斥。</p>
- * <p><strong>模糊/锐化</strong>：支持半径与标准差参数。</p>
- * <p><strong>DPI 设置</strong>：设置输出图像的每英寸点数。</p>
- * <p>注意：绘制文字水印必须设置字体，否则将不生效。</p>
+ * <h3>2. 扩展增强操作（{@link GMImageOperation} 独有）</h3>
+ * <ul>
+ *   <li><strong>输出控制</strong>：
+ *     <ul>
+ *       <li><strong>质量 (Quality)</strong>：支持设置 JPEG 等格式的压缩质量（1-100）。</li>
+ *       <li><strong>DPI</strong>：支持设置输出图像的分辨率（每英寸点数）。</li>
+ *       <li><strong>元数据 (Profile)</strong>：支持移除 EXIF、IPTC 等元数据信息以减小文件体积。</li>
+ *     </ul>
+ *   </li>
+ *   <li><strong>缩放优化</strong>：支持指定 GraphicsMagick 缩放滤镜（如 Lanczos, Triangle 等）以控制缩放质量。</li>
+ *   <li><strong>图像增强</strong>：
+ *     <ul>
+ *       <li><strong>模糊 (Blur)</strong>：高斯模糊（支持自定义半径与标准差）。</li>
+ *       <li><strong>锐化 (Sharpen)</strong>：支持自定义半径与标准差的锐化处理。</li>
+ *     </ul>
+ *   </li>
+ * </ul>
  *
- * <p><strong>GM 兼容性限制</strong>：</p>
- * <p>· 水印图片路径：不支持包含中文或非 ASCII 字符的路径，需要使用纯英文路径。</p>
- * <p>· 字体名称：不支持中文字体名称；若要显示中文，需要在 GM 运行环境安装可用的中文字体并以可识别的英文名称引用。</p>
- * <p>· 中文水印文本：在未正确安装中文字体或编码不兼容的情况下可能显示为空或乱码，建议优先使用英文文本；若必须使用中文，请确保环境字体与编码配置正确。</p>
+ * <h3>3. GM 兼容性与限制</h3>
+ * <ul>
+ *   <li><strong>路径限制</strong>：水印图片路径建议使用纯英文，避免中文路径导致的兼容性问题。</li>
+ *   <li><strong>中文字体</strong>：若需使用中文水印，必须确保系统安装了相应字体，并指定正确的英文字体名称（如 "simhei"）。</li>
+ *   <li><strong>中文编码</strong>：建议优先使用英文水印文本，避免环境编码问题导致的乱码。</li>
+ *   <li><strong>字体设置</strong>：绘制文字水印必须设置字体，否则将不生效。</li>
+ *   <li><strong>文字样式</strong>：不支持设置文字样式（如粗体、斜体等），相关配置将被忽略。</li>
+ * </ul>
+ *
+ * <p><strong>使用注意</strong>：通过构建器链式设置参数；不满足校验规则（如负数尺寸、无效坐标）的参数将被自动忽略。</p>
  *
  * @author pangju666
  * @see GMImageTemplate
+ * @see ImageOperation
  * @since 1.0.0
  */
 public class GMImageOperation extends ImageOperation {
@@ -87,36 +108,6 @@ public class GMImageOperation extends ImageOperation {
 	 * @since 1.0.0
 	 */
 	protected String watermarkTextFontName;
-	/**
-	 * 文字水印字体大小比例（相对原图的长边）。
-	 *
-	 * <p>默认值：{@code 0.04}</p>
-	 *
-	 * @since 1.0.0
-	 */
-	protected double watermarkTextFontSizeRatio = 0.04;
-	/**
-	 * 文字水印颜色。
-	 *
-	 * <p>默认值：{@link Color#WHITE}</p>
-	 *
-	 * @since 1.0.0
-	 */
-	protected Color watermarkTextColor = Color.WHITE;
-	/**
-	 * 文字水印透明度（0-1）。
-	 *
-	 * <p>默认值：{@code 0.4f}</p>
-	 *
-	 * @since 1.0.0
-	 */
-	protected float watermarkTextOpacity = 0.4f;
-	/**
-	 * 文字水印文本（与图片水印互斥）。
-	 *
-	 * @since 1.0.0
-	 */
-	protected String watermarkText;
 	/**
 	 * 高斯模糊参数对（半径, 标准差）。
 	 *
@@ -180,36 +171,6 @@ public class GMImageOperation extends ImageOperation {
 	}
 
 	/**
-	 * 获取文字水印颜色。
-	 *
-	 * @return 颜色
-	 * @since 1.0.0
-	 */
-	public Color getWatermarkTextColor() {
-		return watermarkTextColor;
-	}
-
-	/**
-	 * 获取文字水印透明度。
-	 *
-	 * @return 透明度（0-1）
-	 * @since 1.0.0
-	 */
-	public float getWatermarkTextOpacity() {
-		return watermarkTextOpacity;
-	}
-
-	/**
-	 * 获取文字水印文本。
-	 *
-	 * @return 文本，未设置或被图片水印清空时为 {@code null}
-	 * @since 1.0.0
-	 */
-	public @Nullable String getWatermarkText() {
-		return watermarkText;
-	}
-
-	/**
 	 * 是否移除图像的 Profile/元数据。
 	 *
 	 * @return {@code true} 表示移除
@@ -229,15 +190,6 @@ public class GMImageOperation extends ImageOperation {
 		return watermarkTextFontName;
 	}
 
-	/**
-	 * 文字水印字体大小比例（相对原图的长边）。
-	 *
-	 * @return 字体大小
-	 * @since 1.0.0
-	 */
-	public double getWatermarkTextFontSizeRatio() {
-		return watermarkTextFontSizeRatio;
-	}
 
 	/**
 	 * 获取输出质量。
@@ -299,39 +251,7 @@ public class GMImageOperation extends ImageOperation {
 		}
 
 		/**
-		 * 设置文字水印颜色。
-		 *
-		 * <p>参数校验规则：如果 {@code color} 为 null，则不设置。</p>
-		 *
-		 * @param color 颜色
-		 * @return 构建器本身
-		 * @since 1.0.0
-		 */
-		public GMImageOperationBuilder watermarkTextColor(Color color) {
-			if (Objects.nonNull(color)) {
-				imageOperation.watermarkTextColor = color;
-			}
-			return this;
-		}
-
-		/**
-		 * 设置文字水印透明度。
-		 *
-		 * <p>参数校验规则：如果 {@code opacity} 为 null或不在 [0,1] 范围，则不设置。</p>
-		 *
-		 * @param opacity 透明度（0-1）
-		 * @return 构建器本身
-		 * @since 1.0.0
-		 */
-		public GMImageOperationBuilder watermarkTextOpacity(Float opacity) {
-			if (Objects.nonNull(opacity) && opacity >= 0f && opacity <= 1) {
-				imageOperation.watermarkTextOpacity = opacity;
-			}
-			return this;
-		}
-
-		/**
-		 * 设置文字水印字体名称。
+		 * 设置文字水印字体英文引用名称，例如：simhei（黑体）。
 		 *
 		 * <p>参数校验规则：如果 {@code fontName} 为空白，则不设置。</p>
 		 *
@@ -344,45 +264,6 @@ public class GMImageOperation extends ImageOperation {
 				imageOperation.watermarkTextFontName = fontName;
 			}
 			return this;
-		}
-
-		/**
-		 * 设置文字水印字体大小比例（相对原图的长边）。
-		 *
-		 * <p>参数校验规则：如果 {@code fontSizeRatio} 为 null或 ≤ 0，则不设置。</p>
-		 * <p>取值说明：比例为正数，比例越大字号越大。</p>
-		 *
-		 * @param fontSizeRatio 字体大小
-		 * @return 构建器本身
-		 * @since 1.0.0
-		 */
-		public GMImageOperationBuilder watermarkTextFontSizeRatio(Double fontSizeRatio) {
-			if (Objects.nonNull(fontSizeRatio) && fontSizeRatio > 0) {
-				imageOperation.watermarkTextFontSizeRatio = fontSizeRatio;
-			}
-			return this;
-		}
-
-		/**
-		 * 使用文字水印（与图片水印互斥）。
-		 *
-		 * <p>参数校验规则：如果 {@code watermarkText} 为空白，则不设置；设置后清空图片水印。</p>
-		 *
-		 * @param watermarkText 文本内容
-		 * @return 构建器本身
-		 * @since 1.0.0
-		 */
-		public GMImageOperationBuilder watermarkText(String watermarkText) {
-			if (StringUtils.isNotBlank(watermarkText)) {
-				imageOperation.watermarkText = watermarkText;
-				imageOperation.watermarkImage = null;
-			}
-			return this;
-		}
-
-		@Override
-		protected void onSetWatermarkImage() {
-			imageOperation.watermarkText = null;
 		}
 
 		/**

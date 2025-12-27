@@ -16,37 +16,91 @@
 
 package io.github.pangju666.framework.boot.image.model;
 
+import io.github.pangju666.commons.image.enums.FlipDirection;
+import io.github.pangju666.commons.image.enums.RotateDirection;
 import io.github.pangju666.commons.image.enums.WatermarkDirection;
+import io.github.pangju666.commons.image.model.ImageSize;
 import io.github.pangju666.commons.image.model.ImageWatermarkOption;
+import io.github.pangju666.commons.image.model.TextWatermarkOption;
 import io.github.pangju666.commons.io.utils.FileUtils;
 import io.github.pangju666.framework.boot.image.core.ImageTemplate;
 import io.github.pangju666.framework.boot.image.enums.CropType;
-import io.github.pangju666.framework.boot.image.enums.FlipDirection;
-import io.github.pangju666.framework.boot.image.enums.RotateDirection;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.lang.Nullable;
 
+import java.awt.*;
 import java.io.File;
 import java.util.Objects;
+import java.util.function.Function;
 
 /**
- * 图像处理操作配置模型，支持裁剪、缩放、图片水印、旋转、翻转与灰度化。
- * 使用构建器模式设置参数，供{@link ImageTemplate}读取并执行。
+ * 图像处理操作配置基类，定义了通用的图像处理参数与行为规范。
+ * <p>该类采用构建器模式（Builder Pattern），供 {@link ImageTemplate} 的具体实现类读取并执行处理逻辑。</p>
  *
- * <p><strong>使用说明</strong>：通过构建器链式设置参数；不满足校验规则的参数将被忽略。</p>
- * <p><strong>互斥规则</strong>：水印方向与坐标互斥；设置其中之一会清空另一种配置。</p>
- * <p><strong>定位规则</strong>：可使用 {@code watermarkDirection} 或 {@code watermarkPosition(x,y)} 坐标需为正数。</p>
- * <p><strong>裁剪规则</strong>：支持中心裁剪、偏移裁剪与矩形裁剪；如果裁剪参数为空、非正数或越界，则不设置裁剪。</p>
- * <p><strong>缩放规则</strong>：{@code forceScale(width,height)} 强制缩放到指定尺寸；按比例/按宽/按高缩放为等比，并会关闭强制缩放且清空其它尺寸/比例。</p>
- * <p><strong>透明度范围</strong>：取值区间 [0,1]；水印透明度遵循该范围。</p>
- * <p><strong>旋转/翻转</strong>：旋转角度正数表示顺时针、负数表示逆时针；翻转方向由 {@link FlipDirection} 指定。</p>
- * <p><strong>灰度化</strong>：当开启灰度化时，输出图像为灰度模式。</p>
+ * <h3>1. 核心功能模块</h3>
+ * <ul>
+ *   <li><strong>裁剪 (Crop)</strong>：
+ *     <ul>
+ *       <li><strong>中心裁剪</strong>：保留图像中心区域。</li>
+ *       <li><strong>偏移裁剪</strong>：指定上下左右的裁剪偏移量。</li>
+ *       <li><strong>矩形裁剪</strong>：指定裁剪区域的坐标与宽高。</li>
+ *     </ul>
+ *   </li>
+ *   <li><strong>缩放 (Scale)</strong>：
+ *     <ul>
+ *       <li><strong>强制缩放</strong>：忽略原图比例，强制拉伸至指定宽高。</li>
+ *       <li><strong>等比缩放</strong>：支持按比例系数、固定宽度或固定高度进行等比缩放（互斥）。</li>
+ *     </ul>
+ *   </li>
+ *   <li><strong>水印 (Watermark)</strong>：
+ *     <ul>
+ *       <li><strong>类型</strong>：支持图片水印与文字水印（互斥）。</li>
+ *       <li><strong>定位</strong>：支持九宫格方位（如 {@link WatermarkDirection#TOP_RIGHT}）与绝对坐标定位（互斥）。</li>
+ *       <li><strong>样式</strong>：支持透明度、相对缩放比例（图片水印）、字体样式（文字水印）等配置。</li>
+ *     </ul>
+ *   </li>
+ *   <li><strong>几何变换</strong>：
+ *     <ul>
+ *       <li><strong>旋转</strong>：支持任意角度旋转（正数顺时针，负数逆时针）。</li>
+ *       <li><strong>翻转</strong>：支持水平翻转与垂直翻转。</li>
+ *     </ul>
+ *   </li>
+ *   <li><strong>色彩调整</strong>：支持图像灰度化处理。</li>
+ * </ul>
+ *
+ * <h3>2. 参数校验与优先级</h3>
+ * <ul>
+ *   <li><strong>校验规则</strong>：所有尺寸、坐标参数需为正数；非法参数将被自动忽略，不影响其他配置。</li>
+ *   <li><strong>互斥策略</strong>：
+ *     <ul>
+ *       <li>设置水印坐标会自动清除水印方位配置。</li>
+ *       <li>设置强制缩放会自动清除等比缩放配置；反之亦然。</li>
+ *       <li>设置图片水印会自动清除文字水印内容；反之亦然。</li>
+ *     </ul>
+ *   </li>
+ * </ul>
  *
  * @author pangju666
  * @since 1.0.0
  * @see ImageTemplate
+ * @see BufferedImageOperation
+ * @see GMImageOperation
  */
 public abstract class ImageOperation {
+	/**
+	 * 水印文本（与图片水印互斥）。
+	 *
+	 * @since 1.0.0
+	 */
+	protected String watermarkText;
+	/**
+	 * 文字水印配置（与图片水印互斥）。
+	 *
+	 * @since 1.0.0
+	 */
+	protected TextWatermarkOption watermarkTextOption = new TextWatermarkOption();
 	/**
 	 * 水印方向（当未设置具体坐标时生效，与坐标互斥）。
 	 *
@@ -432,6 +486,26 @@ public abstract class ImageOperation {
 	}
 
 	/**
+	 * 获取文字水印内容（与图片水印互斥）。
+	 *
+	 * @return 文字水印文本，未设置或被图片水印清空时为 {@code null}
+	 * @since 1.0.0
+	 */
+	public @Nullable String getWatermarkText() {
+		return watermarkText;
+	}
+
+	/**
+	 * 获取文字水印配置选项。
+	 *
+	 * @return 文字水印配置（非空）
+	 * @since 1.0.0
+	 */
+	public TextWatermarkOption getWatermarkTextOption() {
+		return watermarkTextOption;
+	}
+
+	/**
 	 * {@link ImageOperation} 的构建器，提供链式 API 设置各参数。
 	 *
 	 * @author pangju666
@@ -675,7 +749,7 @@ public abstract class ImageOperation {
 		public T watermarkImage(File watermarkImage) {
 			if (FileUtils.existFile(watermarkImage)) {
 				this.imageOperation.watermarkImage = watermarkImage;
-				onSetWatermarkImage();
+				this.imageOperation.watermarkText = null;
 			}
 			return self();
 		}
@@ -713,35 +787,163 @@ public abstract class ImageOperation {
 		}
 
 		/**
-		 * 限制图片水印的宽度范围。
+		 * 设置图片水印的尺寸限制策略。
 		 *
-		 * <p>参数校验规则：如果 {@code minWidth} 或 {@code maxWidth} 为 null，则不设置。</p>
+		 * <p>该策略用于根据目标图像的尺寸动态计算水印图片的允许尺寸范围（最小与最大尺寸）。</p>
+		 * <p>参数校验规则：如果 {@code sizeRangeStrategy} 为 {@code null}，则不设置。</p>
 		 *
-		 * @param minWidth 最小宽度
-		 * @param maxWidth 最大宽度
+		 * @param sizeRangeStrategy 尺寸限制策略函数（输入目标图像尺寸，输出水印最小/最大尺寸对）
 		 * @return 构建器本身
 		 * @since 1.0.0
 		 */
-		public T watermarkImageWidthRange(Integer minWidth, Integer maxWidth) {
-			if (ObjectUtils.allNotNull(minWidth, maxWidth)) {
-				this.imageOperation.watermarkImageOption.setWidthRange(minWidth, maxWidth);
+		public T watermarkImageSizeLimitStrategy(Function<ImageSize, Pair<ImageSize, ImageSize>> sizeRangeStrategy) {
+			if (Objects.nonNull(sizeRangeStrategy)) {
+				this.imageOperation.watermarkImageOption.setSizeLimitStrategy(sizeRangeStrategy);
 			}
 			return self();
 		}
 
 		/**
-		 * 限制图片水印的高度范围。
+		 * 使用文字水印（与图片水印互斥）。
 		 *
-		 * <p>参数校验规则：如果 {@code minHeight} 或 {@code maxHeight} 为 null，则不设置。</p>
+		 * <p>参数校验规则：如果 {@code watermarkText} 为空白，则不设置；设置后将图片水印设为 null。</p>
 		 *
-		 * @param minHeight 最小高度
-		 * @param maxHeight 最大高度
+		 * @param watermarkText 水印文本
 		 * @return 构建器本身
 		 * @since 1.0.0
 		 */
-		public T watermarkImageHeightRange(Integer minHeight, Integer maxHeight) {
-			if (ObjectUtils.allNotNull(minHeight, maxHeight)) {
-				this.imageOperation.watermarkImageOption.setHeightRange(minHeight, maxHeight);
+		public T watermarkText(String watermarkText) {
+			if (StringUtils.isNotBlank(watermarkText)) {
+				imageOperation.watermarkText = watermarkText;
+				imageOperation.watermarkImage = null;
+			}
+			return self();
+		}
+
+		/**
+		 * 设置文字水印的透明度。
+		 *
+		 * <p>参数校验规则：如果 {@code opacity} 为 null，则不设置；取值范围 0-1。</p>
+		 *
+		 * @param opacity 透明度（0-1）
+		 * @return 构建器本身
+		 * @since 1.0.0
+		 */
+		public T watermarkTextOpacity(Float opacity) {
+			if (Objects.nonNull(opacity)) {
+				imageOperation.watermarkTextOption.setOpacity(opacity);
+			}
+			return self();
+		}
+
+		/**
+		 * 设置文字水印字体名称。
+		 *
+		 * <p>参数校验规则：无空值校验，直接写入；建议传入非空白的可用字体名称，以避免字体解析失败。</p>
+		 *
+		 * @param fontName 字体名称（建议非空白）
+		 * @return 构建器本身
+		 * @since 1.0.0
+		 */
+		public T watermarkTextFontName(String fontName) {
+			imageOperation.watermarkTextOption.setFontName(fontName);
+			return self();
+		}
+
+		/**
+		 * 设置文字水印字体样式。
+		 *
+		 * <p>参数校验规则：如果 {@code fontStyle} 为 null，则不设置。</p>
+		 * <p>取值说明：样式码为整数（例如常见的粗体/斜体等，具体取值由实现定义）。</p>
+		 *
+		 * @param fontStyle 字体样式码（整数）
+		 * @return 构建器本身
+		 * @since 1.0.0
+		 */
+		public T watermarkTextFontStyle(Integer fontStyle) {
+			if (Objects.nonNull(fontStyle)) {
+				imageOperation.watermarkTextOption.setFontStyle(fontStyle);
+			}
+			return self();
+		}
+
+		/**
+		 * 设置文字水印的字体大小计算策略。
+		 *
+		 * <p>该策略用于根据目标图像的尺寸动态计算水印文字的大小。</p>
+		 * <p>参数校验规则：如果 {@code fontSizeStrategy} 为 {@code null}，则不设置。</p>
+		 *
+		 * @param fontSizeStrategy 字体大小策略函数（输入目标图像尺寸，输出字体大小整数）
+		 * @return 构建器本身
+		 * @since 1.0.0
+		 */
+		public T watermarkTextFontSizeStrategy(Function<ImageSize, Integer> fontSizeStrategy) {
+			if (Objects.nonNull(fontSizeStrategy)) {
+				imageOperation.watermarkTextOption.setFontSizeStrategy(fontSizeStrategy);
+			}
+			return self();
+		}
+
+		/**
+		 * 设置文字水印的填充颜色。
+		 *
+		 * <p>参数校验规则：如果 {@code fillColor} 为 null，则不设置。</p>
+		 *
+		 * @param fillColor 填充颜色
+		 * @return 构建器本身
+		 * @since 1.0.0
+		 */
+		public T watermarkTextFillColor(Color fillColor) {
+			if (Objects.nonNull(fillColor)) {
+				imageOperation.watermarkTextOption.setFillColor(fillColor);
+			}
+			return self();
+		}
+
+		/**
+		 * 设置文字水印的描边颜色。
+		 *
+		 * <p>参数校验规则：如果 {@code strokeColor} 为 null，则不设置。</p>
+		 *
+		 * @param strokeColor 描边颜色
+		 * @return 构建器本身
+		 * @since 1.0.0
+		 */
+		public T watermarkTextStrokeColor(Color strokeColor) {
+			if (Objects.nonNull(strokeColor)) {
+				imageOperation.watermarkTextOption.setStrokeColor(strokeColor);
+			}
+			return self();
+		}
+
+		/**
+		 * 设置文字水印的描边宽度。
+		 *
+		 * <p>参数校验规则：如果 {@code strokeWidth} 为 null 或 ≤ 0，则不设置。</p>
+		 *
+		 * @param strokeWidth 描边宽度
+		 * @return 构建器本身
+		 * @since 1.0.0
+		 */
+		public T watermarkTextStrokeWidth(Float strokeWidth) {
+			if (Objects.nonNull(strokeWidth)) {
+				imageOperation.watermarkTextOption.setStrokeWidth(strokeWidth);
+			}
+			return self();
+		}
+
+		/**
+		 * 设置是否启用文字水印的描边效果。
+		 *
+		 * <p>参数校验规则：如果 {@code stroke} 为 null，则不设置。</p>
+		 *
+		 * @param stroke 是否描边
+		 * @return 构建器本身
+		 * @since 1.0.0
+		 */
+		public T watermarkTextStroke(Boolean stroke) {
+			if (Objects.nonNull(stroke)) {
+				imageOperation.watermarkTextOption.setStroke(stroke);
 			}
 			return self();
 		}
@@ -820,18 +1022,6 @@ public abstract class ImageOperation {
             }
             return self();
         }
-
-		/**
-		 * 预留钩子：设置图片水印后的附加处理。
-		 *
-		 * <p><b>作用</b>：供子类在设置图片水印时执行互斥或补充逻辑（如清空文字水印、规范化坐标）。</p>
-		 * <p><b>调用约定</b>：默认不做任何处理；子类可在对应的 setter 内主动调用本方法。</p>
-		 * <p><b>示例流程</b>：设置图片水印 -> 调用钩子 -> 执行互斥清理/参数修正。</p>
-		 *
-		 * @since 1.0.0
-		 */
-		protected void onSetWatermarkImage() {
-		}
 
 		/**
 		 * 合并另一个操作配置的通用字段到当前构建器。

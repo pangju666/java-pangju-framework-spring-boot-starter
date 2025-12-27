@@ -71,13 +71,13 @@ public class ImageProperties {
 	 *
 	 * @since 1.0.0
 	 */
-	private GM gm = new GM();
+	private GraphicsMagick gm = new GraphicsMagick();
 
-	public GM getGm() {
+	public GraphicsMagick getGm() {
 		return gm;
 	}
 
-	public void setGm(GM graphicsMagick) {
+	public void setGm(GraphicsMagick graphicsMagick) {
 		this.gm = graphicsMagick;
 	}
 
@@ -106,16 +106,12 @@ public class ImageProperties {
 	}
 
 	/**
-	 * <a href="http://www.graphicsmagick.org/index.html">GraphicsMagick</a> 配置。
-	 *
-	 * <p>前缀：{@code pangju.image.gm}</p>
-	 *
-	 * <p>GraphicsMagick 版本需要 &ge; 1.30</p>
+	 * GraphicsMagick 相关配置
 	 *
 	 * @author pangju666
 	 * @since 1.0.0
 	 */
-	public static class GM {
+	public static class GraphicsMagick {
 		/**
 		 * GraphicsMagick 的连接池配置。
 		 *

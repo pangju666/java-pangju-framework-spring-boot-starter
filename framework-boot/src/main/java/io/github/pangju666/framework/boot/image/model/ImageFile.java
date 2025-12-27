@@ -20,7 +20,6 @@ import io.github.pangju666.commons.image.model.ImageSize;
 import io.github.pangju666.commons.io.utils.FileUtils;
 import io.github.pangju666.commons.io.utils.FilenameUtils;
 import io.github.pangju666.framework.boot.image.exception.ImageParsingException;
-import io.github.pangju666.framework.boot.image.lang.ImageConstants;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
@@ -38,7 +37,6 @@ import java.io.IOException;
  * <p><b>字段</b></p>
  * <ul>
  *   <li>{@link #imageSize} 图像宽高信息，见 {@link io.github.pangju666.commons.image.model.ImageSize}。</li>
- *   <li>{@link #orientation} 图像方向标记（EXIF Orientation），默认值见 {@link io.github.pangju666.framework.boot.image.lang.ImageConstants#NORMAL_EXIF_ORIENTATION}。</li>
  *   <li>{@link #format} 图像文件格式（如 {@code JPEG}、{@code PNG}）。</li>
  *   <li>{@link #fileSize} 文件大小（单位：字节）。</li>
  *   <li>{@link #mimeType} 图像的 MIME 类型（如 {@code image/jpeg}）。</li>
@@ -56,7 +54,6 @@ import java.io.IOException;
  * <ul>
  *   <li>文件不可为 {@code null} 且必须存在。</li>
  *   <li>格式通过扩展名解析并统一为大写；MIME 类型为小写。</li>
- *   <li>方向默认正常（参见常量），具体取值含义由上游解析定义。</li>
  * </ul>
  *
  * @author pangju666
@@ -75,12 +72,6 @@ public class ImageFile {
 	 * @since 1.0.0
 	 */
 	private ImageSize imageSize;
-	/**
-	 * 图像方向标记（如 EXIF Orientation）。
-	 *
-	 * @since 1.0.0
-	 */
-	private int orientation = ImageConstants.NORMAL_EXIF_ORIENTATION;
 	/**
 	 * 图像文件格式（如 JPEG、PNG）。
 	 *
@@ -116,7 +107,7 @@ public class ImageFile {
      * @since 1.0.0
      */
     public ImageFile(File file) throws IOException {
-		FileUtils.checkFile(file, "输入图片不可为null");
+		FileUtils.checkFile(file, "输入图片不可为 null");
 
 		this.file = file;
 		this.format = FilenameUtils.getExtension(file.getName().toUpperCase());
@@ -213,26 +204,6 @@ public class ImageFile {
 	}
 
 	/**
-	 * 获取图像方向标记。
-	 *
-	 * @return 图像方向标记（如 EXIF Orientation）
-	 * @since 1.0.0
-	 */
-	public int getOrientation() {
-		return orientation;
-	}
-
-	/**
-	 * 设置图像方向标记。
-	 *
-	 * @param orientation 图像方向标记（如 EXIF Orientation）
-	 * @since 1.0.0
-	 */
-	public void setOrientation(int orientation) {
-		this.orientation = orientation;
-	}
-
-	/**
 	 * 获取图像文件格式。
 	 *
 	 * @return 图像文件格式（如 JPEG、PNG）
@@ -274,7 +245,7 @@ public class ImageFile {
 	public void setMimeType(String mimeType) {
 		this.mimeType = mimeType;
 		if (StringUtils.isNotBlank(mimeType)) {
-			this.format = mimeType.toLowerCase();
+			this.mimeType = mimeType.toLowerCase();
 		}
 	}
 

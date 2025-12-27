@@ -16,41 +16,55 @@
 
 package io.github.pangju666.framework.boot.image.model;
 
-import io.github.pangju666.commons.image.model.TextWatermarkOption;
 import io.github.pangju666.framework.boot.image.core.impl.BufferedImageTemplate;
-import io.github.pangju666.framework.boot.image.enums.FlipDirection;
 import io.github.pangju666.framework.boot.image.enums.ResampleFilter;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.lang.Nullable;
 import org.springframework.util.CollectionUtils;
 
-import java.awt.*;
 import java.awt.image.ImageFilter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
 
 /**
- * 面向 {@link BufferedImageTemplate} 的图像操作配置，扩展文字水印与缩放重采样策略能力，
- * 并提供模糊/锐化/对比度/亮度调整与自定义滤镜管线。
- * 使用构建器模式设置参数，供图像处理组件读取并执行。
+ * 面向 {@link BufferedImageTemplate} 的图像操作配置，继承通用操作并扩展增强处理能力。
+ * <p>该类基于 {@link ImageOperation}，结合 Java 2D API 提供更丰富的图像处理功能。</p>
  *
- * <p><strong>使用说明</strong>：通过构建器链式设置参数；不满足校验规则的参数将被忽略。</p>
- * <p><strong>互斥规则</strong>：水印方向与坐标互斥；设置其中之一会清空另一种配置。</p>
- * <p><strong>定位规则</strong>：可使用 {@code watermarkDirection} 或 {@code watermarkPosition(x,y)}；坐标需为正数。</p>
- * <p><strong>裁剪规则</strong>：支持中心裁剪、偏移裁剪与矩形裁剪；如果裁剪参数为空、非正数或越界，则不设置裁剪。</p>
- * <p><strong>缩放规则</strong>：{@code forceScale(width,height)} 强制缩放到指定尺寸；按比例/按宽/按高缩放为等比，并会关闭强制缩放且清空其它尺寸/比例。</p>
- * <p><strong>透明度范围</strong>：取值区间 [0,1]；水印透明度遵循该范围。</p>
- * <p><strong>旋转/翻转</strong>：旋转角度正数表示顺时针、负数表示逆时针；翻转方向由 {@link FlipDirection} 指定。</p>
- * <p><strong>灰度化</strong>：当开启灰度化时，输出图像为灰度模式。</p>
- * <p><strong>文字水印</strong>：提供文本内容与样式配置；与图片水印互斥。</p>
- * <p><strong>缩放重采样</strong>：支持重采样滤镜类型选择。</p>
- * <p><strong>图像增强</strong>：支持模糊、锐化、对比度与亮度调节。</p>
- * <p><strong>滤镜管线</strong>：支持自定义 {@link ImageFilter}，按添加顺序应用。</p>
+ * <h3>1. 基础图像操作（继承自 {@link ImageOperation}）</h3>
+ * <ul>
+ *   <li><strong>裁剪 (Crop)</strong>：支持中心裁剪、偏移裁剪（上下左右指定像素）与矩形区域裁剪。</li>
+ *   <li><strong>缩放 (Scale)</strong>：支持按比例、按宽/高、强制尺寸缩放；支持设置水印图片尺寸限制策略。</li>
+ *   <li><strong>水印 (Watermark)</strong>：
+ *     <ul>
+ *       <li>支持<strong>图片水印</strong>与<strong>文字水印</strong>（互斥）；</li>
+ *       <li>支持<strong>九宫格方位</strong>与<strong>坐标定位</strong>（互斥）；</li>
+ *       <li>支持设置水印透明度、相对缩放比例；</li>
+ *       <li>支持自定义水印文字大小计算策略与水印图片尺寸限制策略。</li>
+ *     </ul>
+ *   </li>
+ *   <li><strong>旋转与翻转 (Rotate &amp; Flip)</strong>：支持自定义角度旋转（顺/逆时针）与水平/垂直翻转。</li>
+ *   <li><strong>灰度化 (Grayscale)</strong>：支持将图像转换为灰度模式。</li>
+ * </ul>
+ *
+ * <h3>2. 扩展增强操作（{@link BufferedImageOperation} 独有）</h3>
+ * <ul>
+ *   <li><strong>缩放优化</strong>：支持配置 {@link ResampleFilter}（如 Bicubic, Lanczos）以控制缩放质量。</li>
+ *   <li><strong>图像增强</strong>：
+ *     <ul>
+ *       <li><strong>模糊</strong>：高斯模糊（支持自定义半径）；</li>
+ *       <li><strong>锐化</strong>：非锐化掩模（USM，支持自定义强度）；</li>
+ *       <li><strong>对比度/亮度</strong>：支持线性调整对比度与亮度。</li>
+ *     </ul>
+ *   </li>
+ *   <li><strong>滤镜管线</strong>：支持添加标准 {@link ImageFilter}，按添加顺序依次处理。</li>
+ * </ul>
+ *
+ * <p><strong>使用注意</strong>：通过构建器链式设置参数；不满足校验规则（如负数尺寸、无效坐标）的参数将被自动忽略。</p>
  *
  * @author pangju666
  * @since 1.0.0
  * @see BufferedImageTemplate
+ * @see ImageOperation
  */
 public class BufferedImageOperation extends ImageOperation {
 	/**
@@ -59,18 +73,7 @@ public class BufferedImageOperation extends ImageOperation {
 	 * @since 1.0.0
 	 */
 	protected Integer resampleFilterType;
-	/**
-	 * 水印文本（与图片水印互斥）。
-	 *
-	 * @since 1.0.0
-	 */
-	protected String watermarkText;
-	/**
-	 * 文字水印配置（与图片水印互斥）。
-	 *
-	 * @since 1.0.0
-	 */
-	protected TextWatermarkOption watermarkTextOption = new TextWatermarkOption();
+
 	/**
 	 * 模糊半径（像素）。
 	 *
@@ -166,26 +169,6 @@ public class BufferedImageOperation extends ImageOperation {
 	}
 
 	/**
-	 * 获取文字水印内容（与图片水印互斥）。
-	 *
-	 * @return 文字水印文本，未设置或被图片水印清空时为 {@code null}
-	 * @since 1.0.0
-	 */
-	public @Nullable String getWatermarkText() {
-		return watermarkText;
-	}
-
-	/**
-	 * 获取文字水印配置选项。
-	 *
-	 * @return 文字水印配置（非空）
-	 * @since 1.0.0
-	 */
-	public TextWatermarkOption getWatermarkTextOption() {
-		return watermarkTextOption;
-	}
-
-	/**
 	 * 获取缩放重采样滤镜类型。
 	 *
 	 * @return 重采样滤镜类型，未设置时为 {@code null}
@@ -219,156 +202,6 @@ public class BufferedImageOperation extends ImageOperation {
 		public BufferedImageOperationBuilder resampleFilter(ResampleFilter resampleFilter) {
 			if (Objects.nonNull(resampleFilter)) {
 				imageOperation.resampleFilterType = resampleFilter.getFilterType();
-			}
-			return this;
-		}
-
-		@Override
-		protected void onSetWatermarkImage() {
-			imageOperation.watermarkText = null;
-		}
-
-		/**
-		 * 使用文字水印（与图片水印互斥）。
-		 *
-		 * <p>参数校验规则：如果 {@code watermarkText} 为空白，则不设置；设置后将图片水印设为 null。</p>
-		 *
-		 * @param watermarkText 水印文本
-		 * @return 构建器本身
-		 * @since 1.0.0
-		 */
-		public BufferedImageOperationBuilder watermarkText(String watermarkText) {
-			if (StringUtils.isNotBlank(watermarkText)) {
-				imageOperation.watermarkText = watermarkText;
-				imageOperation.watermarkImage = null;
-			}
-			return this;
-		}
-
-		/**
-		 * 设置文字水印的透明度。
-		 *
-		 * <p>参数校验规则：如果 {@code opacity} 为 null，则不设置；取值范围 0-1。</p>
-		 *
-		 * @param opacity 透明度（0-1）
-		 * @return 构建器本身
-		 * @since 1.0.0
-		 */
-		public BufferedImageOperationBuilder watermarkTextOpacity(Float opacity) {
-			if (Objects.nonNull(opacity)) {
-				imageOperation.watermarkTextOption.setOpacity(opacity);
-			}
-			return this;
-		}
-
-		/**
-		 * 设置文字水印字体名称。
-		 *
-		 * <p>参数校验规则：无空值校验，直接写入；建议传入非空白的可用字体名称，以避免字体解析失败。</p>
-		 *
-		 * @param fontName 字体名称（建议非空白）
-		 * @return 构建器本身
-		 * @since 1.0.0
-		 */
-		public BufferedImageOperationBuilder watermarkTextFontName(String fontName) {
-			imageOperation.watermarkTextOption.setFontName(fontName);
-			return this;
-		}
-
-		/**
-		 * 设置文字水印字体样式。
-		 *
-		 * <p>参数校验规则：如果 {@code fontStyle} 为 null，则不设置。</p>
-		 * <p>取值说明：样式码为整数（例如常见的粗体/斜体等，具体取值由实现定义）。</p>
-		 *
-		 * @param fontStyle 字体样式码（整数）
-		 * @return 构建器本身
-		 * @since 1.0.0
-		 */
-		public BufferedImageOperationBuilder watermarkTextFontStyle(Integer fontStyle) {
-			if (Objects.nonNull(fontStyle)) {
-				imageOperation.watermarkTextOption.setFontStyle(fontStyle);
-			}
-			return this;
-		}
-
-		/**
-		 * 设置文字水印字体大小比例（相对原图的长边）。
-		 *
-		 * <p>参数校验规则：如果 {@code fontSizeRatio} 为 null 或 &le; 0，则不设置。</p>
-		 * <p>取值说明：比例为正数，比例越大字号越大。</p>
-		 *
-		 * @param fontSizeRatio 字号比例
-		 * @return 构建器本身
-		 * @since 1.0.0
-		 */
-		public BufferedImageOperationBuilder watermarkTextFontSizeRatio(Double fontSizeRatio) {
-			if (Objects.nonNull(fontSizeRatio) && fontSizeRatio > 0) {
-				imageOperation.watermarkTextOption.setFontSizeRatio(fontSizeRatio);
-			}
-			return this;
-		}
-
-		/**
-		 * 设置文字水印的填充颜色。
-		 *
-		 * <p>参数校验规则：如果 {@code fillColor} 为 null，则不设置。</p>
-		 *
-		 * @param fillColor 填充颜色
-		 * @return 构建器本身
-		 * @since 1.0.0
-		 */
-		public BufferedImageOperationBuilder watermarkTextFillColor(Color fillColor) {
-			if (Objects.nonNull(fillColor)) {
-				imageOperation.watermarkTextOption.setFillColor(fillColor);
-			}
-			return this;
-		}
-
-		/**
-		 * 设置文字水印的描边颜色。
-		 *
-		 * <p>参数校验规则：如果 {@code strokeColor} 为 null，则不设置。</p>
-		 *
-		 * @param strokeColor 描边颜色
-		 * @return 构建器本身
-		 * @since 1.0.0
-		 */
-		public BufferedImageOperationBuilder watermarkTextStrokeColor(Color strokeColor) {
-			if (Objects.nonNull(strokeColor)) {
-				imageOperation.watermarkTextOption.setStrokeColor(strokeColor);
-			}
-			return this;
-		}
-
-		/**
-		 * 设置文字水印的描边宽度。
-		 *
-		 * <p>参数校验规则：如果 {@code strokeWidth} 为 null 或 ≤ 0，则不设置。</p>
-		 *
-		 * @param strokeWidth 描边宽度
-		 * @return 构建器本身
-		 * @since 1.0.0
-		 */
-		public BufferedImageOperationBuilder watermarkTextStrokeWidth(Float strokeWidth) {
-			if (Objects.nonNull(strokeWidth)) {
-				imageOperation.watermarkTextOption.setStrokeWidth(strokeWidth);
-			}
-			return this;
-		}
-
-		/**
-		 * 设置是否启用文字水印的描边效果。
-		 *
-		 * <p>参数校验规则：如果 {@code stroke} 为 null，则不设置。</p>
-		 *
-		 * @param stroke 是否描边
-		 * @return 构建器本身
-		 * @since 1.0.0
-		 */
-		public BufferedImageOperationBuilder watermarkTextStroke(Boolean stroke) {
-			if (Objects.nonNull(stroke)) {
-				imageOperation.watermarkTextOption.setStroke(stroke);
 			}
 			return this;
 		}

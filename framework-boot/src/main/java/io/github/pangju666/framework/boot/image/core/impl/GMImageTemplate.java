@@ -19,6 +19,7 @@ package io.github.pangju666.framework.boot.image.core.impl;
 import io.github.pangju666.commons.image.model.ImageSize;
 import io.github.pangju666.commons.io.utils.FileUtils;
 import io.github.pangju666.commons.io.utils.FilenameUtils;
+import io.github.pangju666.commons.lang.utils.RegExUtils;
 import io.github.pangju666.framework.boot.image.core.ImageTemplate;
 import io.github.pangju666.framework.boot.image.enums.CropType;
 import io.github.pangju666.framework.boot.image.exception.ImageOperationException;
@@ -31,6 +32,7 @@ import io.github.pangju666.framework.boot.image.model.ImageOperation;
 import io.github.pangju666.framework.boot.image.utils.ImageOperationBuilders;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.tika.Tika;
 import org.gm4java.engine.GMConnection;
 import org.gm4java.engine.GMException;
@@ -40,12 +42,12 @@ import org.gm4java.im4java.GMOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
-import org.springframework.util.CollectionUtils;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
+import java.util.regex.Pattern;
 
 /**
  * 基于 <a href="http://www.graphicsmagick.org/index.html">GraphicsMagick</a> 的图像处理实现。
@@ -178,6 +180,20 @@ public class GMImageTemplate implements ImageTemplate {
 	protected static final Logger LOGGER = LoggerFactory.getLogger(GMImageTemplate.class);
 
 	/**
+	 * 未知的方向
+	 *
+	 * @since 1.0.0
+	 */
+	protected static final String UNKNOWN_ORIENTATION = "Orientation:Unknown";
+	/**
+	 * 用于解析 GM identify 命令输出的图像几何尺寸正则表达式。
+	 *
+	 * <p>匹配格式：{@code  widthxheight+0+0} (注意开头空格)</p>
+	 *
+	 * @since 1.0.0
+	 */
+	protected static final Pattern GEOMETRY_REGEX = Pattern.compile(" \\d+x\\d+\\+0\\+0");
+	/**
 	 * GM 文字绘制参数格式（坐标与文本）。
 	 *
 	 * <p>示例：text x y 'content'</p>
@@ -186,13 +202,13 @@ public class GMImageTemplate implements ImageTemplate {
 	 */
 	protected static final String DRAW_TEXT_ARG_FORMAT = "\"text %d %d '%s'\"";
 	/**
-	 * RGBA 填充颜色格式字符串。
+	 * RGBA 颜色格式字符串。
 	 *
 	 * <p>示例：rgba(r,g,b,opacity)，透明度范围 0-1。</p>
 	 *
 	 * @since 1.0.0
 	 */
-	protected static final String FILL_COLOR_FORMAT = "rgba(%d,%d,%d,%.1f)";
+	protected static final String COLOR_FORMAT = "rgba(%d,%d,%d,%.1f)";
 
 	/**
 	 * GM 连接池服务，用于执行 GM 命令。
@@ -212,7 +228,7 @@ public class GMImageTemplate implements ImageTemplate {
 	 * @return 图像信息
 	 * @throws UnSupportedTypeException 图像类型不受支持时抛出
 	 * @throws ImageParsingException    尺寸解析失败时抛出
-	 * @throws ImageOperationException  GM命令执行失败或与GM进程通信错误时抛出
+	 * @throws ImageOperationException  GM 命令执行失败或与 GM 进程通信错误时抛出
 	 * @throws IOException              文件读取失败时抛出
 	 */
 	@Override
@@ -227,34 +243,64 @@ public class GMImageTemplate implements ImageTemplate {
 		operation.verbose();
 		operation.addImage(file);
 
-		String result = execute(operation);
-		for (String metaData : result.lines().toList()) {
-			String metaDataStrip = metaData.strip();
-			if (metaDataStrip.startsWith("Geometry:")) {
-				String geometry = StringUtils.substringAfter(metaDataStrip, "Geometry:").strip();
-				if (StringUtils.isBlank(geometry)) {
-					throw new ImageParsingException(file, "尺寸解析失败");
+		Integer width = null;
+		Integer height = null;
+		Integer orientation = null;
+
+		try {
+			String result = doExecute(operation);
+			for (String metaData : result.lines().toList()) {
+				String metaDataStrip = metaData.strip();
+				if (metaDataStrip.startsWith("Geometry:")) {
+					String geometry = StringUtils.substringAfter(metaDataStrip, "Geometry:").strip();
+					if (StringUtils.isBlank(geometry)) {
+						throw new ImageParsingException(file, "尺寸解析失败");
+					}
+					try {
+						String[] geometryValue = geometry.split("x");
+						width = Integer.parseInt(geometryValue[0]);
+						height = Integer.parseInt(geometryValue[1]);
+					} catch (NumberFormatException e) {
+						throw new ImageParsingException(file, "尺寸解析失败");
+					}
+				} else if (metaDataStrip.startsWith("Orientation:")) {
+					if (!metaDataStrip.equals(UNKNOWN_ORIENTATION)) {
+						try {
+							String orientationStr = StringUtils.substringAfter(metaDataStrip.strip(),
+								"Orientation:").strip();
+							orientation = Integer.parseInt(orientationStr);
+						} catch (NumberFormatException ignored) {
+						}
+					}
 				}
-				try {
-					String[] geometryValue = geometry.split("x");
-					imageFile.setImageSize(new ImageSize(Integer.parseInt(geometryValue[0]),
-						Integer.parseInt(geometryValue[1])));
-				} catch (NumberFormatException e) {
-					throw new ImageParsingException(file, "尺寸解析失败");
+			}
+		} catch (GMException ignored) {
+			operation = new GMOperation();
+			operation.addRawArg("identify");
+			operation.addImage(file);
+			try {
+				String result = doExecute(operation);
+				List<String> geometryResult = RegExUtils.find(GEOMETRY_REGEX, result);
+				if (!geometryResult.isEmpty()) {
+					String[] geometryValue = StringUtils.substringBefore(geometryResult.get(0), "+").strip()
+						.split("x");
+					width = Integer.parseInt(geometryValue[0]);
+					height = Integer.parseInt(geometryValue[1]);
 				}
-			} else if (metaDataStrip.startsWith("Orientation:")) {
-				try {
-					String orientationStr = StringUtils.substringAfter(metaDataStrip.strip(), "Orientation:").strip();
-					imageFile.setOrientation(Integer.parseInt(orientationStr));
-				} catch (NumberFormatException ignored) {
-				}
+			} catch (GMException ex) {
+				throw new ImageOperationException("GM命令: " + operation + " 执行失败", ex);
 			}
 		}
 
-		// 返回经 EXIF Orientation 矫正后的显示尺寸（视觉尺寸）
-		if (imageFile.getOrientation() >= 5 && imageFile.getOrientation() <= 8) {
-			imageFile.setImageSize(new ImageSize(imageFile.getImageSize().getHeight(), imageFile.getImageSize().getWidth()));
+		if (ObjectUtils.anyNull(width, height)) {
+			throw new ImageParsingException(file, "尺寸解析失败");
 		}
+		if (Objects.nonNull(orientation)) {
+			imageFile.setImageSize(new ImageSize(width, height, orientation));
+		} else {
+			imageFile.setImageSize(new ImageSize(width, height));
+		}
+
 		return imageFile;
 	}
 
@@ -470,7 +516,7 @@ public class GMImageTemplate implements ImageTemplate {
 			throw new UnSupportedTypeException("不支持读取 " + format + " 格式图片");
 		}
 
-		if (imageFile.getOrientation() < 1 || imageFile.getOrientation() > 8 || Objects.isNull(imageFile.getImageSize())) {
+		if (Objects.isNull(imageFile.getImageSize())) {
 			imageFile = read(imageFile.getFile());
 		}
 
@@ -514,101 +560,14 @@ public class GMImageTemplate implements ImageTemplate {
 	 *
 	 * @param operation GM 操作对象
 	 * @return 命令执行输出
-	 * @throws ImageOperationException GM命令执行失败或与GM进程通信错误时抛出
+	 * @throws ImageOperationException GM 命令执行失败或与 GM 进程通信错误时抛出
 	 * @since 1.0.0
 	 */
 	public String execute(GMOperation operation) {
-		Assert.notNull(operation, "operation 不可为 null");
-
-		GMConnection connection = null;
 		try {
-			connection = pooledGMService.getConnection();
-			return connection.execute(operation.toString());
-		} catch (GMServiceException e) {
-			throw new ImageOperationException("与GM进程通信时出现错误", e);
+			return doExecute(operation);
 		} catch (GMException | IOException e) {
 			throw new ImageOperationException("GM命令: " + operation + " 执行失败", e);
-		} finally {
-			if (Objects.nonNull(connection)) {
-				try {
-					connection.close();
-				} catch (GMServiceException e) {
-					LOGGER.error("GM进程关闭时出现错误", e);
-				}
-			}
-		}
-	}
-
-	/**
-	 * 执行 GM 命令。
-	 *
-	 * <p>参数校验规则：</p>
-	 * <p>如果 {@code command} 为空，则不执行并抛出异常；如果 {@code arguments} 为空，则不设置附加参数。</p>
-	 * <p>释放策略：使用连接池获取连接，始终在 {@code finally} 中关闭连接。</p>
-	 *
-	 * @param command   GM 命令
-	 * @param arguments GM 命令附加参数，可为空
-	 * @return 命令执行结果输出
-	 * @throws ImageOperationException GM命令执行失败或与GM进程通信错误时抛出
-	 * @since 1.0.0
-	 */
-	public String execute(String command, String... arguments) {
-		Assert.hasText(command, "command 不可为空");
-
-		GMConnection connection = null;
-		try {
-			connection = pooledGMService.getConnection();
-			return connection.execute(command, arguments);
-		} catch (GMServiceException e) {
-			throw new ImageOperationException("与GM进程通信时出现错误", e);
-		} catch (GMException | IOException e) {
-			throw new ImageOperationException("GM命令: " + command + StringUtils.SPACE +
-				StringUtils.joinWith(StringUtils.SPACE, command) + " 执行失败", e);
-		} finally {
-			if (Objects.nonNull(connection)) {
-				try {
-					connection.close();
-				} catch (GMServiceException e) {
-					LOGGER.error("GM进程关闭时出现错误", e);
-				}
-			}
-		}
-	}
-
-	/**
-	 * 执行 GM 命令列表。
-	 *
-	 * <p>参数校验规则：</p>
-	 * <p>如果 {@code command} 为空，则不执行并返回空字符串。</p>
-	 * <p>释放策略：使用连接池获取连接，始终在 {@code finally} 中关闭连接。</p>
-	 *
-	 * @param command GM 命令及参数列表
-	 * @return 命令执行结果输出；当输入为空时返回空字符串
-	 * @throws ImageOperationException GM命令执行失败或与GM进程通信错误时抛出
-	 * @since 1.0.0
-	 */
-	public String execute(List<String> command) {
-		if (CollectionUtils.isEmpty(command)) {
-			return StringUtils.EMPTY;
-		}
-
-		GMConnection connection = null;
-		try {
-			connection = pooledGMService.getConnection();
-			return connection.execute(command);
-		} catch (GMServiceException e) {
-			throw new ImageOperationException("与GM进程通信时出现错误", e);
-		} catch (GMException | IOException e) {
-			throw new ImageOperationException("GM命令: " + StringUtils.join(command, StringUtils.SPACE) +
-				" 执行失败", e);
-		} finally {
-			if (Objects.nonNull(connection)) {
-				try {
-					connection.close();
-				} catch (GMServiceException e) {
-					LOGGER.error("GM进程关闭时出现错误", e);
-				}
-			}
 		}
 	}
 
@@ -734,11 +693,12 @@ public class GMImageTemplate implements ImageTemplate {
 		} else {
 			// 不需要裁剪、翻转、矫正方向和模糊时可以直接执行composite命令完成操作
 			if (ObjectUtils.allNull(operation.getCropType(), operation.getFlipDirection()) &&
-				imageFile.getOrientation() == ImageConstants.NORMAL_EXIF_ORIENTATION &&
+				(Objects.isNull(imageFile.getImageSize().getOrientation()) ||
+					imageFile.getImageSize().getOrientation() == ImageConstants.NORMAL_EXIF_ORIENTATION) &&
 				(Objects.isNull(gmImageOperation) || Objects.isNull(gmImageOperation.getBlurPair()))) {
 				executeComposite(imageFile.getFile(), imageSize, outputFile, operation, gmImageOperation);
 			} else {
-				File tmpOuputFile = new File(FileUtils.getTempDirectory(), outputFile.getName());
+				File tmpOuputFile = new File(FileUtils.getTempDirectory(), "tmp_" + outputFile.getName());
 				// 先执行convert命令
 				executeConvert(imageFile.getFile(), imageSize, tmpOuputFile, operation, gmImageOperation);
 
@@ -885,16 +845,17 @@ public class GMImageTemplate implements ImageTemplate {
 		// 判断是否需要添加文字水印
 		if (Objects.nonNull(gmImageOperation) && ObjectUtils.allNotNull(
 			gmImageOperation.getWatermarkTextFontName(), gmImageOperation.getWatermarkText())) {
+			int fontSize = operation.getWatermarkTextOption().getFontSizeStrategy().apply(imageSize);
 			if (Objects.nonNull(operation.getWatermarkDirection())) {
 				setGravityArg(operation, gmOperation);
-				setTextWatermarkArgs(imageSize, gmImageOperation, gmOperation);
-				gmOperation.draw(String.format(DRAW_TEXT_ARG_FORMAT, 20, 20, gmImageOperation.getWatermarkText()));
+				setTextWatermarkArgs(fontSize, gmImageOperation, gmOperation);
+				gmOperation.draw(String.format(DRAW_TEXT_ARG_FORMAT, 20, 20 + fontSize, gmImageOperation.getWatermarkText()));
 			} else if (ObjectUtils.allNotNull(operation.getWatermarkX(), operation.getWatermarkY())) {
 				// 设置左上角为原点
 				gmOperation.gravity(GMOperation.Gravity.NorthWest);
-				setTextWatermarkArgs(imageSize, gmImageOperation, gmOperation);
+				setTextWatermarkArgs(fontSize, gmImageOperation, gmOperation);
 				gmOperation.draw(String.format(DRAW_TEXT_ARG_FORMAT, operation.getWatermarkX(),
-					operation.getWatermarkY(), gmImageOperation.getWatermarkText()));
+					operation.getWatermarkY() + fontSize, gmImageOperation.getWatermarkText()));
 			}
 		}
 
@@ -1011,27 +972,33 @@ public class GMImageTemplate implements ImageTemplate {
 	}
 
 	/**
-	 * 设置文字水印相关参数（字体、字号、填充颜色等）。
+	 * 设置文字水印相关参数（字体、字号、填充颜色、描边颜色、描边宽度）。
 	 *
-	 * @param imageSize 原始图片尺寸
+	 * @param fontSize 字体大小（单位：pt）
 	 * @param operation   操作配置
 	 * @param gmOperation GM 操作对象
 	 * @since 1.0.0
 	 */
-	protected void setTextWatermarkArgs(ImageSize imageSize, GMImageOperation operation, GMOperation gmOperation) {
-		gmOperation.font(operation.getWatermarkTextFontName());
-		// 计算字体大小
-		if (imageSize.getWidth() > imageSize.getHeight()) {
-			gmOperation.pointsize((int) Math.round(imageSize.getWidth() * operation.getWatermarkTextFontSizeRatio()));
-		} else {
-			gmOperation.pointsize((int) Math.round(imageSize.getHeight() * operation.getWatermarkTextFontSizeRatio()));
+	protected void setTextWatermarkArgs(int fontSize, GMImageOperation operation, GMOperation gmOperation) {
+		String fillColor = COLOR_FORMAT.formatted(
+			operation.getWatermarkTextOption().getFillColor().getRed(),
+			operation.getWatermarkTextOption().getFillColor().getGreen(),
+			operation.getWatermarkTextOption().getFillColor().getBlue(),
+			operation.getWatermarkTextOption().getOpacity());
+		gmOperation.fill(fillColor);
+
+		if (operation.getWatermarkTextOption().isStroke()) {
+			String strokeColor = COLOR_FORMAT.formatted(
+				operation.getWatermarkTextOption().getStrokeColor().getRed(),
+				operation.getWatermarkTextOption().getStrokeColor().getGreen(),
+				operation.getWatermarkTextOption().getStrokeColor().getBlue(),
+				operation.getWatermarkTextOption().getOpacity());
+			gmOperation.stroke(strokeColor);
+			gmOperation.strokewidth((int) operation.getWatermarkTextOption().getStrokeWidth());
 		}
 
-		String fillColor = FILL_COLOR_FORMAT.formatted(operation.getWatermarkTextColor().getRed(),
-			operation.getWatermarkTextColor().getGreen(),
-			operation.getWatermarkTextColor().getBlue(),
-			operation.getWatermarkTextOpacity());
-		gmOperation.fill(fillColor);
+		gmOperation.font(operation.getWatermarkTextFontName());
+		gmOperation.pointsize(fontSize);
 	}
 
 	/**
@@ -1076,24 +1043,26 @@ public class GMImageTemplate implements ImageTemplate {
 	protected void setWatermarkImageGeometryArg(ImageSize inputImageSize, ImageOperation operation, Integer x, Integer y,
 												GMOperation gmOperation) {
 		ImageSize scaleWatermarkImageSize = inputImageSize.scale(operation.getWatermarkImageOption().getRelativeScale());
+		Pair<ImageSize, ImageSize> waterImageSizeRange = operation.getWatermarkImageOption().getSizeLimitStrategy()
+			.apply(inputImageSize);
 		if (scaleWatermarkImageSize.getWidth() > scaleWatermarkImageSize.getHeight()) {
-			if (scaleWatermarkImageSize.getWidth() > operation.getWatermarkImageOption().getMaxWidth()) {
-				gmOperation.addRawArg("-geometry " + operation.getWatermarkImageOption().getMaxWidth() +
-					"x" + operation.getWatermarkImageOption().getMaxHeight() + "+" + x + "+" + y);
-			} else if (scaleWatermarkImageSize.getWidth() < operation.getWatermarkImageOption().getMinWidth()) {
-				gmOperation.addRawArg("-geometry " + operation.getWatermarkImageOption().getMinWidth() +
-					"x" + operation.getWatermarkImageOption().getMinHeight() + "+" + x + "+" + y);
+			if (scaleWatermarkImageSize.getWidth() > waterImageSizeRange.getRight().getWidth()) {
+				gmOperation.addRawArg("-geometry " + waterImageSizeRange.getRight().getWidth() +
+					"x" + waterImageSizeRange.getRight().getHeight() + "+" + x + "+" + y);
+			} else if (scaleWatermarkImageSize.getWidth() < waterImageSizeRange.getLeft().getWidth()) {
+				gmOperation.addRawArg("-geometry " + waterImageSizeRange.getLeft().getWidth() +
+					"x" + waterImageSizeRange.getLeft().getHeight() + "+" + x + "+" + y);
 			} else {
 				gmOperation.addRawArg("-geometry " + scaleWatermarkImageSize.getWidth() + "x" +
 					scaleWatermarkImageSize.getHeight() + "+" + x + "+" + y);
 			}
 		} else {
-			if (scaleWatermarkImageSize.getHeight() > operation.getWatermarkImageOption().getMaxHeight()) {
-				gmOperation.addRawArg("-geometry " + operation.getWatermarkImageOption().getMaxWidth() +
-					"x" + operation.getWatermarkImageOption().getMaxHeight() + "+" + x + "+" + y);
-			} else if (scaleWatermarkImageSize.getHeight() < operation.getWatermarkImageOption().getMinHeight()) {
-				gmOperation.addRawArg("-geometry " + operation.getWatermarkImageOption().getMinWidth() +
-					"x" + operation.getWatermarkImageOption().getMinHeight() + "+" + x + "+" + y);
+			if (scaleWatermarkImageSize.getHeight() > waterImageSizeRange.getRight().getHeight()) {
+				gmOperation.addRawArg("-geometry " + waterImageSizeRange.getRight().getWidth() +
+					"x" + waterImageSizeRange.getRight().getHeight() + "+" + x + "+" + y);
+			} else if (scaleWatermarkImageSize.getHeight() < waterImageSizeRange.getLeft().getHeight()) {
+				gmOperation.addRawArg("-geometry " + waterImageSizeRange.getLeft().getWidth() +
+					"x" + waterImageSizeRange.getLeft().getHeight() + "+" + x + "+" + y);
 			} else {
 				gmOperation.addRawArg("-geometry " + scaleWatermarkImageSize.getWidth() + "x" +
 					scaleWatermarkImageSize.getHeight() + "+" + x + "+" + y);
@@ -1138,5 +1107,36 @@ public class GMImageTemplate implements ImageTemplate {
 
 		// 创建父目录
 		FileUtils.forceMkdirParent(outputFile);
+	}
+
+	/**
+	 * 执行 GM 命令。
+	 *
+	 * <p><b>机制</b>：从连接池获取连接 -> 执行命令 -> 确保连接关闭。</p>
+	 * <p><b>异常处理</b>：捕获连接关闭异常并记录日志，但不中断主流程。</p>
+	 *
+	 * @param operation GM 命令对象
+	 * @return 命令执行的标准输出结果
+	 * @throws IOException        IO 异常
+	 * @throws GMException        GM 命令执行异常（如命令语法错误、文件不存在）
+	 * @throws ImageOperationException 与 GM 进程通信错误时抛出
+	 * @since 1.0.0
+	 */
+	protected String doExecute(GMOperation operation) throws IOException, GMException {
+		GMConnection connection = null;
+		try {
+			connection = pooledGMService.getConnection();
+			return connection.execute(operation.toString());
+		} catch (GMServiceException e) {
+			throw new ImageOperationException("与 GM 进程通信时出现错误", e);
+		} finally {
+			if (Objects.nonNull(connection)) {
+				try {
+					connection.close();
+				} catch (GMServiceException e) {
+					LOGGER.error("GM 进程关闭时出现错误", e);
+				}
+			}
+		}
 	}
 }

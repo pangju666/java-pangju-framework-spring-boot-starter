@@ -17,10 +17,8 @@
 package io.github.pangju666.framework.boot.autoconfigure.image;
 
 import io.github.pangju666.commons.image.model.ImageSize;
-import io.github.pangju666.framework.boot.autoconfigure.task.OnceTaskExecutorAutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
-import org.springframework.boot.autoconfigure.task.TaskExecutionAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Import;
 
@@ -42,7 +40,7 @@ import org.springframework.context.annotation.Import;
  * @since 1.0.0
  * @author pangju666
  */
-@AutoConfiguration(after = {OnceTaskExecutorAutoConfiguration.class, TaskExecutionAutoConfiguration.class})
+@AutoConfiguration
 @ConditionalOnClass({ImageSize.class})
 @EnableConfigurationProperties(ImageProperties.class)
 @Import({GMConfiguration.class, ImageIOConfiguration.class})

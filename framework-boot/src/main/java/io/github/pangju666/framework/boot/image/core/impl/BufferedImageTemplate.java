@@ -17,9 +17,6 @@
 package io.github.pangju666.framework.boot.image.core.impl;
 
 import com.drew.imaging.ImageMetadataReader;
-import com.drew.imaging.ImageProcessingException;
-import com.drew.metadata.Metadata;
-import com.twelvemonkeys.image.ImageUtil;
 import io.github.pangju666.commons.image.utils.ImageEditor;
 import io.github.pangju666.commons.image.utils.ImageUtils;
 import io.github.pangju666.commons.io.utils.FileUtils;
@@ -103,22 +100,27 @@ public class BufferedImageTemplate implements ImageTemplate {
 	 */
 	@Override
 	public ImageFile read(File file) throws IOException {
-		ImageFile imageFile = ImageFile.fromFile(file);
-		if (!ImageConstants.getSupportedReadImageTypes().contains(imageFile.getMimeType())) {
-			throw new UnSupportedTypeException("不支持读取 " + imageFile.getMimeType() + " 类型图片");
+		ImageFile imageFile = new ImageFile(file);
+
+		try {
+			imageFile.setMimeType(FileUtils.getMimeType(file));
+			if (!ImageConstants.getSupportedReadImageTypes().contains(imageFile.getMimeType())) {
+				throw new UnSupportedTypeException("不支持读取 " + imageFile.getMimeType() + " 类型图片");
+			}
+		} catch (IOException e) {
+			throw new ImageParsingException(file, "类型解析失败", e);
 		}
 
 		try {
-			Metadata metadata = ImageMetadataReader.readMetadata(file);
-			imageFile.setOrientation(ImageUtils.getExifOrientation(metadata));
-			imageFile.setImageSize(ImageUtils.getSize(metadata));
-		} catch (ImageProcessingException | IOException ignored) {
-			imageFile.setOrientation(ImageConstants.NORMAL_EXIF_ORIENTATION);
-			try {
-				imageFile.setImageSize(ImageUtils.getSize(file, false));
-			} catch (IOException e) {
-				throw new ImageParsingException(file, "尺寸解析失败");
-			}
+			imageFile.setImageSize(ImageUtils.getSize(file));
+		} catch (IOException e) {
+			throw new ImageParsingException(file, "尺寸解析失败");
+		}
+
+		try {
+			imageFile.setDigest(FileUtils.computeDigest(file));
+		} catch (IOException e) {
+			throw new ImageParsingException(file, "摘要计算失败", e);
 		}
 		return imageFile;
 	}
@@ -160,7 +162,7 @@ public class BufferedImageTemplate implements ImageTemplate {
 	 * @param operation  操作配置，可为 {@code null}
 	 * @throws UnSupportedTypeException 图像类型不受支持时抛出
 	 * @throws ImageParsingException    图像类型、摘要或尺寸解析失败时抛出
-	 * @throws ImageOperationException  ImageIO操作失败时抛出
+	 * @throws ImageOperationException  ImageIO 操作失败时抛出
 	 * @throws IOException              文件读取或图像解码失败时抛出
 	 */
 	@Override
@@ -169,7 +171,7 @@ public class BufferedImageTemplate implements ImageTemplate {
 
 		String outputImageFormat = getOutputFormat(outputFile);
 
-		if (imageFile.getOrientation() < 1 || imageFile.getOrientation() > 8 || Objects.isNull(imageFile.getImageSize())) {
+		if (Objects.isNull(imageFile.getImageSize())) {
 			imageFile = read(imageFile.getFile());
 		}
 
@@ -252,9 +254,8 @@ public class BufferedImageTemplate implements ImageTemplate {
 	 * @throws IOException              ImageIO操作失败时抛出
 	 */
 	protected void doProcess(ImageFile imageFile, File outputFile, String outputFormat, ImageOperation operation) throws IOException {
-		ImageEditor imageEditor = ImageEditor.of(imageFile.getFile())
-			// 矫正方向
-			.correctOrientation(imageFile.getOrientation())
+		ImageEditor imageEditor = ImageEditor.of(imageFile.getFile(), ObjectUtils.getIfNull(
+			imageFile.getImageSize().getOrientation(), ImageConstants.NORMAL_EXIF_ORIENTATION))
 			.outputFormat(outputFormat);
 
 		BufferedImageOperation bufferedImageOperation = null;
@@ -311,10 +312,7 @@ public class BufferedImageTemplate implements ImageTemplate {
 
 		// 判断是否需要翻转
 		if (Objects.nonNull(operation.getFlipDirection())) {
-			switch (operation.getFlipDirection()) {
-				case VERTICAL -> imageEditor.flip(ImageUtil.FLIP_VERTICAL);
-				case HORIZONTAL -> imageEditor.flip(ImageUtil.FLIP_HORIZONTAL);
-			}
+			imageEditor.flip(operation.getFlipDirection());
 		}
 
 		// 判断是否需要灰度化

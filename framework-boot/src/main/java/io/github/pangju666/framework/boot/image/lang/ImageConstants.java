@@ -53,12 +53,18 @@ public class ImageConstants extends io.github.pangju666.commons.image.lang.Image
 	 * @since 1.0.0
 	 */
 	public static final Set<String> GRAPHICS_MAGICK_SUPPORTED_WRITE_IMAGE_FORMAT_SET = Set.of(
-		"AAI", "ART", "AVS", "BMP", "CMYK", "DCX", "DIB", "DPX", "EPDF", "EPI", "EPS", "EPS2", "EPS3", "EPSF", "EPSI",
-		"EPT", "FAX", "FITS", "FPX", "GIF", "GRAY", "GRAYA", "HTML", "HRZ", "JBIG", "BIE", "JPG", "JNG",  "JP2", "JPC",
-		"JPEG", "JXL", "MAT", "MIFF", "MONO", "MNG", "MPEG", "M2V", "MPC", "MSL", "MTV", "MVG", "OTB", "P7", "PALM",
-		"PAM", "PBM", "PCD", "PCDS", "PCL", "PCX", "PDB", "PDF", "PGM", "PICON", "PICT", "PNG", "PNM", "PPM", "PS", "PS2",
-		"PS3", "PSD", "PTIF", "RGB", "RGBA", "SGI", "SHTML", "SUN", "SVG", "TGA", "ICB", "VDA", "VST", "TIFF", "TIF",
-		"TXT", "UIL", "UYVY", "VICAR", "VIFF", "WBMP", "WEBP", "XBM", "XPM", "XWD", "YUV"
+		"aai", "art", "avs", "bmp", "cmyk", "dcx", "dib", "dpx", "epdf", "epi", "eps", "eps2", "eps3", "epsf", "epsi",
+		"ept", "fax", "fits", "fpx", "gif", "gray", "graya", "html", "hrz", "jbig", "bie", "jpg", "jng",  "jp2", "jpc",
+		"jpeg", "jxl", "mat", "miff", "mono", "mng", "mpeg", "m2v", "mpc", "msl", "mtv", "mvg", "otb", "p7", "palm",
+		"pam", "pbm", "pcd", "pcds", "pcl", "pcx", "pdb", "pdf", "pgm", "picon", "pict", "png", "pnm", "ppm", "ps",
+		"ps2", "ps3", "psd", "ptif", "rgb", "rgba", "sgi", "shtml", "sun", "svg", "tga", "icb", "vda", "vst", "tiff",
+		"tif", "txt", "uil", "uyvy", "vicar", "viff", "wbmp", "webp", "xbm", "xpm", "xwd", "yuv", "AAI", "ART", "AVS",
+		"BMP", "CMYK", "DCX", "DIB", "DPX", "EPDF", "EPI", "EPS", "EPS2", "EPS3", "EPSF", "EPSI", "EPT", "FAX", "FITS",
+		"FPX", "GIF", "GRAY", "GRAYA", "HTML", "HRZ", "JBIG", "BIE", "JPG", "JNG",  "JP2", "JPC", "JPEG", "JXL", "MAT",
+		"MIFF", "MONO", "MNG", "MPEG", "M2V", "MPC", "MSL", "MTV", "MVG", "OTB", "P7", "PALM", "PAM", "PBM", "PCD",
+		"PCDS", "PCL", "PCX", "PDB", "PDF", "PGM", "PICON", "PICT", "PNG", "PNM", "PPM", "PS", "PS2", "PS3", "PSD",
+		"PTIF", "RGB", "RGBA", "SGI", "SHTML", "SUN", "SVG", "TGA", "ICB", "VDA", "VST", "TIFF", "TIF", "TXT", "UIL",
+		"UYVY", "VICAR", "VIFF", "WBMP", "WEBP", "XBM", "XPM", "XWD", "YUV"
 	);
 
 	/**
@@ -69,14 +75,21 @@ public class ImageConstants extends io.github.pangju666.commons.image.lang.Image
 	 * @since 1.0.0
 	 */
 	public static final Set<String> GRAPHICS_MAGICK_SUPPORTED_READ_IMAGE_FORMAT_SET = Set.of(
-		"AAI", "ART", "AVIF", "AVS", "BMP", "CALS", "CIN", "CGM", "CMYK", "CUR", "CUT", "DCM", "DCX", "DIB", "DPX",
-		"EMF", "EPDF", "EPI", "EPS", "EPSF", "EPSI", "EPT", "FAX", "FIG", "FITS", "FPX", "GIF", "GRAY", "GRAYA", "HEIF",
-		"HPGL", "HTML", "HRZ", "ICO", "JBIG", "BIE", "JPG", "JNG",  "JP2", "JPC", "JPEG", "JXL", "MAN", "MAT",
-		"MIFF", "MONO", "MNG", "MPEG", "M2V", "MPC", "MSL", "MTV", "MVG", "OTB", "P7", "PALM", "PAM", "PBM", "PCD",
-		"PCDS",  "PCX", "PDB", "PDF", "PFA", "PFB", "PGM", "PICON", "PICT", "PIX", "PNG", "PNM", "PPM", "PS", "PS2",
-		"PS3", "PSD", "PTIF", "PWP", "RAS", "RAD", "RGB", "RGBA", "RLA", "RLE", "SCT", "SFW", "SGI", "SHTML", "SUN",
-		"SVG", "TGA", "ICB", "VDA", "VST", "TIFF", "TIF", "TIM", "TTF", "TXT", "UYVY", "VICAR", "VIFF", "WBMP", "WEBP",
-		"WPG", "XBM", "XCF", "XPM", "XWD", "YUV"
+		"aai", "art", "avif", "avs", "bmp", "cals", "cin", "cgm", "cmyk", "cur", "cut", "dcm", "dcx", "dib", "dpx",
+		"emf", "epdf", "epi", "eps", "epsf", "epsi", "ept", "fax", "fig", "fits", "fpx", "gif", "gray", "graya", "heif",
+		"hpgl", "html", "hrz", "ico", "jbig", "bie", "jpg", "jng",  "jp2", "jpc", "jpeg", "jxl", "man", "mat", "miff",
+		"mono", "mng", "mpeg", "m2v", "mpc", "msl", "mtv", "mvg", "otb", "p7", "palm", "pam", "pbm", "pcd", "pcds",
+		"pcx", "pdb", "pdf", "pfa", "pfb", "pgm", "picon", "pict", "pix", "png", "pnm", "ppm", "ps", "ps2", "ps3",
+		"psd", "ptif", "pwp", "ras", "rad", "rgb", "rgba", "rla", "rle", "sct", "sfw", "sgi", "shtml", "sun", "svg",
+		"tga", "icb", "vda", "vst", "tiff", "tif", "tim", "ttf", "txt", "uyvy", "vicar", "viff", "wbmp", "webp", "wpg",
+		"xbm", "xcf", "xpm", "xwd", "yuv", "AAI", "ART", "AVIF", "AVS", "BMP", "CALS", "CIN", "CGM", "CMYK", "CUR",
+		"CUT", "DCM", "DCX", "DIB", "DPX", "EMF", "EPDF", "EPI", "EPS", "EPSF", "EPSI", "EPT", "FAX", "FIG", "FITS",
+		"FPX", "GIF", "GRAY", "GRAYA", "HEIF", "HPGL", "HTML", "HRZ", "ICO", "JBIG", "BIE", "JPG", "JNG",  "JP2", "JPC",
+		"JPEG", "JXL", "MAN", "MAT", "MIFF", "MONO", "MNG", "MPEG", "M2V", "MPC", "MSL", "MTV", "MVG", "OTB", "P7",
+		"PALM", "PAM", "PBM", "PCD", "PCDS",  "PCX", "PDB", "PDF", "PFA", "PFB", "PGM", "PICON", "PICT", "PIX", "PNG",
+		"PNM", "PPM", "PS", "PS2", "PS3", "PSD", "PTIF", "PWP", "RAS", "RAD", "RGB", "RGBA", "RLA", "RLE", "SCT", "SFW",
+		"SGI", "SHTML", "SUN", "SVG", "TGA", "ICB", "VDA", "VST", "TIFF", "TIF", "TIM", "TTF", "TXT", "UYVY", "VICAR",
+		"VIFF", "WBMP", "WEBP", "WPG", "XBM", "XCF", "XPM", "XWD", "YUV"
 	);
 
 	protected ImageConstants() {
