@@ -104,15 +104,34 @@ import java.lang.annotation.*;
 @Target({ElementType.TYPE, ElementType.METHOD})
 public @interface EncryptResponseBody {
 	/**
-	 * 明文密钥或占位符。
+	 * 加密密钥配置。
 	 *
-	 * <p>支持两种形式：</p>
-	 * <ul>
-	 *   <li>明文密钥：直接传入密钥字符串，例如 {@code @EncryptResponseBody(key = "my-secret-key")}</li>
-	 *   <li>占位符：使用 {@code ${property.name}} 格式，框架将从 Spring 配置读取实际密钥值，例如 {@code @EncryptResponseBody(key = "${app.encryption.key}")}</li>
-	 * </ul>
+	 * <p>支持以下三种配置形式（按优先级尝试解析）：</p>
+	 * <ol>
+	 *   <li><strong>SpEL 表达式</strong>：
+	 *     <ul>
+	 *       <li>格式：SpEL 语法，例如 {@code #headers['My-Secret-Header']}。</li>
+	 *       <li>上下文变量：{@code headers} (请求头 Map)。</li>
+	 *       <li>场景：动态从请求头或其他上下文获取密钥。</li>
+	 *     </ul>
+	 *   </li>
+	 *   <li><strong>Spring 属性占位符</strong>：
+	 *     <ul>
+	 *       <li>格式：{@code ${property.name}}。</li>
+	 *       <li>场景：从 application.yml 或环境变量读取密钥。</li>
+	 *     </ul>
+	 *   </li>
+	 *   <li><strong>明文密钥</strong>：
+	 *     <ul>
+	 *       <li>格式：直接字符串，例如 {@code "my-static-key"}。</li>
+	 *       <li>场景：固定密钥（不推荐生产环境使用）。</li>
+	 *     </ul>
+	 *   </li>
+	 * </ol>
 	 *
-	 * @return 密钥或占位符字符串
+	 * <p><strong>解析逻辑</strong>：优先尝试作为 SpEL 表达式解析；解析结果为空、解析失败或报错时，回退尝试作为属性占位符或明文处理。</p>
+	 *
+	 * @return 密钥配置字符串
 	 * @since 1.0.0
 	 */
 	String key();

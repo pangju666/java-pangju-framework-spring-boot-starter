@@ -21,6 +21,7 @@ import io.github.pangju666.framework.boot.web.annotation.RateLimit;
 import io.github.pangju666.framework.boot.web.exception.RateLimitException;
 import io.github.pangju666.framework.boot.web.limit.RateLimitSourceExtractor;
 import io.github.pangju666.framework.boot.web.limit.RateLimiter;
+import io.github.pangju666.framework.spring.utils.SpELUtils;
 import io.github.pangju666.framework.web.exception.base.ServerException;
 import io.github.pangju666.framework.web.servlet.BaseHttpInterceptor;
 import io.github.pangju666.framework.web.servlet.HttpResponseBuilder;
@@ -31,7 +32,6 @@ import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.EvaluationException;
 import org.springframework.expression.Expression;
 import org.springframework.expression.ParseException;
-import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.web.method.HandlerMethod;
 
@@ -69,12 +69,6 @@ public class RateLimitInterceptor extends BaseHttpInterceptor {
 	 * @since 1.0.0
 	 */
     private final RateLimiter rateLimiter;
-    /**
-	 * SpEL 解析器，用于解析 {@link RateLimit#key()} 表达式。
-	 *
-	 * @since 1.0.0
-	 */
-    private final SpelExpressionParser parser;
 
     /**
      * 初始化拦截器，拦截所有路径（{@code /**}）。
@@ -85,7 +79,6 @@ public class RateLimitInterceptor extends BaseHttpInterceptor {
     public RateLimitInterceptor(RateLimiter requestLimiter) {
         super(Collections.emptySet());
         this.rateLimiter = requestLimiter;
-        this.parser = new SpelExpressionParser();
     }
 
     /**
@@ -142,7 +135,7 @@ public class RateLimitInterceptor extends BaseHttpInterceptor {
 			EvaluationContext context = new StandardEvaluationContext();
 			context.setVariable("request", request);
 			try {
-				Expression expression = parser.parseExpression(annotation.key());
+				Expression expression = SpELUtils.DEFAULT_EXPRESSION_PARSER.parseExpression(annotation.key());
 				keyBuilder.append(expression.getValue(context, String.class));
 			} catch (ParseException | EvaluationException e) {
 				keyBuilder.append(annotation.key());

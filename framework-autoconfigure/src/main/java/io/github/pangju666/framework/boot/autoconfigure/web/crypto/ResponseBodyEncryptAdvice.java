@@ -22,10 +22,12 @@ import io.github.pangju666.framework.boot.crypto.enums.Encoding;
 import io.github.pangju666.framework.boot.crypto.factory.CryptoFactory;
 import io.github.pangju666.framework.boot.crypto.utils.CryptoUtils;
 import io.github.pangju666.framework.boot.web.annotation.EncryptResponseBody;
+import io.github.pangju666.framework.spring.utils.SpELUtils;
 import io.github.pangju666.framework.web.exception.base.ServerException;
 import io.github.pangju666.framework.web.model.Result;
 import jakarta.servlet.Servlet;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jasypt.exceptions.EncryptionOperationNotPossibleException;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -33,6 +35,11 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplicat
 import org.springframework.core.MethodParameter;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
+import org.springframework.expression.EvaluationContext;
+import org.springframework.expression.EvaluationException;
+import org.springframework.expression.Expression;
+import org.springframework.expression.ParseException;
+import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.ByteArrayHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -144,14 +151,24 @@ public class ResponseBodyEncryptAdvice implements ResponseBodyAdvice<Object> {
 	}
 
 	/**
-	 * 在响应体序列化前执行加密
-	 * <p>
-	 * 处理步骤：
-	 * <ul>
-	 *     <li>获取注解（方法级优先）。</li>
-	 *     <li>解析密钥：支持明文或占位符（如 {@code ${app.encryption.key}}）。解析失败时抛出{@link ServerException}异常。</li>
-	 *     <li>选择工厂：从注解中获取对应的加密工厂。</li>
-	 *     <li>加密策略：
+	 * 在响应体序列化前执行加密。
+	 *
+	 * <p><strong>处理流程</strong>：</p>
+	 * <ol>
+	 *     <li><strong>获取注解</strong>：优先获取方法上的 {@link EncryptResponseBody}，若不存在则获取类上的注解。</li>
+	 *     <li><strong>解析密钥</strong>：
+	 *         <ul>
+	 *             <li>按 SpEL 表达式 -&gt; 属性占位符 -&gt; 明文密钥 的顺序解析。</li>
+	 *             <li>解析失败或为空时抛出 {@link ServerException}。</li>
+	 *         </ul>
+	 *     </li>
+	 *     <li><strong>选择工厂</strong>：
+	 *         <ul>
+	 *             <li>若注解配置了 {@code factory}，则强制使用指定的 Bean。</li>
+	 *             <li>否则根据 {@code algorithm} 获取默认工厂。</li>
+	 *         </ul>
+	 *     </li>
+	 *     <li><strong>执行加密</strong>：
 	 *         <ul>
 	 *             <li>{@code String}：{@link CryptoUtils#encryptString(CryptoFactory, String, String, Encoding)}。</li>
 	 *             <li>{@code byte[]}：{@link CryptoUtils#encrypt(CryptoFactory, byte[], String)}。</li>
@@ -183,7 +200,17 @@ public class ResponseBodyEncryptAdvice implements ResponseBodyAdvice<Object> {
 
 		String key;
 		try {
-			key = CryptoUtils.getKey(annotation.key());
+			EvaluationContext context = new StandardEvaluationContext();
+			context.setVariable("headers", request.getHeaders());
+			try {
+				Expression expression = SpELUtils.DEFAULT_EXPRESSION_PARSER.parseExpression(annotation.key());
+				key = expression.getValue(context, String.class);
+				if (StringUtils.isBlank(key)) {
+					key = CryptoUtils.getKey(annotation.key());
+				}
+			} catch (ParseException | EvaluationException e) {
+				key = CryptoUtils.getKey(annotation.key());
+			}
 		} catch (IllegalArgumentException e) {
 			throw new ServerException(e);
 		}

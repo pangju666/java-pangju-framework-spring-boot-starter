@@ -20,6 +20,10 @@
 	<dependencies>
 		<dependency>
 			<groupId>io.github.pangju666.framework.boot</groupId>
+			<artifactId>framework-starter-spring</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.github.pangju666.framework.boot</groupId>
 			<artifactId>framework-starter-web</artifactId>
 		</dependency>
 
