@@ -233,9 +233,18 @@ public class GMImageTemplate implements ImageTemplate {
 	 */
 	@Override
 	public ImageFile read(File file) throws IOException {
-		ImageFile imageFile = ImageFile.fromFile(file);
+		ImageFile imageFile = new ImageFile(file);
 		if (!ImageConstants.GRAPHICS_MAGICK_SUPPORTED_READ_IMAGE_FORMAT_SET.contains(imageFile.getFormat())) {
 			throw new UnSupportedTypeException("不支持读取 " + imageFile.getFormat() + " 格式图片");
+		}
+
+		try {
+			imageFile.setMimeType(FileUtils.getMimeType(file));
+			if (!ImageConstants.getSupportedReadImageTypes().contains(imageFile.getMimeType())) {
+				throw new UnSupportedTypeException("不支持读取 " + imageFile.getMimeType() + " 类型图片");
+			}
+		} catch (IOException e) {
+			throw new ImageParsingException(file, "类型解析失败", e);
 		}
 
 		GMOperation operation = new GMOperation();
@@ -299,6 +308,12 @@ public class GMImageTemplate implements ImageTemplate {
 			imageFile.setImageSize(new ImageSize(width, height, orientation));
 		} else {
 			imageFile.setImageSize(new ImageSize(width, height));
+		}
+
+		try {
+			imageFile.setDigest(FileUtils.computeDigest(file));
+		} catch (IOException e) {
+			throw new ImageParsingException(file, "摘要计算失败", e);
 		}
 
 		return imageFile;
@@ -667,10 +682,10 @@ public class GMImageTemplate implements ImageTemplate {
 	 * @since 1.0.0
 	 */
 	protected void doProcess(ImageFile imageFile, File outputFile, ImageOperation operation) throws IOException {
-		ImageSize imageSize = imageFile.getImageSize();
+		ImageSize imageSize = imageFile.getImageSize().getVisualSize();
 		if (ObjectUtils.allNotNull(operation.getTargetWidth(), operation.getTargetHeight())) {
 			if (operation.isForceScale()) {
-				imageSize = new ImageSize(operation.getTargetWidth(), operation.getTargetHeight());
+				imageSize = imageSize.resize(operation.getTargetWidth(), operation.getTargetHeight());
 			} else {
 				imageSize = imageSize.scale(operation.getTargetWidth(), operation.getTargetHeight());
 			}
@@ -693,12 +708,11 @@ public class GMImageTemplate implements ImageTemplate {
 		} else {
 			// 不需要裁剪、翻转、矫正方向和模糊时可以直接执行composite命令完成操作
 			if (ObjectUtils.allNull(operation.getCropType(), operation.getFlipDirection()) &&
-				(Objects.isNull(imageFile.getImageSize().getOrientation()) ||
-					imageFile.getImageSize().getOrientation() == ImageConstants.NORMAL_EXIF_ORIENTATION) &&
+				imageSize.getOrientation() == ImageConstants.NORMAL_EXIF_ORIENTATION &&
 				(Objects.isNull(gmImageOperation) || Objects.isNull(gmImageOperation.getBlurPair()))) {
 				executeComposite(imageFile.getFile(), imageSize, outputFile, operation, gmImageOperation);
 			} else {
-				File tmpOuputFile = new File(FileUtils.getTempDirectory(), "tmp_" + outputFile.getName());
+				File tmpOuputFile = new File(FileUtils.getTempDirectory(), "gm_tmp_" + outputFile.getName());
 				// 先执行convert命令
 				executeConvert(imageFile.getFile(), imageSize, tmpOuputFile, operation, gmImageOperation);
 
@@ -957,12 +971,12 @@ public class GMImageTemplate implements ImageTemplate {
 		} else if (operation.getCropType() == CropType.RECT) {
 			if (ObjectUtils.allNotNull(operation.getCropRectX(), operation.getCropRectY(),
 				operation.getCropRectWidth(), operation.getCropRectHeight()) &&
-				operation.getCropRectX() >= imageSize.getWidth() &&
-				operation.getCropRectWidth() >= imageSize.getWidth() &&
-				operation.getCropRectX() + operation.getCropRectWidth() >= imageSize.getWidth() &&
-				operation.getCropRectY() >= imageSize.getHeight() &&
-				operation.getCropRectHeight() >= imageSize.getHeight() &&
-				operation.getCropRectY() + operation.getCropRectHeight() >= imageSize.getHeight()) {
+				operation.getCropRectX() < imageSize.getWidth() &&
+				operation.getCropRectWidth() < imageSize.getWidth() &&
+				operation.getCropRectX() + operation.getCropRectWidth() < imageSize.getWidth() &&
+				operation.getCropRectY() < imageSize.getHeight() &&
+				operation.getCropRectHeight() < imageSize.getHeight() &&
+				operation.getCropRectY() + operation.getCropRectHeight() < imageSize.getHeight()) {
 
 				gmOperation.crop(operation.getCropRectWidth(), operation.getCropRectHeight(),
 					operation.getCropRectX(), operation.getCropRectY());
