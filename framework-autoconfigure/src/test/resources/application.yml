@@ -193,43 +193,8 @@ pangju:
       slf4j:
         logger: WebLogLogger
   image:
-    # 使用 GraphicsMagick 处理图像
-    type: imageio
     # 使用 ImageIO 处理图像
-    # type: imageio
-    # GraphicsMagick 进程连接池配置
-    gm:
-      # GraphicsMagick 执行文件路径，默认为 gm（从系统环境解析）
-      path: gm
-      pool:
-        # 最大空闲连接数，默认 0
-        max-idle: 0
-        # 最小空闲连接数，默认 0
-        min-idle: 0
-        # 最大活跃连接数，默认 16（负数表示不限制）
-        max-active: 16
-        # 连接耗尽时阻塞等待毫秒数，默认 5 秒（≤0 表示无限期）。
-        max-wait-mills: 5000
-        # 耗尽动作（FAIL/BLOCK/GROW），默认 FAIL（抛出一个 NoSuchElementException）。
-        when-exhausted-action: fail
-        # 获取连接时是否校验，默认 true。
-        test-on-get: true
-        # 归还连接时是否校验，默认 false。
-        test-on-return: false
-        # 空闲时是否定期校验，默认 false。
-        test-while-idle: false
-        # 空闲资源检测周期毫秒数，默认 30 秒。
-        time-between-eviction-runs-millis: 30000
-        # 每次检测的最大连接数，默认 3（负数表示按比例）。
-        num-tests-per-eviction-run: 3
-        # 空闲最短驱逐毫秒数，默认 30 分钟。
-        min-evictable-idle-time-millis: 1800000
-        # 软驱逐空闲毫秒数，默认 -1（禁用）。
-        soft-min-evictable-idle-time-millis: -1
-        # 是否启用 LIFO，默认 true。
-        lifo: true
-        # 进程最大使用次数后驱逐，默认 100（≤0 表示禁用）。
-        evict-after-number-of-use: 100
+    type: imageio
 
 logging:
   config: classpath:logback/local.xml
