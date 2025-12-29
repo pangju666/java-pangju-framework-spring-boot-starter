@@ -28,7 +28,7 @@ import org.springframework.context.annotation.Import;
  * <p><strong>概述</strong></p>
  * <ul>
  *   <li>启用 {@link ImageProperties} 作为配置载体（{@link EnableConfigurationProperties}）。</li>
- *   <li>按条件导入 {@link GMConfiguration} 与 {@link ImageIOConfiguration} 两个子配置（{@link Import}）。</li>
+ *   <li>按条件导入 {@link GraphicsMagickConfiguration} 与 {@link ImageIOConfiguration} 两个子配置（{@link Import}）。</li>
  * </ul>
  *
 	 * <p><strong>生效条件</strong></p>
@@ -43,6 +43,6 @@ import org.springframework.context.annotation.Import;
 @AutoConfiguration
 @ConditionalOnClass({ImageSize.class})
 @EnableConfigurationProperties(ImageProperties.class)
-@Import({GMConfiguration.class, ImageIOConfiguration.class})
+@Import({GraphicsMagickConfiguration.class, ImageIOConfiguration.class})
 public class ImageAutoConfiguration {
 }

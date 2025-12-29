@@ -26,29 +26,28 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * <p><strong>前缀</strong>：{@code pangju.image}</p>
  * <p><strong>概述</strong></p>
  * <ul>
- *   <li>选择图像处理实现类型（{@code GM} 或 {@code IMAGEIO}）。</li>
+ *   <li>选择图像处理实现类型（{@code GRAPHICS_MAGICK} 或 {@code IMAGEIO}）。</li>
  *   <li>提供 GraphicsMagick 相关配置（可执行路径与连接池）。</li>
  * </ul>
  *
  * <p><strong>属性映射（含默认值）</strong></p>
  * <ul>
  *   <li>{@code pangju.image.type}：处理实现类型，默认 {@code IMAGEIO}。</li>
- *   
- *   <li>{@code pangju.image.gm.path}：GraphicsMagick 可执行文件路径，默认 {@code gm}（从系统环境解析）。</li>
- *   <li>{@code pangju.image.gm.pool.max-idle}：最大空闲连接数，默认 {@code 0}。</li>
- *   <li>{@code pangju.image.gm.pool.min-idle}：最小空闲连接数，默认 {@code 0}。</li>
- *   <li>{@code pangju.image.gm.pool.max-active}：最大活跃连接数，默认 {@code 16}（负数表示不限制）。</li>
- *   <li>{@code pangju.image.gm.pool.max-wait-mills}：连接耗尽时阻塞等待毫秒数，默认 {@code 5000}（≤0 表示无限期）。</li>
- *   <li>{@code pangju.image.gm.pool.when-exhausted-action}：耗尽动作（{@code FAIL}/{@code BLOCK}/{@code GROW}），默认 {@code FAIL}。</li>
- *   <li>{@code pangju.image.gm.pool.test-on-get}：获取连接时是否校验，默认 {@code true}。</li>
- *   <li>{@code pangju.image.gm.pool.test-on-return}：归还连接时是否校验，默认 {@code false}。</li>
- *   <li>{@code pangju.image.gm.pool.test-while-idle}：空闲时是否定期校验，默认 {@code false}。</li>
- *   <li>{@code pangju.image.gm.pool.time-between-eviction-runs-millis}：空闲资源检测周期毫秒数，默认 {@code 30000}。</li>
- *   <li>{@code pangju.image.gm.pool.num-tests-per-eviction-run}：每次检测的最大连接数，默认 {@code 3}（负数表示按比例）。</li>
- *   <li>{@code pangju.image.gm.pool.min-evictable-idle-time-millis}：空闲最短驱逐毫秒数，默认 {@code 1800000}（30 分钟）。</li>
- *   <li>{@code pangju.image.gm.pool.soft-min-evictable-idle-time-millis}：软驱逐空闲毫秒数，默认 {@code -1}（禁用）。</li>
- *   <li>{@code pangju.image.gm.pool.lifo}：是否启用 LIFO，默认 {@code true}。</li>
- *   <li>{@code pangju.image.gm.pool.evict-after-number-of-use}：进程最大使用次数后驱逐，默认 {@code 100}（≤0 表示禁用）。</li>
+ *   <li>{@code pangju.image.graphics-magick.path}：GraphicsMagick 可执行文件路径，默认 {@code gm}（从系统环境解析）。</li>
+ *   <li>{@code pangju.image.graphics-magick.max-idle}：最大空闲连接数，默认 {@code 0}。</li>
+ *   <li>{@code pangju.image.graphics-magick.min-idle}：最小空闲连接数，默认 {@code 0}。</li>
+ *   <li>{@code pangju.image.graphics-magick.max-active}：最大活跃连接数，默认 {@code 16}（负数表示不限制）。</li>
+ *   <li>{@code pangju.image.graphics-magick.max-wait-mills}：连接耗尽时阻塞等待毫秒数，默认 {@code 5000}（≤0 表示无限期）。</li>
+ *   <li>{@code pangju.image.graphics-magick.when-exhausted-action}：耗尽动作（{@code FAIL}/{@code BLOCK}/{@code GROW}），默认 {@code FAIL}。</li>
+ *   <li>{@code pangju.image.graphics-magick.test-on-get}：获取连接时是否校验，默认 {@code true}。</li>
+ *   <li>{@code pangju.image.graphics-magick.test-on-return}：归还连接时是否校验，默认 {@code false}。</li>
+ *   <li>{@code pangju.image.graphics-magick.test-while-idle}：空闲时是否定期校验，默认 {@code false}。</li>
+ *   <li>{@code pangju.image.graphics-magick.time-between-eviction-runs-millis}：空闲资源检测周期毫秒数，默认 {@code 30000}。</li>
+ *   <li>{@code pangju.image.graphics-magick.num-tests-per-eviction-run}：每次检测的最大连接数，默认 {@code 3}（负数表示按比例）。</li>
+ *   <li>{@code pangju.image.graphics-magick.min-evictable-idle-time-millis}：空闲最短驱逐毫秒数，默认 {@code 1800000}（30 分钟）。</li>
+ *   <li>{@code pangju.image.graphics-magick.soft-min-evictable-idle-time-millis}：软驱逐空闲毫秒数，默认 {@code -1}（禁用）。</li>
+ *   <li>{@code pangju.image.graphics-magick.lifo}：是否启用 LIFO，默认 {@code true}。</li>
+ *   <li>{@code pangju.image.graphics-magick.evict-after-number-of-use}：进程最大使用次数后驱逐，默认 {@code 100}（≤0 表示禁用）。</li>
  * </ul>
  *
  * @author pangju666
@@ -71,14 +70,14 @@ public class ImageProperties {
 	 *
 	 * @since 1.0.0
 	 */
-	private GraphicsMagick gm = new GraphicsMagick();
+	private GraphicsMagick graphicsMagick = new GraphicsMagick();
 
-	public GraphicsMagick getGm() {
-		return gm;
+	public GraphicsMagick getGraphicsMagick() {
+		return graphicsMagick;
 	}
 
-	public void setGm(GraphicsMagick graphicsMagick) {
-		this.gm = graphicsMagick;
+	public void setGraphicsMagick(GraphicsMagick graphicsMagick) {
+		this.graphicsMagick = graphicsMagick;
 	}
 
 	public Type getType() {
@@ -113,14 +112,6 @@ public class ImageProperties {
 	 */
 	public static class GraphicsMagick {
 		/**
-		 * GraphicsMagick 的连接池配置。
-		 *
-		 * <p>前缀：{@code pangju.image.gm.pool}</p>
-		 *
-		 * @since 1.0.0
-		 */
-		private GMPool pool = new GMPool();
-		/**
 		 * GraphicsMagick 可执行文件路径。
 		 *
 		 * <p>对应属性：{@code pangju.image.gm.path}</p>
@@ -130,30 +121,6 @@ public class ImageProperties {
 		 */
 		private String path = "gm";
 
-		public GMPool getPool() {
-			return pool;
-		}
-
-		public void setPool(GMPool pool) {
-			this.pool = pool;
-		}
-
-		public String getPath() {
-			return path;
-		}
-
-		public void setPath(String path) {
-			this.path = path;
-		}
-	}
-
-	/**
-	 * GraphicsMagick 进程池配置。
-	 *
-	 * @author pangju666
-	 * @since 1.0.0
-	 */
-	public static class GMPool {
 		/**
 		 * 连接池中允许的最大空闲 {@link GMConnection} 实例数。
 		 *
@@ -331,6 +298,14 @@ public class ImageProperties {
 		 * @since 1.0.0
 		 */
 		private int evictAfterNumberOfUse = 100;
+
+		public String getPath() {
+			return path;
+		}
+
+		public void setPath(String path) {
+			this.path = path;
+		}
 
 		public int getMaxIdle() {
 			return maxIdle;
