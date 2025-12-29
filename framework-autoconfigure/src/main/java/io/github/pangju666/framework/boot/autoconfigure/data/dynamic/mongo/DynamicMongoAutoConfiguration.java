@@ -19,12 +19,21 @@ package io.github.pangju666.framework.boot.autoconfigure.data.dynamic.mongo;
 import com.mongodb.client.MongoClient;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration;
+import org.springframework.boot.autoconfigure.domain.EntityScanner;
 import org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.mongodb.MongoManagedTypes;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.convert.MongoCustomConversions;
+import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.gridfs.GridFsTemplate;
+
+import java.util.Collections;
 
 /**
  * 动态 Mongo 自动配置。
@@ -98,9 +107,38 @@ import org.springframework.data.mongodb.gridfs.GridFsTemplate;
  * @see DynamicMongoRegistrar
  * @since 1.0.0
  */
-@AutoConfiguration(before = MongoAutoConfiguration.class)
+@AutoConfiguration(before = {MongoAutoConfiguration.class, MongoDataAutoConfiguration.class})
 @ConditionalOnClass({MongoClient.class, MongoTemplate.class, GridFsTemplate.class})
 @EnableConfigurationProperties(DynamicMongoProperties.class)
 @Import(DynamicMongoRegistrar.class)
 public class DynamicMongoAutoConfiguration {
+	/**
+	 * 注册 Mongo 管理类型 Bean。
+	 *
+	 * <p>扫描带有 {@link Document} 注解的类，用于构建 MongoDB 的映射上下文。</p>
+	 *
+	 * @param applicationContext 应用上下文
+	 * @return Mongo 管理类型实例
+	 * @throws ClassNotFoundException 如果扫描过程中发生类未找到异常
+	 * @since 1.0.0
+	 */
+	@Bean
+	@ConditionalOnMissingBean
+	public MongoManagedTypes mongoManagedTypes(ApplicationContext applicationContext) throws ClassNotFoundException {
+		return MongoManagedTypes.fromIterable(new EntityScanner(applicationContext).scan(Document.class));
+	}
+
+	/**
+	 * 注册 Mongo 自定义转换器 Bean。
+	 *
+	 * <p>提供默认的空转换器配置。用户可以通过定义自己的 {@link MongoCustomConversions} Bean 来覆盖此配置，以添加自定义的数据类型转换规则。</p>
+	 *
+	 * @return Mongo 自定义转换器实例
+	 * @since 1.0.0
+	 */
+	@Bean
+	@ConditionalOnMissingBean
+	public MongoCustomConversions mongoCustomConversions() {
+		return new MongoCustomConversions(Collections.emptyList());
+	}
 }

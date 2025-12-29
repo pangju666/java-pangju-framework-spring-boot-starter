@@ -57,7 +57,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * @since 1.0.0
  */
 @ConfigurationProperties(prefix = Constants.MYBATIS_PLUS + ".plugins")
-public class MybatisPlusInterceptorProperties {
+public class MybatisPlusPluginsProperties {
 	/**
 	 * 分页插件配置
 	 * <p>

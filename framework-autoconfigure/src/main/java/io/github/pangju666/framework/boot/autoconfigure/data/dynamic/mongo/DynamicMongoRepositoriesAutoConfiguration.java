@@ -17,13 +17,13 @@
 package io.github.pangju666.framework.boot.autoconfigure.data.dynamic.mongo;
 
 import com.mongodb.client.MongoClient;
-import io.github.pangju666.framework.boot.autoconfigure.data.mongo.MongoRepositoriesAutoConfiguration;
 import io.github.pangju666.framework.data.mongodb.repository.SimpleBaseMongoRepository;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.data.ConditionalOnRepositoryType;
 import org.springframework.boot.autoconfigure.data.RepositoryType;
+import org.springframework.boot.autoconfigure.data.mongo.MongoRepositoriesAutoConfiguration;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.mongodb.repository.MongoRepository;
@@ -65,7 +65,6 @@ import org.springframework.data.mongodb.repository.support.MongoRepositoryFactor
  * @author pangju666
  * @see DynamicMongoRepositoriesRegistrar
  * @see OnDynamicMongoCondition
- * @see MongoRepositoriesAutoConfiguration
  * @since 1.0.0
  */
 @AutoConfiguration(before = MongoRepositoriesAutoConfiguration.class, after = DynamicMongoAutoConfiguration.class)

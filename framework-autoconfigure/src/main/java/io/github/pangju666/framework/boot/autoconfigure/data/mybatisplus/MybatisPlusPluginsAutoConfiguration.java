@@ -18,6 +18,7 @@
 package io.github.pangju666.framework.boot.autoconfigure.data.mybatisplus;
 
 import com.baomidou.mybatisplus.annotation.DbType;
+import com.baomidou.mybatisplus.autoconfigure.MybatisPlusInnerInterceptorAutoConfiguration;
 import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.BlockAttackInnerInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.InnerInterceptor;
@@ -33,13 +34,13 @@ import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 
 /**
- * MyBatis-Plus 内部拦截器自动配置类。
+ * MyBatis-Plus 插件自动配置类。
  *
- * <p>负责根据配置属性自动注册 MyBatis-Plus 的常用内部拦截器，包括：</p>
+ * <p>负责根据配置属性自动注册 MyBatis-Plus 的常用内置插件，包括：</p>
  * <ul>
- *   <li>{@link PaginationInnerInterceptor}：分页拦截器，支持多种数据库方言。</li>
- *   <li>{@link OptimisticLockerInnerInterceptor}：乐观锁拦截器，用于并发控制。</li>
- *   <li>{@link BlockAttackInnerInterceptor}：防全表更新与删除拦截器，保护数据安全。</li>
+ *   <li>{@link PaginationInnerInterceptor}：分页插件，支持多种数据库方言。</li>
+ *   <li>{@link OptimisticLockerInnerInterceptor}：乐观锁插件，用于并发控制。</li>
+ *   <li>{@link BlockAttackInnerInterceptor}：防全表更新与删除插件，保护数据安全。</li>
  * </ul>
  *
  * <p><b>生效条件</b></p>
@@ -49,19 +50,19 @@ import org.springframework.core.annotation.Order;
  * </ul>
  *
  * @author pangju666
- * @see MybatisPlusInterceptorProperties
+ * @see MybatisPlusPluginsProperties
  * @see PaginationInnerInterceptor
  * @see OptimisticLockerInnerInterceptor
  * @see BlockAttackInnerInterceptor
- * @see com.baomidou.mybatisplus.autoconfigure.MybatisPlusInnerInterceptorAutoConfiguration
+ * @see MybatisPlusInnerInterceptorAutoConfiguration
  * @since 1.0.0
  */
-@AutoConfiguration(before = com.baomidou.mybatisplus.autoconfigure.MybatisPlusInnerInterceptorAutoConfiguration.class)
+@AutoConfiguration(before = MybatisPlusInnerInterceptorAutoConfiguration.class)
 @ConditionalOnClass(InnerInterceptor.class)
-@EnableConfigurationProperties(MybatisPlusInterceptorProperties.class)
-public class MybatisPlusInnerInterceptorAutoConfiguration {
+@EnableConfigurationProperties(MybatisPlusPluginsProperties.class)
+public class MybatisPlusPluginsAutoConfiguration {
 	/**
-	 * 注册分页拦截器。
+	 * 注册分页插件。
 	 *
 	 * <p>用于支持 MyBatis-Plus 的物理分页功能。可以通过配置文件指定数据库方言。</p>
 	 *
@@ -87,12 +88,12 @@ public class MybatisPlusInnerInterceptorAutoConfiguration {
 	@ConditionalOnBooleanProperty(prefix = "mybatis-plus.plugins.pagination", value = "enabled", matchIfMissing = true)
 	@ConditionalOnMissingBean(PaginationInnerInterceptor.class)
 	@Bean
-	public PaginationInnerInterceptor paginationInnerInterceptor(MybatisPlusInterceptorProperties properties) {
+	public PaginationInnerInterceptor paginationInnerInterceptor(MybatisPlusPluginsProperties properties) {
 		return new PaginationInnerInterceptor(properties.getPagination().getDbType());
 	}
 
 	/**
-	 * 注册乐观锁拦截器。
+	 * 注册乐观锁插件。
 	 *
 	 * <p>用于实现数据库记录的乐观锁并发控制。需配合 {@code @Version} 注解使用。</p>
 	 *
@@ -118,12 +119,12 @@ public class MybatisPlusInnerInterceptorAutoConfiguration {
 	@ConditionalOnBooleanProperty(prefix = "mybatis-plus.plugins.optimistic-locker", value = "enabled", matchIfMissing = true)
 	@ConditionalOnMissingBean(OptimisticLockerInnerInterceptor.class)
 	@Bean
-	public OptimisticLockerInnerInterceptor optimisticLockerInnerInterceptor(MybatisPlusInterceptorProperties properties) {
+	public OptimisticLockerInnerInterceptor optimisticLockerInnerInterceptor(MybatisPlusPluginsProperties properties) {
 		return new OptimisticLockerInnerInterceptor(properties.getOptimisticLocker().isWrapperMode());
 	}
 
 	/**
-	 * 注册防全表更新与删除拦截器。
+	 * 注册防全表更新与删除插件。
 	 *
 	 * <p>用于防止误操作导致的全表更新或删除（即不带 WHERE 子句的 UPDATE/DELETE 语句）。</p>
 	 *

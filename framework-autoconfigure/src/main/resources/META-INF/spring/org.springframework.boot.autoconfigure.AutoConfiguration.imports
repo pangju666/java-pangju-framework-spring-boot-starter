@@ -4,8 +4,8 @@ io.github.pangju666.framework.boot.autoconfigure.crypto.CryptoAutoConfiguration
 io.github.pangju666.framework.boot.autoconfigure.image.ImageAutoConfiguration
 io.github.pangju666.framework.boot.autoconfigure.task.OnceTaskExecutorAutoConfiguration
 io.github.pangju666.framework.boot.autoconfigure.data.mybatisplus.MybatisPlusISqlInjectorAutoConfiguration
-io.github.pangju666.framework.boot.autoconfigure.data.mybatisplus.MybatisPlusInnerInterceptorAutoConfiguration
-io.github.pangju666.framework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+io.github.pangju666.framework.boot.autoconfigure.data.mybatisplus.MybatisPlusPluginsAutoConfiguration
+io.github.pangju666.framework.boot.autoconfigure.data.redis.RedisScanAutoConfiguration
 io.github.pangju666.framework.boot.autoconfigure.data.mongo.MongoRepositoriesAutoConfiguration
 io.github.pangju666.framework.boot.autoconfigure.data.dynamic.redis.DynamicRedisAutoConfiguration
 io.github.pangju666.framework.boot.autoconfigure.data.dynamic.redis.ClientResourcesAutoConfiguration

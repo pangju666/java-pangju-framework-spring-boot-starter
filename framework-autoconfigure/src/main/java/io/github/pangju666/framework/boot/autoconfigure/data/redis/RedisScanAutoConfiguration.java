@@ -23,24 +23,24 @@ import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnSingleCandidate;
+import org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisOperations;
 
 /**
- * Redis 自动配置
+ * Redis 扫描自动配置
  * <p>
  * 在存在 Redis 相关类（{@link RedisOperations}、{@link ScanRedisTemplate}）时生效，
- * 并在 Spring Boot 默认的 {@link org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration}
- * 之后进行配置。该自动配置按条件注册扫描能力的 RedisTemplate 实现，提供字符串模板和 JSON 序列化模板两种变体。
+ * 并在 Spring Boot 默认的 {@link RedisAutoConfiguration}之后进行配置。该自动配置按条件注册扫描能力的 RedisTemplate 实现，提供字符串模板和 JSON 序列化模板两种变体。
  * </p>
  *
  * @author pangju666
  * @since 1.0.0
  */
-@AutoConfiguration(after = org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration.class)
+@AutoConfiguration(after = RedisAutoConfiguration.class)
 @ConditionalOnClass({RedisOperations.class, ScanRedisTemplate.class})
-public class RedisAutoConfiguration {
+public class RedisScanAutoConfiguration {
 	/**
 	 * 注册支持扫描能力的字符串 RedisTemplate
 	 * <p>
