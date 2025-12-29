@@ -4,6 +4,7 @@ package io.github.pangju666.framework.boot.autoconfigure.web.log
 import io.github.pangju666.framework.boot.web.log.receiver.WebLogReceiver
 import io.github.pangju666.framework.boot.web.log.sender.WebLogSender
 import io.github.pangju666.framework.boot.web.log.sender.impl.kafka.KafkaWebLogSender
+import io.github.pangju666.framework.boot.web.log.sender.impl.kafka.WebLogKafkaListener
 import org.springframework.boot.autoconfigure.AutoConfigurations
 import org.springframework.boot.test.context.runner.ApplicationContextRunner
 import org.springframework.kafka.core.KafkaTemplate

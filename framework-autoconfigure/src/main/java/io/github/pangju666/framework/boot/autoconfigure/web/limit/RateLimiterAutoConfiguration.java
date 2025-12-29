@@ -73,7 +73,7 @@ import org.springframework.web.servlet.DispatcherServlet;
 @ConditionalOnClass({Servlet.class, DispatcherServlet.class, Result.class, BaseHttpException.class})
 @EnableConfigurationProperties(RateLimitProperties.class)
 @Import({Resilience4jConfiguration.class, RedissonConfiguration.class})
-class RateLimiterAutoConfiguration {
+public class RateLimiterAutoConfiguration {
 	/**
 	 * 注册基于 IP 的限流源提取器
 	 *

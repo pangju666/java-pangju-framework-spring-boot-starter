@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package io.github.pangju666.framework.boot.autoconfigure.web.log;
+package io.github.pangju666.framework.boot.web.log.sender.impl.kafka;
 
 import io.github.pangju666.framework.boot.web.log.model.WebLog;
 import io.github.pangju666.framework.boot.web.log.receiver.WebLogReceiver;

@@ -57,18 +57,6 @@ spring:
       # 不区分枚举名称大小写
       accept-case-insensitive-enums: true
 
-mybatis-plus:
-  type-aliases-package: io.github.pangju666.test.entity
-  mapper-locations: classpath:mapper/*.xml
-  configuration:
-    shrink-whitespaces-in-sql: true
-  global-config:
-    banner: false
-    db-config:
-      column-format: "`%s`"
-      update-strategy: ALWAYS
-      id-type: auto
-
 pangju:
   task:
     execution:

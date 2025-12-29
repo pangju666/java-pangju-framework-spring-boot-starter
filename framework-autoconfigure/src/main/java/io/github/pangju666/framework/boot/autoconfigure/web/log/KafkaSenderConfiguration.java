@@ -16,12 +16,17 @@
 
 package io.github.pangju666.framework.boot.autoconfigure.web.log;
 
+import io.github.pangju666.framework.boot.web.log.model.WebLog;
 import io.github.pangju666.framework.boot.web.log.receiver.WebLogReceiver;
 import io.github.pangju666.framework.boot.web.log.sender.WebLogSender;
 import io.github.pangju666.framework.boot.web.log.sender.impl.kafka.KafkaWebLogSender;
+import io.github.pangju666.framework.boot.web.log.sender.impl.kafka.WebLogKafkaListener;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.boot.autoconfigure.condition.*;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -46,7 +51,7 @@ import org.springframework.util.StringUtils;
  * <p><b>注册的 Bean</b></p>
  * <ul>
  *   <li>{@link KafkaWebLogSender}：从容器中获取 {@link KafkaTemplate}，将日志发送至配置的 Topic。</li>
- *   <li>{@link WebLogKafkaListener}：订阅配置的 Topic，消费 {@link io.github.pangju666.framework.boot.web.log.model.WebLog} 并交由接收器处理。</li>
+ *   <li>{@link WebLogKafkaListener}：订阅配置的 Topic，消费 {@link WebLog} 并交由接收器处理。</li>
  * </ul>
  *
  * <p><b>关键配置</b></p>

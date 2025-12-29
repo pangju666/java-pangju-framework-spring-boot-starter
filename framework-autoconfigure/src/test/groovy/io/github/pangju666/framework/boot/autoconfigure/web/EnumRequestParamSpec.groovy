@@ -13,10 +13,10 @@ import spock.lang.Unroll
 import java.lang.reflect.Constructor
 import java.lang.reflect.Method
 
-enum UserStatus { ACTIVE, INACTIVE }
-
 class EnumRequestParamSpec extends Specification {
 	def resolver = new EnumRequestParamArgumentResolver()
+
+	enum UserStatus { ACTIVE, INACTIVE }
 
 	static class TestController {
 		void requiredNamed(@EnumRequestParam("status") UserStatus status) {}
