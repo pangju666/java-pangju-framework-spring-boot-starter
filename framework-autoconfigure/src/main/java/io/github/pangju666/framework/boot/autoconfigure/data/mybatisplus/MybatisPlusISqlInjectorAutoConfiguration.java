@@ -16,31 +16,35 @@
 
 package io.github.pangju666.framework.boot.autoconfigure.data.mybatisplus;
 
+import com.baomidou.mybatisplus.autoconfigure.MybatisPlusAutoConfiguration;
 import com.baomidou.mybatisplus.core.injector.ISqlInjector;
+import io.github.pangju666.framework.boot.data.mybatisplus.annotation.TableLogicFill;
 import io.github.pangju666.framework.boot.data.mybatisplus.injector.TableLogicFillSqlInjector;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionFactoryBean;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnSingleCandidate;
 import org.springframework.context.annotation.Bean;
 
-import javax.sql.DataSource;
-
 /**
- * MyBatis-Plus 自动配置扩展类。
+ * MyBatis-Plus SQL 注入器自动配置类。
  *
- * <p>用于增强 MyBatis-Plus 的默认配置，提供额外的功能支持。</p>
+ * <p>负责自动注册自定义的 SQL 注入器，以增强 MyBatis-Plus 的功能。</p>
  *
  * <p><b>主要功能</b></p>
  * <ul>
  *   <li>注册 {@link TableLogicFillSqlInjector}：支持逻辑删除时的自定义字段填充（如删除时间、操作人等）。</li>
  * </ul>
  *
+ * <p><b>生效条件</b></p>
+ * <ul>
+ *   <li>类路径中存在 {@link SqlSessionFactory}、{@link SqlSessionFactoryBean} 和 {@link ISqlInjector} 类。</li>
+ * </ul>
+ *
  * <p><b>生效顺序</b></p>
  * <ul>
- *   <li>在 {@link com.baomidou.mybatisplus.autoconfigure.MybatisPlusAutoConfiguration} 之前执行，
+ *   <li>在 {@link MybatisPlusAutoConfiguration} 之前执行，
  *   以便提供的 Bean（如 {@link ISqlInjector}）能被官方自动配置类引用。</li>
  * </ul>
  *
@@ -48,10 +52,9 @@ import javax.sql.DataSource;
  * @see TableLogicFillSqlInjector
  * @since 1.0.0
  */
-@AutoConfiguration(before = com.baomidou.mybatisplus.autoconfigure.MybatisPlusAutoConfiguration.class)
-@ConditionalOnClass({SqlSessionFactory.class, SqlSessionFactoryBean.class})
-@ConditionalOnSingleCandidate(DataSource.class)
-public class MybatisPlusAutoConfiguration {
+@AutoConfiguration(before = MybatisPlusAutoConfiguration.class)
+@ConditionalOnClass({SqlSessionFactory.class, SqlSessionFactoryBean.class, ISqlInjector.class})
+public class MybatisPlusISqlInjectorAutoConfiguration {
 	/**
 	 * 注册逻辑删除字段填充 SQL 注入器。
 	 *
@@ -60,7 +63,7 @@ public class MybatisPlusAutoConfiguration {
 	 * <p><b>功能说明</b></p>
 	 * <ul>
 	 *   <li>替换默认的 SQL 注入器，增强删除相关方法的逻辑。</li>
-	 *   <li>支持识别 {@link io.github.pangju666.framework.boot.data.mybatisplus.annotation.TableLogicFill} 注解，
+	 *   <li>支持识别 {@link TableLogicFill} 注解，
 	 *   在执行逻辑删除时自动填充指定字段的值。</li>
 	 * </ul>
 	 *

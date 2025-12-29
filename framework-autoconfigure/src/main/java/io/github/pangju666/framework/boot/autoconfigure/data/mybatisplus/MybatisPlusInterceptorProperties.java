@@ -17,6 +17,7 @@
 package io.github.pangju666.framework.boot.autoconfigure.data.mybatisplus;
 
 import com.baomidou.mybatisplus.annotation.DbType;
+import com.baomidou.mybatisplus.core.toolkit.Constants;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
@@ -55,7 +56,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * @author pangju666
  * @since 1.0.0
  */
-@ConfigurationProperties(prefix = "mybatis-plus.plugins")
+@ConfigurationProperties(prefix = Constants.MYBATIS_PLUS + ".plugins")
 public class MybatisPlusInterceptorProperties {
 	/**
 	 * 分页插件配置

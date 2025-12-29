@@ -24,11 +24,13 @@ import com.baomidou.mybatisplus.extension.plugins.inner.InnerInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.OptimisticLockerInnerInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 
 /**
  * MyBatis-Plus 内部拦截器自动配置类。
@@ -42,8 +44,8 @@ import org.springframework.context.annotation.Bean;
  *
  * <p><b>生效条件</b></p>
  * <ul>
- *   <li>容器中存在 {@link InnerInterceptor} 接口的 Bean。</li>
- *   <li>容器中尚未配置 {@link MybatisPlusInterceptor}（若用户自定义了拦截器链，则本配置不生效）。</li>
+ *   <li>类路径中存在 {@link InnerInterceptor} 接口。</li>
+ *   <li>容器中尚未配置 {@link MybatisPlusInterceptor} Bean（若用户自定义了拦截器链，则本配置不生效）。</li>
  * </ul>
  *
  * @author pangju666
@@ -51,11 +53,11 @@ import org.springframework.context.annotation.Bean;
  * @see PaginationInnerInterceptor
  * @see OptimisticLockerInnerInterceptor
  * @see BlockAttackInnerInterceptor
+ * @see com.baomidou.mybatisplus.autoconfigure.MybatisPlusInnerInterceptorAutoConfiguration
  * @since 1.0.0
  */
 @AutoConfiguration(before = com.baomidou.mybatisplus.autoconfigure.MybatisPlusInnerInterceptorAutoConfiguration.class)
-@ConditionalOnBean({InnerInterceptor.class})
-@ConditionalOnMissingBean({MybatisPlusInterceptor.class})
+@ConditionalOnClass(InnerInterceptor.class)
 @EnableConfigurationProperties(MybatisPlusInterceptorProperties.class)
 public class MybatisPlusInnerInterceptorAutoConfiguration {
 	/**
@@ -63,9 +65,15 @@ public class MybatisPlusInnerInterceptorAutoConfiguration {
 	 *
 	 * <p>用于支持 MyBatis-Plus 的物理分页功能。可以通过配置文件指定数据库方言。</p>
 	 *
+	 * <p><b>生效条件</b></p>
+	 * <ul>
+	 *   <li>类路径中存在 {@link PaginationInnerInterceptor} 类。</li>
+	 *   <li>属性 {@code mybatis-plus.plugins.pagination.enabled} 为 {@code true}（默认）。</li>
+	 *   <li>容器中尚未存在 {@link PaginationInnerInterceptor} Bean。</li>
+	 * </ul>
+	 *
 	 * <p><b>配置项</b></p>
 	 * <ul>
-	 *   <li>{@code mybatis-plus.plugins.pagination.enabled}：是否启用分页插件（默认为 {@code true}）。</li>
 	 *   <li>{@code mybatis-plus.plugins.pagination.db-type}：数据库类型（默认为 {@link DbType#MYSQL}）。</li>
 	 * </ul>
 	 *
@@ -74,6 +82,8 @@ public class MybatisPlusInnerInterceptorAutoConfiguration {
 	 * @see PaginationInnerInterceptor
 	 * @since 1.0.0
 	 */
+	@Order(Ordered.HIGHEST_PRECEDENCE + 11)
+	@ConditionalOnClass(PaginationInnerInterceptor.class)
 	@ConditionalOnBooleanProperty(prefix = "mybatis-plus.plugins.pagination", value = "enabled", matchIfMissing = true)
 	@ConditionalOnMissingBean(PaginationInnerInterceptor.class)
 	@Bean
@@ -86,9 +96,15 @@ public class MybatisPlusInnerInterceptorAutoConfiguration {
 	 *
 	 * <p>用于实现数据库记录的乐观锁并发控制。需配合 {@code @Version} 注解使用。</p>
 	 *
+	 * <p><b>生效条件</b></p>
+	 * <ul>
+	 *   <li>类路径中存在 {@link OptimisticLockerInnerInterceptor} 类。</li>
+	 *   <li>属性 {@code mybatis-plus.plugins.optimistic-locker.enabled} 为 {@code true}（默认）。</li>
+	 *   <li>容器中尚未存在 {@link OptimisticLockerInnerInterceptor} Bean。</li>
+	 * </ul>
+	 *
 	 * <p><b>配置项</b></p>
 	 * <ul>
-	 *   <li>{@code mybatis-plus.plugins.optimistic-locker.enabled}：是否启用乐观锁插件（默认为 {@code true}）。</li>
 	 *   <li>{@code mybatis-plus.plugins.optimistic-locker.wrapper-mode}：是否开启 Wrapper 模式（默认为 {@code true}）。</li>
 	 * </ul>
 	 *
@@ -97,6 +113,8 @@ public class MybatisPlusInnerInterceptorAutoConfiguration {
 	 * @see OptimisticLockerInnerInterceptor
 	 * @since 1.0.0
 	 */
+	@Order(Ordered.HIGHEST_PRECEDENCE + 12)
+	@ConditionalOnClass(OptimisticLockerInnerInterceptor.class)
 	@ConditionalOnBooleanProperty(prefix = "mybatis-plus.plugins.optimistic-locker", value = "enabled", matchIfMissing = true)
 	@ConditionalOnMissingBean(OptimisticLockerInnerInterceptor.class)
 	@Bean
@@ -109,15 +127,19 @@ public class MybatisPlusInnerInterceptorAutoConfiguration {
 	 *
 	 * <p>用于防止误操作导致的全表更新或删除（即不带 WHERE 子句的 UPDATE/DELETE 语句）。</p>
 	 *
-	 * <p><b>配置项</b></p>
+	 * <p><b>生效条件</b></p>
 	 * <ul>
-	 *   <li>{@code mybatis-plus.plugins.block-attack.enabled}：是否启用该插件（默认为 {@code true}）。</li>
+	 *   <li>类路径中存在 {@link BlockAttackInnerInterceptor} 类。</li>
+	 *   <li>属性 {@code mybatis-plus.plugins.block-attack.enabled} 为 {@code true}（默认）。</li>
+	 *   <li>容器中尚未存在 {@link BlockAttackInnerInterceptor} Bean。</li>
 	 * </ul>
 	 *
 	 * @return 防全表攻击内部拦截器实例
 	 * @see BlockAttackInnerInterceptor
 	 * @since 1.0.0
 	 */
+	@Order(Ordered.HIGHEST_PRECEDENCE + 22)
+	@ConditionalOnClass(BlockAttackInnerInterceptor.class)
 	@ConditionalOnBooleanProperty(prefix = "mybatis-plus.plugins.block-attack", value = "enabled", matchIfMissing = true)
 	@ConditionalOnMissingBean(BlockAttackInnerInterceptor.class)
 	@Bean

@@ -186,12 +186,6 @@ pangju:
     signature:
       secret-keys:
         test: test
-    log:
-      kafka:
-        topic: test
-      enabled: false
-      slf4j:
-        logger: WebLogLogger
   image:
     # 使用 ImageIO 处理图像
     type: imageio
