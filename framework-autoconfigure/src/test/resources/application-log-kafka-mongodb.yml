@@ -1,0 +1,43 @@
+spring:
+  data:
+    mongodb:
+      host: 127.0.0.1
+      database: test
+  kafka:
+    bootstrap-servers: 127.0.0.1:9092
+    producer:
+      retries: 1
+      batch-size: 16384
+      buffer-memory: 1024000
+      acks: 1
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring:
+          json:
+            trusted:
+              packages: "*"
+    consumer:
+      group-id: gtz-invoice
+      enable-auto-commit: false
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring:
+          json:
+            trusted:
+              packages: "*"
+    listener:
+      ack-mode: manual_immediate
+
+pangju:
+  web:
+    log:
+      enabled: true
+      sender-type: kafka
+      receiver-type: mongodb
+      kafka:
+        topic: web-log
+      mongo:
+        base-collection-name: web-log
