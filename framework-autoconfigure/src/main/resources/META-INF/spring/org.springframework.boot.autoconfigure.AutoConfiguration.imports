@@ -27,4 +27,4 @@ io.github.pangju666.framework.boot.autoconfigure.web.log.WebLogAutoConfiguration
 io.github.pangju666.framework.boot.autoconfigure.web.exception.HttpExceptionInfoAutoConfiguration
 io.github.pangju666.framework.boot.autoconfigure.web.cors.CorsAutoConfiguration
 io.github.pangju666.framework.boot.autoconfigure.web.client.RestClientAutoConfiguration
-io.github.pangju666.framework.boot.autoconfigure.web.WebMvcAutoConfiguration
+io.github.pangju666.framework.boot.autoconfigure.web.WebMvcConfigurerAutoConfiguration

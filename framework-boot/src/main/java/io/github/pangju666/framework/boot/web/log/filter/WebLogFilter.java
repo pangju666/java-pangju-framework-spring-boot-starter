@@ -194,7 +194,8 @@ public class WebLogFilter extends BaseHttpRequestFilter {
 	 * @throws IOException      I/O 异常（例如读取/写回响应体）
 	 */
 	@Override
-	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+		throws ServletException, IOException {
 		// 记录请求起始时间
 		long start = SystemClock.now();
 

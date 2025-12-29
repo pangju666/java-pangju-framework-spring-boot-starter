@@ -211,7 +211,7 @@ public class WebLogProperties {
 		return slf4j;
 	}
 
-	public void setDisk(Slf4j slf4j) {
+	public void setSlf4j(Slf4j slf4j) {
 		this.slf4j = slf4j;
 	}
 

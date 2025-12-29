@@ -16,7 +16,7 @@
 
 package io.github.pangju666.framework.boot.autoconfigure.web.limit;
 
-import io.github.pangju666.framework.boot.autoconfigure.web.WebMvcAutoConfiguration;
+import io.github.pangju666.framework.boot.autoconfigure.web.WebMvcConfigurerAutoConfiguration;
 import io.github.pangju666.framework.boot.web.interceptor.RateLimitInterceptor;
 import io.github.pangju666.framework.boot.web.limit.RateLimiter;
 import io.github.pangju666.framework.boot.web.limit.impl.IpRateLimitSourceExtractor;
@@ -44,7 +44,7 @@ import org.springframework.web.servlet.DispatcherServlet;
  * <ul>
  *   <li>Servlet Web 应用（{@link ConditionalOnWebApplication}，类型为 {@code SERVLET}）</li>
  *   <li>类路径存在 {@link jakarta.servlet.Servlet} 与 {@link DispatcherServlet}</li>
- *   <li>在 {@link WebMvcAutoConfiguration} 之前加载（{@code @AutoConfiguration(before = ...)}）</li>
+ *   <li>在 {@link WebMvcConfigurerAutoConfiguration} 之前加载（{@code @AutoConfiguration(before = ...)}）</li>
  * </ul>
  * <p><b>行为说明</b></p>
  * <ul>
@@ -68,7 +68,7 @@ import org.springframework.web.servlet.DispatcherServlet;
  * @see RedissonConfiguration
  * @since 1.0.0
  */
-@AutoConfiguration(before = WebMvcAutoConfiguration.class)
+@AutoConfiguration(before = WebMvcConfigurerAutoConfiguration.class)
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @ConditionalOnClass({Servlet.class, DispatcherServlet.class, Result.class, BaseHttpException.class})
 @EnableConfigurationProperties(RateLimitProperties.class)

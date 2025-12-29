@@ -16,7 +16,7 @@
 
 package io.github.pangju666.framework.boot.autoconfigure.web.signature;
 
-import io.github.pangju666.framework.boot.autoconfigure.web.WebMvcAutoConfiguration;
+import io.github.pangju666.framework.boot.autoconfigure.web.WebMvcConfigurerAutoConfiguration;
 import io.github.pangju666.framework.boot.web.configuration.SignatureConfiguration;
 import io.github.pangju666.framework.boot.web.interceptor.SignatureInterceptor;
 import io.github.pangju666.framework.boot.web.signature.SecretKeyStorer;
@@ -40,7 +40,7 @@ import org.springframework.web.servlet.DispatcherServlet;
  * <p><strong>概述</strong></p>
  * <ul>
  *   <li>在 Servlet Web 应用中加载签名相关配置并提供必要 Bean。</li>
- *   <li>按需提供默认密钥存储器与签名拦截器，拦截器的实际注册由 {@link WebMvcAutoConfiguration} 统一完成。</li>
+ *   <li>按需提供默认密钥存储器与签名拦截器，拦截器的实际注册由 {@link WebMvcConfigurerAutoConfiguration} 统一完成。</li>
  * </ul>
  *
  * <p><strong>条件</strong></p>
@@ -67,10 +67,10 @@ import org.springframework.web.servlet.DispatcherServlet;
  * @see DefaultSecretKeyStorer
  * @see SecretKeyStorer
  * @see SignatureInterceptor
- * @see WebMvcAutoConfiguration
+ * @see WebMvcConfigurerAutoConfiguration
  * @since 1.0.0
  */
-@AutoConfiguration(before = WebMvcAutoConfiguration.class)
+@AutoConfiguration(before = WebMvcConfigurerAutoConfiguration.class)
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @ConditionalOnClass({Servlet.class, DispatcherServlet.class, Result.class})
 @EnableConfigurationProperties(SignatureProperties.class)
@@ -99,7 +99,7 @@ public class SignatureAutoConfiguration {
 	 * <ul>
 	 *   <li>根据 {@link SignatureProperties} 构建 {@link SignatureConfiguration}，包含头部与参数字段名。</li>
 	 *   <li>依赖 {@link SecretKeyStorer} 提供按 AppId 获取密钥的能力。</li>
-	 *   <li>拦截器优先级为 {@link Ordered#HIGHEST_PRECEDENCE} + 1；实际添加到 MVC 由 {@link WebMvcAutoConfiguration} 统一处理。</li>
+	 *   <li>拦截器优先级为 {@link Ordered#HIGHEST_PRECEDENCE} + 1；实际添加到 MVC 由 {@link WebMvcConfigurerAutoConfiguration} 统一处理。</li>
 	 * </ul>
 	 *
 	 * @param secretKeyStorer 密钥存储器（按应用标识符提供签名密钥）

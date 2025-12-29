@@ -57,10 +57,10 @@ import java.util.List;
  * @see HandlerMethodArgumentResolver
  * @since 1.0.0
  */
-@AutoConfiguration(after = org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration.class)
+@AutoConfiguration
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @ConditionalOnClass({Servlet.class, DispatcherServlet.class, WebMvcConfigurer.class, BaseHttpInterceptor.class})
-public class WebMvcAutoConfiguration implements WebMvcConfigurer {
+public class WebMvcConfigurerAutoConfiguration implements WebMvcConfigurer {
 	/**
 	 * 自定义 HTTP 请求拦截器列表
 	 * <p>
@@ -90,7 +90,7 @@ public class WebMvcAutoConfiguration implements WebMvcConfigurer {
      * @param resolvers    外部参数解析器列表
      * @since 1.0.0
      */
-    public WebMvcAutoConfiguration(List<BaseHttpInterceptor> interceptors, List<HandlerMethodArgumentResolver> resolvers) {
+    public WebMvcConfigurerAutoConfiguration(List<BaseHttpInterceptor> interceptors, List<HandlerMethodArgumentResolver> resolvers) {
 		this.interceptors = interceptors;
 		this.resolvers = resolvers;
 	}
