@@ -64,24 +64,15 @@ pangju:
         async-initial-capacity: 64
         sync-initial-capacity: 64
   web:
-    advice:
-      enable-binder: true
-      enable-exception: true
-      enable-wrapper: true
     exception:
       statistics:
         enabled: true
         endpoints:
           list: /exception/list
           types: /exception/types
-    rate-limit:
-      type: RESILIENCE4J
     signature:
       secret-keys:
         test: test
-  image:
-    # 使用 ImageIO 处理图像
-    type: imageio
 
 logging:
   config: classpath:logback/local.xml
