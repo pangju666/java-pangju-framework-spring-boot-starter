@@ -110,7 +110,7 @@ public @interface EncryptResponseBody {
 	 * <ol>
 	 *   <li><strong>SpEL 表达式</strong>：
 	 *     <ul>
-	 *       <li>格式：SpEL 语法，例如 {@code #headers['My-Secret-Header']}。</li>
+	 *       <li>格式：SpEL 语法，例如 {@code #headers.getFirst('My-Secret-Header')}。</li>
 	 *       <li>上下文变量：{@code headers} (请求头 Map)。</li>
 	 *       <li>场景：动态从请求头或其他上下文获取密钥。</li>
 	 *     </ul>

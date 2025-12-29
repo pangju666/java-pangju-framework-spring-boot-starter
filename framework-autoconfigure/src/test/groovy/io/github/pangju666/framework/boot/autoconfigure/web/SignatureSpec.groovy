@@ -298,7 +298,7 @@ class SignatureSpec extends Specification {
 		request.getHeader("X-Timestamp") >> ""
 		request.getQueryString() >> "appId=${appId}&sign=xx&k=v"
 		secretKeyStorer.loadSecretKey(appId) >> secret
-		def encodedUrl = java.net.URLEncoder.encode("http://localhost/api/test?k=v", java.nio.charset.StandardCharsets.UTF_8)
+		def encodedUrl = URLEncoder.encode("http://localhost/api/test?k=v", StandardCharsets.UTF_8)
 		def expected = SignatureAlgorithm.SHA256.computeDigest([appId, secret, encodedUrl].join("&"))
 		request.getParameter("appId") >> appId
 		request.getParameter("sign") >> expected

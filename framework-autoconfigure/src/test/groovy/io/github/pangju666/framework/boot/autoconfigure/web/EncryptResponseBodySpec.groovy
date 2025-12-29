@@ -12,6 +12,7 @@ import org.jasypt.util.numeric.DecimalNumberEncryptor
 import org.jasypt.util.numeric.IntegerNumberEncryptor
 import org.jasypt.util.text.TextEncryptor
 import org.springframework.core.MethodParameter
+import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpInputMessage
 import org.springframework.http.HttpOutputMessage
 import org.springframework.http.MediaType
@@ -58,12 +59,51 @@ class EncryptResponseBodySpec extends Specification {
 		BinaryEncryptor getBinaryDecryptor(String key) { return getBinaryEncryptor(key) }
 	}
 
+	static class SpelTestBinaryEncryptor implements BinaryEncryptor {
+		String key
+		SpelTestBinaryEncryptor(String key) { this.key = key }
+		@Override
+		byte[] encrypt(byte[] bytes) {
+			return (key + ":" + new String(bytes)).bytes
+		}
+		@Override
+		byte[] decrypt(byte[] bytes) {
+			return bytes
+		}
+	}
+
+	static class SpelTestCryptoFactory implements CryptoFactory {
+		@Override
+		BinaryEncryptor getBinaryEncryptor(String key) {
+			return new SpelTestBinaryEncryptor(key)
+		}
+		@Override
+		TextEncryptor getTextEncryptor(String key) { throw new UnsupportedOperationException() }
+		@Override
+		IntegerNumberEncryptor getIntegerNumberEncryptor(String key) { throw new UnsupportedOperationException() }
+		@Override
+		DecimalNumberEncryptor getDecimalNumberEncryptor(String key) { throw new UnsupportedOperationException() }
+		@Override
+		IntegerNumberEncryptor getIntegerNumberDecryptor(String key) { throw new UnsupportedOperationException() }
+		@Override
+		DecimalNumberEncryptor getDecimalNumberDecryptor(String key) { throw new UnsupportedOperationException() }
+		@Override
+		TextEncryptor getTextDecryptor(String key) { throw new UnsupportedOperationException() }
+		@Override
+		BinaryEncryptor getBinaryDecryptor(String key) { return getBinaryEncryptor(key) }
+	}
+
 	@EncryptResponseBody(factory = [TestCryptoFactory], key = "k", encoding = Encoding.BASE64)
 	static class MethodAnnoController {
 		String s() { "" }
 		byte[] b() { new byte[0] }
 		Object o() { null }
 		Result<String> r() { Result.ok("") }
+	}
+
+	@EncryptResponseBody(factory = [SpelTestCryptoFactory], key = "#headers.getFirst('X-Key')")
+	static class SpelKeyController {
+		String s() { "" }
 	}
 
 	@EncryptResponseBody(factory = [TestCryptoFactory], key = "k")
@@ -76,7 +116,7 @@ class EncryptResponseBodySpec extends Specification {
 		new MethodParameter(c.getDeclaredMethod(m), -1)
 	}
 
-	def factories = [new TestCryptoFactory()]
+	def factories = [new TestCryptoFactory(), new SpelTestCryptoFactory()]
 	def advice = new ResponseBodyEncryptAdvice(factories)
 
 	@Unroll
@@ -186,6 +226,22 @@ class EncryptResponseBodySpec extends Specification {
 
 		expect:
 		new String(Base64.decodeBase64(out.data() as String)).startsWith("X-")
+	}
+
+	def "beforeBodyWrite encrypts with SpEL key from header"() {
+		given:
+		def rt = returnType(SpelKeyController, "s")
+		def body = "abc"
+		def headers = new HttpHeaders()
+		headers.add("X-Key", "my-secret")
+		def request = Mock(ServerHttpRequest)
+		request.getHeaders() >> headers
+
+		when:
+		def res = advice.beforeBodyWrite(body, rt, null, StringHttpMessageConverter, request, Mock(ServerHttpResponse))
+
+		then:
+		new String(Base64.decodeBase64(res as String)) == "my-secret:abc"
 	}
 
 	class NoAnno { String s() { "" } }
