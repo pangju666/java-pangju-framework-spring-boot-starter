@@ -109,7 +109,8 @@ import java.util.Objects;
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @ConditionalOnClass({Servlet.class, DispatcherServlet.class, WebMvcConfigurer.class, Result.class})
 @ConditionalOnBooleanProperty(prefix = "pangju.web.log", name = "enabled")
-@Import({Slf4jReceiverConfiguration.class, MongoReceiverConfiguration.class, DisruptorSenderConfiguration.class, KafkaSenderConfiguration.class})
+@Import({Slf4jReceiverConfiguration.class, MongoReceiverConfiguration.class,
+	DisruptorSenderConfiguration.class, KafkaSenderConfiguration.class})
 @EnableConfigurationProperties(WebLogProperties.class)
 public class WebLogAutoConfiguration {
 	/**

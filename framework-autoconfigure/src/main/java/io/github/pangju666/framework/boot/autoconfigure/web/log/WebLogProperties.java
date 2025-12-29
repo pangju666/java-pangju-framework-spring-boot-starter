@@ -417,14 +417,14 @@ public class WebLogProperties {
 		 */
 		private String kafkaTemplateRef;
 		/**
-		 * 日志发送目标 Topic
+		 * 日志发送目标 Topic，默认 {@code web-log}
 		 * <p>
 		 * 定义日志数据发送到的 Kafka Topic 名称。
 		 * </p>
 		 *
 		 * @since 1.0.0
 		 */
-		private String topic;
+		private String topic = "web-log";
 
 		public String getKafkaTemplateRef() {
 			return kafkaTemplateRef;
