@@ -56,34 +56,6 @@ spring:
     mapper:
       # 不区分枚举名称大小写
       accept-case-insensitive-enums: true
-#    redis:
-#      dynamic:
-#        primary: redis1
-#        databases:
-#          redis1:
-#            host: 127.0.0.1
-#            database: 0
-#            key-serializer: string
-#            value-serializer: json
-#            hash-key-serializer: string
-#            hash-value-serializer: json
-#            lettuce:
-#              cluster:
-#                refresh:
-#                  adaptive: true
-#                  period: 20
-#          redis2:
-#            host: 127.0.0.1
-#            database: 1
-#            key-serializer: string
-#            value-serializer: json
-#            hash-key-serializer: string
-#            hash-value-serializer: json
-#            lettuce:
-#              cluster:
-#                refresh:
-#                  adaptive: true
-#                  period: 20
   kafka:
     bootstrap-servers: 127.0.0.1:9092
     producer:

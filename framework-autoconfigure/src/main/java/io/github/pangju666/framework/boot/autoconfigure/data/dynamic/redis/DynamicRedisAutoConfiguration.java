@@ -17,10 +17,17 @@
 package io.github.pangju666.framework.boot.autoconfigure.data.dynamic.redis;
 
 import io.github.pangju666.framework.boot.data.dynamic.redis.DynamicRedisUtils;
+import io.lettuce.core.resource.ClientResources;
+import io.lettuce.core.resource.DefaultClientResources;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.data.redis.ClientResourcesBuilderCustomizer;
 import org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.redis.core.RedisOperations;
 
@@ -37,7 +44,7 @@ import org.springframework.data.redis.core.RedisOperations;
  * <p><strong>条件</strong></p>
  * <ul>
  *   <li>类路径存在 {@link org.springframework.data.redis.core.RedisOperations}（{@link ConditionalOnClass}）。</li>
- *   <li>在 {@link RedisAutoConfiguration} 之前、{@link ClientResourcesAutoConfiguration} 之后执行（{@link AutoConfiguration}）。</li>
+ *   <li>在 {@link RedisAutoConfiguration} 之前执行（{@link AutoConfiguration}）。</li>
  * </ul>
  *
  * <p><strong>流程</strong>：启用属性绑定 -> 导入注册器 -> 解析配置并注册 Bean -> 标记主数据源 -> 完成装配。</p>
@@ -100,9 +107,39 @@ import org.springframework.data.redis.core.RedisOperations;
  * @see DynamicRedisUtils
  * @since 1.0.0
  */
-@AutoConfiguration(before = RedisAutoConfiguration.class, after = ClientResourcesAutoConfiguration.class)
+@AutoConfiguration(before = RedisAutoConfiguration.class)
 @ConditionalOnClass(RedisOperations.class)
 @EnableConfigurationProperties(DynamicRedisProperties.class)
 @Import(DynamicRedisRegistrar.class)
 public class DynamicRedisAutoConfiguration {
+	/**
+	 * 注册 Lettuce 客户端资源 Bean。
+	 *
+	 * <p>用于管理 Lettuce 客户端的底层资源（如线程池、事件循环等）。</p>
+	 *
+	 * <p><b>生效条件</b></p>
+	 * <ul>
+	 *   <li>类路径中存在 {@link ClientResources} 类。</li>
+	 *   <li>容器中尚未配置 {@link ClientResources} Bean。</li>
+	 *   <li>满足 {@link OnDynamicRedisLettuceCondition} 条件（即存在使用 Lettuce 作为 Redis 客户端的数据源）。</li>
+	 * </ul>
+	 *
+	 * <p><b>自定义配置</b></p>
+	 * <ul>
+	 *   <li>可以通过注册 {@link ClientResourcesBuilderCustomizer} Bean 来定制客户端资源的构建过程。</li>
+	 * </ul>
+	 *
+	 * @param customizers 客户端资源构建器定制器
+	 * @return 默认的 Lettuce 客户端资源实例
+	 * @since 1.0.0
+	 */
+	@ConditionalOnClass(ClientResources.class)
+	@ConditionalOnMissingBean(ClientResources.class)
+	@Conditional(OnDynamicRedisLettuceCondition.class)
+	@Bean(destroyMethod = "shutdown")
+	public DefaultClientResources lettuceClientResources(ObjectProvider<ClientResourcesBuilderCustomizer> customizers) {
+		DefaultClientResources.Builder builder = DefaultClientResources.builder();
+		customizers.orderedStream().forEach((customizer) -> customizer.customize(builder));
+		return builder.build();
+	}
 }

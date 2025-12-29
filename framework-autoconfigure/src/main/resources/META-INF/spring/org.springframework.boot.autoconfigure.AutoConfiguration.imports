@@ -8,7 +8,6 @@ io.github.pangju666.framework.boot.autoconfigure.data.mybatisplus.MybatisPlusPlu
 io.github.pangju666.framework.boot.autoconfigure.data.redis.RedisScanAutoConfiguration
 io.github.pangju666.framework.boot.autoconfigure.data.mongo.MongoRepositoriesAutoConfiguration
 io.github.pangju666.framework.boot.autoconfigure.data.dynamic.redis.DynamicRedisAutoConfiguration
-io.github.pangju666.framework.boot.autoconfigure.data.dynamic.redis.ClientResourcesAutoConfiguration
 io.github.pangju666.framework.boot.autoconfigure.data.dynamic.mongo.DynamicMongoAutoConfiguration
 io.github.pangju666.framework.boot.autoconfigure.data.dynamic.mongo.DynamicMongoRepositoriesAutoConfiguration
 io.github.pangju666.framework.boot.autoconfigure.web.advice.bind.RequestParamBindingAdvice
