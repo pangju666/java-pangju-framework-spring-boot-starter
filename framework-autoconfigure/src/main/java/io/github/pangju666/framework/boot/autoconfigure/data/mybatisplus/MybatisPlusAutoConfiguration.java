@@ -17,10 +17,6 @@
 package io.github.pangju666.framework.boot.autoconfigure.data.mybatisplus;
 
 import com.baomidou.mybatisplus.core.injector.ISqlInjector;
-import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
-import com.baomidou.mybatisplus.extension.plugins.inner.BlockAttackInnerInterceptor;
-import com.baomidou.mybatisplus.extension.plugins.inner.OptimisticLockerInnerInterceptor;
-import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
 import io.github.pangju666.framework.boot.data.mybatisplus.injector.TableLogicFillSqlInjector;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionFactoryBean;
@@ -28,80 +24,48 @@ import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnSingleCandidate;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
-import org.springframework.core.annotation.Order;
 
 import javax.sql.DataSource;
 
 /**
- * MyBatis-Plus 自动配置。
+ * MyBatis-Plus 自动配置扩展类。
  *
- * <p><strong>概述</strong></p>
+ * <p>用于增强 MyBatis-Plus 的默认配置，提供额外的功能支持。</p>
+ *
+ * <p><b>主要功能</b></p>
  * <ul>
- *   <li>注册 {@link MybatisPlusInterceptor} 并按属性启用内置拦截器（分页、乐观锁、防全表更新与删除）。</li>
- *   <li>注册自定义 SQL 注入器 {@link TableLogicFillSqlInjector}。</li>
+ *   <li>注册 {@link TableLogicFillSqlInjector}：支持逻辑删除时的自定义字段填充（如删除时间、操作人等）。</li>
  * </ul>
  *
- * <p><strong>条件</strong></p>
+ * <p><b>生效顺序</b></p>
  * <ul>
- *   <li>类路径存在 {@link SqlSessionFactory} 与 {@link SqlSessionFactoryBean}。</li>
- *   <li>存在单个 {@link javax.sql.DataSource} 候选。</li>
- *   <li>启用属性绑定：{@link EnableConfigurationProperties}({@link MybatisPlusInterceptorProperties})。</li>
+ *   <li>在 {@link com.baomidou.mybatisplus.autoconfigure.MybatisPlusAutoConfiguration} 之前执行，
+ *   以便提供的 Bean（如 {@link ISqlInjector}）能被官方自动配置类引用。</li>
  * </ul>
  *
  * @author pangju666
+ * @see TableLogicFillSqlInjector
  * @since 1.0.0
  */
-@AutoConfiguration
+@AutoConfiguration(before = com.baomidou.mybatisplus.autoconfigure.MybatisPlusAutoConfiguration.class)
 @ConditionalOnClass({SqlSessionFactory.class, SqlSessionFactoryBean.class})
 @ConditionalOnSingleCandidate(DataSource.class)
-@EnableConfigurationProperties(MybatisPlusInterceptorProperties.class)
 public class MybatisPlusAutoConfiguration {
-    /**
-     * 创建并配置 {@link MybatisPlusInterceptor}。
-     *
-     * <p><b>流程</b>：初始化拦截器 -> 按属性启用分页 -> 按属性启用乐观锁（支持 Wrapper 模式） -> 按属性启用防全表更新与删除 -> 返回。</p>
-     * <p><b>约束</b>：仅启用当前实现内置的三类拦截器（分页/乐观锁/防全表），不包含多租户、动态表名、数据权限等。</p>
-     * <p><b>顺序说明</b>：当前实现的注册顺序为：分页 -> 乐观锁 -> 防全表更新与删除，与方法体一致。</p>
-     *
-     * @param properties 插件配置属性
-     * @return 配置好的拦截器实例
-     * @since 1.0.0
-     */
-	@Order
-	@Bean
-	public MybatisPlusInterceptor mybatisPlusInterceptor(MybatisPlusInterceptorProperties properties) {
-		MybatisPlusInterceptor interceptor = new MybatisPlusInterceptor();
-
-		// 启用分页插件 https://baomidou.com/plugins/pagination/
-		if (properties.getPagination().isEnabled()) {
-			interceptor.addInnerInterceptor(new PaginationInnerInterceptor(properties.getPagination().getDbType()));
-		}
-
-		// 启用乐观锁插件 https://baomidou.com/plugins/optimistic-locker/
-		if (properties.getOptimisticLocker().isEnabled()) {
-			boolean wrapperMode = properties.getOptimisticLocker().isWrapperMode();
-			interceptor.addInnerInterceptor(new OptimisticLockerInnerInterceptor(wrapperMode));
-		}
-
-		// 启用防全表更新与删除插件 https://baomidou.com/plugins/block-attack/
-		if (properties.getBlockAttack().isEnabled()) {
-			interceptor.addInnerInterceptor(new BlockAttackInnerInterceptor());
-		}
-
-		return interceptor;
-	}
-
 	/**
-	 * 注册自定义 SQL 注入器。
+	 * 注册逻辑删除字段填充 SQL 注入器。
 	 *
-	 * <p><b>流程</b>：缺少 {@link ISqlInjector} Bean -> 创建 {@link TableLogicFillSqlInjector} -> 返回。</p>
-	 * <p><b>约束</b>：受 {@link org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean} 控制，仅在未定义其它注入器时注册。</p>
-	 * <p><b>作用</b>：提供逻辑字段填充等 SQL 注入扩展能力，配合项目内约定的实体与拦截器使用。</p>
+	 * <p>当容器中不存在 {@link ISqlInjector} 类型的 Bean 时，注册该注入器。</p>
 	 *
-	 * @return 注入器实例
-	 * @since 1.0.0
+	 * <p><b>功能说明</b></p>
+	 * <ul>
+	 *   <li>替换默认的 SQL 注入器，增强删除相关方法的逻辑。</li>
+	 *   <li>支持识别 {@link io.github.pangju666.framework.boot.data.mybatisplus.annotation.TableLogicFill} 注解，
+	 *   在执行逻辑删除时自动填充指定字段的值。</li>
+	 * </ul>
+	 *
+	 * @return 逻辑删除字段填充 SQL 注入器实例
+	 * @see TableLogicFillSqlInjector
 	 */
 	@ConditionalOnMissingBean(ISqlInjector.class)
 	@Bean
