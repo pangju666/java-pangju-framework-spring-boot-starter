@@ -6,23 +6,14 @@
 	<parent>
 		<groupId>io.github.pangju666.framework.boot</groupId>
 		<artifactId>framework-starter-parent</artifactId>
-		<version>1.0.0</version>
+		<version>2.0.0</version>
 	</parent>
 	<artifactId>framework-starter-crypto</artifactId>
 
 	<dependencies>
 		<dependency>
 			<groupId>io.github.pangju666.framework.boot</groupId>
-			<artifactId>framework-boot</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>io.github.pangju666.framework.boot</groupId>
-			<artifactId>framework-autoconfigure</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter</artifactId>
+			<artifactId>framework-starter-spring</artifactId>
 		</dependency>
 
 		<dependency>
@@ -34,4 +25,21 @@
 			<artifactId>caffeine</artifactId>
 		</dependency>
 	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</build>
 </project>

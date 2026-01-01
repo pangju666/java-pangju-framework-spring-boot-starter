@@ -1,0 +1,2 @@
+io.github.pangju666.framework.boot.data.mybatisplus.autoconfigure.MybatisPlusISqlInjectorAutoConfiguration
+io.github.pangju666.framework.boot.data.mybatisplus.autoconfigure.MybatisPlusPluginsAutoConfiguration

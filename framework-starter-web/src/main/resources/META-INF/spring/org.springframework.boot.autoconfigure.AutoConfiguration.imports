@@ -1,0 +1,11 @@
+io.github.pangju666.framework.boot.web.autoconfigure.advice.bind.RequestParamBindingAdvice
+io.github.pangju666.framework.boot.web.autoconfigure.advice.wrapper.ResponseBodyWrapperAdvice
+io.github.pangju666.framework.boot.web.autoconfigure.advice.exception.GlobalDataExceptionAdvice
+io.github.pangju666.framework.boot.web.autoconfigure.advice.exception.GlobalValidationExceptionAdvice
+io.github.pangju666.framework.boot.web.autoconfigure.advice.exception.GlobalTomcatFileUploadExceptionAdvice
+io.github.pangju666.framework.boot.web.autoconfigure.advice.exception.GlobalWebExceptionAdvice
+io.github.pangju666.framework.boot.web.autoconfigure.advice.exception.GlobalInternalExceptionAdvice
+io.github.pangju666.framework.boot.web.autoconfigure.advice.AdviceAutoConfiguration
+io.github.pangju666.framework.boot.web.autoconfigure.exception.HttpExceptionInfoAutoConfiguration
+io.github.pangju666.framework.boot.web.autoconfigure.cors.CorsAutoConfiguration
+io.github.pangju666.framework.boot.web.autoconfigure.WebMvcConfigurerAutoConfiguration
