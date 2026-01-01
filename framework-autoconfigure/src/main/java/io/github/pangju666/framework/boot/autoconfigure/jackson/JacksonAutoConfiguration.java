@@ -17,7 +17,9 @@
 package io.github.pangju666.framework.boot.autoconfigure.jackson;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.github.pangju666.framework.boot.jackson.deserializer.DateJsonDeserializer;
 import io.github.pangju666.framework.boot.jackson.deserializer.InstantJsonDeserializer;
+import io.github.pangju666.framework.boot.jackson.serializer.DateJsonSerializer;
 import io.github.pangju666.framework.boot.jackson.serializer.InstantJsonSerializer;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty;
@@ -29,43 +31,60 @@ import org.springframework.core.annotation.Order;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
 import java.time.Instant;
+import java.util.Date;
 
 /**
  * Jackson 自动配置。
  * <p>
- * 自定义 Jackson 的类型处理；当前注册 {@link Instant} 的序列化/反序列化：
+ * 提供 Jackson 的自定义配置，主要用于增强时间类型的序列化与反序列化行为：
  * <ul>
- *   <li>序列化：{@link InstantJsonSerializer} 将 {@link Instant} 写为毫秒时间戳</li>
- *   <li>反序列化：{@link InstantJsonDeserializer} 将毫秒时间戳读为 {@link Instant}</li>
+ *   <li>{@link Date} 类型：可通过配置 {@code pangju.jackson.date-as-timestamps} 控制是否作为时间戳处理（默认开启）。</li>
+ *   <li>{@link Instant} 类型：可通过配置 {@code pangju.jackson.instant-as-timestamp} 控制是否作为时间戳处理（默认开启）。</li>
  * </ul>
- * 优先级：在 Spring Boot 默认 Jackson 自动配置之前执行，确保自定义处理生效。
- * 条件：当配置项 {@code pangju.jackson.instant-as-timestamp=true} 或缺省时启用。
- * </p>
+ * 自动配置逻辑：
+ * <ul>
+ *   <li>在 Spring Boot 默认的 {@link org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration} 之前执行，确保自定义配置优先生效。</li>
+ * </ul>
  *
  * @author pangju666
- * @see Instant
+ * @see DateJsonSerializer
+ * @see DateJsonDeserializer
  * @see InstantJsonSerializer
  * @see InstantJsonDeserializer
  * @since 1.0.0
  */
 @AutoConfiguration(before = org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration.class)
-@ConditionalOnBooleanProperty(prefix = "pangju.jackson", name = "instant-as-timestamp", matchIfMissing = true)
 @ConditionalOnClass({Jackson2ObjectMapperBuilder.class, ObjectMapper.class})
 public class JacksonAutoConfiguration {
-    /**
-     * 创建并注册 Jackson 构建定制器。
-     * <p>
-     * 将 {@link Instant} 的序列化/反序列化器注册到 {@link Jackson2ObjectMapperBuilder}。
-     * </p>
-     *
-     * @return Jackson2ObjectMapperBuilder 的自定义器实例
-     * @since 1.0.0
-     */
+	/**
+	 * 配置 Date 类型的自定义序列化器与反序列化器。
+	 * <p>
+	 * 通过配置属性 {@code pangju.jackson.date-as-timestamps} 控制（默认为 true）。
+	 *
+	 * @return 定制器 Lambda
+	 */
+	@ConditionalOnBooleanProperty(prefix = "pangju.jackson", name = "date-as-timestamps", matchIfMissing = true)
 	@Order(Ordered.HIGHEST_PRECEDENCE)
 	@Bean
-	public Jackson2ObjectMapperBuilderCustomizer jackson2ObjectMapperBuilderCustomizer() {
-		return jacksonObjectMapperBuilder -> jacksonObjectMapperBuilder
-			.serializerByType(Instant.class, new InstantJsonSerializer())
-			.deserializerByType(Instant.class, new InstantJsonDeserializer());
+	public Jackson2ObjectMapperBuilderCustomizer dateCustomizer() {
+		return builder -> builder
+			.deserializerByType(Date.class, new DateJsonDeserializer())
+			.serializerByType(Date.class, new DateJsonSerializer());
+	}
+
+	/**
+	 * 配置 Instant 类型的自定义序列化器与反序列化器。
+	 * <p>
+	 * 通过配置属性 {@code pangju.jackson.instant-as-timestamp} 控制（默认为 true）。
+	 *
+	 * @return 定制器 Lambda
+	 */
+	@ConditionalOnBooleanProperty(prefix = "pangju.jackson", name = "instant-as-timestamp", matchIfMissing = true)
+	@Order(Ordered.HIGHEST_PRECEDENCE)
+	@Bean
+	public Jackson2ObjectMapperBuilderCustomizer instantCustomizer() {
+		return builder -> builder
+			.deserializerByType(Instant.class, new InstantJsonDeserializer())
+			.serializerByType(Instant.class, new InstantJsonSerializer());
 	}
 }
