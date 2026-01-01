@@ -17,7 +17,6 @@
 package io.github.pangju666.framework.boot.web.log.receiver.impl.mongo;
 
 import io.github.pangju666.framework.boot.web.log.model.WebLog;
-import io.github.pangju666.framework.data.mongodb.lang.MongoConstants;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 import org.springframework.data.mongodb.core.mapping.FieldType;
@@ -47,7 +46,7 @@ public class WebLogDocument extends WebLog {
 	 * @since 1.0.0
 	 */
 	@MongoId(value = FieldType.STRING)
-	@Field(name = MongoConstants.ID_FIELD_NAME)
+	@Field(name = "_id")
 	private String id;
 
 	public String getId() {
