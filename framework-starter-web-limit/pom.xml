@@ -47,6 +47,7 @@
 	</dependencies>
 
 	<build>
+		<testSourceDirectory>src/test/groovy</testSourceDirectory>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -59,6 +60,10 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-source-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.gmavenplus</groupId>
+				<artifactId>gmavenplus-plugin</artifactId>
 			</plugin>
 		</plugins>
 	</build>

@@ -1,0 +1,6 @@
+pangju:
+  web:
+    log:
+      enabled: true
+      slf4j:
+        logger: WebLogLogger
