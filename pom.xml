@@ -274,9 +274,6 @@
 							</goals>
 						</execution>
 					</executions>
-					<configuration>
-						<skipTests>true</skipTests>
-					</configuration>
 				</plugin>
 				<plugin>
 					<groupId>com.ly.smart-doc</groupId>
