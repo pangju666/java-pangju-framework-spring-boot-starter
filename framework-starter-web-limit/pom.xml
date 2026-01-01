@@ -17,6 +17,10 @@
 		</license>
 	</licenses>
 
+	<properties>
+		<skipTests>true</skipTests>
+	</properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>io.github.pangju666.framework.boot</groupId>

@@ -3,9 +3,9 @@
 		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
-		<groupId>io.github.pangju666</groupId>
-		<artifactId>pangju-dependencies</artifactId>
-		<version>2.0.0</version>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>4.0.1</version>
 		<relativePath/>
 	</parent>
 	<groupId>io.github.pangju666.framework.boot</groupId>
@@ -37,9 +37,14 @@
 
 	<properties>
 		<framework.version>2.0.0</framework.version>
+		<spring-boot.version>4.0.1</spring-boot.version>
+		<mapstruct.version>1.6.3</mapstruct.version>
 		<lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
 		<im4java.version>1.2.0</im4java.version>
 		<gm4java.version>1.1.1</gm4java.version>
+		<gmavenplus-plugin.version>4.2.1</gmavenplus-plugin.version>
+		<smart-doc-plugin.version>3.1.2</smart-doc-plugin.version>
+		<gpg-plugin.version>3.2.8</gpg-plugin.version>
 	</properties>
 
 	<licenses>
@@ -182,6 +187,18 @@
 		<pluginManagement>
 			<plugins>
 				<plugin>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-maven-plugin</artifactId>
+					<configuration>
+						<excludes>
+							<exclude>
+								<groupId>org.projectlombok</groupId>
+								<artifactId>lombok</artifactId>
+							</exclude>
+						</excludes>
+					</configuration>
+				</plugin>
+				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
 					<configuration>
@@ -214,6 +231,35 @@
 						</annotationProcessorPaths>
 					</configuration>
 				</plugin>
+				<!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-javadoc-plugin -->
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-javadoc-plugin</artifactId>
+					<configuration>
+						<doclint>none</doclint>
+					</configuration>
+					<executions>
+						<execution>
+							<id>attach-javadocs</id>
+							<goals>
+								<goal>jar</goal>
+							</goals>
+						</execution>
+					</executions>
+				</plugin>
+				<!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-source-plugin -->
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-source-plugin</artifactId>
+					<executions>
+						<execution>
+							<id>attach-sources</id>
+							<goals>
+								<goal>jar-no-fork</goal>
+							</goals>
+						</execution>
+					</executions>
+				</plugin>
 				<plugin>
 					<groupId>org.codehaus.gmavenplus</groupId>
 					<artifactId>gmavenplus-plugin</artifactId>
@@ -224,41 +270,44 @@
 							</goals>
 						</execution>
 					</executions>
-					<configuration>
-						<skipTests>true</skipTests>
-					</configuration>
-				</plugin>
-				<plugin>
-					<groupId>org.springframework.boot</groupId>
-					<artifactId>spring-boot-maven-plugin</artifactId>
-					<configuration>
-						<excludes>
-							<exclude>
-								<groupId>org.projectlombok</groupId>
-								<artifactId>lombok</artifactId>
-							</exclude>
-						</excludes>
-					</configuration>
 				</plugin>
 				<plugin>
 					<groupId>com.ly.smart-doc</groupId>
 					<artifactId>smart-doc-maven-plugin</artifactId>
 					<configuration>
 						<configFile>${basedir}/src/main/resources/smart-doc.json</configFile>
-						<includes>
+						<!--<includes>-->
 							<!-- 使用了mybatis-plus的Page分页需要include所使用的源码包 -->
 							<!--<include>com.baomidou:mybatis-plus-extension</include>-->
 							<!-- 使用了mybatis-plus的IPage分页需要include mybatis-plus-core-->
 							<!--<include>com.baomidou:mybatis-plus-core</include>-->
 							<!-- 使用了jpa的分页需要include所使用的源码包 -->
 							<!--<include>org.springframework.data:spring-data-commons</include>-->
-						</includes>
+						<!--</includes>-->
 					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-gpg-plugin</artifactId>
+					<version>${gpg-plugin.version}</version>
+					<executions>
+						<execution>
+							<id>sign-artifacts</id>
+							<phase>verify</phase>
+							<goals>
+								<goal>sign</goal>
+							</goals>
+						</execution>
+					</executions>
 				</plugin>
 			</plugins>
 		</pluginManagement>
 
 		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-gpg-plugin</artifactId>
@@ -270,10 +319,10 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>versions-maven-plugin</artifactId>
+				<inherited>false</inherited>
 				<configuration>
 					<generateBackupPoms>false</generateBackupPoms>
 				</configuration>
-				<inherited>false</inherited>
 			</plugin>
 		</plugins>
 	</build>
