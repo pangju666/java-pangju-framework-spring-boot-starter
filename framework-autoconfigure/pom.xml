@@ -160,9 +160,15 @@
 			<optional>true</optional>
 		</dependency>
 		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-tomcat</artifactId>
+			<groupId>org.apache.tomcat.embed</groupId>
+			<artifactId>tomcat-embed-core</artifactId>
 			<optional>true</optional>
+			<exclusions>
+				<exclusion>
+					<groupId>org.apache.tomcat</groupId>
+					<artifactId>tomcat-annotations-api</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 		<!-- Web limit -->
@@ -218,7 +224,6 @@
 		<dependency>
 			<groupId>org.apache.tika</groupId>
 			<artifactId>tika-parser-image-module</artifactId>
-			<version>${tika.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
