@@ -42,6 +42,7 @@
 		<lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
 		<im4java.version>1.2.0</im4java.version>
 		<gm4java.version>1.1.1</gm4java.version>
+		<groovy.version>4.0.29</groovy.version>
 		<gmavenplus-plugin.version>4.2.1</gmavenplus-plugin.version>
 		<smart-doc-plugin.version>3.1.2</smart-doc-plugin.version>
 		<gpg-plugin.version>3.2.8</gpg-plugin.version>
@@ -163,7 +164,7 @@
 			</dependency>
 			<dependency>
 				<groupId>io.github.pangju666.framework.boot</groupId>
-				<artifactId>framework-starter-spock-test</artifactId>
+				<artifactId>framework-starter-test-spock</artifactId>
 				<version>2.0.0</version>
 				<scope>test</scope>
 			</dependency>
