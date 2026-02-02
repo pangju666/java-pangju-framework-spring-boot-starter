@@ -90,10 +90,10 @@ public class StrongCryptoFactory implements CryptoFactory {
 			.build();
 		this.textEncryptorCache = Caffeine.newBuilder()
 			.maximumSize(maxKeySize)
-			.build();;
+			.build();
 		this.integerEncryptorCache = Caffeine.newBuilder()
 			.maximumSize(maxKeySize)
-			.build();;
+			.build();
 		this.decimalEncryptorCache = Caffeine.newBuilder()
 			.maximumSize(maxKeySize)
 			.build();
