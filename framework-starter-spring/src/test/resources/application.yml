@@ -1,17 +1,3 @@
-server:
-  servlet:
-    context-path: / # 上下文路径
-    encoding:
-      force: true # 强制编码请求和响应（默认使用utf-8，防止乱码）
-  port: 80   # 端口号设置
-  tomcat:
-    max-connections: 10000 # 最大连接数
-    threads:
-      max: 800 # 最大工作线程数
-      min-spare: 100 # 最小空闲线程数
-    accept-count: 100 # 等待队列长度
-    connection-timeout: 20000
-
 spring:
   # 禁用 banner
   main:
@@ -19,43 +5,6 @@ spring:
   threads:
     virtual:
       enabled: true
-#  task:
-#    execution:
-#      pool:
-#        core-size: 8 # cpu密集型设置cpu核心数，io密集型则设置为cpu核心数的2-3倍
-#        max-size: 16
-#        queue-capacity: 100
-#        keep-alive: 60s
-#      thread-name-prefix: async-task-
-#    scheduling:
-#      pool:
-#        size: 4
-#      thread-name-prefix: scheduling-
-  servlet:
-    multipart:
-      max-file-size: 5GB  # 最大上传文件大小
-      max-request-size: 5130MB # 最大请求体大小（建议比最大上传文件大小大10MB)
-      file-size-threshold: 2KB
-      resolve-lazily: false
-  jackson:
-    # 设置时区
-    time-zone: GMT+8
-    # 设置时间格式
-    date-format: yyyy-MM-dd HH:mm:ss
-    # 设置语言
-    locale: CHINESE
-    # 序列化策略
-    serialization:
-      # Date对象序列化为时间戳
-      write-dates-as-timestamps: true
-      # 时间戳禁止精准到纳秒
-      write-date-timestamps-as-nanoseconds: false
-    generator:
-      # 浮点数过大时防止返回科学计数
-      write-bigdecimal-as-plain: true
-    mapper:
-      # 不区分枚举名称大小写
-      accept-case-insensitive-enums: true
 
 pangju:
   task:
@@ -63,16 +12,6 @@ pangju:
       once:
         async-initial-capacity: 64
         sync-initial-capacity: 64
-  web:
-    exception:
-      statistics:
-        enabled: true
-        endpoints:
-          list: /exception/list
-          types: /exception/types
-    signature:
-      secret-keys:
-        test: test
 
 logging:
   config: classpath:logback/local.xml

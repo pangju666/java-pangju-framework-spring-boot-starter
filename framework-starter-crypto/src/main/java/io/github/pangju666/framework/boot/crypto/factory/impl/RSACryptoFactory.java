@@ -181,7 +181,7 @@ public class RSACryptoFactory implements CryptoFactory {
 		return binaryEncryptEncryptorCache.get(mapKey, k -> {
 			try {
 				RSABinaryEncryptor encryptor = new RSABinaryEncryptor(transformation);
-				encryptor.setPublicKey(RSAKeyPair.fromBase64String(publicKey, null).getPublicKey());
+				encryptor.setPublicKey(RSAKeyPair.fromBase64String(publicKey, null).publicKey());
 				encryptor.initialize();
 				return encryptor;
 			} catch (InvalidKeySpecException e) {
@@ -210,7 +210,7 @@ public class RSACryptoFactory implements CryptoFactory {
 				}
 
 				RSATextEncryptor encryptor = new RSATextEncryptor(transformation);
-				encryptor.setPublicKey(RSAKeyPair.fromBase64String(publicKey, null).getPublicKey());
+				encryptor.setPublicKey(RSAKeyPair.fromBase64String(publicKey, null).publicKey());
 				encryptor.initialize();
 				return encryptor;
 			} catch (InvalidKeySpecException e) {
@@ -239,7 +239,7 @@ public class RSACryptoFactory implements CryptoFactory {
 				}
 
 				RSAIntegerNumberEncryptor encryptor = new RSAIntegerNumberEncryptor(transformation);
-				encryptor.setPublicKey(RSAKeyPair.fromBase64String(publicKey, null).getPublicKey());
+				encryptor.setPublicKey(RSAKeyPair.fromBase64String(publicKey, null).publicKey());
 				encryptor.initialize();
 				return encryptor;
 			} catch (InvalidKeySpecException e) {
@@ -268,7 +268,7 @@ public class RSACryptoFactory implements CryptoFactory {
 				}
 
 				RSADecimalNumberEncryptor encryptor = new RSADecimalNumberEncryptor(transformation);
-				encryptor.setPublicKey(RSAKeyPair.fromBase64String(publicKey, null).getPublicKey());
+				encryptor.setPublicKey(RSAKeyPair.fromBase64String(publicKey, null).publicKey());
 				encryptor.initialize();
 				return encryptor;
 			} catch (InvalidKeySpecException e) {
@@ -292,7 +292,7 @@ public class RSACryptoFactory implements CryptoFactory {
 		return binaryDecryptEncryptorCache.get(mapKey, k -> {
 			try {
 				RSABinaryEncryptor encryptor = new RSABinaryEncryptor(transformation);
-				encryptor.setPrivateKey(RSAKeyPair.fromBase64String( null, protectedKey).getPrivateKey());
+				encryptor.setPrivateKey(RSAKeyPair.fromBase64String( null, protectedKey).privateKey());
 				encryptor.initialize();
 				return encryptor;
 			} catch (InvalidKeySpecException e) {
@@ -321,7 +321,7 @@ public class RSACryptoFactory implements CryptoFactory {
 				}
 
 				RSATextEncryptor encryptor = new RSATextEncryptor(transformation);
-				encryptor.setPrivateKey(RSAKeyPair.fromBase64String( null, protectedKey).getPrivateKey());
+				encryptor.setPrivateKey(RSAKeyPair.fromBase64String( null, protectedKey).privateKey());
 				encryptor.initialize();
 				return encryptor;
 			} catch (InvalidKeySpecException e) {
@@ -350,7 +350,7 @@ public class RSACryptoFactory implements CryptoFactory {
 				}
 
 				RSAIntegerNumberEncryptor encryptor = new RSAIntegerNumberEncryptor(transformation);
-				encryptor.setPrivateKey(RSAKeyPair.fromBase64String( null, protectedKey).getPrivateKey());
+				encryptor.setPrivateKey(RSAKeyPair.fromBase64String( null, protectedKey).privateKey());
 				encryptor.initialize();
 				return encryptor;
 			} catch (InvalidKeySpecException e) {
@@ -379,7 +379,7 @@ public class RSACryptoFactory implements CryptoFactory {
 				}
 
 				RSADecimalNumberEncryptor encryptor = new RSADecimalNumberEncryptor(transformation);
-				encryptor.setPrivateKey(RSAKeyPair.fromBase64String(null, protectedKey).getPrivateKey());
+				encryptor.setPrivateKey(RSAKeyPair.fromBase64String(null, protectedKey).privateKey());
 				encryptor.initialize();
 				return encryptor;
 			} catch (InvalidKeySpecException e) {

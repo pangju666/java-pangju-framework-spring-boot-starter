@@ -122,9 +122,7 @@ class JedisConnectionConfiguration extends DataRedisConnectionConfiguration {
 		if (pool.getTimeBetweenEvictionRuns() != null) {
 			config.setTimeBetweenEvictionRuns(pool.getTimeBetweenEvictionRuns());
 		}
-		if (pool.getMaxWait() != null) {
-			config.setMaxWait(pool.getMaxWait());
-		}
+		config.setMaxWait(pool.getMaxWait());
 		return config;
 	}
 

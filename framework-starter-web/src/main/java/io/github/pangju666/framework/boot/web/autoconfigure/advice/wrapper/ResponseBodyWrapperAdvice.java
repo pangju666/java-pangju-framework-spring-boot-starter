@@ -19,6 +19,7 @@ package io.github.pangju666.framework.boot.web.autoconfigure.advice.wrapper;
 import io.github.pangju666.framework.boot.web.annotation.UnwrappedResponse;
 import io.github.pangju666.framework.web.model.Result;
 import jakarta.servlet.Servlet;
+import org.jspecify.annotations.Nullable;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
@@ -32,10 +33,8 @@ import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.http.converter.json.AbstractJsonHttpMessageConverter;
 import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
-import org.springframework.lang.Nullable;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
@@ -59,7 +58,6 @@ import java.util.Objects;
  * <p>
  * 支持的消息转换器：
  * <ul>
- *   <li>{@link MappingJackson2HttpMessageConverter}</li>
  *   <li>{@link AbstractJsonHttpMessageConverter}</li>
  *   <li>{@link StringHttpMessageConverter}</li>
  * </ul>
@@ -96,7 +94,7 @@ public class ResponseBodyWrapperAdvice implements ResponseBodyAdvice<Object> {
 	 * 规则：
 	 * </p>
 	 * <ul>
-	 *   <li>支持的转换器：{@link MappingJackson2HttpMessageConverter}、{@link AbstractJsonHttpMessageConverter}、{@link StringHttpMessageConverter}</li>
+	 *   <li>支持的转换器：{@link AbstractJsonHttpMessageConverter}、{@link StringHttpMessageConverter}</li>
 	 *   <li>排除条件：返回类型为{@link ResponseEntity}或{@link Result}，或方法标注{@link UnwrappedResponse}</li>
 	 * </ul>
 	 * <p>

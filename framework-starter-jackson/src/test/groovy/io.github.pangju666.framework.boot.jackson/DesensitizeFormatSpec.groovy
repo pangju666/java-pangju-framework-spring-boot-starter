@@ -1,14 +1,14 @@
 package io.github.pangju666.framework.boot.jackson
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.node.ObjectNode
 import io.github.pangju666.framework.boot.jackson.annotation.DesensitizeFormat
 import io.github.pangju666.framework.boot.jackson.enums.DesensitizedType
-
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.jackson.autoconfigure.JacksonAutoConfiguration
 import org.springframework.boot.test.context.SpringBootContextLoader
 import org.springframework.test.context.ContextConfiguration
 import spock.lang.Specification
+import tools.jackson.databind.ObjectMapper
+import tools.jackson.databind.node.ObjectNode
 
 @ContextConfiguration(classes = JacksonAutoConfiguration.class, loader = SpringBootContextLoader.class)
 class DesensitizeFormatSpec extends Specification {
@@ -54,7 +54,7 @@ class DesensitizeFormatSpec extends Specification {
 		when:
 		def json = mapper.writeValueAsString(dto)
 		def node = (ObjectNode) mapper.readTree(json)
-		def masked = node.get("email").asText()
+		def masked = node.get("email").asString()
 		then:
 		masked != dto.email
 		masked.contains("@")

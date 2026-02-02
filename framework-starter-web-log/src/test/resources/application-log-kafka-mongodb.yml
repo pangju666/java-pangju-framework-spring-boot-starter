@@ -1,8 +1,4 @@
 spring:
-  data:
-    mongodb:
-      host: 127.0.0.1
-      database: test
   kafka:
     bootstrap-servers: 127.0.0.1:9092
     producer:
@@ -30,6 +26,9 @@ spring:
               packages: "*"
     listener:
       ack-mode: manual_immediate
+  mongodb:
+    database: test
+    host: 127.0.0.1
 
 pangju:
   web:

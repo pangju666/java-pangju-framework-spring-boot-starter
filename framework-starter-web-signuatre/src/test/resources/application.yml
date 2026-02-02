@@ -1,8 +1,6 @@
 server:
   servlet:
     context-path: / # 上下文路径
-    encoding:
-      force: true # 强制编码请求和响应（默认使用utf-8，防止乱码）
   port: 80   # 端口号设置
   tomcat:
     max-connections: 10000 # 最大连接数
@@ -37,6 +35,8 @@ spring:
       max-request-size: 5130MB # 最大请求体大小（建议比最大上传文件大小大10MB)
       file-size-threshold: 2KB
       resolve-lazily: false
+    encoding:
+      force: true
   jackson:
     # 设置时区
     time-zone: GMT+8
@@ -44,25 +44,11 @@ spring:
     date-format: yyyy-MM-dd HH:mm:ss
     # 设置语言
     locale: CHINESE
-    # 序列化策略
-    serialization:
-      # Date对象序列化为时间戳
-      write-dates-as-timestamps: true
-      # 时间戳禁止精准到纳秒
-      write-date-timestamps-as-nanoseconds: false
-    generator:
-      # 浮点数过大时防止返回科学计数
-      write-bigdecimal-as-plain: true
     mapper:
       # 不区分枚举名称大小写
       accept-case-insensitive-enums: true
 
 pangju:
-  task:
-    execution:
-      once:
-        async-initial-capacity: 64
-        sync-initial-capacity: 64
   web:
     exception:
       statistics:
@@ -73,6 +59,10 @@ pangju:
     signature:
       secret-keys:
         test: test
+  jackson:
+    write-bigdecimal-as-plain: true
+    write-date-as-timestamps: true
+    write-instant-as-timestamp: true
 
 logging:
   config: classpath:logback/local.xml

@@ -4,9 +4,10 @@ import com.baomidou.mybatisplus.autoconfigure.MybatisPlusAutoConfiguration
 import com.baomidou.mybatisplus.autoconfigure.MybatisPlusLanguageDriverAutoConfiguration
 import com.baomidou.mybatisplus.autoconfigure.MybatisPlusProperties
 import com.baomidou.mybatisplus.core.injector.ISqlInjector
+import io.github.pangju666.framework.boot.data.mybatisplus.autoconfigure.MybatisPlusISqlInjectorAutoConfiguration
 import io.github.pangju666.framework.boot.data.mybatisplus.injector.TableLogicFillSqlInjector
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+import org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration
 import org.springframework.boot.test.context.SpringBootContextLoader
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.ContextConfiguration

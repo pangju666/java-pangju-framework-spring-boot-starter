@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor
 import com.baomidou.mybatisplus.extension.plugins.inner.BlockAttackInnerInterceptor
 import com.baomidou.mybatisplus.extension.plugins.inner.OptimisticLockerInnerInterceptor
 import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor
+import io.github.pangju666.framework.boot.data.mybatisplus.autoconfigure.MybatisPlusPluginsAutoConfiguration
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootContextLoader
 import org.springframework.test.context.ContextConfiguration

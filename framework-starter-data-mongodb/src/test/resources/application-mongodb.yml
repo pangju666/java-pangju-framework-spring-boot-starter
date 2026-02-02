@@ -1,5 +1,4 @@
 spring:
-  data:
-    mongodb:
-      host: 127.0.0.1
-      database: test
+  mongodb:
+    host: 127.0.0.1
+    database: test

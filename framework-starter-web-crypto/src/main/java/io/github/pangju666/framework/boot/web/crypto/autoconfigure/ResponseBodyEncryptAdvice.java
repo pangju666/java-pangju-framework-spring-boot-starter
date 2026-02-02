@@ -19,6 +19,7 @@ package io.github.pangju666.framework.boot.web.crypto.autoconfigure;
 
 import io.github.pangju666.commons.crypto.key.RSAKeyPair;
 import io.github.pangju666.commons.lang.utils.JsonUtils;
+import io.github.pangju666.framework.boot.crypto.enums.Encoding;
 import io.github.pangju666.framework.boot.crypto.factory.CryptoFactory;
 import io.github.pangju666.framework.boot.crypto.utils.CryptoUtils;
 import io.github.pangju666.framework.boot.web.crypto.annotation.EncryptResponseBody;
@@ -46,7 +47,6 @@ import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.http.converter.json.AbstractJsonHttpMessageConverter;
 import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -78,7 +78,7 @@ import java.util.Objects;
  * <ul>
  *     <li>在响应体序列化前执行加密，避免在客户端看到明文。</li>
  *     <li>响应类型支持：{@code String}、{@code byte[]}、{@link Result}（仅加密 {@code data}）、其他对象（转 JSON 后加密）。</li>
- *     <li>消息转换器支持：{@link MappingJackson2HttpMessageConverter}、{@link AbstractJsonHttpMessageConverter}、{@link ByteArrayHttpMessageConverter}、{@link StringHttpMessageConverter}。</li>
+ *     <li>消息转换器支持：{@link AbstractJsonHttpMessageConverter}、{@link ByteArrayHttpMessageConverter}、{@link StringHttpMessageConverter}。</li>
  *     <li>方法级注解优先于类级注解，便于细粒度控制。</li>
  * </ul>
  * </p>
@@ -130,7 +130,7 @@ public class ResponseBodyEncryptAdvice implements ResponseBodyAdvice<Object> {
 	 * <p>
 	 * 返回 {@code true} 当且仅当：
 	 * <ul>
-	 *     <li>消息转换器属于以下任一类型：{@link MappingJackson2HttpMessageConverter}、{@link AbstractJsonHttpMessageConverter}、{@link ByteArrayHttpMessageConverter}、{@link StringHttpMessageConverter}。</li>
+	 *     <li>消息转换器属于以下任一类型：{@link AbstractJsonHttpMessageConverter}、{@link ByteArrayHttpMessageConverter}、{@link StringHttpMessageConverter}。</li>
 	 *     <li>方法或其声明类标注了 {@link EncryptResponseBody} 注解（方法级优先）。</li>
 	 * </ul>
 	 * </p>

@@ -44,8 +44,6 @@ import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.http.converter.json.AbstractJsonHttpMessageConverter;
 import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.http.converter.json.MappingJacksonInputMessage;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.servlet.mvc.method.annotation.RequestBodyAdvice;
@@ -79,7 +77,7 @@ import java.util.Objects;
  * <ul>
  *     <li>在反序列化前执行解密，使后续反序列化接收明文。</li>
  *     <li>请求体类型支持：{@code String}、JSON 字符串（空体保留为空或替换为空 JSON）。</li>
- *     <li>消息转换器支持：{@link MappingJackson2HttpMessageConverter}、{@link AbstractJsonHttpMessageConverter}、{@link StringHttpMessageConverter}。</li>
+ *     <li>消息转换器支持：{@link AbstractJsonHttpMessageConverter}、{@link StringHttpMessageConverter}。</li>
  * </ul>
  * </p>
  * <p>
@@ -124,7 +122,7 @@ public class RequestBodyDecryptAdvice implements RequestBodyAdvice {
 	 * <p>
 	 * 返回 {@code true} 当且仅当：
 	 * <ul>
-	 *     <li>消息转换器属于以下任一类型：{@link MappingJackson2HttpMessageConverter}、{@link AbstractJsonHttpMessageConverter}、{@link StringHttpMessageConverter}。</li>
+	 *     <li>消息转换器属于以下任一类型：{@link AbstractJsonHttpMessageConverter}、{@link StringHttpMessageConverter}。</li>
 	 *     <li>方法参数标注了 {@link DecryptRequestBody} 注解。</li>
 	 * </ul>
 	 * </p>
@@ -153,7 +151,6 @@ public class RequestBodyDecryptAdvice implements RequestBodyAdvice {
 	 *     <li>字符串消息转换器（{@link StringHttpMessageConverter}）直接放行，改由 {@link #afterBodyRead(Object, HttpInputMessage, MethodParameter, Type, Class)} 处理。</li>
 	 *     <li>获取注解与解析密钥（失败抛 {@link ServerException}）。</li>
 	 *     <li>读取原始请求体并按注解编码解密为明文字符串。</li>
-	 *     <li>将明文字节封装为新的 {@link MappingJacksonInputMessage}，供后续 JSON 反序列化。</li>
 	 * </ul>
 	 * </p>
 	 *

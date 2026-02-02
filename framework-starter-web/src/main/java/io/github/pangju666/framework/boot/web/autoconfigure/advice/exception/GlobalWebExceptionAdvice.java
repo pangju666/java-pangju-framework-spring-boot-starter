@@ -33,7 +33,6 @@ import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.converter.HttpMessageNotWritableException;
-import org.springframework.http.converter.json.MappingJacksonInputMessage;
 import org.springframework.util.unit.DataSize;
 import org.springframework.validation.BindException;
 import org.springframework.validation.FieldError;
@@ -292,7 +291,6 @@ public class GlobalWebExceptionAdvice {
      * <ul>
      *   <li>记录 WARN 级别日志</li>
      *   <li>返回统一失败响应，HTTP 400（{@link HttpStatus#BAD_REQUEST}）</li>
-     *   <li>若为 JSON 映射错误（{@link MappingJacksonInputMessage}），提示“请求数据格式错误，请检查是否为有效的 JSON”；否则提示“请求数据格式错误”</li>
      * </ul>
      *
      * @param e 异常实例
