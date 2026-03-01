@@ -24,7 +24,6 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Strings;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -205,7 +204,7 @@ public class CryptoUtils {
         }
 
 		String cryptoKey = key;
-        if (Strings.CS.startsWith(key, "${") && Strings.CS.endsWith(key, "}")) {
+        if (StringUtils.startsWith(key, "${") && StringUtils.endsWith(key, "}")) {
 			cryptoKey = StaticSpringContext.getEnvironment().resolvePlaceholders(key);
 			if (cryptoKey.equals(key)) {
 				throw new IllegalArgumentException("未找到密钥，属性：" + key);

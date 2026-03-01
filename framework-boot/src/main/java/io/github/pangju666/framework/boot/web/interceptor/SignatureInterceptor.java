@@ -27,7 +27,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Strings;
 import org.springframework.web.bind.MissingRequestValueException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.method.HandlerMethod;
@@ -200,7 +199,7 @@ public class SignatureInterceptor extends BaseHttpInterceptor {
 		String signStr = StringUtils.joinWith("&", appId, secretKey, requestUrl);
 		String expectSignature = annotation.algorithm().computeDigest(signStr);
 
-		if (!Strings.CS.equals(expectSignature, signature)) {
+		if (!StringUtils.equals(expectSignature, signature)) {
 			HttpResponseBuilder.from(response).writeHttpException(new ValidationException("签名错误"));
 			return false;
 		}
@@ -258,7 +257,7 @@ public class SignatureInterceptor extends BaseHttpInterceptor {
 			String signStr = StringUtils.joinWith("&", appId, secretKey, requestUrl, timestamp);
 			String expectSignature = annotation.algorithm().computeDigest(signStr);
 
-			if (!Strings.CS.equals(expectSignature, signature)) {
+			if (!StringUtils.equals(expectSignature, signature)) {
 				HttpResponseBuilder.from(response).writeHttpException(new ValidationException("签名错误"));
 				return false;
 			}
@@ -293,7 +292,7 @@ public class SignatureInterceptor extends BaseHttpInterceptor {
 		String queryString = request.getQueryString();
 		List<String> queryParams = new ArrayList<>();
 		for (String queryParam : queryString.split("&")) {
-			if (!Strings.CS.startsWithAny(queryParam, configuration.getSignatureParamName(),
+			if (!StringUtils.startsWithAny(queryParam, configuration.getSignatureParamName(),
 				configuration.getAppIdParamName())) {
 				queryParams.add(queryParam);
 			}

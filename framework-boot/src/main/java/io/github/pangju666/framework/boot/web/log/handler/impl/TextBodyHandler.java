@@ -48,7 +48,7 @@ public class TextBodyHandler implements MediaTypeBodyHandler {
 	 */
     @Override
     public Object getBody(byte[] rawBody, MediaType mediaType) {
-        return new String(rawBody, ObjectUtils.getIfNull(mediaType.getCharset(),
+        return new String(rawBody, ObjectUtils.defaultIfNull(mediaType.getCharset(),
             StandardCharsets.UTF_8));
     }
 }

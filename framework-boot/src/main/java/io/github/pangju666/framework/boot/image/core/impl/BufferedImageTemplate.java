@@ -144,7 +144,7 @@ public class BufferedImageTemplate implements ImageTemplate {
 		String outputImageFormat = getOutputFormat(outputFile);
 		ImageFile imageFile = read(inputFile);
 		try {
-			doProcess(imageFile, outputFile, outputImageFormat, ObjectUtils.getIfNull(
+			doProcess(imageFile, outputFile, outputImageFormat, ObjectUtils.defaultIfNull(
 				operation, ImageOperationBuilders.EMPTY));
 		} catch (IOException e) {
 			throw new ImageOperationException(inputFile, "操作执行失败", e);
@@ -188,7 +188,7 @@ public class BufferedImageTemplate implements ImageTemplate {
 		}
 
 		try {
-			doProcess(imageFile, outputFile, outputImageFormat, ObjectUtils.getIfNull(operation,
+			doProcess(imageFile, outputFile, outputImageFormat, ObjectUtils.defaultIfNull(operation,
 				ImageOperationBuilders.EMPTY));
 		} catch (IOException e) {
 			throw new ImageOperationException(imageFile.getFile(), "操作执行失败", e);
@@ -254,7 +254,7 @@ public class BufferedImageTemplate implements ImageTemplate {
 	 * @throws IOException              ImageIO操作失败时抛出
 	 */
 	protected void doProcess(ImageFile imageFile, File outputFile, String outputFormat, ImageOperation operation) throws IOException {
-		ImageEditor imageEditor = ImageEditor.of(imageFile.getFile(), ObjectUtils.getIfNull(
+		ImageEditor imageEditor = ImageEditor.of(imageFile.getFile(), ObjectUtils.defaultIfNull(
 			imageFile.getImageSize().getOrientation(), ImageConstants.NORMAL_EXIF_ORIENTATION))
 			.outputFormat(outputFormat);
 

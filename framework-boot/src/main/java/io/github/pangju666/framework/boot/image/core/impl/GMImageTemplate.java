@@ -420,7 +420,7 @@ public class GMImageTemplate implements ImageTemplate {
 		checkOutputFile(outputFile);
 
 		ImageFile imageFile = read(inputFile);
-		doProcess(imageFile, outputFile, ObjectUtils.getIfNull(operation,
+		doProcess(imageFile, outputFile, ObjectUtils.defaultIfNull(operation,
 			ImageOperationBuilders.EMPTY));
 	}
 
@@ -535,7 +535,7 @@ public class GMImageTemplate implements ImageTemplate {
 			imageFile = read(imageFile.getFile());
 		}
 
-		doProcess(imageFile, outputFile, ObjectUtils.getIfNull(operation,
+		doProcess(imageFile, outputFile, ObjectUtils.defaultIfNull(operation,
 			ImageOperationBuilders.EMPTY));
 	}
 

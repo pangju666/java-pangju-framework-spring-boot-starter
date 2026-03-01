@@ -52,7 +52,7 @@ public class JsonBodyHandler implements MediaTypeBodyHandler {
 	 */
     @Override
     public Object getBody(byte[] rawBody, MediaType mediaType) {
-        String jsonStr = new String(rawBody, ObjectUtils.getIfNull(mediaType.getCharset(),
+        String jsonStr = new String(rawBody, ObjectUtils.defaultIfNull(mediaType.getCharset(),
             StandardCharsets.UTF_8));
         return JsonUtils.fromString(StringUtils.defaultIfBlank(jsonStr, Constants.EMPTY_JSON_OBJECT_STR),
             Object.class);
