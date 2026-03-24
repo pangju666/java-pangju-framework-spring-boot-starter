@@ -12,6 +12,7 @@
 	<artifactId>framework-starter-parent</artifactId>
 	<version>2.0.0</version>
 	<packaging>pom</packaging>
+	<name>framework-starter-parent</name>
 	<description>胖橘框架 Spring Boot Starter 父级依赖</description>
 	<url>https://github.com/pangju666/java-pangju-framework-spring-boot-starter</url>
 
