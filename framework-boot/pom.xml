@@ -9,6 +9,8 @@
 		<version>1.0.0</version>
 	</parent>
 	<artifactId>framework-boot</artifactId>
+	<name>framework-boot</name>
+	<description>Framework Boot</description>
 
 	<licenses>
 		<license>

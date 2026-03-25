@@ -9,6 +9,8 @@
 		<version>1.0.0</version>
 	</parent>
 	<artifactId>framework-starter-data-mybatis-plus</artifactId>
+	<name>framework-starter-data-mybatis-plus</name>
+	<description>Framework MyBatis Plus Starter</description>
 
 	<licenses>
 		<license>

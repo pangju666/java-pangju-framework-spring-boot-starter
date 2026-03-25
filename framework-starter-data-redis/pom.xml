@@ -9,6 +9,8 @@
 		<version>1.0.0</version>
 	</parent>
 	<artifactId>framework-starter-data-redis</artifactId>
+	<name>framework-starter-data-redis</name>
+	<description>Framework Redis Starter</description>
 
 	<dependencies>
 		<dependency>

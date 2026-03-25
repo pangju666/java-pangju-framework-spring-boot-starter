@@ -9,6 +9,8 @@
 		<version>1.0.0</version>
 	</parent>
 	<artifactId>framework-starter-validation</artifactId>
+	<name>framework-starter-validation</name>
+	<description>Framework 参数校验 Starter</description>
 
 	<licenses>
 		<license>

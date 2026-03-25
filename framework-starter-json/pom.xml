@@ -9,6 +9,8 @@
 		<version>1.0.0</version>
 	</parent>
 	<artifactId>framework-starter-json</artifactId>
+	<name>framework-starter-json</name>
+	<description>Framework JSON Starter</description>
 
 	<licenses>
 		<license>

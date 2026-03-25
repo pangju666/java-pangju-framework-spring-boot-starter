@@ -9,6 +9,8 @@
 		<version>1.0.0</version>
 	</parent>
 	<artifactId>framework-autoconfigure</artifactId>
+	<name>framework-autoconfigure</name>
+	<description>Framework 自动装配</description>
 
 	<licenses>
 		<license>

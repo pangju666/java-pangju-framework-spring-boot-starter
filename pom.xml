@@ -13,7 +13,7 @@
 	<version>1.0.0</version>
 	<packaging>pom</packaging>
 	<name>framework-starter-parent</name>
-	<description></description>
+	<description>Framework Starter 父项目</description>
 	<url>https://github.com/pangju666/java-pangju-framework-spring-boot-starter</url>
 
 	<modules>

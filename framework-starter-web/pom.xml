@@ -9,6 +9,8 @@
 		<version>1.0.0</version>
 	</parent>
 	<artifactId>framework-starter-web</artifactId>
+	<name>framework-starter-web</name>
+	<description>Framework Web Starter</description>
 
 	<licenses>
 		<license>

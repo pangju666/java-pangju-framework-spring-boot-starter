@@ -7,6 +7,8 @@
 		<version>1.0.0</version>
 	</parent>
 	<artifactId>framework-starter-test-spock</artifactId>
+	<name>framework-starter-test-spock</name>
+	<description>Framework Spock 测试框架 Starter</description>
 
 	<licenses>
 		<license>

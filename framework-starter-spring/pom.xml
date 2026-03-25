@@ -9,6 +9,8 @@
 		<version>1.0.0</version>
 	</parent>
 	<artifactId>framework-starter-spring</artifactId>
+	<name>framework-starter-spring</name>
+	<description>Framework Spring Starter</description>
 
 	<licenses>
 		<license>

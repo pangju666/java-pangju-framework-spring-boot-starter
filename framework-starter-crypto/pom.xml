@@ -9,6 +9,8 @@
 		<version>1.0.0</version>
 	</parent>
 	<artifactId>framework-starter-crypto</artifactId>
+	<name>framework-starter-crypto</name>
+	<description>Framework 加解密 Starter</description>
 
 	<dependencies>
 		<dependency>

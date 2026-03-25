@@ -9,6 +9,8 @@
 		<version>1.0.0</version>
 	</parent>
 	<artifactId>framework-starter-image</artifactId>
+	<name>framework-starter-image</name>
+	<description>Framework 图像处理 Starter</description>
 
 	<dependencies>
 		<dependency>

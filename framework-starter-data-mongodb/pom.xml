@@ -9,6 +9,8 @@
 		<version>1.0.0</version>
 	</parent>
 	<artifactId>framework-starter-data-mongodb</artifactId>
+	<name>framework-starter-data-mongodb</name>
+	<description>Framework MongoDB Starter</description>
 
 	<licenses>
 		<license>
