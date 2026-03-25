@@ -11,7 +11,7 @@ import org.springframework.test.context.ContextConfiguration
 import spock.lang.Specification
 
 @ActiveProfiles("dynamic-mongodb")
-@EnableMongoRepositories(basePackages = "io.github.pangju666.framework.boot.autoconfigure.data.dynamic.mongo",
+@EnableMongoRepositories(/*basePackages = "io.github.pangju666.framework.boot.autoconfigure.data.dynamic.mongo",*/
 	repositoryFactoryBeanClass = DynamicMongoRepositoryFactoryBean.class, repositoryBaseClass = SimpleBaseMongoRepository.class)
 @ContextConfiguration(classes = [DynamicMongoAutoConfiguration.class, DynamicMongoRepositoriesAutoConfiguration.class],
 loader = SpringBootContextLoader.class)

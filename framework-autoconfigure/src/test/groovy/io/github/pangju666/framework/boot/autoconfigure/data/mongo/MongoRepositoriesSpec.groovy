@@ -13,8 +13,7 @@ import org.springframework.test.context.ContextConfiguration
 import spock.lang.Specification
 
 @ActiveProfiles("mongodb")
-@EnableMongoRepositories(basePackages = "io.github.pangju666.framework.boot.autoconfigure.data.mongo",
-	repositoryBaseClass = SimpleBaseMongoRepository.class)
+@EnableMongoRepositories(repositoryBaseClass = SimpleBaseMongoRepository.class)
 @ContextConfiguration(classes = [
 	MongoAutoConfiguration.class,
 	MongoDataAutoConfiguration.class,

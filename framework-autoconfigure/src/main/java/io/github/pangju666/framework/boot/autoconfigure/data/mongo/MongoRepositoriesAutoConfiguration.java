@@ -23,6 +23,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.data.ConditionalOnRepositoryType;
 import org.springframework.boot.autoconfigure.data.RepositoryType;
+import org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.config.MongoRepositoryConfigurationExtension;
@@ -62,7 +63,8 @@ import org.springframework.data.mongodb.repository.support.MongoRepositoryFactor
  * @see MongoRepositoryFactoryBean
  * @since 1.0.0
  */
-@AutoConfiguration(before = org.springframework.boot.autoconfigure.data.mongo.MongoRepositoriesAutoConfiguration.class)
+@AutoConfiguration(before = org.springframework.boot.autoconfigure.data.mongo.MongoRepositoriesAutoConfiguration.class,
+	after = MongoDataAutoConfiguration.class)
 @ConditionalOnClass({ MongoClient.class, MongoRepository.class, SimpleBaseMongoRepository.class })
 @ConditionalOnMissingBean({ MongoRepositoryFactoryBean.class, MongoRepositoryConfigurationExtension.class })
 @ConditionalOnRepositoryType(store = "mongodb", type = RepositoryType.IMPERATIVE)
