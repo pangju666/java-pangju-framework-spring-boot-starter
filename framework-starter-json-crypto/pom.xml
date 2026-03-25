@@ -29,4 +29,24 @@
 			<artifactId>framework-starter-crypto</artifactId>
 		</dependency>
 	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-gpg-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.sonatype.central</groupId>
+				<artifactId>central-publishing-maven-plugin</artifactId>
+				<version>${central-publishing-maven-plugin.version}</version>
+				<inherited>false</inherited>
+				<extensions>true</extensions>
+				<configuration>
+					<publishingServerId>central</publishingServerId>
+					<!--<waitUntil>published</waitUntil>-->
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
 </project>
