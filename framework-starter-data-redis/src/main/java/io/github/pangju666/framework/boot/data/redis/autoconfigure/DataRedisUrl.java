@@ -20,7 +20,7 @@ record DataRedisUrl(URI uri, boolean useSsl, DataRedisUrl.Credentials credential
 
 	private static DataRedisUrl of(URI uri) {
 		boolean useSsl = ("rediss".equals(uri.getScheme()));
-		DataRedisUrl.Credentials credentials = DataRedisUrl.Credentials.fromUserInfo(uri.getUserInfo());
+		Credentials credentials = Credentials.fromUserInfo(uri.getUserInfo());
 		int database = getDatabase(uri);
 		return new DataRedisUrl(uri, useSsl, credentials, database);
 	}

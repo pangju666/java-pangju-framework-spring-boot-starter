@@ -224,7 +224,9 @@ class LettuceConnectionConfiguration extends DataRedisConnectionConfiguration {
 			if (properties.getTimeBetweenEvictionRuns() != null) {
 				config.setTimeBetweenEvictionRuns(properties.getTimeBetweenEvictionRuns());
 			}
-			config.setMaxWait(properties.getMaxWait());
+			if (properties.getMaxWait() != null) {
+				config.setMaxWait(properties.getMaxWait());
+			}
 			return config;
 		}
 

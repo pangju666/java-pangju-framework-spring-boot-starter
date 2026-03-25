@@ -155,7 +155,7 @@ class DynamicRedisRegistrar implements EnvironmentAware, BeanFactoryAware, Impor
 		if (!CollectionUtils.isEmpty(redisDatabases)) {
 			redisDatabases.forEach((name, redisProperties) -> {
 				// 注册 RedisConnectionDetails
-				Supplier<DataRedisConnectionDetails> connectionDetailsSupplier = () -> new PropertiesDataRedisConnectionDetails(
+				Supplier<DataRedisConnectionDetails> connectionDetailsSupplier = () -> new DynamicPropertiesDataRedisConnectionDetails(
 					redisProperties, beanFactory.getBeanProvider(SslBundles.class));
 				String connectionDetailsBeanName = CONNECTION_DETAILS_BEAN_NAME_TEMPLATE.formatted(name);
 				BeanDefinitionBuilder connectionDetailsBeanBuilder = BeanDefinitionBuilder.genericBeanDefinition(

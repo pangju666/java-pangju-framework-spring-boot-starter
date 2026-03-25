@@ -37,12 +37,12 @@ class JedisConnectionConfiguration extends DataRedisConnectionConfiguration {
 			clusterConfiguration, masterReplicaConfiguration);
 	}
 
-	public JedisConnectionFactory redisConnectionFactory(
+	JedisConnectionFactory redisConnectionFactory(
 		ObjectProvider<JedisClientConfigurationBuilderCustomizer> builderCustomizers) {
 		return createJedisConnectionFactory(builderCustomizers);
 	}
 
-	public JedisConnectionFactory redisConnectionFactoryVirtualThreads(
+	JedisConnectionFactory redisConnectionFactoryVirtualThreads(
 		ObjectProvider<JedisClientConfigurationBuilderCustomizer> builderCustomizers) {
 		JedisConnectionFactory factory = createJedisConnectionFactory(builderCustomizers);
 		SimpleAsyncTaskExecutor executor = new SimpleAsyncTaskExecutor("redis-");
@@ -122,7 +122,9 @@ class JedisConnectionConfiguration extends DataRedisConnectionConfiguration {
 		if (pool.getTimeBetweenEvictionRuns() != null) {
 			config.setTimeBetweenEvictionRuns(pool.getTimeBetweenEvictionRuns());
 		}
-		config.setMaxWait(pool.getMaxWait());
+		if (pool.getMaxWait() != null) {
+			config.setMaxWait(pool.getMaxWait());
+		}
 		return config;
 	}
 

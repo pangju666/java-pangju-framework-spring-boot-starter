@@ -15,13 +15,13 @@ import java.util.List;
 /**
  * <p>copy from org.springframework.boot.data.redis.autoconfigure.PropertiesDataRedisConnectionDetails</p>
  */
-class PropertiesDataRedisConnectionDetails implements DataRedisConnectionDetails {
+class DynamicPropertiesDataRedisConnectionDetails implements DataRedisConnectionDetails {
 
 	private final DataRedisProperties properties;
 
 	private final ObjectProvider<SslBundles> sslBundlesObjectProvider;
 
-	PropertiesDataRedisConnectionDetails(DataRedisProperties properties, ObjectProvider<SslBundles> sslBundlesObjectProvider) {
+	DynamicPropertiesDataRedisConnectionDetails(DataRedisProperties properties, ObjectProvider<SslBundles> sslBundlesObjectProvider) {
 		this.properties = properties;
 		this.sslBundlesObjectProvider = sslBundlesObjectProvider;
 	}
@@ -63,19 +63,19 @@ class PropertiesDataRedisConnectionDetails implements DataRedisConnectionDetails
 	@Override
 	public @Nullable Sentinel getSentinel() {
 		DataRedisProperties.Sentinel sentinel = this.properties.getSentinel();
-		return (sentinel != null) ? new PropertiesDataRedisConnectionDetails.PropertiesSentinel(getStandalone().getDatabase(), sentinel) : null;
+		return (sentinel != null) ? new PropertiesSentinel(getStandalone().getDatabase(), sentinel) : null;
 	}
 
 	@Override
 	public @Nullable Cluster getCluster() {
 		DataRedisProperties.Cluster cluster = this.properties.getCluster();
-		return (cluster != null) ? new PropertiesDataRedisConnectionDetails.PropertiesCluster(cluster) : null;
+		return (cluster != null) ? new PropertiesCluster(cluster) : null;
 	}
 
 	@Override
 	public @Nullable MasterReplica getMasterReplica() {
 		DataRedisProperties.Masterreplica masterreplica = this.properties.getMasterreplica();
-		return (masterreplica != null) ? new PropertiesDataRedisConnectionDetails.PropertiesMasterReplica(masterreplica) : null;
+		return (masterreplica != null) ? new PropertiesMasterReplica(masterreplica) : null;
 	}
 
 	private @Nullable DataRedisUrl getRedisUrl() {
@@ -86,10 +86,10 @@ class PropertiesDataRedisConnectionDetails implements DataRedisConnectionDetails
 		if (nodes == null) {
 			return Collections.emptyList();
 		}
-		return nodes.stream().map(this::asNode).toList();
+		return nodes.stream().map(DynamicPropertiesDataRedisConnectionDetails::asNode).toList();
 	}
 
-	private Node asNode(String node) {
+	private static Node asNode(String node) {
 		int portSeparatorIndex = node.lastIndexOf(':');
 		String host = node.substring(0, portSeparatorIndex);
 		int port = Integer.parseInt(node.substring(portSeparatorIndex + 1));

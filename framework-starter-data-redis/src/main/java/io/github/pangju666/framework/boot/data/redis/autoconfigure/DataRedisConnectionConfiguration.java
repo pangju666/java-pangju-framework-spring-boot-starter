@@ -32,7 +32,7 @@ abstract class DataRedisConnectionConfiguration {
 
 	private final DataRedisConnectionDetails connectionDetails;
 
-	protected final DataRedisConnectionConfiguration.Mode mode;
+	protected final Mode mode;
 
 	protected DataRedisConnectionConfiguration(DataRedisProperties properties,
 											   DataRedisConnectionDetails connectionDetails,
@@ -174,17 +174,17 @@ abstract class DataRedisConnectionConfiguration {
 		return this.connectionDetails;
 	}
 
-	private DataRedisConnectionConfiguration.Mode determineMode() {
+	private Mode determineMode() {
 		if (getSentinelConfig() != null) {
-			return DataRedisConnectionConfiguration.Mode.SENTINEL;
+			return Mode.SENTINEL;
 		}
 		if (getClusterConfiguration() != null) {
-			return DataRedisConnectionConfiguration.Mode.CLUSTER;
+			return Mode.CLUSTER;
 		}
 		if (getMasterReplicaConfiguration() != null) {
-			return DataRedisConnectionConfiguration.Mode.MASTER_REPLICA;
+			return Mode.MASTER_REPLICA;
 		}
-		return DataRedisConnectionConfiguration.Mode.STANDALONE;
+		return Mode.STANDALONE;
 	}
 
 	enum Mode {
