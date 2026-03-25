@@ -7,6 +7,8 @@
 		<version>2.0.0</version>
 	</parent>
 	<artifactId>framework-starter-test-spock</artifactId>
+	<name>framework-starter-test-spock</name>
+	<description>Framework Spock 测试框架 Starter</description>
 
 	<licenses>
 		<license>
@@ -31,4 +33,23 @@
 			<artifactId>spock-spring</artifactId>
 		</dependency>
 	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-gpg-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.sonatype.central</groupId>
+				<artifactId>central-publishing-maven-plugin</artifactId>
+				<version>${central-publishing-maven-plugin.version}</version>
+				<extensions>true</extensions>
+				<configuration>
+					<publishingServerId>central</publishingServerId>
+					<!--<waitUntil>published</waitUntil>-->
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
 </project>

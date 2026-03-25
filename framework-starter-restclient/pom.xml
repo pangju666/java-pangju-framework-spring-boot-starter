@@ -9,6 +9,8 @@
 		<version>2.0.0</version>
 	</parent>
 	<artifactId>framework-starter-restclient</artifactId>
+	<name>framework-starter-restclient</name>
+	<description>Framework HTTP 客户端 Starter</description>
 
 	<licenses>
 		<license>
@@ -51,6 +53,20 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-source-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-gpg-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.sonatype.central</groupId>
+				<artifactId>central-publishing-maven-plugin</artifactId>
+				<version>${central-publishing-maven-plugin.version}</version>
+				<extensions>true</extensions>
+				<configuration>
+					<publishingServerId>central</publishingServerId>
+					<!--<waitUntil>published</waitUntil>-->
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>

@@ -9,6 +9,8 @@
 		<version>2.0.0</version>
 	</parent>
 	<artifactId>framework-starter-jackson-crypto</artifactId>
+	<name>framework-starter-jackson-crypto</name>
+	<description>Framework Jackson 加解密 Starter</description>
 
 	<licenses>
 		<license>
@@ -62,6 +64,20 @@
 				<artifactId>gmavenplus-plugin</artifactId>
 				<configuration>
 					<skipTests>true</skipTests>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-gpg-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.sonatype.central</groupId>
+				<artifactId>central-publishing-maven-plugin</artifactId>
+				<version>${central-publishing-maven-plugin.version}</version>
+				<extensions>true</extensions>
+				<configuration>
+					<publishingServerId>central</publishingServerId>
+					<!--<waitUntil>published</waitUntil>-->
 				</configuration>
 			</plugin>
 		</plugins>
