@@ -38,7 +38,6 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.security.spec.InvalidKeySpecException;
 import java.util.*;
 
 /**
@@ -185,9 +184,6 @@ public final class DecryptJsonDeserializer extends JsonDeserializer<Object> impl
 		} catch (EncryptionOperationNotPossibleException e) {
 			LOGGER.error("数据解密失败", e);
 			return null;
-		} catch (InvalidKeySpecException e) {
-			LOGGER.error("无效的密钥", e);
-			return null;
 		} catch (DecoderException e) {
 			LOGGER.error("十六进制解码失败", e);
 			return null;
@@ -248,11 +244,9 @@ public final class DecryptJsonDeserializer extends JsonDeserializer<Object> impl
 	 *
 	 * @param value 字节数组值
 	 * @return 解密后的字节数组
-	 * @throws InvalidKeySpecException 当密钥规格无效时抛出
-	 * @throws DecoderException        当十六进制解码失败时抛出
 	 * @since 1.0.0
 	 */
-	private byte[] readBytes(byte[] value) throws InvalidKeySpecException, DecoderException {
+	private byte[] readBytes(byte[] value) {
 		return CryptoUtils.decrypt(cryptoFactory, value, key);
 	}
 
@@ -261,11 +255,10 @@ public final class DecryptJsonDeserializer extends JsonDeserializer<Object> impl
 	 *
 	 * @param value 字符串值
 	 * @return 解密后的字符串
-	 * @throws InvalidKeySpecException 当密钥规格无效时抛出
 	 * @throws DecoderException        当十六进制解码失败时抛出
 	 * @since 1.0.0
 	 */
-	private String readString(String value) throws InvalidKeySpecException, DecoderException {
+	private String readString(String value) throws DecoderException {
 		return CryptoUtils.decryptString(cryptoFactory, value, key, encoding);
 	}
 
@@ -274,10 +267,9 @@ public final class DecryptJsonDeserializer extends JsonDeserializer<Object> impl
 	 *
 	 * @param value 加密的 BigInteger 值
 	 * @return 解密后的 BigInteger 值
-	 * @throws InvalidKeySpecException 当密钥规格无效时抛出
 	 * @since 1.0.0
 	 */
-	private BigInteger readBigInteger(BigInteger value) throws InvalidKeySpecException {
+	private BigInteger readBigInteger(BigInteger value) {
 		return CryptoUtils.decryptBigInteger(cryptoFactory, value, key);
 	}
 
@@ -286,10 +278,9 @@ public final class DecryptJsonDeserializer extends JsonDeserializer<Object> impl
 	 *
 	 * @param value 加密的 BigDecimal 值
 	 * @return 解密后的 BigDecimal 值
-	 * @throws InvalidKeySpecException 当密钥规格无效时抛出
 	 * @since 1.0.0
 	 */
-	private BigDecimal readBigDecimal(BigDecimal value) throws InvalidKeySpecException {
+	private BigDecimal readBigDecimal(BigDecimal value) {
 		return CryptoUtils.decryptBigDecimal(cryptoFactory, value, key);
 	}
 
@@ -361,9 +352,6 @@ public final class DecryptJsonDeserializer extends JsonDeserializer<Object> impl
 			return value;
 		} catch (EncryptionOperationNotPossibleException e) {
 			LOGGER.error("数据解密失败", e);
-			return null;
-		} catch (InvalidKeySpecException e) {
-			LOGGER.error("无效的密钥", e);
 			return null;
 		} catch (DecoderException e) {
 			LOGGER.error("十六进制解码失败", e);

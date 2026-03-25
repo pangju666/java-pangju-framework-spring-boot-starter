@@ -1023,6 +1023,10 @@ public class GMImageTemplate implements ImageTemplate {
 	 * @since 1.0.0
 	 */
 	protected void setGravityArg(ImageOperation operation, GMOperation gmOperation) {
+		if (Objects.isNull(operation.getWatermarkDirection())) {
+			return;
+		}
+
 		GMOperation.Gravity gravity = switch (operation.getWatermarkDirection()) {
 			case TOP -> GMOperation.Gravity.North;
 			case TOP_LEFT -> GMOperation.Gravity.NorthWest;
