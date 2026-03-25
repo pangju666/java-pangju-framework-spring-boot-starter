@@ -1,11 +1,11 @@
-package io.github.pangju666.framework.boot.web.log
+package io.github.pangju666.framework.boot.web.log.autoconfigure
 
-import io.github.pangju666.framework.boot.web.log.configuration.WebLogConfiguration
+import io.github.pangju666.framework.boot.web.log.WebLog
+import io.github.pangju666.framework.boot.web.log.WebLogConfiguration
 import io.github.pangju666.framework.boot.web.log.filter.WebLogFilter
 import io.github.pangju666.framework.boot.web.log.handler.MediaTypeBodyHandler
 import io.github.pangju666.framework.boot.web.log.handler.impl.JsonBodyHandler
 import io.github.pangju666.framework.boot.web.log.handler.impl.TextBodyHandler
-import io.github.pangju666.framework.boot.web.log.model.WebLog
 import io.github.pangju666.framework.boot.web.log.sender.WebLogSender
 import io.github.pangju666.framework.web.model.Result
 import jakarta.servlet.FilterChain

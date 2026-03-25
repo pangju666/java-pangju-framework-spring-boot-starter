@@ -1,5 +1,6 @@
 package io.github.pangju666.framework.boot.crypto
 
+import io.github.pangju666.framework.boot.crypto.autoconfigure.CryptoAutoConfiguration
 import io.github.pangju666.framework.boot.crypto.factory.impl.AES256CryptoFactory
 
 import org.springframework.beans.factory.annotation.Autowired

@@ -1,11 +1,8 @@
 package io.github.pangju666.framework.boot.web.signature
 
-import io.github.pangju666.framework.boot.web.annotation.Signature
-import io.github.pangju666.framework.boot.web.annotation.Signature.SignatureType
-import io.github.pangju666.framework.boot.web.configuration.SignatureConfiguration
-import io.github.pangju666.framework.boot.web.enums.SignatureAlgorithm
-import io.github.pangju666.framework.boot.web.interceptor.SignatureInterceptor
-import io.github.pangju666.framework.boot.web.signature.SecretKeyStorer
+import io.github.pangju666.framework.boot.web.signature.annotation.Signature
+import io.github.pangju666.framework.boot.web.signature.enums.SignatureAlgorithm
+import io.github.pangju666.framework.boot.web.signature.interceptor.SignatureInterceptor
 import jakarta.servlet.ServletOutputStream
 import jakarta.servlet.WriteListener
 import jakarta.servlet.http.HttpServletRequest
@@ -56,28 +53,28 @@ class SignatureSpec extends Specification {
 	}
 
 	static class ControllerParam {
-		@Signature(type = SignatureType.PARAM, algorithm = SignatureAlgorithm.SHA256, timeout = 1)
+		@Signature(type = Signature.SignatureType.PARAM, algorithm = SignatureAlgorithm.SHA256, timeout = 1)
 		void method() {}
 	}
 
 	static class ControllerHeader {
-		@Signature(type = SignatureType.HEADER, algorithm = SignatureAlgorithm.SHA256, timeout = 1)
+		@Signature(type = Signature.SignatureType.HEADER, algorithm = SignatureAlgorithm.SHA256, timeout = 1)
 		void method() {}
 	}
 
 	static class ControllerHeaderWhitelist {
-		@Signature(type = SignatureType.HEADER, algorithm = SignatureAlgorithm.SHA256, timeout = 1, appId = ["ok"])
+		@Signature(type = Signature.SignatureType.HEADER, algorithm = SignatureAlgorithm.SHA256, timeout = 1, appId = ["ok"])
 		void method() {}
 	}
 
 	static class ControllerAny {
-		@Signature(type = SignatureType.ANY, algorithm = SignatureAlgorithm.SHA256, timeout = 1)
+		@Signature(type = Signature.SignatureType.ANY, algorithm = SignatureAlgorithm.SHA256, timeout = 1)
 		void method() {}
 	}
 
-	@Signature(type = SignatureType.HEADER, algorithm = SignatureAlgorithm.SHA256, timeout = 1)
+	@Signature(type = Signature.SignatureType.HEADER, algorithm = SignatureAlgorithm.SHA256, timeout = 1)
 	static class ControllerClassAnnotated {
-		@Signature(type = SignatureType.PARAM, algorithm = SignatureAlgorithm.SHA256, timeout = 1)
+		@Signature(type = Signature.SignatureType.PARAM, algorithm = SignatureAlgorithm.SHA256, timeout = 1)
 		void overrideMethod() {}
 
 		void inheritMethod() {}

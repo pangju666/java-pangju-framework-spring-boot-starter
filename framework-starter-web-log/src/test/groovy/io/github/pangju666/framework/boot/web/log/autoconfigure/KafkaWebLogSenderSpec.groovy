@@ -1,6 +1,6 @@
-package io.github.pangju666.framework.boot.web.log
+package io.github.pangju666.framework.boot.web.log.autoconfigure
 
-import io.github.pangju666.framework.boot.web.log.model.WebLog
+import io.github.pangju666.framework.boot.web.log.WebLog
 import io.github.pangju666.framework.boot.web.log.sender.impl.kafka.KafkaWebLogSender
 import org.springframework.kafka.core.KafkaTemplate
 import spock.lang.Specification

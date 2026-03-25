@@ -142,7 +142,7 @@ public class WebLogProperties {
      * Slf4j 接收器配置
      * <p>
      * 当 {@link #receiverType} 为 {@link ReceiverType#SLF4J} 时生效，用于指定目标日志记录器名称，
-     * 将采集的 {@link io.github.pangju666.framework.boot.web.log.model.WebLog} 写入日志系统（SLF4J 兼容实现，如 Logback、Log4j2）。
+     * 将采集的 {@link WebLog} 写入日志系统（SLF4J 兼容实现，如 Logback、Log4j2）。
      * </p>
      *
      * @since 1.0.0

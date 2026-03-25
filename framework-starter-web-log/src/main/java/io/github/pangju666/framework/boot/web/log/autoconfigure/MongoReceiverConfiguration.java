@@ -38,7 +38,7 @@ import org.springframework.util.StringUtils;
  *
  * <p><b>条件</b></p>
  * <ul>
- *   <li>在 {@link MongoDataAutoConfiguration} 之后加载。</li>
+ *   <li>在 {@link DataMongoAutoConfiguration} 之后加载。</li>
  *   <li>类路径存在 {@link MongoClient} 与 {@link MongoTemplate}。</li>
  *   <li>容器中存在 {@link MongoTemplate}，且当前未存在 {@link WebLogReceiver} Bean。</li>
  * </ul>

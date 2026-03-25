@@ -45,7 +45,7 @@ import org.springframework.data.mongodb.gridfs.GridFsTemplate;
  * <p><strong>条件</strong></p>
  * <ul>
  *   <li>类路径存在 {@link MongoClient}、{@link MongoTemplate}、{@link GridFsTemplate}（{@link ConditionalOnClass}）。</li>
- *   <li>在 {@link MongoDataAutoConfiguration} 之前执行（{@link AutoConfiguration}）。</li>
+ *   <li>在 {@link DataMongoAutoConfiguration} 和 {@link MongoAutoConfiguration} 之前执行（{@link AutoConfiguration}）。</li>
  * </ul>
  *
  * <p><strong>流程</strong>：启用属性绑定 -> 导入注册器 -> 解析配置并注册 Bean -> 标记主数据源 -> 完成装配。</p>

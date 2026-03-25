@@ -27,7 +27,7 @@ import java.lang.annotation.*;
  * </p>
  *
  * @author pangju666
- * @see io.github.pangju666.framework.boot.data.dynamic.mongo.DynamicMongoRepositoryFactoryBean
+ * @see DynamicMongoRepositoryFactoryBean
  * @since 1.0.0
  */
 @Target({ElementType.TYPE})

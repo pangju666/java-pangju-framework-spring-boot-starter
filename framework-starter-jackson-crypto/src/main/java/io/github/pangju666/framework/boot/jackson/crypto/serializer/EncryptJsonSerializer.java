@@ -33,7 +33,6 @@ import tools.jackson.databind.SerializationContext;
 import tools.jackson.databind.ValueSerializer;
 import tools.jackson.databind.ser.std.NullSerializer;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Map;
@@ -43,8 +42,7 @@ import java.util.Objects;
  * 数据加密的 JSON 序列化器。
  * <p>
  * 基于属性上的 {@link EncryptFormat} 注解，
- * 按密钥、编码与工厂对输出内容进行加密。实现 {@link com.fasterxml.jackson.databind.ser.ContextualSerializer}
- * 接口，可根据属性上下文动态创建或复用序列化器实例。</p>
+ * 按密钥、编码与工厂对输出内容进行加密。继承 {@link ValueSerializer}类，可根据属性上下文动态创建或复用序列化器实例。</p>
  *
  * <p>缓存：按“密钥摘要-编码-工厂类名”维度缓存已创建的序列化器实例，密钥摘要为 SHA-256。</p>
  * <p>工厂优先级：当注解提供工厂类型时，优先使用该工厂；否则使用算法枚举关联的工厂；工厂获取通过 {@link CryptoFactoryRegistry} 进行 Spring Bean 优先与构造回退。</p>
@@ -122,8 +120,7 @@ public final class EncryptJsonSerializer extends ValueSerializer<Object> {
 	 *
 	 * @param value       待序列化的对象
 	 * @param gen         JSON 输出生成器
-	 * @param serializers 序列化器提供者
-	 * @throws IOException 写入 JSON 内容时发生 I/O 错误
+	 * @param context 序列化上下文
 	 * @since 1.0.0
 	 */
 	@Override
@@ -153,10 +150,9 @@ public final class EncryptJsonSerializer extends ValueSerializer<Object> {
      *   <li>缓存键：{@code sha256Hex(key)-encoding-factoryClassName}；按键复用实例。</li>
      * </ul>
      *
-     * @param prov     序列化器提供者
+     * @param context     序列化上下文
      * @param property 当前处理的 Bean 属性
      * @return 上下文相关的序列化器实例
-     * @throws JsonMappingException 初始化或查找序列化器失败时抛出
      * @since 1.0.0
      */
 	@Override
@@ -269,7 +265,6 @@ public final class EncryptJsonSerializer extends ValueSerializer<Object> {
 	 *
 	 * @param value 待写出的值
 	 * @param gen   JSON 输出生成器
-	 * @throws IOException             写入 JSON 内容时发生 I/O 错误
 	 * @since 1.0.0
 	 */
 	private void writeValue(Object value, JsonGenerator gen) {

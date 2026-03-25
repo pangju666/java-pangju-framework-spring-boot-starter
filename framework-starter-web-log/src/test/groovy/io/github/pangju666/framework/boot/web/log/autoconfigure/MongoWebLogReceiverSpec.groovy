@@ -1,6 +1,6 @@
-package io.github.pangju666.framework.boot.web.log
+package io.github.pangju666.framework.boot.web.log.autoconfigure
 
-import io.github.pangju666.framework.boot.web.log.model.WebLog
+import io.github.pangju666.framework.boot.web.log.WebLog
 import io.github.pangju666.framework.boot.web.log.receiver.impl.mongo.MongoWebLogReceiver
 import io.github.pangju666.framework.boot.web.log.receiver.impl.mongo.WebLogDocument
 import org.springframework.data.mongodb.core.MongoTemplate

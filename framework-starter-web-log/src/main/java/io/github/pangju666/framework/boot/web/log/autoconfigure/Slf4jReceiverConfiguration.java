@@ -16,6 +16,7 @@
 
 package io.github.pangju666.framework.boot.web.log.autoconfigure;
 
+import io.github.pangju666.framework.boot.web.log.WebLog;
 import io.github.pangju666.framework.boot.web.log.receiver.WebLogReceiver;
 import io.github.pangju666.framework.boot.web.log.receiver.impl.slf4j.Slf4jWebLogReceiver;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -40,7 +41,7 @@ import org.springframework.context.annotation.Configuration;
  *
  * <p><b>配置项</b></p>
  * <ul>
- *   <li>{@code pangju.web.log.slf4j.logger}：目标 Logger 名称，写入采集到的 {@link io.github.pangju666.framework.boot.web.log.model.WebLog}。</li>
+ *   <li>{@code pangju.web.log.slf4j.logger}：目标 Logger 名称，写入采集到的 {@link WebLog}。</li>
  * </ul>
  *
  * <p><b>示例</b></p>
@@ -63,7 +64,7 @@ class Slf4jReceiverConfiguration {
 	/**
      * 注册 SLF4J Web 日志接收器 Bean。
      *
-     * <p>根据配置的 Logger 名称，将采集到的 {@link io.github.pangju666.framework.boot.web.log.model.WebLog}
+     * <p>根据配置的 Logger 名称，将采集到的 {@link WebLog}
      * 写入日志系统（SLF4J 兼容实现，如 Logback、Log4j2）。</p>
      *
      * @param properties Web 日志配置属性

@@ -1,16 +1,16 @@
 package io.github.pangju666.framework.boot.web.limit
 
-import io.github.pangju666.framework.boot.autoconfigure.web.limit.RateLimiterAutoConfiguration
-import io.github.pangju666.framework.boot.web.annotation.RateLimit
+import io.github.pangju666.framework.boot.web.autoconfigure.WebMvcConfigurerAutoConfiguration
+import io.github.pangju666.framework.boot.web.limit.annotation.RateLimit
+import io.github.pangju666.framework.boot.web.limit.autoconfigure.RateLimiterAutoConfiguration
 import org.redisson.api.RedissonClient
 import org.redisson.spring.starter.RedissonAutoConfigurationV2
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
-import org.springframework.boot.autoconfigure.web.servlet.DispatcherServletAutoConfiguration
-import org.springframework.boot.autoconfigure.web.servlet.ServletWebServerFactoryAutoConfiguration
-import org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
+import org.springframework.boot.data.redis.autoconfigure.DataRedisAutoConfiguration
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.webmvc.autoconfigure.DispatcherServletAutoConfiguration
+import org.springframework.boot.webmvc.autoconfigure.WebMvcAutoConfiguration
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
@@ -20,9 +20,8 @@ import spock.lang.Specification
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
-@SpringBootTest(classes = [ServletWebServerFactoryAutoConfiguration, DispatcherServletAutoConfiguration,
-	RedissonAutoConfigurationV2, RedisAutoConfiguration, RateLimiterAutoConfiguration,
-	WebMvcConfigurerAutoConfiguration, WebMvcAutoConfiguration, TestController, TestController2],
+@SpringBootTest(classes = [DispatcherServletAutoConfiguration, RedissonAutoConfigurationV2, DataRedisAutoConfiguration,
+	RateLimiterAutoConfiguration, WebMvcConfigurerAutoConfiguration, WebMvcAutoConfiguration, TestController, TestController2],
 	properties = [
 		"pangju.web.rate-limit.type=REDISSON",
 		"pangju.web.rate-limit.redisson.key-prefix=rate-limit",

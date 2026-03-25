@@ -131,7 +131,7 @@ public class DynamicDataRedisProperties {
      *
      * <p><strong>概述</strong></p>
      * <ul>
-     *   <li>继承 Spring Boot {@link org.springframework.boot.autoconfigure.data.redis.RedisProperties}，并扩展序列化器类型。</li>
+     *   <li>继承 Spring Boot {@link org.springframework.boot.data.redis.autoconfigure.DataRedisProperties}，并扩展序列化器类型。</li>
      *   <li>可配置键/值与哈希键/值的序列化器，提升兼容性与可读性。</li>
      * </ul>
      *

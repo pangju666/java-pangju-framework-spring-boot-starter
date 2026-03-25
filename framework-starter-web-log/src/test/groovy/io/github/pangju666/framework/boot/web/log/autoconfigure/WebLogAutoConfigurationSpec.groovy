@@ -1,4 +1,4 @@
-package io.github.pangju666.framework.boot.web.log
+package io.github.pangju666.framework.boot.web.log.autoconfigure
 
 import io.github.pangju666.framework.boot.web.log.filter.WebLogFilter
 import io.github.pangju666.framework.boot.web.log.handler.impl.JsonBodyHandler

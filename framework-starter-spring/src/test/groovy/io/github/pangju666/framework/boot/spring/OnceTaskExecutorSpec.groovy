@@ -1,6 +1,7 @@
 package io.github.pangju666.framework.boot.spring
 
-import io.github.pangju666.framework.boot.task.OnceTaskExecutor
+import io.github.pangju666.framework.boot.spring.autoconfigure.OnceTaskExecutorAutoConfiguration
+import io.github.pangju666.framework.boot.spring.task.OnceTaskExecutor
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.autoconfigure.task.TaskExecutionAutoConfiguration
@@ -14,7 +15,7 @@ import java.util.concurrent.atomic.AtomicInteger
 @SpringBootTest(classes = [OnceTaskExecutorAutoConfiguration.class, TaskExecutionAutoConfiguration.class])
 class OnceTaskExecutorSpec extends Specification {
 	@Autowired
-    OnceTaskExecutor executor
+	OnceTaskExecutor executor
 	@Qualifier(TaskExecutionAutoConfiguration.APPLICATION_TASK_EXECUTOR_BEAN_NAME)
 	@Autowired
 	AsyncTaskExecutor asyncExecutor

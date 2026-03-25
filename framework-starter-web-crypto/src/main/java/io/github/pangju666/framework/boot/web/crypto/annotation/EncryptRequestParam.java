@@ -20,7 +20,9 @@ package io.github.pangju666.framework.boot.web.crypto.annotation;
 import io.github.pangju666.framework.boot.crypto.enums.CryptoAlgorithm;
 import io.github.pangju666.framework.boot.crypto.enums.Encoding;
 import io.github.pangju666.framework.boot.crypto.factory.CryptoFactory;
+import io.github.pangju666.framework.boot.web.crypto.exception.RequestDataDecryptFailureException;
 import io.github.pangju666.framework.boot.web.crypto.resolver.EncryptRequestParamArgumentResolver;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 
 import java.lang.annotation.*;
 
@@ -43,7 +45,7 @@ import java.lang.annotation.*;
  * <li>当 {@link #required()} 为 true 且请求中缺少参数时，抛出{@link MissingServletRequestParameterException}。</li>
  * <li>密钥配置缺失或无效、占位符解析失败、解密失败或编码错误等，
  * 将分别抛出 {@link io.github.pangju666.framework.web.exception.base.ServerException}、
- * {@link io.github.pangju666.framework.boot.web.exception.RequestDataDecryptFailureException} 或
+ * {@link RequestDataDecryptFailureException} 或
  * {@link io.github.pangju666.framework.web.exception.base.ValidationException}</li>
  * </p>
  * <p>

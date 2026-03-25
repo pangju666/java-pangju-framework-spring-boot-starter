@@ -1,9 +1,9 @@
 package io.github.pangju666.framework.boot.web.crypto
 
-import io.github.pangju666.framework.boot.autoconfigure.web.crypto.ResponseBodyEncryptAdvice
 import io.github.pangju666.framework.boot.crypto.enums.Encoding
 import io.github.pangju666.framework.boot.crypto.factory.CryptoFactory
-import io.github.pangju666.framework.boot.web.annotation.EncryptResponseBody
+import io.github.pangju666.framework.boot.web.crypto.annotation.EncryptResponseBody
+import io.github.pangju666.framework.boot.web.crypto.autoconfigure.ResponseBodyEncryptAdvice
 import io.github.pangju666.framework.web.exception.base.ServerException
 import io.github.pangju666.framework.web.model.Result
 import org.apache.commons.codec.binary.Base64

@@ -1,9 +1,9 @@
-package io.github.pangju666.framework.boot.web.log
+package io.github.pangju666.framework.boot.web.log.autoconfigure
 
 import ch.qos.logback.classic.Logger
 import ch.qos.logback.classic.spi.ILoggingEvent
 import ch.qos.logback.core.read.ListAppender
-import io.github.pangju666.framework.boot.web.log.model.WebLog
+import io.github.pangju666.framework.boot.web.log.WebLog
 import io.github.pangju666.framework.boot.web.log.receiver.impl.slf4j.Slf4jWebLogReceiver
 import org.slf4j.LoggerFactory
 import spock.lang.Specification

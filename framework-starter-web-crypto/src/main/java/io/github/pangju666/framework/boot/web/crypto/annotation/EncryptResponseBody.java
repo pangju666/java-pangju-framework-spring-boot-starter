@@ -20,6 +20,7 @@ package io.github.pangju666.framework.boot.web.crypto.annotation;
 import io.github.pangju666.framework.boot.crypto.enums.CryptoAlgorithm;
 import io.github.pangju666.framework.boot.crypto.enums.Encoding;
 import io.github.pangju666.framework.boot.crypto.factory.CryptoFactory;
+import io.github.pangju666.framework.web.model.Result;
 
 import java.lang.annotation.*;
 import java.rmi.ServerException;

@@ -37,13 +37,13 @@ import java.util.Objects;
  *   <li>内置类型：使用 {@link DesensitizedType} 的内置转换器。</li>
  *   <li>CUSTOM 类型：依据注解的 {@code prefix}/{@code suffix} 参数执行前后缀保留与中间隐藏。</li>
  * </ul>
- * 实现 {@link ContextualSerializer} 接口，可根据上下文与注解参数选择具体序列化器。
+ * 继承 {@link ValueSerializer} 类，可根据上下文与注解参数选择具体序列化器。
  * </p>
  *
  * @author pangju666
  * @see DesensitizeFormat
  * @see DesensitizedType
- * @see ContextualSerializer
+ * @see ValueSerializer
  * @since 1.0.0
  */
 public final class DesensitizedSerializer extends ValueSerializer<CharSequence> {
@@ -126,10 +126,9 @@ public final class DesensitizedSerializer extends ValueSerializer<CharSequence> 
      * </ul>
      * <p>当属性为空或不满足条件时，返回当前实例或上下文默认序列化器。</p>
      *
-     * @param prov     序列化器提供者
+     * @param context     序列化上下文
      * @param property 当前处理的 Bean 属性
      * @return 上下文相关的序列化器实例
-     * @throws JsonMappingException 创建或查找序列化器失败时抛出
      * @since 1.0.0
      */
 	@Override

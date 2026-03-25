@@ -47,7 +47,7 @@ import java.util.Map;
  * </p>
  *
  * @author pangju666
- * @see org.springframework.boot.autoconfigure.mongo.MongoProperties
+ * @see org.springframework.boot.mongodb.autoconfigure.MongoProperties
  * @see DynamicDataMongoAutoConfiguration
  * @see DynamicDataMongoRegistrar
  * @since 1.0.0

@@ -1,6 +1,8 @@
 package io.github.pangju666.framework.boot.data.mongo.dynamic
 
-import io.github.pangju666.framework.boot.data.dynamic.mongo.DynamicMongoRepositoryFactoryBean
+import io.github.pangju666.framework.boot.data.mongo.DynamicMongoRepositoryFactoryBean
+import io.github.pangju666.framework.boot.data.mongo.autoconfigure.DynamicDataMongoAutoConfiguration
+import io.github.pangju666.framework.boot.data.mongo.autoconfigure.DynamicDataMongoRepositoriesAutoConfiguration
 import io.github.pangju666.framework.data.mongodb.repository.SimpleBaseMongoRepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootContextLoader
@@ -13,7 +15,7 @@ import spock.lang.Specification
 @ActiveProfiles("dynamic-mongodb")
 @EnableMongoRepositories(basePackages = "io.github.pangju666.framework.boot.autoconfigure.data.dynamic.mongo",
 	repositoryFactoryBeanClass = DynamicMongoRepositoryFactoryBean.class, repositoryBaseClass = SimpleBaseMongoRepository.class)
-@ContextConfiguration(classes = [DynamicMongoAutoConfiguration.class, DynamicMongoRepositoriesAutoConfiguration.class],
+@ContextConfiguration(classes = [DynamicDataMongoAutoConfiguration.class, DynamicDataMongoRepositoriesAutoConfiguration.class],
 loader = SpringBootContextLoader.class)
 class DynamicMongoRepositoriesSpec extends Specification {
 	@Autowired

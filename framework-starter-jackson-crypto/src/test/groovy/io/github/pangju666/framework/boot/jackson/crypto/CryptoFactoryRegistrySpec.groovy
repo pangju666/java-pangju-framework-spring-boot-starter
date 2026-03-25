@@ -1,14 +1,13 @@
 package io.github.pangju666.framework.boot.jackson.crypto
 
-import io.github.pangju666.framework.boot.autoconfigure.crypto.CryptoAutoConfiguration
+import io.github.pangju666.framework.boot.crypto.autoconfigure.CryptoAutoConfiguration
 import io.github.pangju666.framework.boot.crypto.factory.CryptoFactory
 import io.github.pangju666.framework.boot.crypto.factory.impl.AES256CryptoFactory
 import io.github.pangju666.framework.boot.crypto.factory.impl.BasicCryptoFactory
 import io.github.pangju666.framework.boot.crypto.factory.impl.RSACryptoFactory
 import io.github.pangju666.framework.boot.crypto.factory.impl.StrongCryptoFactory
-import io.github.pangju666.framework.boot.jackson.utils.CryptoFactoryRegistry
+import io.github.pangju666.framework.boot.jackson.crypto.utils.CryptoFactoryRegistry
 import io.github.pangju666.framework.boot.spring.StaticSpringContext
-
 import org.jasypt.util.binary.BinaryEncryptor
 import org.jasypt.util.numeric.DecimalNumberEncryptor
 import org.jasypt.util.numeric.IntegerNumberEncryptor

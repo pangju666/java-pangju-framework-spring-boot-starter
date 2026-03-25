@@ -1,10 +1,10 @@
 package io.github.pangju666.framework.boot.data.mongo
 
+import io.github.pangju666.framework.boot.data.mongo.autoconfigure.DataMongoRepositoriesAutoConfiguration
 import io.github.pangju666.framework.data.mongodb.repository.SimpleBaseMongoRepository
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration
-import org.springframework.boot.autoconfigure.data.mongo.MongoRepositoriesAutoConfiguration
-import org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration
+import org.springframework.boot.data.mongodb.autoconfigure.DataMongoAutoConfiguration
+import org.springframework.boot.mongodb.autoconfigure.MongoAutoConfiguration
 import org.springframework.boot.test.context.SpringBootContextLoader
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories
 import org.springframework.data.util.ProxyUtils
@@ -17,8 +17,8 @@ import spock.lang.Specification
 	repositoryBaseClass = SimpleBaseMongoRepository.class)
 @ContextConfiguration(classes = [
 	MongoAutoConfiguration.class,
-	MongoDataAutoConfiguration.class,
-	MongoRepositoriesAutoConfiguration.class
+	DataMongoAutoConfiguration.class,
+	DataMongoRepositoriesAutoConfiguration.class
 ], loader = SpringBootContextLoader.class)
 class MongoRepositoriesSpec extends Specification {
 	@Autowired

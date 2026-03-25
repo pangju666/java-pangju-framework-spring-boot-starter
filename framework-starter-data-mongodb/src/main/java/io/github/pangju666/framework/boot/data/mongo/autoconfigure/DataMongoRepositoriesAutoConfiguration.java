@@ -34,8 +34,8 @@ import org.springframework.data.mongodb.repository.support.MongoRepositoryFactor
  * Mongo 仓库自动配置
  * <p>
  * 在满足依赖与仓库类型条件时，优先于 Spring Boot 默认的
- * {@link org.springframework.boot.autoconfigure.data.mongo.MongoRepositoriesAutoConfiguration}
- * 启用 Spring Data Mongo 仓库支持，并通过 {@link io.github.pangju666.framework.boot.autoconfigure.data.mongo.MongoRepositoriesRegistrar}
+ * {@link org.springframework.boot.data.mongodb.autoconfigure.DataMongoRepositoriesAutoConfiguration}
+ * 启用 Spring Data Mongo 仓库支持，并通过 {@link io.github.pangju666.framework.boot.data.mongo.autoconfigure.DataMongoRepositoriesRegistrar}
  * 注册仓库扫描与配置扩展。
  * </p>
  * <p>
@@ -58,7 +58,7 @@ import org.springframework.data.mongodb.repository.support.MongoRepositoryFactor
  * </p>
  *
  * @author pangju666
- * @see io.github.pangju666.framework.boot.autoconfigure.data.mongo.MongoRepositoriesRegistrar
+ * @see io.github.pangju666.framework.boot.data.mongo.autoconfigure.DataMongoRepositoriesRegistrar
  * @see org.springframework.data.mongodb.repository.MongoRepository
  * @see org.springframework.data.mongodb.repository.config.MongoRepositoryConfigurationExtension
  * @see MongoRepositoryFactoryBean

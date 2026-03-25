@@ -1,6 +1,6 @@
-package io.github.pangju666.framework.boot.web.log
+package io.github.pangju666.framework.boot.web.log.autoconfigure
 
-import io.github.pangju666.framework.boot.web.log.model.WebLog
+import io.github.pangju666.framework.boot.web.log.WebLog
 import io.github.pangju666.framework.boot.web.log.receiver.WebLogReceiver
 import io.github.pangju666.framework.boot.web.log.sender.impl.disruptor.DisruptorWebLogEventHandler
 import io.github.pangju666.framework.boot.web.log.sender.impl.disruptor.DisruptorWebLogSender

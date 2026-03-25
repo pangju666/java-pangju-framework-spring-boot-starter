@@ -18,7 +18,7 @@ package io.github.pangju666.framework.boot.image.model;
 
 import io.github.pangju666.framework.boot.image.core.impl.BufferedImageTemplate;
 import io.github.pangju666.framework.boot.image.enums.ResampleFilter;
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 import org.springframework.util.CollectionUtils;
 
 import java.awt.image.ImageFilter;

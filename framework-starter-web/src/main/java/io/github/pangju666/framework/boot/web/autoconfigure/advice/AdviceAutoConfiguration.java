@@ -59,7 +59,7 @@ import org.springframework.web.servlet.DispatcherServlet;
  * @see AdviceProperties
  * @see RequestParamBindingAdvice
  * @see GlobalWebExceptionAdvice
- * @see io.github.pangju666.framework.boot.autoconfigure.web.advice.wrapper.ResponseBodyWrapperAdvice
+ * @see ResponseBodyWrapperAdvice
  * @since 1.0.0
  */
 @AutoConfiguration

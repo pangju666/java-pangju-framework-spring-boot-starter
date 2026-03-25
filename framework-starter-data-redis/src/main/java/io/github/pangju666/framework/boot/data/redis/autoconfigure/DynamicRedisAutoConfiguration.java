@@ -36,7 +36,7 @@ import org.springframework.data.redis.core.RedisOperations;
  *
  * <p><strong>概述</strong></p>
  * <ul>
- *   <li>启用 {@link DynamicRedisProperties} 属性绑定。</li>
+ *   <li>启用 {@link DynamicDataRedisProperties} 属性绑定。</li>
  *   <li>导入 {@link DynamicRedisRegistrar}，在启动阶段动态注册多数据源相关 Bean。</li>
  *   <li>支持按数据源名称生成统一命名的 Bean，并为主数据源设置 {@code primary} 标志。</li>
  * </ul>
@@ -44,7 +44,7 @@ import org.springframework.data.redis.core.RedisOperations;
  * <p><strong>条件</strong></p>
  * <ul>
  *   <li>类路径存在 {@link org.springframework.data.redis.core.RedisOperations}（{@link ConditionalOnClass}）。</li>
- *   <li>在 {@link RedisAutoConfiguration} 之前执行（{@link AutoConfiguration}）。</li>
+ *   <li>在 {@link DataRedisAutoConfiguration} 之前执行（{@link AutoConfiguration}）。</li>
  * </ul>
  *
  * <p><strong>流程</strong>：启用属性绑定 -> 导入注册器 -> 解析配置并注册 Bean -> 标记主数据源 -> 完成装配。</p>
@@ -102,7 +102,7 @@ import org.springframework.data.redis.core.RedisOperations;
  * }</pre>
  *
  * @author pangju666
- * @see DynamicRedisProperties
+ * @see DynamicDataRedisProperties
  * @see DynamicRedisRegistrar
  * @see DynamicRedisUtils
  * @since 1.0.0

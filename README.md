@@ -36,8 +36,8 @@ Pangju Framework Starter 是一套基于 [`Pangju Framework`](https://github.com
 | `framework-starter-web-crypto`        | Web 请求参数与响应体加解密，支持多种加解密算法            |
 | `framework-starter-web-limit`         | 基于 拦截器 的接口限流，支持多种策略与存储介质             |
 | `framework-starter-web-signuatre`     | 完善的 API 签名校验机制，保障请求的完整性与安全性          |
-| `framework-starter-jackson`           | Jackson 序列化增强，提供常用的配置与工具类            |
-| `framework-starter-jackson-crypto`    | 基于 Jackson 的加解密与脱敏支持，保障数据安全          |
+| `framework-starter-jackson`           | Jackson 序列化增强与脱敏支持，提供常用的配置与工具类       |
+| `framework-starter-jackson-crypto`    | Jackson 的加解密，保障数据安全                  |
 | `framework-starter-data-mybatis-plus` | MyBatis Plus 增强，包含公共字段填充与通用基类        |
 | `framework-starter-data-redis`        | Redis 自动配置增强，支持多数据源                  |
 | `framework-starter-data-mongodb`      | MongoDB 自动配置增强，支持多数据源与 Repository 模式 |

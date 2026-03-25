@@ -58,7 +58,7 @@ import java.util.function.Supplier;
  * <p><strong>概述</strong></p>
  * <ul>
  *   <li>实现 {@link ImportBeanDefinitionRegistrar}，在容器启动阶段动态注册多个 Redis 相关 Bean。</li>
- *   <li>解析 {@link DynamicRedisProperties}，按数据源名称为每个数据源注册连接详情、连接工厂与多种模板。</li>
+ *   <li>解析 {@link DynamicDataRedisProperties}，按数据源名称为每个数据源注册连接详情、连接工厂与多种模板。</li>
  *   <li>支持 Jedis 与 Lettuce 客户端库，并在满足条件时启用虚拟线程（Java 21+）。</li>
  *   <li>根据主数据源配置为相关 Bean 设置 {@code primary} 标志，提供默认注入指向。</li>
  * </ul>
@@ -74,7 +74,7 @@ import java.util.function.Supplier;
  * </ul>
  *
  * @author pangju666
- * @see DynamicRedisProperties
+ * @see DynamicDataRedisProperties
  * @see DynamicRedisUtils
  * @see DynamicRedisAutoConfiguration
  * @see ImportBeanDefinitionRegistrar

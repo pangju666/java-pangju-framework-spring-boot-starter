@@ -35,7 +35,7 @@ import java.util.Objects;
  * <p><b>匹配逻辑</b></p>
  * <ul>
  *   <li>检查是否配置了动态 Redis 数据源。</li>
- *   <li>遍历所有已配置的数据源，只要有一个数据源使用 Lettuce 客户端（{@code client-type} 为 {@link RedisProperties.ClientType#LETTUCE} 或 null），即视为匹配。</li>
+ *   <li>遍历所有已配置的数据源，只要有一个数据源使用 Lettuce 客户端（{@code client-type} 为 {@link io.github.pangju666.framework.boot.data.redis.autoconfigure.DynamicDataRedisProperties.DataRedisProperties.ClientType#LETTUCE} 或 null），即视为匹配。</li>
  * </ul>
  *
  * @author pangju666

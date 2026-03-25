@@ -39,15 +39,13 @@ import tools.jackson.databind.type.MapType;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.security.spec.InvalidKeySpecException;
 import java.util.*;
 
 /**
  * 数据解密的 JSON 反序列化器。
  * <p>
  * 基于属性上的 {@link DecryptFormat} 注解，
- * 按密钥、编码与工厂对输入内容进行解密并转换为目标类型。实现 {@link com.fasterxml.jackson.databind.deser.ContextualDeserializer}
- * 接口，可根据反序列化上下文动态创建或复用反序列化器实例。</p>
+ * 按密钥、编码与工厂对输入内容进行解密并转换为目标类型。继承 {@link tools.jackson.databind.ValueDeserializer} 类，可根据反序列化上下文动态创建或复用反序列化器实例。</p>
  *
  * <p>缓存：按“密钥摘要-编码-属性类型-工厂类名”维度缓存已创建的反序列化器实例，属性类型为 {@link JavaType#toString()} 的完整类型表示（集合/映射包含元素/值类型），密钥摘要为 SHA-256。</p>
  * <p>工厂优先级：当注解提供工厂类型时，优先使用该工厂；否则使用算法枚举关联的工厂；工厂获取通过 {@link CryptoFactoryRegistry} 进行 Spring Bean 优先与构造回退。</p>
@@ -59,6 +57,7 @@ import java.util.*;
  * @see Encoding
  * @see CryptoUtils
  * @see CryptoFactoryRegistry
+ * @see ValueDeserializer
  * @since 1.0.0
  */
 public final class DecryptJsonDeserializer extends ValueDeserializer<Object> {
@@ -134,7 +133,7 @@ public final class DecryptJsonDeserializer extends ValueDeserializer<Object> {
      * </p>
      *
      * @param p    JSON 输入解析器
-     * @param ctxt 反序列化上下文
+     * @param context 反序列化上下文
      * @return 反序列化后的目标类型实例；失败或不匹配时返回 {@code null}
      * @since 1.0.0
      */
@@ -151,11 +150,11 @@ public final class DecryptJsonDeserializer extends ValueDeserializer<Object> {
 			} else if (targetType == byte[].class) {
 				return readBytes(p.getBinaryValue());
 			} else if (targetType == String.class) {
-				return readString(p.getText());
+				return readString(p.getString());
 			} else if (targetType == BigDecimal.class) {
 				if (p.currentToken() == JsonToken.VALUE_STRING) {
 					try {
-						return readBigDecimal(new BigDecimal(p.getText()));
+						return readBigDecimal(new BigDecimal(p.getString()));
 					} catch (NumberFormatException ignored) {
 						return null;
 					}
@@ -164,7 +163,7 @@ public final class DecryptJsonDeserializer extends ValueDeserializer<Object> {
 			} else if (targetType == BigInteger.class) {
 				if (p.currentToken() == JsonToken.VALUE_STRING) {
 					try {
-						return readBigInteger(new BigInteger(p.getText()));
+						return readBigInteger(new BigInteger(p.getString()));
 					} catch (NumberFormatException ignored) {
 						return null;
 					}
@@ -185,9 +184,6 @@ public final class DecryptJsonDeserializer extends ValueDeserializer<Object> {
 		} catch (EncryptionOperationNotPossibleException e) {
 			LOGGER.error("数据解密失败", e);
 			return null;
-		} catch (InvalidKeySpecException e) {
-			LOGGER.error("无效的密钥", e);
-			return null;
 		} catch (DecoderException e) {
 			LOGGER.error("十六进制解码失败", e);
 			return null;
@@ -206,10 +202,9 @@ public final class DecryptJsonDeserializer extends ValueDeserializer<Object> {
      *
      * <p>类型处理：支持 {@code List}/{@code Set}/{@code Collection} 的元素类型与 {@code Map<String, V>} 的值类型。</p>
      *
-     * @param ctxt     反序列化上下文
+     * @param context     反序列化上下文
      * @param property 当前处理的 Bean 属性
      * @return 上下文相关的反序列化器实例
-     * @throws JsonMappingException 当初始化或查找反序列化器失败时抛出
      * @since 1.0.0
      */
 	@Override
@@ -248,11 +243,9 @@ public final class DecryptJsonDeserializer extends ValueDeserializer<Object> {
 	 *
 	 * @param value 字节数组值
 	 * @return 解密后的字节数组
-	 * @throws InvalidKeySpecException 当密钥规格无效时抛出
-	 * @throws DecoderException        当十六进制解码失败时抛出
 	 * @since 1.0.0
 	 */
-	private byte[] readBytes(byte[] value) throws InvalidKeySpecException, DecoderException {
+	private byte[] readBytes(byte[] value) {
 		return CryptoUtils.decrypt(cryptoFactory, value, key);
 	}
 
@@ -261,11 +254,10 @@ public final class DecryptJsonDeserializer extends ValueDeserializer<Object> {
 	 *
 	 * @param value 字符串值
 	 * @return 解密后的字符串
-	 * @throws InvalidKeySpecException 当密钥规格无效时抛出
 	 * @throws DecoderException        当十六进制解码失败时抛出
 	 * @since 1.0.0
 	 */
-	private String readString(String value) throws InvalidKeySpecException, DecoderException {
+	private String readString(String value) throws DecoderException {
 		return CryptoUtils.decryptString(cryptoFactory, value, key, encoding);
 	}
 
@@ -274,10 +266,9 @@ public final class DecryptJsonDeserializer extends ValueDeserializer<Object> {
 	 *
 	 * @param value 加密的 BigInteger 值
 	 * @return 解密后的 BigInteger 值
-	 * @throws InvalidKeySpecException 当密钥规格无效时抛出
 	 * @since 1.0.0
 	 */
-	private BigInteger readBigInteger(BigInteger value) throws InvalidKeySpecException {
+	private BigInteger readBigInteger(BigInteger value) {
 		return CryptoUtils.decryptBigInteger(cryptoFactory, value, key);
 	}
 
@@ -286,10 +277,9 @@ public final class DecryptJsonDeserializer extends ValueDeserializer<Object> {
 	 *
 	 * @param value 加密的 BigDecimal 值
 	 * @return 解密后的 BigDecimal 值
-	 * @throws InvalidKeySpecException 当密钥规格无效时抛出
 	 * @since 1.0.0
 	 */
-	private BigDecimal readBigDecimal(BigDecimal value) throws InvalidKeySpecException {
+	private BigDecimal readBigDecimal(BigDecimal value) {
 		return CryptoUtils.decryptBigDecimal(cryptoFactory, value, key);
 	}
 
@@ -362,9 +352,6 @@ public final class DecryptJsonDeserializer extends ValueDeserializer<Object> {
 		} catch (EncryptionOperationNotPossibleException e) {
 			LOGGER.error("数据解密失败", e);
 			return null;
-		} catch (InvalidKeySpecException e) {
-			LOGGER.error("无效的密钥", e);
-			return null;
 		} catch (DecoderException e) {
 			LOGGER.error("十六进制解码失败", e);
 			return null;
@@ -435,7 +422,7 @@ public final class DecryptJsonDeserializer extends ValueDeserializer<Object> {
      * <p>缓存键：{@code sha256Hex(key)-encoding-javaType-factoryClassName}；按键复用实例。</p>
      * <p>工厂优先级：当注解提供工厂类型时，优先使用该工厂；否则使用算法枚举关联的工厂。</p>
      * <p>工厂获取：通过 {@link CryptoFactoryRegistry#getOrCreate(Class)} 优先查找 Spring Bean，不存在则构造实例。</p>
-     * <p>失败处理：密钥无法解析或工厂 Bean 获取失败时返回 {@link com.fasterxml.jackson.databind.deser.std.NullifyingDeserializer#instance}。</p>
+     * <p>失败处理：密钥无法解析或工厂 Bean 获取失败时返回 {@link NullifyingDeserializer#instance}。</p>
      *
      * @param annotation  解密格式注解
      * @param targetType  当前属性的 {@link JavaType}

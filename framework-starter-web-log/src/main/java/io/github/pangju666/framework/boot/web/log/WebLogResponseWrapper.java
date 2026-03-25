@@ -2,7 +2,7 @@ package io.github.pangju666.framework.boot.web.log;
 
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 import org.springframework.web.util.ContentCachingResponseWrapper;
 
 import java.io.IOException;

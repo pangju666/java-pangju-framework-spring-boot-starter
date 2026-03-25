@@ -1,2 +1,2 @@
-io.github.pangju666.framework.boot.data.redis.autoconfigure.RedisScanAutoConfiguration
+io.github.pangju666.framework.boot.data.redis.autoconfigure.ScanDataRedisAutoConfiguration
 io.github.pangju666.framework.boot.data.redis.autoconfigure.DynamicRedisAutoConfiguration

@@ -33,7 +33,7 @@ import org.springframework.data.redis.core.RedisOperations;
  * Redis 扫描自动配置
  * <p>
  * 在存在 Redis 相关类（{@link RedisOperations}、{@link ScanRedisTemplate}）时生效，
- * 并在 Spring Boot 默认的 {@link RedisAutoConfiguration}之后进行配置。该自动配置按条件注册扫描能力的 RedisTemplate 实现，提供字符串模板和 JSON 序列化模板两种变体。
+ * 并在 Spring Boot 默认的 {@link DataRedisAutoConfiguration}之后进行配置。该自动配置按条件注册扫描能力的 RedisTemplate 实现，提供字符串模板和 JSON 序列化模板两种变体。
  * </p>
  *
  * @author pangju666
@@ -41,7 +41,7 @@ import org.springframework.data.redis.core.RedisOperations;
  */
 @AutoConfiguration(after = DataRedisAutoConfiguration.class)
 @ConditionalOnClass({RedisOperations.class, ScanRedisTemplate.class})
-public class RedisScanAutoConfiguration {
+public class ScanDataRedisAutoConfiguration {
 	/**
 	 * 注册支持扫描能力的字符串 RedisTemplate
 	 * <p>

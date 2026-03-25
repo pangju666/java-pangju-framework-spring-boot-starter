@@ -1,28 +1,27 @@
 package io.github.pangju666.framework.boot.jackson.crypto
 
-
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.node.ObjectNode
-import io.github.pangju666.framework.boot.autoconfigure.crypto.CryptoAutoConfiguration
+import io.github.pangju666.framework.boot.crypto.autoconfigure.CryptoAutoConfiguration
 import io.github.pangju666.framework.boot.crypto.enums.CryptoAlgorithm
 import io.github.pangju666.framework.boot.crypto.enums.Encoding
 import io.github.pangju666.framework.boot.crypto.factory.impl.AES256CryptoFactory
 import io.github.pangju666.framework.boot.crypto.factory.impl.StrongCryptoFactory
 import io.github.pangju666.framework.boot.crypto.utils.CryptoUtils
-import io.github.pangju666.framework.boot.jackson.annotation.EncryptFormat
-import io.github.pangju666.framework.boot.jackson.utils.CryptoFactoryRegistry
+import io.github.pangju666.framework.boot.jackson.autoconfigure.JsonMapperAutoConfiguration
+import io.github.pangju666.framework.boot.jackson.crypto.annotation.EncryptFormat
 import io.github.pangju666.framework.boot.spring.StaticSpringContext
-
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.jackson.autoconfigure.JacksonAutoConfiguration
 import org.springframework.boot.test.context.SpringBootContextLoader
 import org.springframework.core.env.Environment
 import org.springframework.test.context.ContextConfiguration
 import spock.lang.Specification
+import tools.jackson.databind.json.JsonMapper
+import tools.jackson.databind.node.ObjectNode
 
-@ContextConfiguration(classes = [JacksonAutoConfiguration.class, CryptoAutoConfiguration.class], loader = SpringBootContextLoader.class)
+@ContextConfiguration(classes = [JacksonAutoConfiguration.class, JsonMapperAutoConfiguration.class, CryptoAutoConfiguration.class], loader = SpringBootContextLoader.class)
 class EncryptFormatSpec extends Specification {
 	@Autowired
-	ObjectMapper mapper
+	JsonMapper mapper
 
 	static class Dto {
 		@EncryptFormat(key = "pwd", algorithm = CryptoAlgorithm.AES256, encoding = Encoding.BASE64)

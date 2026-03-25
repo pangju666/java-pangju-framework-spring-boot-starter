@@ -28,7 +28,7 @@ import io.github.pangju666.framework.boot.image.enums.CropType;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import java.awt.*;
 import java.io.File;

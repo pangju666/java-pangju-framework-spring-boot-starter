@@ -1,6 +1,7 @@
 package io.github.pangju666.framework.boot.web
 
-import io.github.pangju666.framework.boot.autoconfigure.web.advice.bind.RequestParamBindingAdvice
+
+import io.github.pangju666.framework.boot.web.autoconfigure.advice.bind.RequestParamBindingAdvice
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.web.bind.annotation.GetMapping

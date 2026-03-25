@@ -3,6 +3,7 @@ package io.github.pangju666.framework.boot.image
 import io.github.pangju666.commons.image.enums.FlipDirection
 import io.github.pangju666.commons.image.enums.RotateDirection
 import io.github.pangju666.commons.io.utils.FileUtils
+import io.github.pangju666.framework.boot.image.autoconfigure.ImageAutoConfiguration
 import io.github.pangju666.framework.boot.image.core.impl.BufferedImageTemplate
 import io.github.pangju666.framework.boot.image.enums.ResampleFilter
 import io.github.pangju666.framework.boot.image.exception.UnSupportedTypeException

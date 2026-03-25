@@ -1,5 +1,6 @@
 package io.github.pangju666.framework.boot.data.redis
 
+import io.github.pangju666.framework.boot.data.redis.autoconfigure.DynamicDataRedisProperties
 import io.github.pangju666.framework.data.redis.core.ScanRedisTemplate
 import io.github.pangju666.framework.data.redis.core.StringScanRedisTemplate
 import org.springframework.beans.factory.annotation.Autowired
@@ -12,7 +13,7 @@ import org.springframework.test.context.ContextConfiguration
 import spock.lang.Specification
 
 @ActiveProfiles("dynamic-redis")
-@ContextConfiguration(classes = [DynamicRedisAutoConfiguration.class], loader = SpringBootContextLoader .class)
+@ContextConfiguration(classes = [DynamicDataRedisProperties.class], loader = SpringBootContextLoader .class)
 class DynamicRedisSpec extends Specification {
 	@Autowired
 	RedisTemplate<Object, Object> redisTemplate
