@@ -19,8 +19,6 @@ package io.github.pangju666.framework.boot.data.mongo.autoconfigure;
 import com.mongodb.MongoClientSettings;
 import com.mongodb.client.MongoClient;
 import io.github.pangju666.framework.boot.data.mongo.DynamicMongoUtils;
-import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -37,10 +35,7 @@ import org.springframework.boot.mongodb.autoconfigure.MongoClientFactory;
 import org.springframework.boot.mongodb.autoconfigure.MongoClientSettingsBuilderCustomizer;
 import org.springframework.boot.mongodb.autoconfigure.MongoConnectionDetails;
 import org.springframework.boot.mongodb.autoconfigure.StandardMongoClientSettingsBuilderCustomizer;
-import org.springframework.boot.persistence.autoconfigure.EntityScanner;
 import org.springframework.boot.ssl.SslBundles;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.core.env.Environment;
@@ -52,7 +47,6 @@ import org.springframework.data.mongodb.core.MongoDatabaseFactorySupport;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.SimpleMongoClientDatabaseFactory;
 import org.springframework.data.mongodb.core.convert.*;
-import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
 import org.springframework.data.mongodb.gridfs.GridFsTemplate;
 import org.springframework.util.Assert;
@@ -75,7 +69,6 @@ import java.util.function.Supplier;
  * <ul>
  *     <li>解析{@link DynamicDataMongoProperties}配置属性</li>
  *     <li>为每个数据源注册{@link MongoConnectionDetails} Bean</li>
- *     <li>为每个数据源注册{@link MongoClientSettings} Bean</li>
  *     <li>为每个数据源注册{@link MongoClient} Bean</li>
  *     <li>为每个数据源注册{@link MongoCustomConversions} Bean</li>
  *     <li>为每个数据源注册{@link MongoMappingContext} Bean</li>
@@ -90,28 +83,28 @@ import java.util.function.Supplier;
  * Bean注册顺序和依赖关系：
  * <ol>
  *     <li>MongoConnectionDetails - 基础连接详情</li>
- *     <li>MongoClientSettings - 客户端设置</li>
- *     <li>MongoClient（依赖于1、2）- MongoDB客户端</li>
- *     <li>MongoMappingContext（依赖于4）- 映射上下文</li>
- *     <li>MongoDatabaseFactory（依赖于1、3）- 数据库工厂</li>
- *     <li>MongoConverter（依赖于5、4）- 数据转换器</li>
- *     <li>MongoTemplate（依赖于6、7）- 操作模板</li>
- *     <li>GridFsTemplate（依赖于1、6、8）- GridFS操作模板</li>
+ *     <li>MongoCustomConversions - 自定义类型转换</li>
+ *     <li>MongoClient（依赖于 MongoConnectionDetails）- MongoDB客户端</li>
+ *     <li>MongoMappingContext（依赖于 MongoCustomConversions）- 映射上下文</li>
+ *     <li>MongoDatabaseFactory（依赖于 MongoConnectionDetails 和 MongoClient）- 数据库工厂</li>
+ *     <li>MappingMongoConverter（依赖于 MongoCustomConversions、MongoMappingContext 和 MongoDatabaseFactory）- 数据转换器</li>
+ *     <li>MongoTemplate（依赖于MongoDatabaseFactory 和 MappingMongoConverter）- 操作模板</li>
+ *     <li>GridFsTemplate（依赖于MongoDatabaseFactory 和 MongoTemplate）- GridFS操作模板</li>
  * </ol>
  * </p>
  * <p>
  * Bean命名规则：
  * <ul>
  *     <li>{name}MongoConnectionDetails - MongoDB连接详情Bean</li>
- *     <li>{name}MongoClientSettings - MongoDB客户端设置Bean</li>
  *     <li>{name}MongoClient - MongoDB客户端Bean</li>
  *     <li>{name}MongoCustomConversions - MongoDB自定义类型转换Bean</li>
  *     <li>{name}MongoMappingContext - MongoDB映射上下文Bean</li>
  *     <li>{name}MongoDatabaseFactory - MongoDB数据库工厂Bean</li>
- *     <li>{name}MongoConverter - MongoDB数据转换器Bean</li>
+ *     <li>{name}MappingMongoConverter - MongoDB数据转换器Bean</li>
  *     <li>{name}MongoTemplate - MongoDB操作模板Bean</li>
  *     <li>{name}GridFsTemplate - MongoDB GridFS操作模板Bean</li>
  *     <li>mongoTemplate - 主数据源对应的MongoTemplate Bean（primary=true）</li>
+ *     <li>gridFsTemplate - 主数据源对应的GridFsTemplate Bean（primary=true）</li>
  * </ul>
  * </p>
  *
@@ -122,7 +115,7 @@ import java.util.function.Supplier;
  * @see ImportBeanDefinitionRegistrar
  * @since 1.0.0
  */
-class DynamicDataMongoRegistrar implements EnvironmentAware, BeanFactoryAware, ApplicationContextAware, ImportBeanDefinitionRegistrar {
+class DynamicDataMongoRegistrar implements EnvironmentAware, BeanFactoryAware, ImportBeanDefinitionRegistrar {
 	/**
 	 * 日志记录器
 	 *
@@ -141,12 +134,12 @@ class DynamicDataMongoRegistrar implements EnvironmentAware, BeanFactoryAware, A
 	/**
 	 * MongoDB数据转换器Bean名称模板
 	 * <p>
-	 * 格式为：{name}MongoConverter
+	 * 格式为：{name}MappingMongoConverter
 	 * </p>
 	 *
 	 * @since 1.0.0
 	 */
-	private static final String MONGO_CONVERTER_BEAN_NAME_TEMPLATE = "%sMongoConverter";
+	private static final String MONGO_CONVERTER_BEAN_NAME_TEMPLATE = "%sMappingMongoConverter";
 	private static final String MONGO_MAPPING_CONTEXT_BEAN_NAME_TEMPLATE = "%sMongoMappingContext";
 	private static final String MONGO_CUSTOM_CONVERSIONS_BEAN_NAME_TEMPLATE = "%sMongoCustomConversions";
 
@@ -168,7 +161,6 @@ class DynamicDataMongoRegistrar implements EnvironmentAware, BeanFactoryAware, A
 	 * @since 1.0.0
 	 */
 	private BeanFactory beanFactory;
-	private MongoManagedTypes mongoManagedTypes;
 
 	@Override
 	public void setEnvironment(Environment environment) {
@@ -178,15 +170,6 @@ class DynamicDataMongoRegistrar implements EnvironmentAware, BeanFactoryAware, A
 	@Override
 	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
 		this.beanFactory = beanFactory;
-	}
-
-	@Override
-	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-		try {
-			this.mongoManagedTypes = MongoManagedTypes.fromIterable(new EntityScanner(applicationContext).scan(Document.class));
-		} catch (ClassNotFoundException e) {
-			throw ExceptionUtils.asRuntimeException(e);
-		}
 	}
 
 	/**
@@ -288,7 +271,7 @@ class DynamicDataMongoRegistrar implements EnvironmentAware, BeanFactoryAware, A
 					PropertyMapper map = PropertyMapper.get();
 					MongoMappingContext context = new MongoMappingContext();
 					map.from(mongoProperties.getData().isAutoIndexCreation()).to(context::setAutoIndexCreation);
-					context.setManagedTypes(getMongoManagedTypes());
+					context.setManagedTypes(beanFactory.getBean(MongoManagedTypes.class));
 					Class<?> strategyClass = mongoProperties.getData().getFieldNamingStrategy();
 					if (strategyClass != null) {
 						context.setFieldNamingStrategy((FieldNamingStrategy) BeanUtils.instantiateClass(strategyClass));
@@ -395,10 +378,5 @@ class DynamicDataMongoRegistrar implements EnvironmentAware, BeanFactoryAware, A
 			log.info("dynamic-mongodb initial loaded [{}] database,primary database named [{}]", mongoDatabases.size(),
 				dynamicDataMongoProperties.getPrimary());
 		}
-	}
-
-	private MongoManagedTypes getMongoManagedTypes() {
-		MongoManagedTypes types = beanFactory.getBeanProvider(MongoManagedTypes.class).getIfAvailable();
-		return ObjectUtils.getIfNull(types, mongoManagedTypes);
 	}
 }

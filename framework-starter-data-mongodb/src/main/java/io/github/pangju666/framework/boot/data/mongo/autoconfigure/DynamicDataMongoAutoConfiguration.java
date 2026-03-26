@@ -53,7 +53,7 @@ import org.springframework.data.mongodb.gridfs.GridFsTemplate;
  * <p><strong>生成的 Bean</strong>（按数据源）</p>
  * <ul>
  *   <li>{name}MongoConnectionDetails：连接详情。</li>
- *   <li>{name}MongoClientSettings：客户端设置。</li>
+ *   <li>{name}MongoCustomConversions：自定义类型转换。</li>
  *   <li>{name}MongoMappingContext：映射上下文。</li>
  *   <li>{name}MongoClient：客户端实例。</li>
  *   <li>{name}MongoDatabaseFactory：数据库工厂。</li>
@@ -61,6 +61,7 @@ import org.springframework.data.mongodb.gridfs.GridFsTemplate;
  *   <li>{name}MongoTemplate：操作模板。</li>
  *   <li>{name}GridFsTemplate：GridFS 操作模板。</li>
  *   <li>mongoTemplate：主数据源操作模板（标记为 {@code primary}）。</li>
+ *   <li>gridFsTemplate：主数据源 GridFS 操作模板（标记为 {@code primary}）。</li>
  * </ul>
  *
  * <p><strong>使用示例</strong></p>
