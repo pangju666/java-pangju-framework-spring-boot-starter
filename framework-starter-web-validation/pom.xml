@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>io.github.pangju666.framework.boot</groupId>
 		<artifactId>framework-starter-parent</artifactId>
-		<version>1.0.0</version>
+		<version>1.1.0</version>
 	</parent>
 	<artifactId>framework-starter-web-validation</artifactId>
 	<name>framework-starter-web-validation</name>
@@ -22,10 +22,6 @@
 	<dependencies>
 		<dependency>
 			<groupId>io.github.pangju666.framework.boot</groupId>
-			<artifactId>framework-starter-spring</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>io.github.pangju666.framework.boot</groupId>
 			<artifactId>framework-starter-web</artifactId>
 		</dependency>
 
@@ -36,6 +32,10 @@
 		<dependency>
 			<groupId>io.github.resilience4j</groupId>
 			<artifactId>resilience4j-ratelimiter</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.github.pangju666.framework</groupId>
+			<artifactId>framework-spring</artifactId>
 		</dependency>
 	</dependencies>
 
