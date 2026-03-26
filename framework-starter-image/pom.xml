@@ -37,10 +37,14 @@
 			<groupId>io.github.pangju666.commons</groupId>
 			<artifactId>commons-image</artifactId>
 		</dependency>
+
 		<dependency>
 			<groupId>io.github.pangju666.commons</groupId>
 			<artifactId>commons-imageio</artifactId>
-			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.tika</groupId>
+			<artifactId>tika-parser-image-module</artifactId>
 		</dependency>
 
 		<dependency>
