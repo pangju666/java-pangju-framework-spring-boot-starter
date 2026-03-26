@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>io.github.pangju666.framework.boot</groupId>
 	<artifactId>framework-starter-parent</artifactId>
-	<version>2.0.0</version>
+	<version>2.0.1</version>
 	<packaging>pom</packaging>
 	<name>framework-starter-parent</name>
 	<description>Framework Starter 父项目</description>
@@ -30,7 +30,7 @@
 		<module>framework-starter-web</module>
 		<module>framework-starter-web-crypto</module>
 		<module>framework-starter-web-limit</module>
-		<module>framework-starter-web-signuatre</module>
+		<module>framework-starter-web-signature</module>
 		<module>framework-starter-web-log</module>
 		<module>framework-starter-test</module>
 		<module>framework-starter-test-spock</module>
@@ -85,88 +85,88 @@
 			<dependency>
 				<groupId>io.github.pangju666.framework.boot</groupId>
 				<artifactId>framework-starter-spring</artifactId>
-				<version>2.0.0</version>
+				<version>2.0.1</version>
 			</dependency>
 			<dependency>
 				<groupId>io.github.pangju666.framework.boot</groupId>
 				<artifactId>framework-starter-crypto</artifactId>
-				<version>2.0.0</version>
+				<version>2.0.1</version>
 			</dependency>
 			<dependency>
 				<groupId>io.github.pangju666.framework.boot</groupId>
 				<artifactId>framework-starter-jackson</artifactId>
-				<version>2.0.0</version>
+				<version>2.0.1</version>
 			</dependency>
 			<dependency>
 				<groupId>io.github.pangju666.framework.boot</groupId>
 				<artifactId>framework-starter-jackson-crypto</artifactId>
-				<version>2.0.0</version>
+				<version>2.0.1</version>
 			</dependency>
 			<dependency>
 				<groupId>io.github.pangju666.framework.boot</groupId>
 				<artifactId>framework-starter-validation</artifactId>
-				<version>2.0.0</version>
+				<version>2.0.1</version>
 			</dependency>
 			<dependency>
 				<groupId>io.github.pangju666.framework.boot</groupId>
 				<artifactId>framework-starter-image</artifactId>
-				<version>2.0.0</version>
+				<version>2.0.1</version>
 			</dependency>
 			<dependency>
 				<groupId>io.github.pangju666.framework.boot</groupId>
 				<artifactId>framework-starter-data-mybatis-plus</artifactId>
-				<version>2.0.0</version>
+				<version>2.0.1</version>
 			</dependency>
 			<dependency>
 				<groupId>io.github.pangju666.framework.boot</groupId>
 				<artifactId>framework-starter-data-redis</artifactId>
-				<version>2.0.0</version>
+				<version>2.0.1</version>
 			</dependency>
 			<dependency>
 				<groupId>io.github.pangju666.framework.boot</groupId>
 				<artifactId>framework-starter-data-mongodb</artifactId>
-				<version>2.0.0</version>
+				<version>2.0.1</version>
 			</dependency>
 			<dependency>
 				<groupId>io.github.pangju666.framework.boot</groupId>
 				<artifactId>framework-starter-restclient</artifactId>
-				<version>2.0.0</version>
+				<version>2.0.1</version>
 			</dependency>
 			<dependency>
 				<groupId>io.github.pangju666.framework.boot</groupId>
 				<artifactId>framework-starter-web</artifactId>
-				<version>2.0.0</version>
+				<version>2.0.1</version>
 			</dependency>
 			<dependency>
 				<groupId>io.github.pangju666.framework.boot</groupId>
 				<artifactId>framework-starter-web-crypto</artifactId>
-				<version>2.0.0</version>
+				<version>2.0.1</version>
 			</dependency>
 			<dependency>
 				<groupId>io.github.pangju666.framework.boot</groupId>
 				<artifactId>framework-starter-web-limit</artifactId>
-				<version>2.0.0</version>
+				<version>2.0.1</version>
 			</dependency>
 			<dependency>
 				<groupId>io.github.pangju666.framework.boot</groupId>
-				<artifactId>framework-starter-web-signuatre</artifactId>
-				<version>2.0.0</version>
+				<artifactId>framework-starter-web-signature</artifactId>
+				<version>2.0.1</version>
 			</dependency>
 			<dependency>
 				<groupId>io.github.pangju666.framework.boot</groupId>
 				<artifactId>framework-starter-web-log</artifactId>
-				<version>2.0.0</version>
+				<version>2.0.1</version>
 			</dependency>
 			<dependency>
 				<groupId>io.github.pangju666.framework.boot</groupId>
 				<artifactId>framework-starter-test</artifactId>
-				<version>2.0.0</version>
+				<version>2.0.1</version>
 				<scope>test</scope>
 			</dependency>
 			<dependency>
 				<groupId>io.github.pangju666.framework.boot</groupId>
 				<artifactId>framework-starter-test-spock</artifactId>
-				<version>2.0.0</version>
+				<version>2.0.1</version>
 				<scope>test</scope>
 			</dependency>
 
@@ -321,6 +321,14 @@
 				<!--<configuration>
 					<skip>true</skip>
 				</configuration>-->
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>versions-maven-plugin</artifactId>
+				<inherited>false</inherited>
+				<configuration>
+					<generateBackupPoms>false</generateBackupPoms>
+				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.sonatype.central</groupId>
