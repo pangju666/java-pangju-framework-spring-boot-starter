@@ -96,7 +96,7 @@ Pangju Framework Starter 是一套基于 [`Pangju Framework`](https://github.com
 
 ## 📖 文档
 
-更多详细说明请参考：[在线文档](https://pangju666.github.io/pangju-java-doc/v1/starter/getting-started.html)
+更多详细说明请参考：[在线文档](https://pangju666.github.io/pangju-java-doc/v2/starter/getting-started.html)
 
 ## 📄 许可证
 
