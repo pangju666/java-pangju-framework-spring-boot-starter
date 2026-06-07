@@ -192,9 +192,6 @@ class LettuceConnectionConfiguration extends DataRedisConnectionConfiguration {
 			if (refreshProperties.getPeriod() != null) {
 				refreshBuilder.enablePeriodicRefresh(refreshProperties.getPeriod());
 			}
-			if (refreshProperties.isAdaptive()) {
-				refreshBuilder.enableAllAdaptiveRefreshTriggers();
-			}
 			return builder.topologyRefreshOptions(refreshBuilder.build());
 		}
 		return ClientOptions.builder();

@@ -6,5 +6,4 @@ spring:
       lettuce:
         cluster:
           refresh:
-            adaptive: true
             period: 20

@@ -14,7 +14,7 @@
 
 # Pangju Framework Starter
 
-Pangju Framework Starter 是一套基于 [`Pangju Framework`](https://github.com/pangju666/java-pangju-framework) 与 Spring Boot 4.x 构建的模块化 Starter 套件。通过自动装配机制，将 Web 增强、安全合规、数据持久化及图像处理等核心功能封装为开箱即用的能力。
+Pangju Framework Starter 是一套基于 [`Pangju Framework`](https://github.com/pangju666/java-pangju-framework) 与 Spring Boot 4 构建的模块化 Starter 套件。通过自动装配机制，将 Web 增强、安全合规、数据持久化及图像处理等核心功能封装为开箱即用的能力。
 
 ## ✨ 核心特性
 
@@ -57,7 +57,7 @@ Pangju Framework Starter 是一套基于 [`Pangju Framework`](https://github.com
 <parent>
     <groupId>io.github.pangju666.framework.boot</groupId>
     <artifactId>framework-starter-parent</artifactId>
-    <version>2.0.0</version>
+    <version>2.1.0</version>
 </parent>
 ```
 
@@ -69,7 +69,7 @@ Pangju Framework Starter 是一套基于 [`Pangju Framework`](https://github.com
         <dependency>
             <groupId>io.github.pangju666.framework.boot</groupId>
             <artifactId>framework-starter-parent</artifactId>
-            <version>2.0.0</version>
+            <version>2.1.0</version>
             <type>pom</type>
             <scope>import</scope>
         </dependency>
