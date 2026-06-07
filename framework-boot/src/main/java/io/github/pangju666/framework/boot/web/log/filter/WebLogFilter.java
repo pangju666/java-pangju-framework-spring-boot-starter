@@ -215,7 +215,8 @@ public class WebLogFilter extends BaseHttpRequestFilter {
 			if (request instanceof ContentCachingRequestWrapper) {
 				contentCachingRequestWrapper = (ContentCachingRequestWrapper) request;
 			} else {
-				contentCachingRequestWrapper = new ContentCachingRequestWrapper(request);
+				// todo 增加设置缓存请求体大小上限
+				contentCachingRequestWrapper = new ContentCachingRequestWrapper(request, -1);
 			}
 			request = contentCachingRequestWrapper;
 		}
