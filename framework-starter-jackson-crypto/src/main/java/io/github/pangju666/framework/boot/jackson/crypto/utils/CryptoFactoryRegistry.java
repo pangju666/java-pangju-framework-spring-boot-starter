@@ -51,46 +51,47 @@ import java.util.concurrent.ConcurrentHashMap;
  * @since 1.0.0
  */
 public final class CryptoFactoryRegistry {
-    /**
-     * 工厂实例缓存
-     * <p>
-     * 键为工厂类的完全限定名，值为对应的 {@link CryptoFactory} 实例；使用并发映射确保并发环境下的安全与可见性。
-     * </p>
-     *
-     * @since 1.0.0
-     */
-    private static final Map<String, CryptoFactory> CRYPTO_FACTORY_MAP = new ConcurrentHashMap<>(4);
-	
-    private CryptoFactoryRegistry() {}
+	/**
+	 * 工厂实例缓存
+	 * <p>
+	 * 键为工厂类的完全限定名，值为对应的 {@link CryptoFactory} 实例；使用并发映射确保并发环境下的安全与可见性。
+	 * </p>
+	 *
+	 * @since 1.0.0
+	 */
+	private static final Map<String, CryptoFactory> CRYPTO_FACTORY_MAP = new ConcurrentHashMap<>(4);
 
-    /**
-     * 获取或创建指定类型的加密工厂实例。
-     * <p>
-     * 先尝试通过 Spring 容器获取 Bean；当容器为空或抛出 {@link BeansException} 时，回退到直接构造。
-     * 结果按工厂类名缓存，后续重复请求将复用已存在实例。
-     * </p>
-     *
-     * @param factoryClass 工厂实现类
+	private CryptoFactoryRegistry() {
+	}
+
+	/**
+	 * 获取或创建指定类型的加密工厂实例。
+	 * <p>
+	 * 先尝试通过 Spring 容器获取 Bean；当容器为空或抛出 {@link BeansException} 时，回退到直接构造。
+	 * 结果按工厂类名缓存，后续重复请求将复用已存在实例。
+	 * </p>
+	 *
+	 * @param factoryClass 工厂实现类
+	 * @return 对应的 {@link CryptoFactory} 实例（来自容器或直接构造）
 	 * @throws IllegalArgumentException 当{@code factoryClass}为{@code null}时抛出
-     * @return 对应的 {@link CryptoFactory} 实例（来自容器或直接构造）
-	 * @see #getCryptoFactory(Class) 
-     * @since 1.0.0
-     */
-    public static CryptoFactory getOrCreate(Class<? extends CryptoFactory> factoryClass) {
+	 * @see #getCryptoFactory(Class)
+	 * @since 1.0.0
+	 */
+	public static CryptoFactory getOrCreate(Class<? extends CryptoFactory> factoryClass) {
 		Assert.notNull(factoryClass, "factoryClass 不可为 null");
-        return CRYPTO_FACTORY_MAP.computeIfAbsent(factoryClass.getName(), k -> {
-            try {
-                BeanFactory beanFactory = StaticSpringContext.getBeanFactory();
-                if (Objects.nonNull(beanFactory)) {
-                    return beanFactory.getBean(factoryClass);
-                } else {
-                    return getCryptoFactory(factoryClass);
-                }
-            } catch (BeansException e) {
-                return getCryptoFactory(factoryClass);
-            }
-        });
-    }
+		return CRYPTO_FACTORY_MAP.computeIfAbsent(factoryClass.getName(), k -> {
+			try {
+				BeanFactory beanFactory = StaticSpringContext.getBeanFactory();
+				if (Objects.nonNull(beanFactory)) {
+					return beanFactory.getBean(factoryClass);
+				} else {
+					return getCryptoFactory(factoryClass);
+				}
+			} catch (BeansException e) {
+				return getCryptoFactory(factoryClass);
+			}
+		});
+	}
 
 	/**
 	 * 注册外部创建的加密工厂实例。
@@ -108,32 +109,32 @@ public final class CryptoFactoryRegistry {
 		CRYPTO_FACTORY_MAP.putIfAbsent(cryptoFactory.getClass().getName(), cryptoFactory);
 	}
 
-    /**
-     * 直接构造加密工厂实例。
-     * <p>
-     * 对常见实现使用显式构造以避免反射开销；其余实现通过无参构造反射创建。
-     * 当构造失败时抛出 {@link IllegalStateException} 封装原始异常。
-     * </p>
-     *
-     * @param factoryClass 工厂实现类
-     * @return 新创建的 {@link CryptoFactory} 实例
-     * @since 1.0.0
-     */
-    private static CryptoFactory getCryptoFactory(Class<? extends CryptoFactory> factoryClass) {
-        if (factoryClass == AES256CryptoFactory.class) {
-            return new AES256CryptoFactory(16);
-        } else if (factoryClass == RSACryptoFactory.class) {
-            return new RSACryptoFactory(16);
-        } else if (factoryClass == StrongCryptoFactory.class) {
-            return new StrongCryptoFactory(16);
-        } else if (factoryClass == BasicCryptoFactory.class) {
-            return new BasicCryptoFactory(16);
-        } else {
-            try {
-                return factoryClass.getDeclaredConstructor().newInstance();
-            } catch (Exception ex) {
-                throw new IllegalStateException(ex);
-            }
-        }
-    }
+	/**
+	 * 直接构造加密工厂实例。
+	 * <p>
+	 * 对常见实现使用显式构造以避免反射开销；其余实现通过无参构造反射创建。
+	 * 当构造失败时抛出 {@link IllegalStateException} 封装原始异常。
+	 * </p>
+	 *
+	 * @param factoryClass 工厂实现类
+	 * @return 新创建的 {@link CryptoFactory} 实例
+	 * @since 1.0.0
+	 */
+	private static CryptoFactory getCryptoFactory(Class<? extends CryptoFactory> factoryClass) {
+		if (factoryClass == AES256CryptoFactory.class) {
+			return new AES256CryptoFactory(16);
+		} else if (factoryClass == RSACryptoFactory.class) {
+			return new RSACryptoFactory(16);
+		} else if (factoryClass == StrongCryptoFactory.class) {
+			return new StrongCryptoFactory(16);
+		} else if (factoryClass == BasicCryptoFactory.class) {
+			return new BasicCryptoFactory(16);
+		} else {
+			try {
+				return factoryClass.getDeclaredConstructor().newInstance();
+			} catch (Exception ex) {
+				throw new IllegalStateException(ex);
+			}
+		}
+	}
 }

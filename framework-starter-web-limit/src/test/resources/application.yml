@@ -17,18 +17,18 @@ spring:
   threads:
     virtual:
       enabled: true
-#  task:
-#    execution:
-#      pool:
-#        core-size: 8 # cpu密集型设置cpu核心数，io密集型则设置为cpu核心数的2-3倍
-#        max-size: 16
-#        queue-capacity: 100
-#        keep-alive: 60s
-#      thread-name-prefix: async-task-
-#    scheduling:
-#      pool:
-#        size: 4
-#      thread-name-prefix: scheduling-
+  #  task:
+  #    execution:
+  #      pool:
+  #        core-size: 8 # cpu密集型设置cpu核心数，io密集型则设置为cpu核心数的2-3倍
+  #        max-size: 16
+  #        queue-capacity: 100
+  #        keep-alive: 60s
+  #      thread-name-prefix: async-task-
+  #    scheduling:
+  #      pool:
+  #        size: 4
+  #      thread-name-prefix: scheduling-
   servlet:
     multipart:
       max-file-size: 5GB  # 最大上传文件大小

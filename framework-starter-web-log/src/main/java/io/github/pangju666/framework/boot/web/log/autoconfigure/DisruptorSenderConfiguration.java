@@ -22,7 +22,10 @@ import io.github.pangju666.framework.boot.web.log.receiver.WebLogReceiver;
 import io.github.pangju666.framework.boot.web.log.sender.WebLogSender;
 import io.github.pangju666.framework.boot.web.log.sender.impl.disruptor.DisruptorWebLogEventHandler;
 import io.github.pangju666.framework.boot.web.log.sender.impl.disruptor.DisruptorWebLogSender;
-import org.springframework.boot.autoconfigure.condition.*;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -72,24 +75,24 @@ import org.springframework.context.annotation.Configuration;
 @ConditionalOnClass({Disruptor.class})
 @ConditionalOnProperty(prefix = "pangju.web.log", name = "sender-type", havingValue = "DISRUPTOR", matchIfMissing = true)
 class DisruptorSenderConfiguration {
-    /**
-     * 注册 Disruptor 日志事件处理器。
-     *
-     * <p><b>条件</b></p>
-     * <ul>
-     *   <li>容器中存在 {@link WebLogReceiver}。</li>
-     *   <li>当前未存在 {@link DisruptorWebLogEventHandler} Bean。</li>
-     * </ul>
-     *
-     * <p><b>行为</b></p>
-     * <ul>
-     *   <li>创建事件处理器，用于从队列中消费日志事件并委托至接收器处理。</li>
-     * </ul>
-     *
-     * @param webLogReceiver 日志接收器
-     * @return 事件处理器实例
-     * @since 1.0.0
-     */
+	/**
+	 * 注册 Disruptor 日志事件处理器。
+	 *
+	 * <p><b>条件</b></p>
+	 * <ul>
+	 *   <li>容器中存在 {@link WebLogReceiver}。</li>
+	 *   <li>当前未存在 {@link DisruptorWebLogEventHandler} Bean。</li>
+	 * </ul>
+	 *
+	 * <p><b>行为</b></p>
+	 * <ul>
+	 *   <li>创建事件处理器，用于从队列中消费日志事件并委托至接收器处理。</li>
+	 * </ul>
+	 *
+	 * @param webLogReceiver 日志接收器
+	 * @return 事件处理器实例
+	 * @since 1.0.0
+	 */
 	@ConditionalOnMissingBean(DisruptorWebLogEventHandler.class)
 	@ConditionalOnBean(WebLogReceiver.class)
 	@Bean
@@ -97,25 +100,25 @@ class DisruptorSenderConfiguration {
 		return new DisruptorWebLogEventHandler(webLogReceiver);
 	}
 
-    /**
-     * 注册 Disruptor 日志发送器。
-     *
-     * <p><b>条件</b></p>
-     * <ul>
-     *   <li>容器中存在 {@link DisruptorWebLogEventHandler}。</li>
-     *   <li>当前未存在 {@link WebLogSender} Bean。</li>
-     * </ul>
-     *
-     * <p><b>行为</b></p>
-     * <ul>
-     *   <li>根据 {@link WebLogProperties.Disruptor#getBufferSize()} 创建发送器并绑定事件处理器。</li>
-     * </ul>
-     *
-     * @param properties   Web 日志属性配置
-     * @param eventHandler 事件处理器
-     * @return 发送器实例
-     * @since 1.0.0
-     */
+	/**
+	 * 注册 Disruptor 日志发送器。
+	 *
+	 * <p><b>条件</b></p>
+	 * <ul>
+	 *   <li>容器中存在 {@link DisruptorWebLogEventHandler}。</li>
+	 *   <li>当前未存在 {@link WebLogSender} Bean。</li>
+	 * </ul>
+	 *
+	 * <p><b>行为</b></p>
+	 * <ul>
+	 *   <li>根据 {@link WebLogProperties.Disruptor#getBufferSize()} 创建发送器并绑定事件处理器。</li>
+	 * </ul>
+	 *
+	 * @param properties   Web 日志属性配置
+	 * @param eventHandler 事件处理器
+	 * @return 发送器实例
+	 * @since 1.0.0
+	 */
 	@ConditionalOnBean(DisruptorWebLogEventHandler.class)
 	@ConditionalOnMissingBean(WebLogSender.class)
 	@Bean

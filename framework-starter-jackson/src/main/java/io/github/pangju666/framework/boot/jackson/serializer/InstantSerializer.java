@@ -35,23 +35,23 @@ import java.util.Objects;
  * @since 1.0.0
  */
 public final class InstantSerializer extends ValueSerializer<Instant> {
-    /**
-     * 将 {@link Instant} 序列化为 JSON 中的毫秒时间戳。
-     * <p>
-     * 行为：当值非空时写出 {@link Instant#toEpochMilli()} 的数值；当值为空时写出 JSON null。
-     * </p>
-     *
-     * @param value       要序列化的 {@link Instant}
-     * @param generator         JSON 生成器
-     * @param context 序列化器提供者
-     * @since 1.0.0
-     */
-    @Override
-    public void serialize(Instant value, JsonGenerator generator, SerializationContext context) {
-        if (Objects.isNull(value)) {
+	/**
+	 * 将 {@link Instant} 序列化为 JSON 中的毫秒时间戳。
+	 * <p>
+	 * 行为：当值非空时写出 {@link Instant#toEpochMilli()} 的数值；当值为空时写出 JSON null。
+	 * </p>
+	 *
+	 * @param value     要序列化的 {@link Instant}
+	 * @param generator JSON 生成器
+	 * @param context   序列化器提供者
+	 * @since 1.0.0
+	 */
+	@Override
+	public void serialize(Instant value, JsonGenerator generator, SerializationContext context) {
+		if (Objects.isNull(value)) {
 			generator.writeNull();
-            return;
-        }
+			return;
+		}
 		generator.writeNumber(value.toEpochMilli());
-    }
+	}
 }

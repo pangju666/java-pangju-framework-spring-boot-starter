@@ -75,22 +75,22 @@ public @interface EncryptFormat {
 	 */
 	String key();
 
-    /**
-     * 加密算法。
-     * <p>默认使用 AES256 算法。</p>
-     *
-     * @return 加密算法
-     * @since 1.0.0
-     */
+	/**
+	 * 加密算法。
+	 * <p>默认使用 AES256 算法。</p>
+	 *
+	 * @return 加密算法
+	 * @since 1.0.0
+	 */
 	CryptoAlgorithm algorithm() default CryptoAlgorithm.AES256;
 
-    /**
-     * 字符串加密输出的编码方式。
-     * <p>默认使用 BASE64；仅在加密字符串时生效，对二进制与数值类型不适用。</p>
-     *
-     * @return 编码方式
-     * @since 1.0.0
-     */
+	/**
+	 * 字符串加密输出的编码方式。
+	 * <p>默认使用 BASE64；仅在加密字符串时生效，对二进制与数值类型不适用。</p>
+	 *
+	 * @return 编码方式
+	 * @since 1.0.0
+	 */
 	Encoding encoding() default Encoding.BASE64;
 
 	/**
@@ -104,8 +104,8 @@ public @interface EncryptFormat {
 	 * <p>默认与行为：未指定则使用算法默认工厂；如提供多个类型，仅取第一个。</p>
 	 *
 	 * @return 自定义加密工厂类型
-	 * @since 1.0.0
 	 * @see CryptoFactoryRegistry
+	 * @since 1.0.0
 	 */
 	Class<? extends CryptoFactory>[] factory() default {};
 }

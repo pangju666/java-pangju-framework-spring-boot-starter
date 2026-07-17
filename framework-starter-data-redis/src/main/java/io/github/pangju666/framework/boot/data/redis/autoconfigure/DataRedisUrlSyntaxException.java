@@ -17,12 +17,12 @@ class DataRedisUrlSyntaxException extends RuntimeException {
 		this.url = url;
 	}
 
-	String getUrl() {
-		return this.url;
-	}
-
 	private static String buildMessage(String url) {
 		return "Invalid Redis URL '" + url + "'";
+	}
+
+	String getUrl() {
+		return this.url;
 	}
 
 }

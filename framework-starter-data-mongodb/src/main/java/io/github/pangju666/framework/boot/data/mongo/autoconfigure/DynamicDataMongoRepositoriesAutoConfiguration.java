@@ -67,8 +67,8 @@ import org.springframework.data.mongodb.repository.support.MongoRepositoryFactor
  * @since 1.0.0
  */
 @AutoConfiguration(before = DataMongoRepositoriesAutoConfiguration.class, after = DynamicDataMongoAutoConfiguration.class)
-@ConditionalOnClass({ MongoClient.class, MongoRepository.class, SimpleBaseMongoRepository.class })
-@ConditionalOnMissingBean({ MongoRepositoryFactoryBean.class, MongoRepositoryConfigurationExtension.class })
+@ConditionalOnClass({MongoClient.class, MongoRepository.class, SimpleBaseMongoRepository.class})
+@ConditionalOnMissingBean({MongoRepositoryFactoryBean.class, MongoRepositoryConfigurationExtension.class})
 @ConditionalOnRepositoryType(store = "mongodb", type = RepositoryType.IMPERATIVE)
 @Conditional(OnDynamicMongoCondition.class)
 @Import(DynamicMongoRepositoriesRegistrar.class)

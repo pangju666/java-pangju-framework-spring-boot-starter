@@ -38,179 +38,179 @@ import java.util.Objects;
  * </p>
  *
  * @author pangju666
- * @since 1.0.0
  * @see CryptoFactory
+ * @since 1.0.0
  */
 public class CryptoUtils {
-    protected CryptoUtils() {
-    }
+	protected CryptoUtils() {
+	}
 
-    /**
-     * 加密字节数组。
-     *
-     * @param factory 加解密工厂，负责创建具体的加密器
-     * @param rawData 原始字节数据；为空时直接返回
-     * @param key     密钥或占位符（支持 <code>${property.name}</code> 形式）
-     * @return 加密后的字节数组；若输入为空则返回原值
-	 * @since 1.0.0
-     */
-    public static byte[] encrypt(final CryptoFactory factory, final byte[] rawData, final String key) {
-        if (ArrayUtils.isEmpty(rawData)) {
-            return rawData;
-        }
-        return factory.getBinaryEncryptor(key).encrypt(rawData);
-    }
-
-    /**
-     * 解密字节数组。
-     *
-     * @param factory 加解密工厂，负责创建具体的解密器
-     * @param rawData 密文字节数据；为空时直接返回
-     * @param key     密钥或占位符（支持 <code>${property.name}</code> 形式）
-     * @return 解密后的字节数组；若输入为空则返回原值
-     * @since 1.0.0
-	 */
-    public static byte[] decrypt(final CryptoFactory factory, final byte[] rawData, final String key) {
-        if (ArrayUtils.isEmpty(rawData)) {
-            return rawData;
-        }
-        return factory.getBinaryDecryptor(key).decrypt(rawData);
-    }
-
-    /**
-     * 加密字符串并按指定编码输出。
-     *
-     * @param factory  加解密工厂
-     * @param rawData  原始字符串；为空白时直接返回
-     * @param key      密钥或占位符（支持 <code>${property.name}</code> 形式）
-     * @param encoding 输出编码方式（Base64 或 Hex）
-     * @return 编码后的密文字符串；若输入为空白则返回原值
-     * @since 1.0.0
-	 */
-    public static String encryptString(final CryptoFactory factory, final String rawData, final String key, final Encoding encoding) {
-        if (StringUtils.isBlank(rawData)) {
-            return rawData;
-        }
-        byte[] result = encrypt(factory, rawData.getBytes(), key);
-        return switch (encoding) {
-            case BASE64 -> Base64.encodeBase64URLSafeString(result);
-            case HEX -> Hex.encodeHexString(result);
-        };
-    }
-
-    /**
-     * 解密字符串（先按指定编码解码，再进行解密）。
-     *
-     * @param factory  加解密工厂
-     * @param rawData  编码后的密文字符串；为空白时直接返回
-     * @param key      密钥或占位符（支持 <code>${property.name}</code> 形式）
-     * @param encoding 输入的编码方式（Base64 或 Hex）
-     * @return 解密后的明文字符串；若输入为空白则返回原值
-     * @throws DecoderException        当编码内容解析失败时抛出（如 Hex 非法）
+	/**
+	 * 加密字节数组。
+	 *
+	 * @param factory 加解密工厂，负责创建具体的加密器
+	 * @param rawData 原始字节数据；为空时直接返回
+	 * @param key     密钥或占位符（支持 <code>${property.name}</code> 形式）
+	 * @return 加密后的字节数组；若输入为空则返回原值
 	 * @since 1.0.0
 	 */
-    public static String decryptString(final CryptoFactory factory, final String rawData, final String key,
-									   final Encoding encoding) throws DecoderException {
-        if (StringUtils.isBlank(rawData)) {
-            return rawData;
-        }
-        byte[] result = switch (encoding) {
-            case BASE64 -> Base64.decodeBase64(rawData);
-            case HEX -> Hex.decodeHex(rawData);
-        };
-        return new String(decrypt(factory, result, key));
-    }
+	public static byte[] encrypt(final CryptoFactory factory, final byte[] rawData, final String key) {
+		if (ArrayUtils.isEmpty(rawData)) {
+			return rawData;
+		}
+		return factory.getBinaryEncryptor(key).encrypt(rawData);
+	}
 
-    /**
-     * 加密大整数。
-     *
-     * @param factory 加解密工厂
-     * @param rawData 原始大整数；为 null 时返回 null
-     * @param key     密钥或占位符
-     * @return 加密后的大整数；为 null 时返回 null
-     * @since 1.0.0
+	/**
+	 * 解密字节数组。
+	 *
+	 * @param factory 加解密工厂，负责创建具体的解密器
+	 * @param rawData 密文字节数据；为空时直接返回
+	 * @param key     密钥或占位符（支持 <code>${property.name}</code> 形式）
+	 * @return 解密后的字节数组；若输入为空则返回原值
+	 * @since 1.0.0
 	 */
-    public static BigInteger encryptBigInteger(final CryptoFactory factory, final BigInteger rawData, final String key) {
-        if (Objects.isNull(rawData)) {
-            return null;
-        }
-        return factory.getIntegerNumberEncryptor(key).encrypt(rawData);
-    }
+	public static byte[] decrypt(final CryptoFactory factory, final byte[] rawData, final String key) {
+		if (ArrayUtils.isEmpty(rawData)) {
+			return rawData;
+		}
+		return factory.getBinaryDecryptor(key).decrypt(rawData);
+	}
 
-    /**
-     * 解密大整数。
-     *
-     * @param factory 加解密工厂
-     * @param rawData 密文大整数；为 null 时返回 null
-     * @param key     密钥或占位符
-     * @return 解密后的大整数；为 null 时返回 null
-     * @since 1.0.0
+	/**
+	 * 加密字符串并按指定编码输出。
+	 *
+	 * @param factory  加解密工厂
+	 * @param rawData  原始字符串；为空白时直接返回
+	 * @param key      密钥或占位符（支持 <code>${property.name}</code> 形式）
+	 * @param encoding 输出编码方式（Base64 或 Hex）
+	 * @return 编码后的密文字符串；若输入为空白则返回原值
+	 * @since 1.0.0
 	 */
-    public static BigInteger decryptBigInteger(final CryptoFactory factory, final BigInteger rawData, final String key) {
-        if (Objects.isNull(rawData)) {
-            return null;
-        }
-        return factory.getIntegerNumberDecryptor(key).decrypt(rawData);
-    }
+	public static String encryptString(final CryptoFactory factory, final String rawData, final String key, final Encoding encoding) {
+		if (StringUtils.isBlank(rawData)) {
+			return rawData;
+		}
+		byte[] result = encrypt(factory, rawData.getBytes(), key);
+		return switch (encoding) {
+			case BASE64 -> Base64.encodeBase64URLSafeString(result);
+			case HEX -> Hex.encodeHexString(result);
+		};
+	}
 
-    /**
-     * 加密高精度小数。
-     *
-     * @param factory 加解密工厂
-     * @param rawData 原始小数；为 null 时返回 null
-     * @param key     密钥或占位符
-     * @return 加密后的高精度小数；为 null 时返回 null
-     * @since 1.0.0
+	/**
+	 * 解密字符串（先按指定编码解码，再进行解密）。
+	 *
+	 * @param factory  加解密工厂
+	 * @param rawData  编码后的密文字符串；为空白时直接返回
+	 * @param key      密钥或占位符（支持 <code>${property.name}</code> 形式）
+	 * @param encoding 输入的编码方式（Base64 或 Hex）
+	 * @return 解密后的明文字符串；若输入为空白则返回原值
+	 * @throws DecoderException 当编码内容解析失败时抛出（如 Hex 非法）
+	 * @since 1.0.0
 	 */
-    public static BigDecimal encryptBigDecimal(final CryptoFactory factory, final BigDecimal rawData, final String key) {
-        if (Objects.isNull(rawData)) {
-            return null;
-        }
-        return factory.getDecimalNumberEncryptor(key).encrypt(rawData);
-    }
+	public static String decryptString(final CryptoFactory factory, final String rawData, final String key,
+	                                   final Encoding encoding) throws DecoderException {
+		if (StringUtils.isBlank(rawData)) {
+			return rawData;
+		}
+		byte[] result = switch (encoding) {
+			case BASE64 -> Base64.decodeBase64(rawData);
+			case HEX -> Hex.decodeHex(rawData);
+		};
+		return new String(decrypt(factory, result, key));
+	}
 
-    /**
-     * 解密高精度小数。
-     *
-     * @param factory 加解密工厂
-     * @param rawData 密文小数；为 null 时返回 null
-     * @param key     密钥或占位符
-     * @return 解密后的高精度小数；为 null 时返回 null
-     * @since 1.0.0
+	/**
+	 * 加密大整数。
+	 *
+	 * @param factory 加解密工厂
+	 * @param rawData 原始大整数；为 null 时返回 null
+	 * @param key     密钥或占位符
+	 * @return 加密后的大整数；为 null 时返回 null
+	 * @since 1.0.0
 	 */
-    public static BigDecimal decryptBigDecimal(final CryptoFactory factory, final BigDecimal rawData, final String key) {
-        if (Objects.isNull(rawData)) {
-            return null;
-        }
-        return factory.getDecimalNumberDecryptor(key).decrypt(rawData);
-    }
+	public static BigInteger encryptBigInteger(final CryptoFactory factory, final BigInteger rawData, final String key) {
+		if (Objects.isNull(rawData)) {
+			return null;
+		}
+		return factory.getIntegerNumberEncryptor(key).encrypt(rawData);
+	}
 
-    /**
-     * 解析密钥字符串。
-     *
-     * <p>概述：支持明文密钥与占位符密钥。占位符形如 <code>${crypto.key}</code>；明文密钥直接返回入参。</p>
-     *
-     * <p>解析说明：</p>
-     * <p>占位符通过 {@code StaticSpringContext.getEnvironment().resolvePlaceholders(key)} 解析；
-     * 非占位符不经环境查找，直接返回原始入参。</p>
-     *
-     * @param key 明文密钥或占位符（如 <code>${crypto.key}</code>）
-     * @return 解析后的明文密钥
+	/**
+	 * 解密大整数。
+	 *
+	 * @param factory 加解密工厂
+	 * @param rawData 密文大整数；为 null 时返回 null
+	 * @param key     密钥或占位符
+	 * @return 解密后的大整数；为 null 时返回 null
+	 * @since 1.0.0
+	 */
+	public static BigInteger decryptBigInteger(final CryptoFactory factory, final BigInteger rawData, final String key) {
+		if (Objects.isNull(rawData)) {
+			return null;
+		}
+		return factory.getIntegerNumberDecryptor(key).decrypt(rawData);
+	}
+
+	/**
+	 * 加密高精度小数。
+	 *
+	 * @param factory 加解密工厂
+	 * @param rawData 原始小数；为 null 时返回 null
+	 * @param key     密钥或占位符
+	 * @return 加密后的高精度小数；为 null 时返回 null
+	 * @since 1.0.0
+	 */
+	public static BigDecimal encryptBigDecimal(final CryptoFactory factory, final BigDecimal rawData, final String key) {
+		if (Objects.isNull(rawData)) {
+			return null;
+		}
+		return factory.getDecimalNumberEncryptor(key).encrypt(rawData);
+	}
+
+	/**
+	 * 解密高精度小数。
+	 *
+	 * @param factory 加解密工厂
+	 * @param rawData 密文小数；为 null 时返回 null
+	 * @param key     密钥或占位符
+	 * @return 解密后的高精度小数；为 null 时返回 null
+	 * @since 1.0.0
+	 */
+	public static BigDecimal decryptBigDecimal(final CryptoFactory factory, final BigDecimal rawData, final String key) {
+		if (Objects.isNull(rawData)) {
+			return null;
+		}
+		return factory.getDecimalNumberDecryptor(key).decrypt(rawData);
+	}
+
+	/**
+	 * 解析密钥字符串。
+	 *
+	 * <p>概述：支持明文密钥与占位符密钥。占位符形如 <code>${crypto.key}</code>；明文密钥直接返回入参。</p>
+	 *
+	 * <p>解析说明：</p>
+	 * <p>占位符通过 {@code StaticSpringContext.getEnvironment().resolvePlaceholders(key)} 解析；
+	 * 非占位符不经环境查找，直接返回原始入参。</p>
+	 *
+	 * @param key 明文密钥或占位符（如 <code>${crypto.key}</code>）
+	 * @return 解析后的明文密钥
 	 * @throws IllegalArgumentException 当入参为空或未解析到值时抛出
 	 * @since 1.0.0
 	 */
-    public static String getKey(final String key) {
-        if (StringUtils.isBlank(key)) {
+	public static String getKey(final String key) {
+		if (StringUtils.isBlank(key)) {
 			throw new IllegalArgumentException("密钥属性为空");
-        }
+		}
 
 		String cryptoKey = key;
-        if (Strings.CS.startsWith(key, "${") && Strings.CS.endsWith(key, "}")) {
+		if (Strings.CS.startsWith(key, "${") && Strings.CS.endsWith(key, "}")) {
 			cryptoKey = StaticSpringContext.getEnvironment().resolvePlaceholders(key);
 			if (cryptoKey.equals(key)) {
 				throw new IllegalArgumentException("未找到密钥，属性：" + key);
 			}
-        }
+		}
 		return cryptoKey;
-    }
+	}
 }

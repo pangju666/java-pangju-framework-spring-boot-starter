@@ -77,7 +77,7 @@ import org.springframework.data.mongodb.gridfs.GridFsTemplate;
  * 						// 注入主数据源的 GridFsTemplate
  * 						GridFsTemplate gridFsTemplate,
  * 						// 注入 redis2 数据源的 MongoClient
- * 						                        @Qualifier("test2MongoClient")
+ *                                                @Qualifier("test2MongoClient")
  *                        MongoClient mongoClient2,
  * 						// 注入 redis2 数据源的 MongoDatabaseFactory
  *                        @Qualifier("test2MongoDatabaseFactory")
@@ -88,7 +88,7 @@ import org.springframework.data.mongodb.gridfs.GridFsTemplate;
  * 						// 注入 redis2 数据源的 GridFsTemplate
  *                        @Qualifier("test2GridFsTemplate")
  *                        GridFsTemplate gridFsTemplate) {
- * 	}
+ *    }
  *
  * 	// 通过`DynamicMongoUtils`获取
  * 	public void test() {
@@ -96,7 +96,7 @@ import org.springframework.data.mongodb.gridfs.GridFsTemplate;
  * 		MongoDatabaseFactory mongoDatabaseFactory = DynamicMongoUtils.getMongoDatabaseFactory("test2");
  * 		MongoTemplate mongoTemplate = DynamicMongoUtils.getMongoTemplate("test2");
  * 		GridFsTemplate gridFsTemplate = DynamicMongoUtils.getGridFsTemplate("test");
- * 	}
+ *    }
  * }
  * }</pre>
  *

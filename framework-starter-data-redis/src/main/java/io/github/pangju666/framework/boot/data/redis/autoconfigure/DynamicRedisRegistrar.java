@@ -87,12 +87,12 @@ class DynamicRedisRegistrar implements EnvironmentAware, BeanFactoryAware, Impor
 	 * @since 1.0.0
 	 */
 	private static final Logger log = LoggerFactory.getLogger(DynamicRedisRegistrar.class);
-    /**
-     * 连接详情 Bean 名称模板（{name}RedisConnectionDetails）。
-     *
-     * @since 1.0.0
-     */
-    private static final String CONNECTION_DETAILS_BEAN_NAME_TEMPLATE = "%sRedisConnectionDetails";
+	/**
+	 * 连接详情 Bean 名称模板（{name}RedisConnectionDetails）。
+	 *
+	 * @since 1.0.0
+	 */
+	private static final String CONNECTION_DETAILS_BEAN_NAME_TEMPLATE = "%sRedisConnectionDetails";
 
 	/**
 	 * Spring Bean工厂
@@ -123,17 +123,17 @@ class DynamicRedisRegistrar implements EnvironmentAware, BeanFactoryAware, Impor
 		this.beanFactory = beanFactory;
 	}
 
-    /**
-     * 注册 Bean 定义。
-     *
-     * <p><b>流程</b>：解析 {@code spring.data.redis.dynamic} -> 校验配置（非空、主库存在）->
-     * 为每个数据源注册连接详情 -> 选择 Jedis/Lettuce 创建连接工厂（按虚拟线程能力）->
-     * 注册模板（对象/字符串/扫描/字符串扫描）并依赖连接工厂 -> 为主数据源设置 {@code primary} 标志 -> 记录日志。</p>
-     * <p><b>约束</b>：当未配置属性或缺失绑定时不进行注册；命名与依赖遵循统一模板与注册顺序。</p>
-     *
-     * @param importingClassMetadata 导入类的注解元数据
-     * @param beanDefinitionRegistry Bean 定义注册表
-     */
+	/**
+	 * 注册 Bean 定义。
+	 *
+	 * <p><b>流程</b>：解析 {@code spring.data.redis.dynamic} -> 校验配置（非空、主库存在）->
+	 * 为每个数据源注册连接详情 -> 选择 Jedis/Lettuce 创建连接工厂（按虚拟线程能力）->
+	 * 注册模板（对象/字符串/扫描/字符串扫描）并依赖连接工厂 -> 为主数据源设置 {@code primary} 标志 -> 记录日志。</p>
+	 * <p><b>约束</b>：当未配置属性或缺失绑定时不进行注册；命名与依赖遵循统一模板与注册顺序。</p>
+	 *
+	 * @param importingClassMetadata 导入类的注解元数据
+	 * @param beanDefinitionRegistry Bean 定义注册表
+	 */
 	@SuppressWarnings("rawtypes")
 	@Override
 	public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry beanDefinitionRegistry) {

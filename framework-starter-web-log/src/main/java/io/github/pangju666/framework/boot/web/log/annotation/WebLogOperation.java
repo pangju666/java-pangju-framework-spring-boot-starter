@@ -16,8 +16,8 @@
 
 package io.github.pangju666.framework.boot.web.log.annotation;
 
-import io.github.pangju666.framework.boot.web.log.interceptor.WebLogInterceptor;
 import io.github.pangju666.framework.boot.web.log.WebLog;
+import io.github.pangju666.framework.boot.web.log.interceptor.WebLogInterceptor;
 
 import java.lang.annotation.*;
 

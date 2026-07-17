@@ -126,27 +126,27 @@ public class DynamicDataRedisProperties {
 		this.primary = primary;
 	}
 
-    /**
-     * Redis 数据源配置。
-     *
-     * <p><strong>概述</strong></p>
-     * <ul>
-     *   <li>继承 Spring Boot {@link org.springframework.boot.data.redis.autoconfigure.DataRedisProperties}，并扩展序列化器类型。</li>
-     *   <li>可配置键/值与哈希键/值的序列化器，提升兼容性与可读性。</li>
-     * </ul>
-     *
-     * <p><strong>序列化器类型</strong></p>
-     * <ul>
-     *   <li>{@link RedisSerializerType#STRING}：字符串序列化。</li>
-     *   <li>{@link RedisSerializerType#JSON}：JSON 序列化。</li>
-     *   <li>{@link RedisSerializerType#JAVA}：Java 对象序列化。</li>
-     *   <li>{@link RedisSerializerType#BYTE_ARRAY}：二进制序列化。</li>
-     * </ul>
-     *
-     * @author pangju666
-     * @see RedisSerializerType
-     * @since 1.0.0
-     */
+	/**
+	 * Redis 数据源配置。
+	 *
+	 * <p><strong>概述</strong></p>
+	 * <ul>
+	 *   <li>继承 Spring Boot {@link org.springframework.boot.data.redis.autoconfigure.DataRedisProperties}，并扩展序列化器类型。</li>
+	 *   <li>可配置键/值与哈希键/值的序列化器，提升兼容性与可读性。</li>
+	 * </ul>
+	 *
+	 * <p><strong>序列化器类型</strong></p>
+	 * <ul>
+	 *   <li>{@link RedisSerializerType#STRING}：字符串序列化。</li>
+	 *   <li>{@link RedisSerializerType#JSON}：JSON 序列化。</li>
+	 *   <li>{@link RedisSerializerType#JAVA}：Java 对象序列化。</li>
+	 *   <li>{@link RedisSerializerType#BYTE_ARRAY}：二进制序列化。</li>
+	 * </ul>
+	 *
+	 * @author pangju666
+	 * @see RedisSerializerType
+	 * @since 1.0.0
+	 */
 	public static class DataRedisProperties extends org.springframework.boot.data.redis.autoconfigure.DataRedisProperties {
 		/**
 		 * Redis键的序列化类型

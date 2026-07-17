@@ -106,7 +106,7 @@ public class EnumRequestParamArgumentResolver implements HandlerMethodArgumentRe
 	@SuppressWarnings({"unchecked", "rawtypes"})
 	@Override
 	public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
-								  NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
+	                              NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
 		EnumRequestParam annotation = parameter.getParameterAnnotation(EnumRequestParam.class);
 		Class<? extends Enum> enumClass = (Class<? extends Enum>) parameter.getParameterType();
 

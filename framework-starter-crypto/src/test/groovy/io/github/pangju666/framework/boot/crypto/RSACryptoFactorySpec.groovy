@@ -2,7 +2,6 @@ package io.github.pangju666.framework.boot.crypto
 
 import io.github.pangju666.framework.boot.crypto.autoconfigure.CryptoAutoConfiguration
 import io.github.pangju666.framework.boot.crypto.factory.impl.RSACryptoFactory
-
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootContextLoader
 import org.springframework.test.context.ContextConfiguration
@@ -89,9 +88,9 @@ class RSACryptoFactorySpec extends Specification {
 		thrown(IllegalArgumentException)
 
 		where:
-		caseName     | publicKey
-		"空公钥"      | ""
-		"null公钥"    | null
+		caseName   | publicKey
+		"空公钥"   | ""
+		"null公钥" | null
 	}
 
 	@Unroll
@@ -103,8 +102,8 @@ class RSACryptoFactorySpec extends Specification {
 		thrown(IllegalArgumentException)
 
 		where:
-		caseName     | privateKey
-		"空私钥"      | ""
-		"null私钥"    | null
+		caseName   | privateKey
+		"空私钥"   | ""
+		"null私钥" | null
 	}
 }

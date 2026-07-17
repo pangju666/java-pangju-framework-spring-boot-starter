@@ -25,21 +25,21 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  *
  * <p>用于约束加密相关组件的缓存规模等行为，避免在长时间运行或高并发场景下出现内存膨胀。</p>
  *
- * @since 1.0.0
  * @author pangju666
+ * @since 1.0.0
  */
 @ConfigurationProperties(prefix = "pangju.crypto")
 public class CryptoProperties {
-    /**
-     * 缓存键最大数量。
-     *
-     * <p>用于加密工厂缓存的密钥数量。</p>
-     * <p>对应属性：{@code pangju.crypto.max-cache-crypto-key-size}</p>
-     * <p>默认值：{@code 16}</p>
-     *
-     * @since 1.0.0
-     */
-    private int maxCacheCryptoKeySize = 16;
+	/**
+	 * 缓存键最大数量。
+	 *
+	 * <p>用于加密工厂缓存的密钥数量。</p>
+	 * <p>对应属性：{@code pangju.crypto.max-cache-crypto-key-size}</p>
+	 * <p>默认值：{@code 16}</p>
+	 *
+	 * @since 1.0.0
+	 */
+	private int maxCacheCryptoKeySize = 16;
 
 	public int getMaxCacheCryptoKeySize() {
 		return maxCacheCryptoKeySize;

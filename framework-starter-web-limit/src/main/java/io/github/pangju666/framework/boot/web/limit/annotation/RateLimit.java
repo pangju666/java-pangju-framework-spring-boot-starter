@@ -16,9 +16,9 @@
 
 package io.github.pangju666.framework.boot.web.limit.annotation;
 
-import io.github.pangju666.framework.boot.web.limit.exception.RateLimitException;
-import io.github.pangju666.framework.boot.web.limit.RateLimitSourceExtractor;
 import io.github.pangju666.framework.boot.web.limit.IpRateLimitSourceExtractor;
+import io.github.pangju666.framework.boot.web.limit.RateLimitSourceExtractor;
+import io.github.pangju666.framework.boot.web.limit.exception.RateLimitException;
 import org.springframework.resilience.annotation.ConcurrencyLimit;
 
 import java.lang.annotation.*;
@@ -115,8 +115,8 @@ import java.util.concurrent.TimeUnit;
  * @see RateLimitException
  * @see RateLimitSourceExtractor
  * @see IpRateLimitSourceExtractor
- * @since 1.0.0
  * @see ConcurrencyLimit
+ * @since 1.0.0
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

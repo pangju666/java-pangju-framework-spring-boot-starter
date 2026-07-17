@@ -154,9 +154,17 @@ class CryptoFactoryRegistrySpec extends Specification {
 
 	static class TestCryptoFactory implements CryptoFactory {
 		TestCryptoFactory() {}
-		@Override BinaryEncryptor getBinaryEncryptor(String key) { null }
-		@Override TextEncryptor getTextEncryptor(String key) { null }
-		@Override IntegerNumberEncryptor getIntegerNumberEncryptor(String key) { null }
-		@Override DecimalNumberEncryptor getDecimalNumberEncryptor(String key) { null }
+
+		@Override
+		BinaryEncryptor getBinaryEncryptor(String key) { null }
+
+		@Override
+		TextEncryptor getTextEncryptor(String key) { null }
+
+		@Override
+		IntegerNumberEncryptor getIntegerNumberEncryptor(String key) { null }
+
+		@Override
+		DecimalNumberEncryptor getDecimalNumberEncryptor(String key) { null }
 	}
 }

@@ -99,15 +99,15 @@ public class WebLogProperties {
 	 * @since 1.0.0
 	 */
 	private SenderType senderType = SenderType.DISRUPTOR;
-    /**
-     * 日志接收器类型
-     * <p>
-     * 指定 Web 日志的落地或转发目标。默认值为 {@link ReceiverType#SLF4J}。
-     * 当选择不同类型时，分别使用对应的配置段（如 {@link #slf4j}、{@link #mongo}）。
-     * </p>
-     *
-     * @since 1.0.0
-     */
+	/**
+	 * 日志接收器类型
+	 * <p>
+	 * 指定 Web 日志的落地或转发目标。默认值为 {@link ReceiverType#SLF4J}。
+	 * 当选择不同类型时，分别使用对应的配置段（如 {@link #slf4j}、{@link #mongo}）。
+	 * </p>
+	 *
+	 * @since 1.0.0
+	 */
 	private ReceiverType receiverType = ReceiverType.SLF4J;
 	/**
 	 * Kafka 配置
@@ -138,15 +138,15 @@ public class WebLogProperties {
 	 * @since 1.0.0
 	 */
 	private Disruptor disruptor = new Disruptor();
-    /**
-     * Slf4j 接收器配置
-     * <p>
-     * 当 {@link #receiverType} 为 {@link ReceiverType#SLF4J} 时生效，用于指定目标日志记录器名称，
-     * 将采集的 {@link WebLog} 写入日志系统（SLF4J 兼容实现，如 Logback、Log4j2）。
-     * </p>
-     *
-     * @since 1.0.0
-     */
+	/**
+	 * Slf4j 接收器配置
+	 * <p>
+	 * 当 {@link #receiverType} 为 {@link ReceiverType#SLF4J} 时生效，用于指定目标日志记录器名称，
+	 * 将采集的 {@link WebLog} 写入日志系统（SLF4J 兼容实现，如 Logback、Log4j2）。
+	 * </p>
+	 *
+	 * @since 1.0.0
+	 */
 	private Slf4j slf4j = new Slf4j();
 	/**
 	 * Web 日志功能开关
@@ -305,46 +305,46 @@ public class WebLogProperties {
 		DISRUPTOR
 	}
 
-    /**
-     * 日志接收器类型枚举。
-     *
-     * <p>用于指定 Web 日志的最终处理位置或介质。</p>
-     * <ul>
-     *   <li>{@link #SLF4J}：写入日志系统（SLF4J 兼容实现，如 Logback、Log4j2），适用于本地归档或集中采集。</li>
-     *   <li>{@link #MONGODB}：写入 MongoDB 集合，适用于检索与分析。</li>
-     * </ul>
-     *
-     * @author pangju666
-     * @since 1.0.0
-     */
-    public enum ReceiverType {
+	/**
+	 * 日志接收器类型枚举。
+	 *
+	 * <p>用于指定 Web 日志的最终处理位置或介质。</p>
+	 * <ul>
+	 *   <li>{@link #SLF4J}：写入日志系统（SLF4J 兼容实现，如 Logback、Log4j2），适用于本地归档或集中采集。</li>
+	 *   <li>{@link #MONGODB}：写入 MongoDB 集合，适用于检索与分析。</li>
+	 * </ul>
+	 *
+	 * @author pangju666
+	 * @since 1.0.0
+	 */
+	public enum ReceiverType {
 		SLF4J,
-        MONGODB
-    }
+		MONGODB
+	}
 
-    /**
-     * MongoDB 配置。
-     *
-     * <p><b>字段</b></p>
-     * <ul>
-     *   <li>{@link #mongoTemplateRef} 指定使用的 {@code MongoTemplate} Bean 名称。</li>
-     *   <li>{@link #baseCollectionName} 集合名称基础前缀，用于生成实际集合名。</li>
-     * </ul>
-     *
-     * <p><b>示例（application.yml）</b></p>
-     * <pre>
-     * pangju:
-     *   web:
-     *     log:
-     *       mongo:
-     *         mongo-template-ref: myMongoTemplate
-     *         base-collection-name: web-log
-     * </pre>
-     *
-     * @author pangju666
-     * @since 1.0.0
-     */
-    public static class Mongo {
+	/**
+	 * MongoDB 配置。
+	 *
+	 * <p><b>字段</b></p>
+	 * <ul>
+	 *   <li>{@link #mongoTemplateRef} 指定使用的 {@code MongoTemplate} Bean 名称。</li>
+	 *   <li>{@link #baseCollectionName} 集合名称基础前缀，用于生成实际集合名。</li>
+	 * </ul>
+	 *
+	 * <p><b>示例（application.yml）</b></p>
+	 * <pre>
+	 * pangju:
+	 *   web:
+	 *     log:
+	 *       mongo:
+	 *         mongo-template-ref: myMongoTemplate
+	 *         base-collection-name: web-log
+	 * </pre>
+	 *
+	 * @author pangju666
+	 * @since 1.0.0
+	 */
+	public static class Mongo {
 		/**
 		 * MongoTemplate Bean 名称
 		 * <p>
@@ -355,14 +355,14 @@ public class WebLogProperties {
 		 * @since 1.0.0
 		 */
 		private String mongoTemplateRef;
-        /**
-         * 集合名称基础前缀。
-         * <p>
-         * MongoDB 日志集合的基础名称，默认 {@code web-log}。实际集合名可据模块或业务在此基础上扩展。
-         * </p>
-         *
-         * @since 1.0.0
-         */
+		/**
+		 * 集合名称基础前缀。
+		 * <p>
+		 * MongoDB 日志集合的基础名称，默认 {@code web-log}。实际集合名可据模块或业务在此基础上扩展。
+		 * </p>
+		 *
+		 * @since 1.0.0
+		 */
 		private String baseCollectionName = "web-log";
 
 		public String getMongoTemplateRef() {
@@ -382,30 +382,30 @@ public class WebLogProperties {
 		}
 	}
 
-    /**
-     * Kafka 配置。
-     *
-     * <p><b>字段</b></p>
-     * <ul>
-     *   <li>{@link #kafkaTemplateRef} 指定 {@code KafkaTemplate} Bean 名称。</li>
-     *   <li>{@link #topic} 发送目标 Topic 名称。</li>
-     * </ul>
-     *
-     * <p><b>示例（application.yml）</b></p>
-     * <pre>
-     * pangju:
-     *   web:
-     *     log:
-     *       sender-type: kafka
-     *       kafka:
-     *         kafka-template-ref: myKafkaTemplate
-     *         topic: web-log
-     * </pre>
-     *
-     * @author pangju666
-     * @since 1.0.0
-     */
-    public static class Kafka {
+	/**
+	 * Kafka 配置。
+	 *
+	 * <p><b>字段</b></p>
+	 * <ul>
+	 *   <li>{@link #kafkaTemplateRef} 指定 {@code KafkaTemplate} Bean 名称。</li>
+	 *   <li>{@link #topic} 发送目标 Topic 名称。</li>
+	 * </ul>
+	 *
+	 * <p><b>示例（application.yml）</b></p>
+	 * <pre>
+	 * pangju:
+	 *   web:
+	 *     log:
+	 *       sender-type: kafka
+	 *       kafka:
+	 *         kafka-template-ref: myKafkaTemplate
+	 *         topic: web-log
+	 * </pre>
+	 *
+	 * @author pangju666
+	 * @since 1.0.0
+	 */
+	public static class Kafka {
 		/**
 		 * KafkaTemplate Bean 名称
 		 * <p>
@@ -473,14 +473,14 @@ public class WebLogProperties {
 		}
 	}
 
-    /**
-     * Slf4j 接收器配置。
-     *
-     * <p><b>概述</b></p>
-     * <ul>
-     *   <li>配置目标日志记录器名称，用于将采集的 {@link WebLog} 写入日志系统。</li>
-     *   <li>适配任意 SLF4J 兼容实现（Logback、Log4j2 等）。</li>
-     * </ul>
+	/**
+	 * Slf4j 接收器配置。
+	 *
+	 * <p><b>概述</b></p>
+	 * <ul>
+	 *   <li>配置目标日志记录器名称，用于将采集的 {@link WebLog} 写入日志系统。</li>
+	 *   <li>适配任意 SLF4J 兼容实现（Logback、Log4j2 等）。</li>
+	 * </ul>
 	 *
 	 * <p>logback配置示例</p>
 	 * <pre>{@code
@@ -565,11 +565,11 @@ public class WebLogProperties {
 	 *        AppenderRef:
 	 *          - ref: webLogFile
 	 * }</pre>
-     *
-     * @author pangju666
-     * @since 1.0.0
-     */
-    public static class Slf4j {
+	 *
+	 * @author pangju666
+	 * @since 1.0.0
+	 */
+	public static class Slf4j {
 		/**
 		 * 日志记录器名称
 		 *

@@ -118,8 +118,8 @@ public final class EncryptJsonSerializer extends ValueSerializer<Object> {
 	 * 记录错误日志并写入 JSON null，以保证序列化流程不中断。
 	 * </p>
 	 *
-	 * @param value       待序列化的对象
-	 * @param gen         JSON 输出生成器
+	 * @param value   待序列化的对象
+	 * @param gen     JSON 输出生成器
 	 * @param context 序列化上下文
 	 * @since 1.0.0
 	 */
@@ -137,24 +137,24 @@ public final class EncryptJsonSerializer extends ValueSerializer<Object> {
 		}
 	}
 
-    /**
-     * 创建与属性上下文相关的序列化器实例。
-     *
-     * <p>行为：</p>
-     * <ul>
-     *   <li>属性为空时返回当前实例。</li>
-     *   <li>未标注注解时，使用默认值序列化器。</li>
-     *   <li>密钥解析失败记录日志并返回 {@link NullSerializer}。</li>
-     *   <li>优先使用注解指定的工厂类型；未提供时使用算法枚举关联的工厂。</li>
-     *   <li>工厂获取通过 {@link CryptoFactoryRegistry} 完成，失败时返回 {@link NullSerializer}。</li>
-     *   <li>缓存键：{@code sha256Hex(key)-encoding-factoryClassName}；按键复用实例。</li>
-     * </ul>
-     *
-     * @param context     序列化上下文
-     * @param property 当前处理的 Bean 属性
-     * @return 上下文相关的序列化器实例
-     * @since 1.0.0
-     */
+	/**
+	 * 创建与属性上下文相关的序列化器实例。
+	 *
+	 * <p>行为：</p>
+	 * <ul>
+	 *   <li>属性为空时返回当前实例。</li>
+	 *   <li>未标注注解时，使用默认值序列化器。</li>
+	 *   <li>密钥解析失败记录日志并返回 {@link NullSerializer}。</li>
+	 *   <li>优先使用注解指定的工厂类型；未提供时使用算法枚举关联的工厂。</li>
+	 *   <li>工厂获取通过 {@link CryptoFactoryRegistry} 完成，失败时返回 {@link NullSerializer}。</li>
+	 *   <li>缓存键：{@code sha256Hex(key)-encoding-factoryClassName}；按键复用实例。</li>
+	 * </ul>
+	 *
+	 * @param context  序列化上下文
+	 * @param property 当前处理的 Bean 属性
+	 * @return 上下文相关的序列化器实例
+	 * @since 1.0.0
+	 */
 	@Override
 	public ValueSerializer<?> createContextual(SerializationContext context, BeanProperty property) {
 		if (Objects.isNull(property)) {

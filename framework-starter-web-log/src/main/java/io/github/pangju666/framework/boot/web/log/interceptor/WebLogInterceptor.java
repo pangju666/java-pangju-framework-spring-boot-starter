@@ -16,11 +16,11 @@
 
 package io.github.pangju666.framework.boot.web.log.interceptor;
 
+import io.github.pangju666.framework.boot.web.log.WebLog;
+import io.github.pangju666.framework.boot.web.log.WebLogResponseWrapper;
 import io.github.pangju666.framework.boot.web.log.annotation.WebLogOperation;
 import io.github.pangju666.framework.boot.web.log.filter.WebLogFilter;
 import io.github.pangju666.framework.boot.web.log.handler.WebLogHandler;
-import io.github.pangju666.framework.boot.web.log.WebLog;
-import io.github.pangju666.framework.boot.web.log.WebLogResponseWrapper;
 import io.github.pangju666.framework.web.servlet.BaseHttpInterceptor;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -52,14 +52,14 @@ import java.util.Set;
  * </ul>
  *
  * @author pangju666
- * @since 1.0.0
  * @see WebLogHandler
  * @see WebLogFilter
+ * @since 1.0.0
  */
 public class WebLogInterceptor extends BaseHttpInterceptor {
-    public WebLogInterceptor(Set<String> excludePathPatterns) {
-        super(excludePathPatterns);
-    }
+	public WebLogInterceptor(Set<String> excludePathPatterns) {
+		super(excludePathPatterns);
+	}
 
 	/**
 	 * 在处理链前置阶段执行：当处理器为 {@link HandlerMethod} 且响应包装为

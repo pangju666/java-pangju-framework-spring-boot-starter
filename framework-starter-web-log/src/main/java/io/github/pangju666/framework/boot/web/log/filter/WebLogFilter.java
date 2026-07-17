@@ -21,13 +21,13 @@ import io.github.pangju666.commons.lang.concurrent.SystemClock;
 import io.github.pangju666.commons.lang.utils.ArrayUtils;
 import io.github.pangju666.commons.lang.utils.DateFormatUtils;
 import io.github.pangju666.commons.lang.utils.JsonUtils;
+import io.github.pangju666.framework.boot.web.log.WebLog;
 import io.github.pangju666.framework.boot.web.log.WebLogConfiguration;
+import io.github.pangju666.framework.boot.web.log.WebLogResponseWrapper;
+import io.github.pangju666.framework.boot.web.log.handler.MediaTypeBodyHandler;
 import io.github.pangju666.framework.boot.web.log.handler.WebLogHandler;
 import io.github.pangju666.framework.boot.web.log.interceptor.WebLogInterceptor;
-import io.github.pangju666.framework.boot.web.log.WebLog;
 import io.github.pangju666.framework.boot.web.log.sender.WebLogSender;
-import io.github.pangju666.framework.boot.web.log.handler.MediaTypeBodyHandler;
-import io.github.pangju666.framework.boot.web.log.WebLogResponseWrapper;
 import io.github.pangju666.framework.web.exception.base.BaseHttpException;
 import io.github.pangju666.framework.web.model.Result;
 import io.github.pangju666.framework.web.servlet.BaseHttpRequestFilter;
@@ -133,16 +133,16 @@ public class WebLogFilter extends BaseHttpRequestFilter {
 	 * </p>
 	 */
 	protected final List<MediaTypeBodyHandler> bodyHandlers;
- 	/**
- 	 * Web 日志处理器列表
- 	 * <p>
- 	 * 用于处理日志的扩展逻辑，支持对日志数据进行增强或自定义处理。
- 	 * 开发者可以实现 {@link WebLogHandler} 接口并在容器中进行注册。
- 	 * 处理器按注册顺序执行；单个处理器抛出的异常会被捕获并记录，不会中断后续处理或日志发送。
- 	 * </p>
- 	 *
- 	 * @since 1.0.0
- 	 */
+	/**
+	 * Web 日志处理器列表
+	 * <p>
+	 * 用于处理日志的扩展逻辑，支持对日志数据进行增强或自定义处理。
+	 * 开发者可以实现 {@link WebLogHandler} 接口并在容器中进行注册。
+	 * 处理器按注册顺序执行；单个处理器抛出的异常会被捕获并记录，不会中断后续处理或日志发送。
+	 * </p>
+	 *
+	 * @since 1.0.0
+	 */
 	protected final List<WebLogHandler> webLogHandlers;
 
 	/**
@@ -152,11 +152,11 @@ public class WebLogFilter extends BaseHttpRequestFilter {
 	 * @param sender              日志发送器
 	 * @param excludePathPatterns 需要排除的路径匹配规则
 	 * @param bodyHandlers        已注册的媒体类型处理器列表（按顺序执行）
-	 * @param webLogHandlers 日志处理器列表（按顺序执行）
+	 * @param webLogHandlers      日志处理器列表（按顺序执行）
 	 * @since 1.0.0
 	 */
 	public WebLogFilter(WebLogConfiguration configuration, WebLogSender sender, Set<String> excludePathPatterns,
-						List<MediaTypeBodyHandler> bodyHandlers, List<WebLogHandler> webLogHandlers) {
+	                    List<MediaTypeBodyHandler> bodyHandlers, List<WebLogHandler> webLogHandlers) {
 		super(excludePathPatterns);
 		this.configuration = configuration;
 		this.sender = sender;
@@ -164,7 +164,7 @@ public class WebLogFilter extends BaseHttpRequestFilter {
 		this.webLogHandlers = webLogHandlers;
 	}
 
- 	/**
+	/**
 	 * 过滤器处理方法。
 	 *
 	 * <p><b>行为</b></p>
@@ -309,21 +309,21 @@ public class WebLogFilter extends BaseHttpRequestFilter {
 		return requestLog;
 	}
 
- 	/**
- 	 * 写入请求体信息到请求日志。
- 	 *
- 	 * <p><b>行为</b></p>
- 	 * <ul>
- 	 *   <li>根据 {@link MediaType} 选择首个支持的 {@link MediaTypeBodyHandler} 进行解析与封装。</li>
- 	 *   <li>处理器由构造器注入，按照注册顺序进行匹配；命中后即停止尝试。</li>
- 	 *   <li>调用方仅在内容类型允许（按类型+子类型匹配，忽略参数）且启用记录请求体时才会调用本方法。</li>
- 	 * </ul>
- 	 *
- 	 * @param responseBodyBytes 请求体字节数组（来源于 {@link ContentCachingRequestWrapper}）
- 	 * @param requestLog       请求日志对象（写入解析后的请求体）
- 	 * @param contentType      请求内容类型（已解析为 {@link MediaType}）
- 	 * @since 1.0.0
- 	 */
+	/**
+	 * 写入请求体信息到请求日志。
+	 *
+	 * <p><b>行为</b></p>
+	 * <ul>
+	 *   <li>根据 {@link MediaType} 选择首个支持的 {@link MediaTypeBodyHandler} 进行解析与封装。</li>
+	 *   <li>处理器由构造器注入，按照注册顺序进行匹配；命中后即停止尝试。</li>
+	 *   <li>调用方仅在内容类型允许（按类型+子类型匹配，忽略参数）且启用记录请求体时才会调用本方法。</li>
+	 * </ul>
+	 *
+	 * @param responseBodyBytes 请求体字节数组（来源于 {@link ContentCachingRequestWrapper}）
+	 * @param requestLog        请求日志对象（写入解析后的请求体）
+	 * @param contentType       请求内容类型（已解析为 {@link MediaType}）
+	 * @since 1.0.0
+	 */
 	protected void writeRequestBody(byte[] responseBodyBytes, WebLog.Request requestLog, MediaType contentType) {
 		for (MediaTypeBodyHandler bodyHandler : this.bodyHandlers) {
 			if (bodyHandler.supports(contentType)) {
@@ -361,23 +361,23 @@ public class WebLogFilter extends BaseHttpRequestFilter {
 		return responseLog;
 	}
 
- 	/**
- 	 * 写入响应体信息到响应日志。
- 	 *
- 	 * <p><b>行为</b></p>
- 	 * <ul>
- 	 *   <li>当内容类型为 JSON 时，仅记录符合 {@link Result} 结构的响应，委托 {@link #writeResultResponseBody(byte[], WebLog.Response, WebLogConfiguration)} 解析并写入；其他 JSON 不记录。</li>
- 	 *   <li>当内容类型在允许列表中时（按类型+子类型匹配，忽略参数），根据处理器顺序选择首个支持的处理器解析；解析成功后即停止尝试；无法解析时忽略写入。</li>
- 	 * </ul>
- 	 *
- 	 * @param responseBodyBytes 响应体字节数组（来源于响应包装器，例如 {@link WebLogResponseWrapper}）
- 	 * @param responseLog       响应日志对象（写入解析后的响应体或结果）
- 	 * @param contentType       响应内容类型（原始字符串，将尝试解析为 {@link MediaType}）
- 	 * @param configuration     日志采集配置（决定是否记录结果数据及可接受的内容类型）
- 	 * @since 1.0.0
- 	 */
+	/**
+	 * 写入响应体信息到响应日志。
+	 *
+	 * <p><b>行为</b></p>
+	 * <ul>
+	 *   <li>当内容类型为 JSON 时，仅记录符合 {@link Result} 结构的响应，委托 {@link #writeResultResponseBody(byte[], WebLog.Response, WebLogConfiguration)} 解析并写入；其他 JSON 不记录。</li>
+	 *   <li>当内容类型在允许列表中时（按类型+子类型匹配，忽略参数），根据处理器顺序选择首个支持的处理器解析；解析成功后即停止尝试；无法解析时忽略写入。</li>
+	 * </ul>
+	 *
+	 * @param responseBodyBytes 响应体字节数组（来源于响应包装器，例如 {@link WebLogResponseWrapper}）
+	 * @param responseLog       响应日志对象（写入解析后的响应体或结果）
+	 * @param contentType       响应内容类型（原始字符串，将尝试解析为 {@link MediaType}）
+	 * @param configuration     日志采集配置（决定是否记录结果数据及可接受的内容类型）
+	 * @since 1.0.0
+	 */
 	protected void writeResponseBody(byte[] responseBodyBytes, WebLog.Response responseLog, String contentType,
-								 	 WebLogConfiguration configuration) {
+	                                 WebLogConfiguration configuration) {
 		MediaType mediaType;
 		try {
 			mediaType = MediaType.parseMediaType(contentType);
@@ -451,7 +451,7 @@ public class WebLogFilter extends BaseHttpRequestFilter {
 	 * @since 1.0.0
 	 */
 	protected void writeResultResponseBody(byte[] responseBodyBytes, WebLog.Response responseLog,
-									   WebLogConfiguration configuration) {
+	                                       WebLogConfiguration configuration) {
 		try {
 			String responseBodyStr = new String(responseBodyBytes, StandardCharsets.UTF_8);
 			Result<?> result = JsonUtils.fromString(responseBodyStr, Result.class);

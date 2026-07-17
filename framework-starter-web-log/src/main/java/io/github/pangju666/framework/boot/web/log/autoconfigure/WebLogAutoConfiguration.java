@@ -173,9 +173,9 @@ public class WebLogAutoConfiguration {
 	@ConditionalOnBean(WebLogSender.class)
 	@Bean
 	public FilterRegistrationBean<WebLogFilter> webLogFilterRegistrationBean(WebLogProperties properties,
-																			 WebLogSender webLogSender,
-																			 List<WebLogHandler> webLogHandlers,
-																			 List<MediaTypeBodyHandler> bodyHandlers) {
+	                                                                         WebLogSender webLogSender,
+	                                                                         List<WebLogHandler> webLogHandlers,
+	                                                                         List<MediaTypeBodyHandler> bodyHandlers) {
 		WebLogConfiguration configuration = new WebLogConfiguration();
 		BeanUtils.copyProperties(properties, configuration);
 

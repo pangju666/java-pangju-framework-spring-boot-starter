@@ -28,11 +28,11 @@ import javax.net.ssl.SSLParameters;
 class JedisConnectionConfiguration extends DataRedisConnectionConfiguration {
 
 	JedisConnectionConfiguration(DataRedisProperties properties,
-								 ObjectProvider<RedisStandaloneConfiguration> standaloneConfigurationProvider,
-								 ObjectProvider<RedisSentinelConfiguration> sentinelConfiguration,
-								 ObjectProvider<RedisClusterConfiguration> clusterConfiguration,
-								 ObjectProvider<RedisStaticMasterReplicaConfiguration> masterReplicaConfiguration,
-								 DataRedisConnectionDetails connectionDetails) {
+	                             ObjectProvider<RedisStandaloneConfiguration> standaloneConfigurationProvider,
+	                             ObjectProvider<RedisSentinelConfiguration> sentinelConfiguration,
+	                             ObjectProvider<RedisClusterConfiguration> clusterConfiguration,
+	                             ObjectProvider<RedisStaticMasterReplicaConfiguration> masterReplicaConfiguration,
+	                             DataRedisConnectionDetails connectionDetails) {
 		super(properties, connectionDetails, standaloneConfigurationProvider, sentinelConfiguration,
 			clusterConfiguration, masterReplicaConfiguration);
 	}
@@ -110,7 +110,7 @@ class JedisConnectionConfiguration extends DataRedisConnectionConfiguration {
 	}
 
 	private void applyPooling(DataRedisProperties.Pool pool,
-							  JedisClientConfiguration.JedisClientConfigurationBuilder builder) {
+	                          JedisClientConfiguration.JedisClientConfigurationBuilder builder) {
 		builder.usePooling().poolConfig(poolConfig(pool));
 	}
 
@@ -129,7 +129,7 @@ class JedisConnectionConfiguration extends DataRedisConnectionConfiguration {
 	}
 
 	private void customizeConfigurationFromUrl(JedisClientConfiguration.JedisClientConfigurationBuilder builder,
-											   String url) {
+	                                           String url) {
 		if (urlUsesSsl(url)) {
 			builder.useSsl();
 		}

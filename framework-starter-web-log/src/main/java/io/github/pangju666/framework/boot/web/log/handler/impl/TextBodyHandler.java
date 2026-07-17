@@ -35,9 +35,9 @@ public class TextBodyHandler implements MediaTypeBodyHandler {
 	 * @return 是否支持该媒体类型
 	 */
 	@Override
-    public boolean supports(MediaType mediaType) {
-        return MediaType.TEXT_PLAIN.equalsTypeAndSubtype(mediaType);
-    }
+	public boolean supports(MediaType mediaType) {
+		return MediaType.TEXT_PLAIN.equalsTypeAndSubtype(mediaType);
+	}
 
 	/**
 	 * 将原始字节解码为文本字符串。
@@ -46,9 +46,9 @@ public class TextBodyHandler implements MediaTypeBodyHandler {
 	 * @param mediaType 媒体类型（用于获取字符集）
 	 * @return 解码后的文本内容
 	 */
-    @Override
-    public Object getBody(byte[] rawBody, MediaType mediaType) {
-        return new String(rawBody, ObjectUtils.getIfNull(mediaType.getCharset(),
-            StandardCharsets.UTF_8));
-    }
+	@Override
+	public Object getBody(byte[] rawBody, MediaType mediaType) {
+		return new String(rawBody, ObjectUtils.getIfNull(mediaType.getCharset(),
+			StandardCharsets.UTF_8));
+	}
 }

@@ -17,9 +17,9 @@
 package io.github.pangju666.framework.boot.web.signature.interceptor;
 
 import io.github.pangju666.commons.lang.concurrent.SystemClock;
-import io.github.pangju666.framework.boot.web.signature.annotation.Signature;
-import io.github.pangju666.framework.boot.web.signature.SignatureConfiguration;
 import io.github.pangju666.framework.boot.web.signature.SecretKeyStorer;
+import io.github.pangju666.framework.boot.web.signature.SignatureConfiguration;
+import io.github.pangju666.framework.boot.web.signature.annotation.Signature;
 import io.github.pangju666.framework.web.exception.base.ValidationException;
 import io.github.pangju666.framework.web.servlet.BaseHttpInterceptor;
 import io.github.pangju666.framework.web.servlet.HttpResponseBuilder;
@@ -175,7 +175,7 @@ public class SignatureInterceptor extends BaseHttpInterceptor {
 	 * @since 1.0.0
 	 */
 	private boolean validateSignatureByParams(HttpServletRequest request, HttpServletResponse response,
-											  Signature annotation) throws MissingServletRequestParameterException {
+	                                          Signature annotation) throws MissingServletRequestParameterException {
 		String appId = request.getParameter(configuration.getAppIdParamName());
 		if (StringUtils.isBlank(appId)) {
 			throw new MissingServletRequestParameterException(configuration.getAppIdParamName(), "string");
@@ -221,7 +221,7 @@ public class SignatureInterceptor extends BaseHttpInterceptor {
 	 * @since 1.0.0
 	 */
 	private boolean validateSignatureByHeaders(HttpServletRequest request, HttpServletResponse response,
-											   Signature annotation) throws MissingRequestValueException {
+	                                           Signature annotation) throws MissingRequestValueException {
 		try {
 			String appId = request.getHeader(configuration.getAppIdHeaderName());
 			if (StringUtils.isBlank(appId)) {
@@ -232,10 +232,10 @@ public class SignatureInterceptor extends BaseHttpInterceptor {
 				return false;
 			}
 
-            String signature = request.getHeader(configuration.getSignatureHeaderName());
-            if (StringUtils.isBlank(signature)) {
-                throw new MissingRequestValueException("缺少请求头：" + configuration.getSignatureHeaderName());
-            }
+			String signature = request.getHeader(configuration.getSignatureHeaderName());
+			if (StringUtils.isBlank(signature)) {
+				throw new MissingRequestValueException("缺少请求头：" + configuration.getSignatureHeaderName());
+			}
 
 			String timestamp = request.getHeader(configuration.getTimestampHeaderName());
 			if (StringUtils.isBlank(timestamp)) {

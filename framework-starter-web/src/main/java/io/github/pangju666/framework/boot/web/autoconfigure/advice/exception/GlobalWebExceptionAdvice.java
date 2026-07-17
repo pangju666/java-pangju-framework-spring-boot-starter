@@ -97,6 +97,7 @@ public class GlobalWebExceptionAdvice {
 	private static final Logger LOGGER = LoggerFactory.getLogger(GlobalWebExceptionAdvice.class);
 
 	// ============ 自定义异常 ============
+
 	/**
 	 * 处理自定义 HTTP 异常。
 	 *
@@ -116,6 +117,7 @@ public class GlobalWebExceptionAdvice {
 	}
 
 	// ============ 400 Bad Request: 参数绑定与校验 ============
+
 	/**
 	 * 处理缺少请求参数异常。
 	 *
@@ -154,38 +156,38 @@ public class GlobalWebExceptionAdvice {
 		return Result.fail("缺少请求头：" + e.getHeaderName());
 	}
 
-    /**
-     * 处理缺少路径变量异常。
-     *
-     * <p><strong>行为</strong></p>
-     * <ul>
-     *   <li>返回统一失败响应，HTTP 400（{@link HttpStatus#BAD_REQUEST}）</li>
-     *   <li>提示缺少的路径变量名称</li>
-     * </ul>
-     *
-     * @param e 异常实例
-     * @return 统一失败响应
-     * @since 1.0.0
-     */
+	/**
+	 * 处理缺少路径变量异常。
+	 *
+	 * <p><strong>行为</strong></p>
+	 * <ul>
+	 *   <li>返回统一失败响应，HTTP 400（{@link HttpStatus#BAD_REQUEST}）</li>
+	 *   <li>提示缺少的路径变量名称</li>
+	 * </ul>
+	 *
+	 * @param e 异常实例
+	 * @return 统一失败响应
+	 * @since 1.0.0
+	 */
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	@ExceptionHandler(value = MissingPathVariableException.class)
 	public Result<Void> handleMissingPathVariableException(MissingPathVariableException e) {
 		return Result.fail("缺少路径变量：" + e.getVariableName());
 	}
 
-    /**
-     * 处理缺少请求值异常。
-     *
-     * <p><strong>行为</strong></p>
-     * <ul>
-     *   <li>返回统一失败响应，HTTP 400（{@link HttpStatus#BAD_REQUEST}）</li>
-     *   <li>返回统一文案提示：“缺少请求值”；并以 WARN 级别记录日志</li>
-     * </ul>
-     *
-     * @param e 异常实例
-     * @return 统一失败响应
-     * @since 1.0.0
-     */
+	/**
+	 * 处理缺少请求值异常。
+	 *
+	 * <p><strong>行为</strong></p>
+	 * <ul>
+	 *   <li>返回统一失败响应，HTTP 400（{@link HttpStatus#BAD_REQUEST}）</li>
+	 *   <li>返回统一文案提示：“缺少请求值”；并以 WARN 级别记录日志</li>
+	 * </ul>
+	 *
+	 * @param e 异常实例
+	 * @return 统一失败响应
+	 * @since 1.0.0
+	 */
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	@ExceptionHandler(value = MissingRequestValueException.class)
 	public Result<Void> handleMissingRequestValueException(MissingRequestValueException e) {
@@ -264,19 +266,19 @@ public class GlobalWebExceptionAdvice {
 		return Result.fail("请求参数类型不正确");
 	}
 
-    /**
-     * 处理请求参数绑定异常。
-     *
-     * <p><strong>行为</strong></p>
-     * <ul>
-     *   <li>记录 WARN 级别日志</li>
-     *   <li>返回统一失败响应，HTTP 400（{@link HttpStatus#BAD_REQUEST}）</li>
-     * </ul>
-     *
-     * @param e 异常实例
-     * @return 统一失败响应
-     * @since 1.0.0
-     */
+	/**
+	 * 处理请求参数绑定异常。
+	 *
+	 * <p><strong>行为</strong></p>
+	 * <ul>
+	 *   <li>记录 WARN 级别日志</li>
+	 *   <li>返回统一失败响应，HTTP 400（{@link HttpStatus#BAD_REQUEST}）</li>
+	 * </ul>
+	 *
+	 * @param e 异常实例
+	 * @return 统一失败响应
+	 * @since 1.0.0
+	 */
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	@ExceptionHandler(value = ServletRequestBindingException.class)
 	public Result<Void> handleServletRequestBindingException(ServletRequestBindingException e) {
@@ -284,19 +286,19 @@ public class GlobalWebExceptionAdvice {
 		return Result.fail("请求参数绑定错误");
 	}
 
-    /**
-     * 处理请求内容不可读异常。
-     *
-     * <p><strong>行为</strong></p>
-     * <ul>
-     *   <li>记录 WARN 级别日志</li>
-     *   <li>返回统一失败响应，HTTP 400（{@link HttpStatus#BAD_REQUEST}）</li>
-     * </ul>
-     *
-     * @param e 异常实例
-     * @return 统一失败响应
-     * @since 1.0.0
-     */
+	/**
+	 * 处理请求内容不可读异常。
+	 *
+	 * <p><strong>行为</strong></p>
+	 * <ul>
+	 *   <li>记录 WARN 级别日志</li>
+	 *   <li>返回统一失败响应，HTTP 400（{@link HttpStatus#BAD_REQUEST}）</li>
+	 * </ul>
+	 *
+	 * @param e 异常实例
+	 * @return 统一失败响应
+	 * @since 1.0.0
+	 */
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	@ExceptionHandler(value = HttpMessageNotReadableException.class)
 	public Result<Void> handleHttpMessageNotReadableException(HttpMessageNotReadableException e) {
@@ -304,20 +306,20 @@ public class GlobalWebExceptionAdvice {
 		return Result.fail("请求数据格式错误");
 	}
 
-    /**
-     * 处理方法参数验证异常（Bean Validation）。
-     *
-     * <p><strong>行为</strong></p>
-     * <ul>
-     *   <li>返回统一失败响应，HTTP 400（{@link HttpStatus#BAD_REQUEST}）</li>
-     *   <li>聚合所有字段错误的默认消息（过滤空白），以分号连接</li>
-     *   <li>无可用提示时返回“请求参数验证不合法”</li>
-     * </ul>
-     *
-     * @param e 异常实例
-     * @return 统一失败响应
-     * @since 1.0.0
-     */
+	/**
+	 * 处理方法参数验证异常（Bean Validation）。
+	 *
+	 * <p><strong>行为</strong></p>
+	 * <ul>
+	 *   <li>返回统一失败响应，HTTP 400（{@link HttpStatus#BAD_REQUEST}）</li>
+	 *   <li>聚合所有字段错误的默认消息（过滤空白），以分号连接</li>
+	 *   <li>无可用提示时返回“请求参数验证不合法”</li>
+	 * </ul>
+	 *
+	 * @param e 异常实例
+	 * @return 统一失败响应
+	 * @since 1.0.0
+	 */
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	@ExceptionHandler(value = MethodArgumentNotValidException.class)
 	public Result<Void> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
@@ -377,19 +379,19 @@ public class GlobalWebExceptionAdvice {
 		return Result.fail("上传文件大小超过" + DataSize.ofBytes(e.getMaxUploadSize()).toMegabytes() + "MB");
 	}
 
-    /**
-     * 处理文件上传失败异常。
-     *
-     * <p><strong>行为</strong></p>
-     * <ul>
-     *   <li>记录 WARN 级别日志</li>
-     *   <li>返回统一失败响应，HTTP 400（{@link HttpStatus#BAD_REQUEST}）</li>
-     * </ul>
-     *
-     * @param e 异常实例
-     * @return 统一失败响应
-     * @since 1.0.0
-     */
+	/**
+	 * 处理文件上传失败异常。
+	 *
+	 * <p><strong>行为</strong></p>
+	 * <ul>
+	 *   <li>记录 WARN 级别日志</li>
+	 *   <li>返回统一失败响应，HTTP 400（{@link HttpStatus#BAD_REQUEST}）</li>
+	 * </ul>
+	 *
+	 * @param e 异常实例
+	 * @return 统一失败响应
+	 * @since 1.0.0
+	 */
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	@ExceptionHandler(value = MultipartException.class)
 	public Result<Void> handleMultipartException(MultipartException e) {
@@ -398,6 +400,7 @@ public class GlobalWebExceptionAdvice {
 	}
 
 	// ============ 404 Not Found: 路径与资源 ============
+
 	/**
 	 * 处理请求路径不存在异常。
 	 *
@@ -437,6 +440,7 @@ public class GlobalWebExceptionAdvice {
 	}
 
 	// ============ 405 Method Not Allowed ============
+
 	/**
 	 * 处理请求方法不支持异常。
 	 *
@@ -457,6 +461,7 @@ public class GlobalWebExceptionAdvice {
 	}
 
 	// ============ 406 / 415 媒体类型不支持 ============
+
 	/**
 	 * 处理请求的 Content-Type 不支持异常。
 	 *
@@ -496,19 +501,20 @@ public class GlobalWebExceptionAdvice {
 	}
 
 	// ============ 5xx 服务器错误 ============
-    /**
-     * 处理响应内容不可写异常。
-     *
-     * <p><strong>行为</strong></p>
-     * <ul>
-     *   <li>记录 ERROR 级别日志</li>
-     *   <li>返回统一失败响应，HTTP 500（{@link HttpStatus#INTERNAL_SERVER_ERROR}）</li>
-     * </ul>
-     *
-     * @param e 异常实例
-     * @return 统一失败响应
-     * @since 1.0.0
-     */
+
+	/**
+	 * 处理响应内容不可写异常。
+	 *
+	 * <p><strong>行为</strong></p>
+	 * <ul>
+	 *   <li>记录 ERROR 级别日志</li>
+	 *   <li>返回统一失败响应，HTTP 500（{@link HttpStatus#INTERNAL_SERVER_ERROR}）</li>
+	 * </ul>
+	 *
+	 * @param e 异常实例
+	 * @return 统一失败响应
+	 * @since 1.0.0
+	 */
 	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 	@ExceptionHandler(value = HttpMessageNotWritableException.class)
 	public Result<Void> handleHttpMessageNotWritableException(HttpMessageNotWritableException e) {

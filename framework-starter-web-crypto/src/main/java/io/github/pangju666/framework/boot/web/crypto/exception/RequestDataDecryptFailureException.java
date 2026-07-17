@@ -30,7 +30,7 @@ import org.springframework.http.HttpStatus;
  *   <li>用于标识请求参数或请求体在解密过程中发生的校验类错误。</li>
  *   <li>使用场景：密文解密失败或解码错误。</li>
  * </ul>
- *
+ * <p>
  * 特点：
  * <ul>
  *     <li>错误码：-4510（{@link HttpExceptionType#VALIDATION} + 510）</li>
@@ -55,23 +55,23 @@ import org.springframework.http.HttpStatus;
  */
 @HttpException(code = 510, type = HttpExceptionType.VALIDATION, description = "请求数据解密失败", status = HttpStatus.BAD_REQUEST)
 public class RequestDataDecryptFailureException extends ValidationException {
-    /**
-     * 基于描述信息构造解密异常。
-     *
-     * @param message 错误描述信息（面向客户端的可读提示）
-     * @since 1.0.0
-     */
+	/**
+	 * 基于描述信息构造解密异常。
+	 *
+	 * @param message 错误描述信息（面向客户端的可读提示）
+	 * @since 1.0.0
+	 */
 	public RequestDataDecryptFailureException(String message) {
 		super(message);
 	}
 
-    /**
-     * 基于描述信息与根因构造解密异常。
-     *
-     * @param message 错误描述信息（面向客户端的可读提示）
-     * @param cause   导致异常的根因（便于日志与问题排查）
-     * @since 1.0.0
-     */
+	/**
+	 * 基于描述信息与根因构造解密异常。
+	 *
+	 * @param message 错误描述信息（面向客户端的可读提示）
+	 * @param cause   导致异常的根因（便于日志与问题排查）
+	 * @since 1.0.0
+	 */
 	public RequestDataDecryptFailureException(String message, Throwable cause) {
 		super(message, cause);
 	}

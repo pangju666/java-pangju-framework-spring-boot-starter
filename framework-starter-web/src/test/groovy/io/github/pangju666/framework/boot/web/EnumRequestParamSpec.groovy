@@ -16,17 +16,27 @@ import java.lang.reflect.Method
 class EnumRequestParamSpec extends Specification {
 	def resolver = new EnumRequestParamArgumentResolver()
 
-	enum UserStatus { ACTIVE, INACTIVE }
+	enum UserStatus {
+		ACTIVE, INACTIVE
+	}
 
 	static class TestController {
 		void requiredNamed(@EnumRequestParam("status") UserStatus status) {}
+
 		void optionalNamed(@EnumRequestParam(value = "status", required = false) UserStatus status) {}
+
 		void defaultNamed(@EnumRequestParam(value = "status", defaultValue = "ACTIVE") UserStatus status) {}
+
 		void requiredFallback(@EnumRequestParam UserStatus status) {}
 	}
 
-	static class NonEnumController { void nonEnum(@EnumRequestParam("status") String status) {} }
-	static class MissingAnnoController { void noAnno(UserStatus status) {} }
+	static class NonEnumController {
+		void nonEnum(@EnumRequestParam("status") String status) {}
+	}
+
+	static class MissingAnnoController {
+		void noAnno(UserStatus status) {}
+	}
 
 	MethodParameter param(String name) {
 		new MethodParameter(TestController.getDeclaredMethod(name, UserStatus), 0)
@@ -38,12 +48,12 @@ class EnumRequestParamSpec extends Specification {
 		resolver.supportsParameter(parameter) == expected
 
 		where:
-		caseName              | parameter                                                                                                  | expected
-		"annotated enum"     | param("requiredNamed")                                                                                     | true
-		"optional enum"      | param("optionalNamed")                                                                                     | true
-		"default enum"       | param("defaultNamed")                                                                                      | true
-		"non-enum"           | new MethodParameter(NonEnumController.getDeclaredMethod("nonEnum", String), 0)                             | false
-		"missing annotation" | new MethodParameter(MissingAnnoController.getDeclaredMethod("noAnno", UserStatus), 0)                      | false
+		caseName             | parameter                                                                             | expected
+		"annotated enum"     | param("requiredNamed")                                                                | true
+		"optional enum"      | param("optionalNamed")                                                                | true
+		"default enum"       | param("defaultNamed")                                                                 | true
+		"non-enum"           | new MethodParameter(NonEnumController.getDeclaredMethod("nonEnum", String), 0)        | false
+		"missing annotation" | new MethodParameter(MissingAnnoController.getDeclaredMethod("noAnno", UserStatus), 0) | false
 	}
 
 	def "resolveArgument returns enum when present"() {
@@ -122,6 +132,7 @@ class EnumRequestParamSpec extends Specification {
 		p.initParameterNameDiscovery(new ParameterNameDiscoverer() {
 			@Override
 			String[] getParameterNames(Method m) { ["status"] as String[] }
+
 			@Override
 			String[] getParameterNames(Constructor c) { null }
 		})

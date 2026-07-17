@@ -26,6 +26,7 @@ class EncryptRequestParamSpec extends Specification {
 	static class TestBinaryEncryptor implements BinaryEncryptor {
 		@Override
 		byte[] encrypt(byte[] bytes) { throw new UnsupportedOperationException() }
+
 		@Override
 		byte[] decrypt(byte[] bytes) {
 			def s = new String(bytes)
@@ -34,45 +35,93 @@ class EncryptRequestParamSpec extends Specification {
 	}
 
 	static class TestCryptoFactory implements CryptoFactory {
-		@Override BinaryEncryptor getBinaryEncryptor(String key) { throw new UnsupportedOperationException() }
-		@Override BinaryEncryptor getBinaryDecryptor(String key) {
+		@Override
+		BinaryEncryptor getBinaryEncryptor(String key) { throw new UnsupportedOperationException() }
+
+		@Override
+		BinaryEncryptor getBinaryDecryptor(String key) {
 			if (key == null || key.trim().isEmpty()) throw new IllegalArgumentException("key 不可为空")
 			return new TestBinaryEncryptor()
 		}
-		@Override TextEncryptor getTextEncryptor(String key) { throw new UnsupportedOperationException() }
-		@Override TextEncryptor getTextDecryptor(String key) { throw new UnsupportedOperationException() }
-		@Override IntegerNumberEncryptor getIntegerNumberEncryptor(String key) { throw new UnsupportedOperationException() }
-		@Override IntegerNumberEncryptor getIntegerNumberDecryptor(String key) { throw new UnsupportedOperationException() }
-		@Override DecimalNumberEncryptor getDecimalNumberEncryptor(String key) { throw new UnsupportedOperationException() }
-		@Override DecimalNumberEncryptor getDecimalNumberDecryptor(String key) { throw new UnsupportedOperationException() }
+
+		@Override
+		TextEncryptor getTextEncryptor(String key) { throw new UnsupportedOperationException() }
+
+		@Override
+		TextEncryptor getTextDecryptor(String key) { throw new UnsupportedOperationException() }
+
+		@Override
+		IntegerNumberEncryptor getIntegerNumberEncryptor(String key) { throw new UnsupportedOperationException() }
+
+		@Override
+		IntegerNumberEncryptor getIntegerNumberDecryptor(String key) { throw new UnsupportedOperationException() }
+
+		@Override
+		DecimalNumberEncryptor getDecimalNumberEncryptor(String key) { throw new UnsupportedOperationException() }
+
+		@Override
+		DecimalNumberEncryptor getDecimalNumberDecryptor(String key) { throw new UnsupportedOperationException() }
 	}
 
 	static class ThrowingCryptoFactory implements CryptoFactory {
-		@Override BinaryEncryptor getBinaryEncryptor(String key) { throw new UnsupportedOperationException() }
-		@Override BinaryEncryptor getBinaryDecryptor(String key) {
+		@Override
+		BinaryEncryptor getBinaryEncryptor(String key) { throw new UnsupportedOperationException() }
+
+		@Override
+		BinaryEncryptor getBinaryDecryptor(String key) {
 			return new BinaryEncryptor() {
-				@Override byte[] encrypt(byte[] bytes) { throw new UnsupportedOperationException() }
-				@Override byte[] decrypt(byte[] bytes) { throw new EncryptionOperationNotPossibleException() }
+				@Override
+				byte[] encrypt(byte[] bytes) { throw new UnsupportedOperationException() }
+
+				@Override
+				byte[] decrypt(byte[] bytes) { throw new EncryptionOperationNotPossibleException() }
 			}
 		}
-		@Override TextEncryptor getTextEncryptor(String key) { throw new UnsupportedOperationException() }
-		@Override TextEncryptor getTextDecryptor(String key) { throw new UnsupportedOperationException() }
-		@Override IntegerNumberEncryptor getIntegerNumberEncryptor(String key) { throw new UnsupportedOperationException() }
-		@Override IntegerNumberEncryptor getIntegerNumberDecryptor(String key) { throw new UnsupportedOperationException() }
-		@Override DecimalNumberEncryptor getDecimalNumberEncryptor(String key) { throw new UnsupportedOperationException() }
-		@Override DecimalNumberEncryptor getDecimalNumberDecryptor(String key) { throw new UnsupportedOperationException() }
+
+		@Override
+		TextEncryptor getTextEncryptor(String key) { throw new UnsupportedOperationException() }
+
+		@Override
+		TextEncryptor getTextDecryptor(String key) { throw new UnsupportedOperationException() }
+
+		@Override
+		IntegerNumberEncryptor getIntegerNumberEncryptor(String key) { throw new UnsupportedOperationException() }
+
+		@Override
+		IntegerNumberEncryptor getIntegerNumberDecryptor(String key) { throw new UnsupportedOperationException() }
+
+		@Override
+		DecimalNumberEncryptor getDecimalNumberEncryptor(String key) { throw new UnsupportedOperationException() }
+
+		@Override
+		DecimalNumberEncryptor getDecimalNumberDecryptor(String key) { throw new UnsupportedOperationException() }
 	}
 
 	static class C {
-		void requiredNamed(@EncryptRequestParam(value = "data", key = "k", factory = [TestCryptoFactory], encoding = Encoding.BASE64) String data) {}
-		void optionalNamed(@EncryptRequestParam(value = "data", key = "k", factory = [TestCryptoFactory], required = false, defaultValue = "DEF", encoding = Encoding.BASE64) String data) {}
-		void fallbackName(@EncryptRequestParam(key = "k", factory = [TestCryptoFactory], encoding = Encoding.BASE64) String data) {}
-		void hex(@EncryptRequestParam(value = "data", key = "k", factory = [TestCryptoFactory], encoding = Encoding.HEX) String data) {}
-		void badKey(@EncryptRequestParam(value = "data", key = "", factory = [TestCryptoFactory], encoding = Encoding.BASE64) String data) {}
-		void throwing(@EncryptRequestParam(value = "data", key = "k", factory = [ThrowingCryptoFactory], encoding = Encoding.BASE64) String data) {}
+		void requiredNamed(@EncryptRequestParam(value = "data", key = "k", factory = [TestCryptoFactory], encoding = Encoding.BASE64) String data) {
+		}
+
+		void optionalNamed(@EncryptRequestParam(value = "data", key = "k", factory = [TestCryptoFactory], required = false, defaultValue = "DEF", encoding = Encoding.BASE64) String data) {
+		}
+
+		void fallbackName(@EncryptRequestParam(key = "k", factory = [TestCryptoFactory], encoding = Encoding.BASE64) String data) {
+		}
+
+		void hex(@EncryptRequestParam(value = "data", key = "k", factory = [TestCryptoFactory], encoding = Encoding.HEX) String data) {
+		}
+
+		void badKey(@EncryptRequestParam(value = "data", key = "", factory = [TestCryptoFactory], encoding = Encoding.BASE64) String data) {
+		}
+
+		void throwing(@EncryptRequestParam(value = "data", key = "k", factory = [ThrowingCryptoFactory], encoding = Encoding.BASE64) String data) {
+		}
+
 		void nonString(@EncryptRequestParam("data") Integer n) {}
 	}
-	static class D { void noAnno(String s) {} }
+
+	static class D {
+		void noAnno(String s) {}
+	}
 
 	static MethodParameter p(String name, Class<?> type) { new MethodParameter(C.getDeclaredMethod(name, type), 0) }
 
@@ -84,10 +133,10 @@ class EncryptRequestParamSpec extends Specification {
 		resolver.supportsParameter(parameter) == expected
 
 		where:
-		caseName          | parameter                                              | expected
-		"annotated String"| p("requiredNamed", String)                             | true
-		"non-String type" | new MethodParameter(C.getDeclaredMethod("nonString", Integer), 0) | false
-		"missing annotation" | new MethodParameter(D.getDeclaredMethod("noAnno", String), 0)  | false
+		caseName             | parameter                                                         | expected
+		"annotated String"   | p("requiredNamed", String)                                        | true
+		"non-String type"    | new MethodParameter(C.getDeclaredMethod("nonString", Integer), 0) | false
+		"missing annotation" | new MethodParameter(D.getDeclaredMethod("noAnno", String), 0)     | false
 	}
 
 	def "resolveArgument decrypts BASE64 string when present"() {
@@ -130,8 +179,11 @@ class EncryptRequestParamSpec extends Specification {
 		}
 		def mp = p("fallbackName", String)
 		mp.initParameterNameDiscovery(new ParameterNameDiscoverer() {
-			@Override String[] getParameterNames(Method m) { ["data"] as String[] }
-			@Override String[] getParameterNames(Constructor c) { null }
+			@Override
+			String[] getParameterNames(Method m) { ["data"] as String[] }
+
+			@Override
+			String[] getParameterNames(Constructor c) { null }
 		})
 
 		expect:

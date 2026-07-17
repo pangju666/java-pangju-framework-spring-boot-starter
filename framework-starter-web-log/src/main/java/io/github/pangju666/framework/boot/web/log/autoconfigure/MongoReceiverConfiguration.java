@@ -21,7 +21,10 @@ import io.github.pangju666.framework.boot.web.log.receiver.WebLogReceiver;
 import io.github.pangju666.framework.boot.web.log.receiver.impl.mongo.MongoWebLogReceiver;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.boot.autoconfigure.condition.*;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.data.mongodb.autoconfigure.DataMongoAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -71,26 +74,26 @@ import org.springframework.util.StringUtils;
 @ConditionalOnClass({MongoClient.class, MongoTemplate.class})
 @ConditionalOnProperty(prefix = "pangju.web.log", name = "receiver-type", havingValue = "MONGODB")
 class MongoReceiverConfiguration {
-    /**
-     * 注册 MongoDB Web 日志接收器。
-     *
-     * <p><b>条件</b></p>
-     * <ul>
-     *   <li>容器中存在 {@link MongoTemplate}。</li>
-     *   <li>当前未存在 {@link WebLogReceiver} Bean。</li>
-     * </ul>
-     *
-     * <p><b>行为</b></p>
-     * <ul>
-     *   <li>优先按 {@code mongo-template-ref} 指定的 Bean 名称获取 {@link MongoTemplate}；否则回退默认 Bean。</li>
-     *   <li>使用配置的集合前缀创建 {@link MongoWebLogReceiver} 实例。</li>
-     * </ul>
-     *
-     * @param properties  Web 日志属性配置
-     * @param beanFactory BeanFactory，用于按名称或类型获取 {@link MongoTemplate}
-     * @return 接收器实例
-     * @since 1.0.0
-     */
+	/**
+	 * 注册 MongoDB Web 日志接收器。
+	 *
+	 * <p><b>条件</b></p>
+	 * <ul>
+	 *   <li>容器中存在 {@link MongoTemplate}。</li>
+	 *   <li>当前未存在 {@link WebLogReceiver} Bean。</li>
+	 * </ul>
+	 *
+	 * <p><b>行为</b></p>
+	 * <ul>
+	 *   <li>优先按 {@code mongo-template-ref} 指定的 Bean 名称获取 {@link MongoTemplate}；否则回退默认 Bean。</li>
+	 *   <li>使用配置的集合前缀创建 {@link MongoWebLogReceiver} 实例。</li>
+	 * </ul>
+	 *
+	 * @param properties  Web 日志属性配置
+	 * @param beanFactory BeanFactory，用于按名称或类型获取 {@link MongoTemplate}
+	 * @return 接收器实例
+	 * @since 1.0.0
+	 */
 	@ConditionalOnMissingBean(WebLogReceiver.class)
 	@ConditionalOnBean(MongoTemplate.class)
 	@Bean

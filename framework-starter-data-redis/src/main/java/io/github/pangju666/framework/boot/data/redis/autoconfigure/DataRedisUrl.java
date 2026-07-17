@@ -39,8 +39,7 @@ record DataRedisUrl(URI uri, boolean useSsl, DataRedisUrl.Credentials credential
 				throw new DataRedisUrlSyntaxException(url);
 			}
 			return uri;
-		}
-		catch (URISyntaxException ex) {
+		} catch (URISyntaxException ex) {
 			throw new DataRedisUrlSyntaxException(url, ex);
 		}
 	}

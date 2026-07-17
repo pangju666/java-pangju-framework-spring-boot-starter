@@ -7,11 +7,11 @@
 
 	<!-- 控制台输出格式（无 ANSI 颜色，确保 %method 安全） -->
 	<property name="CONSOLE_PATTERN"
-			  value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36}.%method\(%file:%line\) - %msg%n"/>
+	          value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36}.%method\(%file:%line\) - %msg%n"/>
 
 	<!-- 文件输出格式（含方法和行号） -->
 	<property name="FILE_PATTERN"
-			  value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36}.%method\(%file:%line\) - %msg%n"/>
+	          value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36}.%method\(%file:%line\) - %msg%n"/>
 
 	<!-- 控制台 Appender -->
 	<appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">

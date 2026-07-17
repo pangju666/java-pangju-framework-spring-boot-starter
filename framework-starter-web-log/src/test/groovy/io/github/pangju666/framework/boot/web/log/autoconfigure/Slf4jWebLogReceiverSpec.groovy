@@ -9,44 +9,44 @@ import org.slf4j.LoggerFactory
 import spock.lang.Specification
 
 class Slf4jWebLogReceiverSpec extends Specification {
-    def "receive writes JSON to specified logger"() {
-        given:
-        def loggerName = "TestWebLogLogger"
-        def logger = (Logger) LoggerFactory.getLogger(loggerName)
-        def listAppender = new ListAppender<ILoggingEvent>()
-        listAppender.start()
-        logger.addAppender(listAppender)
-        def receiver = new Slf4jWebLogReceiver(loggerName)
-        def log = new WebLog()
+	def "receive writes JSON to specified logger"() {
+		given:
+		def loggerName = "TestWebLogLogger"
+		def logger = (Logger) LoggerFactory.getLogger(loggerName)
+		def listAppender = new ListAppender<ILoggingEvent>()
+		listAppender.start()
+		logger.addAppender(listAppender)
+		def receiver = new Slf4jWebLogReceiver(loggerName)
+		def log = new WebLog()
 
-        when:
-        receiver.receive(log)
+		when:
+		receiver.receive(log)
 
-        then:
-        listAppender.list.size() == 1
-        listAppender.list.get(0).formattedMessage.contains("{")
+		then:
+		listAppender.list.size() == 1
+		listAppender.list.get(0).formattedMessage.contains("{")
 
-        cleanup:
-        logger.detachAppender(listAppender)
-    }
+		cleanup:
+		logger.detachAppender(listAppender)
+	}
 
-    def "receive ignores null webLog"() {
-        given:
-        def loggerName = "TestWebLogLogger2"
-        def logger = (Logger) LoggerFactory.getLogger(loggerName)
-        def listAppender = new ListAppender<ILoggingEvent>()
-        listAppender.start()
-        logger.addAppender(listAppender)
-        def receiver = new Slf4jWebLogReceiver(loggerName)
+	def "receive ignores null webLog"() {
+		given:
+		def loggerName = "TestWebLogLogger2"
+		def logger = (Logger) LoggerFactory.getLogger(loggerName)
+		def listAppender = new ListAppender<ILoggingEvent>()
+		listAppender.start()
+		logger.addAppender(listAppender)
+		def receiver = new Slf4jWebLogReceiver(loggerName)
 
-        when:
-        receiver.receive(null)
+		when:
+		receiver.receive(null)
 
-        then:
-        listAppender.list.isEmpty()
+		then:
+		listAppender.list.isEmpty()
 
-        cleanup:
-        logger.detachAppender(listAppender)
-    }
+		cleanup:
+		logger.detachAppender(listAppender)
+	}
 }
 

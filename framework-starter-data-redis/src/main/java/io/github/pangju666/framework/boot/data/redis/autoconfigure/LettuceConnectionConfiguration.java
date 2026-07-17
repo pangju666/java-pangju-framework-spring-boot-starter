@@ -38,11 +38,11 @@ import java.time.Duration;
 class LettuceConnectionConfiguration extends DataRedisConnectionConfiguration {
 
 	LettuceConnectionConfiguration(DataRedisProperties properties,
-								   ObjectProvider<RedisStandaloneConfiguration> standaloneConfigurationProvider,
-								   ObjectProvider<RedisSentinelConfiguration> sentinelConfigurationProvider,
-								   ObjectProvider<RedisClusterConfiguration> clusterConfigurationProvider,
-								   ObjectProvider<RedisStaticMasterReplicaConfiguration> masterReplicaConfiguration,
-								   DataRedisConnectionDetails connectionDetails) {
+	                               ObjectProvider<RedisStandaloneConfiguration> standaloneConfigurationProvider,
+	                               ObjectProvider<RedisSentinelConfiguration> sentinelConfigurationProvider,
+	                               ObjectProvider<RedisClusterConfiguration> clusterConfigurationProvider,
+	                               ObjectProvider<RedisStaticMasterReplicaConfiguration> masterReplicaConfiguration,
+	                               DataRedisConnectionDetails connectionDetails) {
 		super(properties, connectionDetails, standaloneConfigurationProvider, sentinelConfigurationProvider,
 			clusterConfigurationProvider, masterReplicaConfiguration);
 	}
@@ -198,7 +198,7 @@ class LettuceConnectionConfiguration extends DataRedisConnectionConfiguration {
 	}
 
 	private void customizeConfigurationFromUrl(LettuceClientConfiguration.LettuceClientConfigurationBuilder builder,
-											   String url) {
+	                                           String url) {
 		if (urlUsesSsl(url)) {
 			builder.useSsl();
 		}

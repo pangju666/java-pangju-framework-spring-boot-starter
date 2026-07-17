@@ -26,14 +26,20 @@ class DecryptRequestBodySpec extends Specification {
 	static class SimpleInputMessage implements HttpInputMessage {
 		final HttpHeaders headers = new HttpHeaders()
 		final InputStream body
+
 		SimpleInputMessage(String content) { this.body = new ByteArrayInputStream(content?.bytes ?: new byte[0]) }
-		@Override HttpHeaders getHeaders() { headers }
-		@Override InputStream getBody() { body }
+
+		@Override
+		HttpHeaders getHeaders() { headers }
+
+		@Override
+		InputStream getBody() { body }
 	}
 
 	static class TestBinaryEncryptor implements BinaryEncryptor {
 		@Override
 		byte[] encrypt(byte[] bytes) { throw new UnsupportedOperationException() }
+
 		@Override
 		byte[] decrypt(byte[] bytes) {
 			def s = new String(bytes, StandardCharsets.UTF_8)
@@ -42,41 +48,80 @@ class DecryptRequestBodySpec extends Specification {
 	}
 
 	static class TestCryptoFactory implements CryptoFactory {
-		@Override BinaryEncryptor getBinaryEncryptor(String key) { throw new UnsupportedOperationException() }
-		@Override BinaryEncryptor getBinaryDecryptor(String key) {
+		@Override
+		BinaryEncryptor getBinaryEncryptor(String key) { throw new UnsupportedOperationException() }
+
+		@Override
+		BinaryEncryptor getBinaryDecryptor(String key) {
 			if (key == null || key.trim().isEmpty()) throw new IllegalArgumentException("key 不可为空")
 			return new TestBinaryEncryptor()
 		}
-		@Override TextEncryptor getTextEncryptor(String key) { throw new UnsupportedOperationException() }
-		@Override TextEncryptor getTextDecryptor(String key) { throw new UnsupportedOperationException() }
-		@Override IntegerNumberEncryptor getIntegerNumberEncryptor(String key) { throw new UnsupportedOperationException() }
-		@Override IntegerNumberEncryptor getIntegerNumberDecryptor(String key) { throw new UnsupportedOperationException() }
-		@Override DecimalNumberEncryptor getDecimalNumberEncryptor(String key) { throw new UnsupportedOperationException() }
-		@Override DecimalNumberEncryptor getDecimalNumberDecryptor(String key) { throw new UnsupportedOperationException() }
+
+		@Override
+		TextEncryptor getTextEncryptor(String key) { throw new UnsupportedOperationException() }
+
+		@Override
+		TextEncryptor getTextDecryptor(String key) { throw new UnsupportedOperationException() }
+
+		@Override
+		IntegerNumberEncryptor getIntegerNumberEncryptor(String key) { throw new UnsupportedOperationException() }
+
+		@Override
+		IntegerNumberEncryptor getIntegerNumberDecryptor(String key) { throw new UnsupportedOperationException() }
+
+		@Override
+		DecimalNumberEncryptor getDecimalNumberEncryptor(String key) { throw new UnsupportedOperationException() }
+
+		@Override
+		DecimalNumberEncryptor getDecimalNumberDecryptor(String key) { throw new UnsupportedOperationException() }
 	}
 
 	static class ThrowingCryptoFactory implements CryptoFactory {
-		@Override BinaryEncryptor getBinaryEncryptor(String key) { throw new UnsupportedOperationException() }
-		@Override BinaryEncryptor getBinaryDecryptor(String key) {
+		@Override
+		BinaryEncryptor getBinaryEncryptor(String key) { throw new UnsupportedOperationException() }
+
+		@Override
+		BinaryEncryptor getBinaryDecryptor(String key) {
 			return new BinaryEncryptor() {
-				@Override byte[] encrypt(byte[] bytes) { throw new UnsupportedOperationException() }
-				@Override byte[] decrypt(byte[] bytes) { throw new EncryptionOperationNotPossibleException() }
+				@Override
+				byte[] encrypt(byte[] bytes) { throw new UnsupportedOperationException() }
+
+				@Override
+				byte[] decrypt(byte[] bytes) { throw new EncryptionOperationNotPossibleException() }
 			}
 		}
-		@Override TextEncryptor getTextEncryptor(String key) { throw new UnsupportedOperationException() }
-		@Override TextEncryptor getTextDecryptor(String key) { throw new UnsupportedOperationException() }
-		@Override IntegerNumberEncryptor getIntegerNumberEncryptor(String key) { throw new UnsupportedOperationException() }
-		@Override IntegerNumberEncryptor getIntegerNumberDecryptor(String key) { throw new UnsupportedOperationException() }
-		@Override DecimalNumberEncryptor getDecimalNumberEncryptor(String key) { throw new UnsupportedOperationException() }
-		@Override DecimalNumberEncryptor getDecimalNumberDecryptor(String key) { throw new UnsupportedOperationException() }
+
+		@Override
+		TextEncryptor getTextEncryptor(String key) { throw new UnsupportedOperationException() }
+
+		@Override
+		TextEncryptor getTextDecryptor(String key) { throw new UnsupportedOperationException() }
+
+		@Override
+		IntegerNumberEncryptor getIntegerNumberEncryptor(String key) { throw new UnsupportedOperationException() }
+
+		@Override
+		IntegerNumberEncryptor getIntegerNumberDecryptor(String key) { throw new UnsupportedOperationException() }
+
+		@Override
+		DecimalNumberEncryptor getDecimalNumberEncryptor(String key) { throw new UnsupportedOperationException() }
+
+		@Override
+		DecimalNumberEncryptor getDecimalNumberDecryptor(String key) { throw new UnsupportedOperationException() }
 	}
 
 	static class C {
 		void json(@DecryptRequestBody(factory = [TestCryptoFactory], key = "k", encoding = Encoding.BASE64) Object o) {}
+
 		void str(@DecryptRequestBody(factory = [TestCryptoFactory], key = "k", encoding = Encoding.BASE64) String s) {}
+
 		void hexStr(@DecryptRequestBody(factory = [TestCryptoFactory], key = "k", encoding = Encoding.HEX) String s) {}
-		void badKey(@DecryptRequestBody(factory = [TestCryptoFactory], key = "", encoding = Encoding.BASE64) String s) {}
-		void throwing(@DecryptRequestBody(factory = [ThrowingCryptoFactory], key = "k", encoding = Encoding.BASE64) String s) {}
+
+		void badKey(@DecryptRequestBody(factory = [TestCryptoFactory], key = "", encoding = Encoding.BASE64) String s) {
+		}
+
+		void throwing(@DecryptRequestBody(factory = [ThrowingCryptoFactory], key = "k", encoding = Encoding.BASE64) String s) {
+		}
 	}
 
 	static MethodParameter param(String name, Class<?> type) {
@@ -219,5 +264,7 @@ class DecryptRequestBodySpec extends Specification {
 		ex.message.contains("无效的加密请求数据")
 	}
 
-	class D { void noAnno(String s) {} }
+	class D {
+		void noAnno(String s) {}
+	}
 }

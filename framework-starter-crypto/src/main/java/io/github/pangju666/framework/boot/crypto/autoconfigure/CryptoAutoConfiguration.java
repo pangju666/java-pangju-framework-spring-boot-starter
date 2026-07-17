@@ -46,8 +46,8 @@ import org.springframework.context.annotation.Bean;
  * </p>
  *
  * @author pangju666
- * @since 1.0.0
  * @see CryptoProperties
+ * @since 1.0.0
  */
 @AutoConfiguration
 @ConditionalOnClass({RSAKeyPair.class, Caffeine.class})

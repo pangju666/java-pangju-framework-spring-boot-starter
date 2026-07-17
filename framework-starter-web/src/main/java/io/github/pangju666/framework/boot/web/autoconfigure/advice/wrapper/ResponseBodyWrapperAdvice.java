@@ -82,7 +82,7 @@ import java.util.Objects;
  * @see Result
  * @since 1.0.0
  */
-@Order(Ordered.HIGHEST_PRECEDENCE  + 1)
+@Order(Ordered.HIGHEST_PRECEDENCE + 1)
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @ConditionalOnClass({Servlet.class, DispatcherServlet.class, Result.class})
 @ConditionalOnBooleanProperty(prefix = "pangju.web.advice", value = "enable-wrapper", matchIfMissing = true)
@@ -141,8 +141,8 @@ public class ResponseBodyWrapperAdvice implements ResponseBodyAdvice<Object> {
 	 */
 	@Override
 	public Object beforeBodyWrite(@Nullable Object body, MethodParameter returnType, MediaType selectedContentType,
-								  Class<? extends HttpMessageConverter<?>> selectedConverterType,
-								  ServerHttpRequest request, ServerHttpResponse response) {
+	                              Class<? extends HttpMessageConverter<?>> selectedConverterType,
+	                              ServerHttpRequest request, ServerHttpResponse response) {
 		if (StringHttpMessageConverter.class.isAssignableFrom(selectedConverterType)) {
 			response.getHeaders().setContentType(MediaType.APPLICATION_JSON);
 			return Result.ok(body).toString();

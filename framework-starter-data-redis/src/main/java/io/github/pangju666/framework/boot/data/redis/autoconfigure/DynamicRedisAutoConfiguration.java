@@ -74,7 +74,7 @@ import org.springframework.data.redis.core.RedisOperations;
  * 						// 注入 注入主数据源的 StringScanRedisTemplate
  * 						StringScanRedisTemplate stringScanRedisTemplate,
  * 						// 注入 redis2 数据源的 RedisConnectionFactory
- * 						                        @Qualifier("redis2RedisConnectionFactory")
+ *                                                @Qualifier("redis2RedisConnectionFactory")
  *                        RedisConnectionFactory redisConnectionFactory2,
  * 						// 注入 redis2 数据源的 RedisTemplate
  *                        @Qualifier("redis2RedisTemplate")
@@ -88,7 +88,7 @@ import org.springframework.data.redis.core.RedisOperations;
  * 						// 注入 redis2 数据源的 StringScanRedisTemplate
  *                        @Qualifier("redis2StringScanRedisTemplate")
  *                        StringScanRedisTemplate stringScanRedisTemplate) {
- * 	}
+ *    }
  *
  * 	// 通过`DynamicRedisUtils`获取
  * 	public void test() {
@@ -97,7 +97,7 @@ import org.springframework.data.redis.core.RedisOperations;
  * 		ScanRedisTemplate<Object> scanRedisTemplate = DynamicRedisUtils.getScanRedisTemplate("redis1");
  * 		StringRedisTemplate stringRedisTemplate = DynamicRedisUtils.getStringRedisTemplate("redis1");
  * 		StringScanRedisTemplate stringScanRedisTemplate = DynamicRedisUtils.getStringScanRedisTemplate("redis");
- * 	}
+ *    }
  * }
  * }</pre>
  *

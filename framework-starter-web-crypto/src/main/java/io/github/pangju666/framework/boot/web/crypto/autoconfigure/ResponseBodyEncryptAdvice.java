@@ -110,7 +110,7 @@ import java.util.Objects;
  * @see Result
  * @since 1.0.0
  */
-@Order(Ordered.HIGHEST_PRECEDENCE  + 2)
+@Order(Ordered.HIGHEST_PRECEDENCE + 2)
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @ConditionalOnClass({Servlet.class, DispatcherServlet.class, RSAKeyPair.class, Result.class})
 @ConditionalOnBean(CryptoFactory.class)
@@ -192,8 +192,8 @@ public class ResponseBodyEncryptAdvice implements ResponseBodyAdvice<Object> {
 	 */
 	@Override
 	public Object beforeBodyWrite(Object body, MethodParameter returnType, MediaType selectedContentType,
-								  Class<? extends HttpMessageConverter<?>> selectedConverterType,
-								  ServerHttpRequest request, ServerHttpResponse response) {
+	                              Class<? extends HttpMessageConverter<?>> selectedConverterType,
+	                              ServerHttpRequest request, ServerHttpResponse response) {
 		EncryptResponseBody annotation = returnType.getMethodAnnotation(EncryptResponseBody.class);
 		if (Objects.isNull(annotation)) {
 			annotation = returnType.getDeclaringClass().getAnnotation(EncryptResponseBody.class);

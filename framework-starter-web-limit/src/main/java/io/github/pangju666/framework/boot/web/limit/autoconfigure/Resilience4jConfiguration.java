@@ -62,22 +62,22 @@ import org.springframework.context.annotation.Configuration;
 @ConditionalOnClass(io.github.resilience4j.ratelimiter.RateLimiter.class)
 @ConditionalOnProperty(prefix = "pangju.web.rate-limit", value = "type", havingValue = "RESILIENCE4J", matchIfMissing = true)
 class Resilience4jConfiguration {
-    /**
-     * 创建并注册 {@link Resilience4JRateLimiter} Bean。
-     *
-     * <p><strong>激活</strong></p>
-     * <ul>
-     *   <li>{@link ConditionalOnMissingBean}：不存在其他 {@link RateLimiter} Bean。</li>
-     * </ul>
-     *
-     * <p><strong>行为</strong></p>
-     * <ul>
-     *   <li>提供本地内存速率限制器，无需外部依赖。</li>
-     * </ul>
-     *
-     * @return 初始化完成的 {@link Resilience4JRateLimiter}
-     * @since 1.0.0
-     */
+	/**
+	 * 创建并注册 {@link Resilience4JRateLimiter} Bean。
+	 *
+	 * <p><strong>激活</strong></p>
+	 * <ul>
+	 *   <li>{@link ConditionalOnMissingBean}：不存在其他 {@link RateLimiter} Bean。</li>
+	 * </ul>
+	 *
+	 * <p><strong>行为</strong></p>
+	 * <ul>
+	 *   <li>提供本地内存速率限制器，无需外部依赖。</li>
+	 * </ul>
+	 *
+	 * @return 初始化完成的 {@link Resilience4JRateLimiter}
+	 * @since 1.0.0
+	 */
 	@ConditionalOnMissingBean(RateLimiter.class)
 	@Bean
 	public Resilience4JRateLimiter resilience4JRateLimiter() {

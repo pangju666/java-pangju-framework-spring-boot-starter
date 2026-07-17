@@ -76,25 +76,26 @@ import java.util.Objects;
 @RestControllerAdvice
 public class GlobalTomcatFileUploadExceptionAdvice {
 	// ============ 400 Bad Request: 参数绑定与校验 ============
-    /**
-     * 处理上传文件大小超过限制异常。
-     *
-     * <p><strong>行为</strong></p>
-     * <ul>
-     *   <li>返回统一失败响应，HTTP 400（{@link HttpStatus#BAD_REQUEST}）。</li>
-     *   <li>当 {@code e.getMaxUploadSize() == -1} 时，尝试解析嵌套的 {@link SizeLimitExceededException}
-     *       以获取允许大小；否则使用 {@code e.getMaxUploadSize()}。</li>
-     *   <li>大小按 MB 展示（{@link DataSize#ofBytes(long)} 转换后 {@code toMegabytes()}，为向下取整）。</li>
-     * </ul>
-     *
-     * @param e 上传大小超限异常
-     * @return 统一失败响应，状态码 400
-     * @since 1.0.0
-     */
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler(value = MaxUploadSizeExceededException.class)
-    public Result<Void> handleMaxUploadSizeExceededException(MaxUploadSizeExceededException e) {
-        if (e.getMaxUploadSize() == -1) {
+
+	/**
+	 * 处理上传文件大小超过限制异常。
+	 *
+	 * <p><strong>行为</strong></p>
+	 * <ul>
+	 *   <li>返回统一失败响应，HTTP 400（{@link HttpStatus#BAD_REQUEST}）。</li>
+	 *   <li>当 {@code e.getMaxUploadSize() == -1} 时，尝试解析嵌套的 {@link SizeLimitExceededException}
+	 *       以获取允许大小；否则使用 {@code e.getMaxUploadSize()}。</li>
+	 *   <li>大小按 MB 展示（{@link DataSize#ofBytes(long)} 转换后 {@code toMegabytes()}，为向下取整）。</li>
+	 * </ul>
+	 *
+	 * @param e 上传大小超限异常
+	 * @return 统一失败响应，状态码 400
+	 * @since 1.0.0
+	 */
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	@ExceptionHandler(value = MaxUploadSizeExceededException.class)
+	public Result<Void> handleMaxUploadSizeExceededException(MaxUploadSizeExceededException e) {
+		if (e.getMaxUploadSize() == -1) {
 			if (Objects.nonNull(e.getCause()) &&
 				e.getCause() instanceof IllegalStateException illegalStateException &&
 				Objects.nonNull(illegalStateException.getCause()) &&
@@ -106,19 +107,19 @@ public class GlobalTomcatFileUploadExceptionAdvice {
 		return Result.fail("上传文件大小超过" + DataSize.ofBytes(e.getMaxUploadSize()).toMegabytes() + "MB");
 	}
 
-    /**
-     * 处理 Tomcat 的大小限制异常。
-     *
-     * <p><strong>行为</strong></p>
-     * 返回统一失败响应，HTTP 400（{@link HttpStatus#BAD_REQUEST}），并展示允许大小（MB，向下取整）。
-     *
-     * @param e Tomcat 提供的上传大小限制异常
-     * @return 统一失败响应
-     * @since 1.0.0
-     */
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler(value = SizeLimitExceededException.class)
-    public Result<Void> handleSizeLimitExceededException(SizeLimitExceededException e) {
-        return Result.fail("上传文件大小超过" + DataSize.ofBytes(e.getPermittedSize()).toMegabytes() + "MB");
-    }
+	/**
+	 * 处理 Tomcat 的大小限制异常。
+	 *
+	 * <p><strong>行为</strong></p>
+	 * 返回统一失败响应，HTTP 400（{@link HttpStatus#BAD_REQUEST}），并展示允许大小（MB，向下取整）。
+	 *
+	 * @param e Tomcat 提供的上传大小限制异常
+	 * @return 统一失败响应
+	 * @since 1.0.0
+	 */
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	@ExceptionHandler(value = SizeLimitExceededException.class)
+	public Result<Void> handleSizeLimitExceededException(SizeLimitExceededException e) {
+		return Result.fail("上传文件大小超过" + DataSize.ofBytes(e.getPermittedSize()).toMegabytes() + "MB");
+	}
 }

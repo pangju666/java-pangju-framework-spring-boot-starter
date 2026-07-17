@@ -31,6 +31,7 @@ class EncryptResponseBodySpec extends Specification {
 		byte[] encrypt(byte[] bytes) {
 			return ("X-" + new String(bytes)).bytes
 		}
+
 		@Override
 		byte[] decrypt(byte[] bytes) {
 			return bytes
@@ -43,29 +44,39 @@ class EncryptResponseBodySpec extends Specification {
 			if (key == null || key.trim().isEmpty()) throw new IllegalArgumentException("key 不可为空")
 			return new TestBinaryEncryptor()
 		}
+
 		@Override
 		TextEncryptor getTextEncryptor(String key) { throw new UnsupportedOperationException() }
+
 		@Override
 		IntegerNumberEncryptor getIntegerNumberEncryptor(String key) { throw new UnsupportedOperationException() }
+
 		@Override
 		DecimalNumberEncryptor getDecimalNumberEncryptor(String key) { throw new UnsupportedOperationException() }
+
 		@Override
 		IntegerNumberEncryptor getIntegerNumberDecryptor(String key) { throw new UnsupportedOperationException() }
+
 		@Override
 		DecimalNumberEncryptor getDecimalNumberDecryptor(String key) { throw new UnsupportedOperationException() }
+
 		@Override
 		TextEncryptor getTextDecryptor(String key) { throw new UnsupportedOperationException() }
+
 		@Override
 		BinaryEncryptor getBinaryDecryptor(String key) { return getBinaryEncryptor(key) }
 	}
 
 	static class SpelTestBinaryEncryptor implements BinaryEncryptor {
 		String key
+
 		SpelTestBinaryEncryptor(String key) { this.key = key }
+
 		@Override
 		byte[] encrypt(byte[] bytes) {
 			return (key + ":" + new String(bytes)).bytes
 		}
+
 		@Override
 		byte[] decrypt(byte[] bytes) {
 			return bytes
@@ -77,18 +88,25 @@ class EncryptResponseBodySpec extends Specification {
 		BinaryEncryptor getBinaryEncryptor(String key) {
 			return new SpelTestBinaryEncryptor(key)
 		}
+
 		@Override
 		TextEncryptor getTextEncryptor(String key) { throw new UnsupportedOperationException() }
+
 		@Override
 		IntegerNumberEncryptor getIntegerNumberEncryptor(String key) { throw new UnsupportedOperationException() }
+
 		@Override
 		DecimalNumberEncryptor getDecimalNumberEncryptor(String key) { throw new UnsupportedOperationException() }
+
 		@Override
 		IntegerNumberEncryptor getIntegerNumberDecryptor(String key) { throw new UnsupportedOperationException() }
+
 		@Override
 		DecimalNumberEncryptor getDecimalNumberDecryptor(String key) { throw new UnsupportedOperationException() }
+
 		@Override
 		TextEncryptor getTextDecryptor(String key) { throw new UnsupportedOperationException() }
+
 		@Override
 		BinaryEncryptor getBinaryDecryptor(String key) { return getBinaryEncryptor(key) }
 	}
@@ -96,8 +114,11 @@ class EncryptResponseBodySpec extends Specification {
 	@EncryptResponseBody(factory = [TestCryptoFactory], key = "k", encoding = Encoding.BASE64)
 	static class MethodAnnoController {
 		String s() { "" }
+
 		byte[] b() { new byte[0] }
+
 		Object o() { null }
+
 		Result<String> r() { Result.ok("") }
 	}
 
@@ -109,6 +130,7 @@ class EncryptResponseBodySpec extends Specification {
 	@EncryptResponseBody(factory = [TestCryptoFactory], key = "k")
 	static class ClassAnnoController {
 		String s() { "" }
+
 		Object o() { null }
 	}
 
@@ -244,16 +266,29 @@ class EncryptResponseBodySpec extends Specification {
 		new String(Base64.decodeBase64(res as String)) == "my-secret:abc"
 	}
 
-	class NoAnno { String s() { "" } }
+	class NoAnno {
+		String s() { "" }
+	}
 
 	@EncryptResponseBody(factory = [TestCryptoFactory], key = "", encoding = Encoding.BASE64)
-	class BadKeyCtrl { String s() { "" } }
+	class BadKeyCtrl {
+		String s() { "" }
+	}
 
 	class DummyConverter implements HttpMessageConverter<Object> {
-		@Override boolean canRead(Class<?> clazz, MediaType mediaType) { false }
-		@Override boolean canWrite(Class<?> clazz, MediaType mediaType) { false }
-		@Override List<MediaType> getSupportedMediaTypes() { [] }
-		@Override Object read(Class<? extends Object> clazz, HttpInputMessage inputMessage) { null }
-		@Override void write(Object o, MediaType contentType, HttpOutputMessage outputMessage) {}
+		@Override
+		boolean canRead(Class<?> clazz, MediaType mediaType) { false }
+
+		@Override
+		boolean canWrite(Class<?> clazz, MediaType mediaType) { false }
+
+		@Override
+		List<MediaType> getSupportedMediaTypes() { [] }
+
+		@Override
+		Object read(Class<? extends Object> clazz, HttpInputMessage inputMessage) { null }
+
+		@Override
+		void write(Object o, MediaType contentType, HttpOutputMessage outputMessage) {}
 	}
 }

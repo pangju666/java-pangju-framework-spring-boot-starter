@@ -2,7 +2,6 @@ package io.github.pangju666.framework.boot.crypto
 
 import io.github.pangju666.framework.boot.crypto.autoconfigure.CryptoAutoConfiguration
 import io.github.pangju666.framework.boot.crypto.factory.impl.AES256CryptoFactory
-
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootContextLoader
 import org.springframework.test.context.ContextConfiguration
@@ -66,8 +65,8 @@ class Aes256CryptoFactorySpec extends Specification {
 
 		where:
 		caseName   | input
-		"空口令"    | ""
-		"null口令"  | null
+		"空口令"   | ""
+		"null口令" | null
 	}
 
 	@Unroll
@@ -80,8 +79,8 @@ class Aes256CryptoFactorySpec extends Specification {
 
 		where:
 		caseName   | input
-		"空口令"    | ""
-		"null口令"  | null
+		"空口令"   | ""
+		"null口令" | null
 	}
 
 	@Unroll
@@ -94,8 +93,8 @@ class Aes256CryptoFactorySpec extends Specification {
 
 		where:
 		caseName   | input
-		"空口令"    | ""
-		"null口令"  | null
+		"空口令"   | ""
+		"null口令" | null
 	}
 
 	@Unroll
@@ -108,7 +107,7 @@ class Aes256CryptoFactorySpec extends Specification {
 
 		where:
 		caseName   | input
-		"空口令"    | ""
-		"null口令"  | null
+		"空口令"   | ""
+		"null口令" | null
 	}
 }

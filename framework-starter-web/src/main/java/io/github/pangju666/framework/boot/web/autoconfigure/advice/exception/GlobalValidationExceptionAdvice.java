@@ -71,19 +71,20 @@ import java.util.stream.Collectors;
 @RestControllerAdvice
 public class GlobalValidationExceptionAdvice {
 	// ============ 400 Bad Request: 参数绑定与校验 ============
-    /**
-     * 处理参数验证异常。
-     *
-     * <p><strong>行为</strong></p>
-     * <ul>
-     *   <li>返回统一失败响应，HTTP 400（{@link HttpStatus#BAD_REQUEST}）。</li>
-     *   <li>聚合所有约束违例的 {@code message}（过滤空白），以分号连接；无可用提示时返回“请求参数验证不合法”。</li>
-     * </ul>
-     *
-     * @param e 参数验证异常
-     * @return 统一失败响应，状态码 400
-     * @since 1.0.0
-     */
+
+	/**
+	 * 处理参数验证异常。
+	 *
+	 * <p><strong>行为</strong></p>
+	 * <ul>
+	 *   <li>返回统一失败响应，HTTP 400（{@link HttpStatus#BAD_REQUEST}）。</li>
+	 *   <li>聚合所有约束违例的 {@code message}（过滤空白），以分号连接；无可用提示时返回“请求参数验证不合法”。</li>
+	 * </ul>
+	 *
+	 * @param e 参数验证异常
+	 * @return 统一失败响应，状态码 400
+	 * @since 1.0.0
+	 */
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	@ExceptionHandler(value = ConstraintViolationException.class)
 	public Result<Void> handleConstraintViolationException(ConstraintViolationException e) {

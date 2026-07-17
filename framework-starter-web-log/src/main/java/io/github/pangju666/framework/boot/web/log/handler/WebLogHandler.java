@@ -62,10 +62,10 @@ public interface WebLogHandler {
 	 *   <li>建议保持无副作用、快速执行，以保证整体请求性能。</li>
 	 * </ul>
 	 *
-     * @param webLog        当前采集的 Web 日志对象，包含请求与响应信息
-     * @param targetClass   目标类（通常为控制器类）
-     * @param targetMethod  目标方法（通常为控制器方法）
-     * @since 1.0.0
-     */
-    void handle(WebLog webLog, Class<?> targetClass, Method targetMethod);
+	 * @param webLog       当前采集的 Web 日志对象，包含请求与响应信息
+	 * @param targetClass  目标类（通常为控制器类）
+	 * @param targetMethod 目标方法（通常为控制器方法）
+	 * @since 1.0.0
+	 */
+	void handle(WebLog webLog, Class<?> targetClass, Method targetMethod);
 }

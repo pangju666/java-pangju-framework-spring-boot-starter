@@ -14,14 +14,14 @@ import spock.lang.Specification
 @ContextConfiguration(classes = [DataRedisAutoConfiguration.class, ScanDataRedisAutoConfiguration.class],
 	loader = SpringBootContextLoader.class)
 class RedisScanSpec extends Specification {
-    @Autowired
+	@Autowired
 	StringScanRedisTemplate stringScanRedisTemplate
 	@Autowired
 	JsonScanRedisTemplate jsonScanRedisTemplate
 
-    def "测试是否正确装配Bean"() {
-        expect:
+	def "测试是否正确装配Bean"() {
+		expect:
 		stringScanRedisTemplate != null
 		jsonScanRedisTemplate != null
-    }
+	}
 }

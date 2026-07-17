@@ -119,7 +119,7 @@ public class EncryptRequestParamArgumentResolver implements HandlerMethodArgumen
 	 */
 	@Override
 	public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
-								  NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
+	                              NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
 		EncryptRequestParam annotation = parameter.getParameterAnnotation(EncryptRequestParam.class);
 		String parameterName = annotation.value();
 		if (StringUtils.isBlank(parameterName)) {

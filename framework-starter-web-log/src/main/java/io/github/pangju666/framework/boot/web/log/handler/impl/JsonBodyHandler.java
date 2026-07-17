@@ -39,9 +39,9 @@ public class JsonBodyHandler implements MediaTypeBodyHandler {
 	 * @return 是否支持该媒体类型
 	 */
 	@Override
-    public boolean supports(MediaType mediaType) {
-        return MediaType.APPLICATION_JSON.equalsTypeAndSubtype(mediaType);
-    }
+	public boolean supports(MediaType mediaType) {
+		return MediaType.APPLICATION_JSON.equalsTypeAndSubtype(mediaType);
+	}
 
 	/**
 	 * 将原始字节解码为 JSON 字符串并解析为 Java 对象。
@@ -50,11 +50,11 @@ public class JsonBodyHandler implements MediaTypeBodyHandler {
 	 * @param mediaType 媒体类型（用于获取字符集）
 	 * @return 解析后的对象；空内容将按空 JSON 对象处理
 	 */
-    @Override
-    public Object getBody(byte[] rawBody, MediaType mediaType) {
-        String jsonStr = new String(rawBody, ObjectUtils.getIfNull(mediaType.getCharset(),
-            StandardCharsets.UTF_8));
-        return JsonUtils.fromString(StringUtils.defaultIfBlank(jsonStr, Constants.EMPTY_JSON_OBJECT_STR),
-            Object.class);
-    }
+	@Override
+	public Object getBody(byte[] rawBody, MediaType mediaType) {
+		String jsonStr = new String(rawBody, ObjectUtils.getIfNull(mediaType.getCharset(),
+			StandardCharsets.UTF_8));
+		return JsonUtils.fromString(StringUtils.defaultIfBlank(jsonStr, Constants.EMPTY_JSON_OBJECT_STR),
+			Object.class);
+	}
 }

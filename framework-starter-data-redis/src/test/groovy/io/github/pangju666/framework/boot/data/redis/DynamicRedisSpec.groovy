@@ -13,7 +13,7 @@ import org.springframework.test.context.ContextConfiguration
 import spock.lang.Specification
 
 @ActiveProfiles("dynamic-redis")
-@ContextConfiguration(classes = [DynamicDataRedisProperties.class], loader = SpringBootContextLoader .class)
+@ContextConfiguration(classes = [DynamicDataRedisProperties.class], loader = SpringBootContextLoader.class)
 class DynamicRedisSpec extends Specification {
 	@Autowired
 	RedisTemplate<Object, Object> redisTemplate

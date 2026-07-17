@@ -106,7 +106,7 @@ public class DynamicMongoUtils {
 	/**
 	 * 从Bean工厂中获取指定名称的MongoDB客户端
 	 *
-	 * @param name        数据源名称
+	 * @param name 数据源名称
 	 * @return MongoDB客户端实例
 	 * @throws NoSuchBeanDefinitionException 当指定名称的Bean不存在时抛出
 	 * @since 1.0.0
@@ -130,7 +130,7 @@ public class DynamicMongoUtils {
 	/**
 	 * 从Bean工厂中获取指定名称的MongoDB数据库工厂
 	 *
-	 * @param name        数据源名称
+	 * @param name 数据源名称
 	 * @return MongoDB数据库工厂实例
 	 * @throws NoSuchBeanDefinitionException 当指定名称的Bean不存在时抛出
 	 * @since 1.0.0
@@ -154,7 +154,7 @@ public class DynamicMongoUtils {
 	/**
 	 * 从Bean工厂中获取指定名称的MongoDB操作模板
 	 *
-	 * @param name        数据源名称
+	 * @param name 数据源名称
 	 * @return MongoDB操作模板实例
 	 * @throws NoSuchBeanDefinitionException 当指定名称的Bean不存在时抛出
 	 * @since 1.0.0
@@ -178,7 +178,7 @@ public class DynamicMongoUtils {
 	/**
 	 * 从Bean工厂中获取指定名称的MongoDB GridFS操作模板
 	 *
-	 * @param name        数据源名称
+	 * @param name 数据源名称
 	 * @return MongoDB GridFS操作模板实例
 	 * @throws NoSuchBeanDefinitionException 当指定名称的Bean不存在时抛出
 	 * @since 1.0.0

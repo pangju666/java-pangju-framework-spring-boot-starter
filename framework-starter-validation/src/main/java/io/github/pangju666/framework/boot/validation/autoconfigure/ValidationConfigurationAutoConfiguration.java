@@ -44,16 +44,16 @@ import org.springframework.core.annotation.Order;
 @ConditionalOnClass(ExecutableValidator.class)
 @ConditionalOnResource(resources = "classpath:META-INF/services/jakarta.validation.spi.ValidationProvider")
 public class ValidationConfigurationAutoConfiguration {
-    /**
-     * 注册验证配置自定义器，启用 Hibernate Validator 的 fail-fast。
-     * <p>
-     * 当存在 {@code HibernateValidatorConfiguration} 时设置 {@code failFast(true)}；
-     * 使验证在遇到首个错误即返回，提高复杂对象的校验效率。
-     * </p>
-     *
-     * @return 验证配置自定义器实例
-     * @since 1.0.0
-     */
+	/**
+	 * 注册验证配置自定义器，启用 Hibernate Validator 的 fail-fast。
+	 * <p>
+	 * 当存在 {@code HibernateValidatorConfiguration} 时设置 {@code failFast(true)}；
+	 * 使验证在遇到首个错误即返回，提高复杂对象的校验效率。
+	 * </p>
+	 *
+	 * @return 验证配置自定义器实例
+	 * @since 1.0.0
+	 */
 	@Order(Ordered.HIGHEST_PRECEDENCE)
 	@Bean
 	public ValidationConfigurationCustomizer hibernateValidationConfigurationCustomizer() {

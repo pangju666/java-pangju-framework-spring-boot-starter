@@ -28,65 +28,65 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * </ul>
  *
  * @author pangju666
- * @since 1.0.0
  * @see io.github.pangju666.framework.boot.spring.task.OnceTaskExecutor
+ * @since 1.0.0
  */
 @ConfigurationProperties(prefix = "pangju.task.execution.once")
 public class OnceTaskExecutorProperties {
-    /**
-     * 同步任务映射初始容量。
-     *
-     * <p>默认值：16。用于初始化内部 {@code ConcurrentHashMap} 的容量。</p>
-     *
-     * @since 1.0.0
-     */
-    private int syncInitialCapacity = 16;
-    /**
-     * 异步任务映射初始容量。
-     *
-     * <p>默认值：16。用于初始化内部 {@code ConcurrentHashMap} 的容量。</p>
-     *
-     * @since 1.0.0
-     */
-    private int asyncInitialCapacity = 16;
+	/**
+	 * 同步任务映射初始容量。
+	 *
+	 * <p>默认值：16。用于初始化内部 {@code ConcurrentHashMap} 的容量。</p>
+	 *
+	 * @since 1.0.0
+	 */
+	private int syncInitialCapacity = 16;
+	/**
+	 * 异步任务映射初始容量。
+	 *
+	 * <p>默认值：16。用于初始化内部 {@code ConcurrentHashMap} 的容量。</p>
+	 *
+	 * @since 1.0.0
+	 */
+	private int asyncInitialCapacity = 16;
 
-    /**
-     * 获取同步任务映射初始容量。
-     *
-     * @return 初始容量
-     * @since 1.0.0
-     */
-    public int getSyncInitialCapacity() {
-        return syncInitialCapacity;
-    }
+	/**
+	 * 获取同步任务映射初始容量。
+	 *
+	 * @return 初始容量
+	 * @since 1.0.0
+	 */
+	public int getSyncInitialCapacity() {
+		return syncInitialCapacity;
+	}
 
-    /**
-     * 设置同步任务映射初始容量。
-     *
-     * @param syncInitialCapacity 初始容量
-     * @since 1.0.0
-     */
-    public void setSyncInitialCapacity(int syncInitialCapacity) {
-        this.syncInitialCapacity = syncInitialCapacity;
-    }
+	/**
+	 * 设置同步任务映射初始容量。
+	 *
+	 * @param syncInitialCapacity 初始容量
+	 * @since 1.0.0
+	 */
+	public void setSyncInitialCapacity(int syncInitialCapacity) {
+		this.syncInitialCapacity = syncInitialCapacity;
+	}
 
-    /**
-     * 获取异步任务映射初始容量。
-     *
-     * @return 初始容量
-     * @since 1.0.0
-     */
-    public int getAsyncInitialCapacity() {
-        return asyncInitialCapacity;
-    }
+	/**
+	 * 获取异步任务映射初始容量。
+	 *
+	 * @return 初始容量
+	 * @since 1.0.0
+	 */
+	public int getAsyncInitialCapacity() {
+		return asyncInitialCapacity;
+	}
 
-    /**
-     * 设置异步任务映射初始容量。
-     *
-     * @param asyncInitialCapacity 初始容量
-     * @since 1.0.0
-     */
-    public void setAsyncInitialCapacity(int asyncInitialCapacity) {
-        this.asyncInitialCapacity = asyncInitialCapacity;
-    }
+	/**
+	 * 设置异步任务映射初始容量。
+	 *
+	 * @param asyncInitialCapacity 初始容量
+	 * @since 1.0.0
+	 */
+	public void setAsyncInitialCapacity(int asyncInitialCapacity) {
+		this.asyncInitialCapacity = asyncInitialCapacity;
+	}
 }

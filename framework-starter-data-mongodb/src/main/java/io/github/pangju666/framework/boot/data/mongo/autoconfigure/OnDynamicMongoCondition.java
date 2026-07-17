@@ -45,22 +45,22 @@ import org.springframework.util.StringUtils;
  * @since 1.0.0
  */
 public class OnDynamicMongoCondition extends SpringBootCondition {
-    /**
-     * 计算条件匹配结果。
-     *
-     * <p><b>流程</b>：获取 {@link Binder} -> 绑定 {@link DynamicDataMongoProperties} -> 已绑定且校验通过则返回
-     * {@link ConditionOutcome#match()} -> 否则返回 {@link ConditionOutcome#noMatch(String)}。</p>
-     * <p><b>约束</b>：判定依赖于配置是否完整（主库与数据源集合一致）；当未绑定或配置不完整时视为不匹配。</p>
-     *
-     * @param context 条件上下文
-     * @param metadata 注解元数据
-     * @return 条件匹配结果
-     */
-    @Override
-    public ConditionOutcome getMatchOutcome(ConditionContext context, AnnotatedTypeMetadata metadata) {
-        Binder binder = Binder.get(context.getEnvironment());
-        BindResult<DynamicDataMongoProperties> bindResult = binder.bind(DynamicDataMongoProperties.PREFIX,
-            DynamicDataMongoProperties.class);
+	/**
+	 * 计算条件匹配结果。
+	 *
+	 * <p><b>流程</b>：获取 {@link Binder} -> 绑定 {@link DynamicDataMongoProperties} -> 已绑定且校验通过则返回
+	 * {@link ConditionOutcome#match()} -> 否则返回 {@link ConditionOutcome#noMatch(String)}。</p>
+	 * <p><b>约束</b>：判定依赖于配置是否完整（主库与数据源集合一致）；当未绑定或配置不完整时视为不匹配。</p>
+	 *
+	 * @param context  条件上下文
+	 * @param metadata 注解元数据
+	 * @return 条件匹配结果
+	 */
+	@Override
+	public ConditionOutcome getMatchOutcome(ConditionContext context, AnnotatedTypeMetadata metadata) {
+		Binder binder = Binder.get(context.getEnvironment());
+		BindResult<DynamicDataMongoProperties> bindResult = binder.bind(DynamicDataMongoProperties.PREFIX,
+			DynamicDataMongoProperties.class);
 
 		if (bindResult.isBound()) {
 			DynamicDataMongoProperties properties = bindResult.get();
@@ -69,7 +69,7 @@ public class OnDynamicMongoCondition extends SpringBootCondition {
 				properties.getDatabases().containsKey(properties.getPrimary())) {
 				return ConditionOutcome.match();
 			}
-        }
-        return ConditionOutcome.noMatch("");
-    }
+		}
+		return ConditionOutcome.noMatch("");
+	}
 }

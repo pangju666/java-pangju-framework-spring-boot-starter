@@ -71,37 +71,37 @@ public @interface DecryptFormat {
 	 */
 	String key();
 
-    /**
-     * 解密算法。
-     * <p>默认使用 AES256 算法。</p>
-     *
-     * @return 解密算法
-     * @since 1.0.0
-     */
+	/**
+	 * 解密算法。
+	 * <p>默认使用 AES256 算法。</p>
+	 *
+	 * @return 解密算法
+	 * @since 1.0.0
+	 */
 	CryptoAlgorithm algorithm() default CryptoAlgorithm.AES256;
 
-    /**
-     * 字符串解密输入的编码方式。
-     * <p>默认使用 BASE64；仅在解密字符串时生效，对二进制与数值类型不适用。</p>
-     *
-     * @return 编码方式
-     * @since 1.0.0
-     */
+	/**
+	 * 字符串解密输入的编码方式。
+	 * <p>默认使用 BASE64；仅在解密字符串时生效，对二进制与数值类型不适用。</p>
+	 *
+	 * @return 编码方式
+	 * @since 1.0.0
+	 */
 	Encoding encoding() default Encoding.BASE64;
 
-    /**
-     * 自定义加密工厂（必须存在可访问的无参构造方法）。
-     *
-     * <p>优先级：当提供工厂类型时，优先使用该类型；未提供时按算法枚举关联的工厂。</p>
-     * <p>获取策略：优先从 Spring 容器获取 Bean；当容器不可用或获取失败时回退到直接构造。</p>
-     * <p>构造要求与原因：为保证在容器不可用或无 Bean 定义时能够通过{@link CryptoFactoryRegistry}的反射回退路径创建实例
+	/**
+	 * 自定义加密工厂（必须存在可访问的无参构造方法）。
+	 *
+	 * <p>优先级：当提供工厂类型时，优先使用该类型；未提供时按算法枚举关联的工厂。</p>
+	 * <p>获取策略：优先从 Spring 容器获取 Bean；当容器不可用或获取失败时回退到直接构造。</p>
+	 * <p>构造要求与原因：为保证在容器不可用或无 Bean 定义时能够通过{@link CryptoFactoryRegistry}的反射回退路径创建实例
 	 * （调用无参构造），自定义工厂必须提供可访问的无参构造方法（必须为 public）。
-     * 若缺失或不可访问，将导致回退构造失败并抛出异常。</p>
-     * <p>默认与行为：未指定则使用算法默认工厂；如提供多个类型，仅取第一个。</p>
-     *
-     * @return 自定义加密工厂类型
-     * @since 1.0.0
+	 * 若缺失或不可访问，将导致回退构造失败并抛出异常。</p>
+	 * <p>默认与行为：未指定则使用算法默认工厂；如提供多个类型，仅取第一个。</p>
+	 *
+	 * @return 自定义加密工厂类型
 	 * @see CryptoFactoryRegistry
-     */
-    Class<? extends CryptoFactory>[] factory() default {};
+	 * @since 1.0.0
+	 */
+	Class<? extends CryptoFactory>[] factory() default {};
 }

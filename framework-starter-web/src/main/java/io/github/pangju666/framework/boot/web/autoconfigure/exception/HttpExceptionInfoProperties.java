@@ -118,44 +118,44 @@ public class HttpExceptionInfoProperties {
 	}
 
 	/**
-     * 异常统计接口路径配置。
-     *
-     * <p><b>概述</b></p>
-     * <ul>
-     *   <li>配置两个 HTTP 接口路径：异常类型汇总与异常列表查询。</li>
-     *   <li>默认路径分别为 {@code /exception/types} 与 {@code /exception/list}。</li>
-     * </ul>
-     *
-     * <p><b>示例（application.yml）</b></p>
-     * <pre>
-     * pangju:
-     *   web:
-     *     exception:
-     *       info:
-     *         request-path:
-     *           types: /exception/types
-     *           list: /exception/list
-     * </pre>
-     *
-     * @since 1.0.0
-     */
-    public static class Path {
-        /**
-         * 异常类型汇总接口路径。
-         *
-         * <p>默认值：{@code "/exception/types"}。</p>
-         *
-         * @since 1.0.0
-         */
-        private String types = "/exception/types";
-        /**
-         * 异常列表查询接口路径。
-         *
-         * <p>默认值：{@code "/exception/list"}。</p>
-         *
-         * @since 1.0.0
-         */
-        private String list = "/exception/list";
+	 * 异常统计接口路径配置。
+	 *
+	 * <p><b>概述</b></p>
+	 * <ul>
+	 *   <li>配置两个 HTTP 接口路径：异常类型汇总与异常列表查询。</li>
+	 *   <li>默认路径分别为 {@code /exception/types} 与 {@code /exception/list}。</li>
+	 * </ul>
+	 *
+	 * <p><b>示例（application.yml）</b></p>
+	 * <pre>
+	 * pangju:
+	 *   web:
+	 *     exception:
+	 *       info:
+	 *         request-path:
+	 *           types: /exception/types
+	 *           list: /exception/list
+	 * </pre>
+	 *
+	 * @since 1.0.0
+	 */
+	public static class Path {
+		/**
+		 * 异常类型汇总接口路径。
+		 *
+		 * <p>默认值：{@code "/exception/types"}。</p>
+		 *
+		 * @since 1.0.0
+		 */
+		private String types = "/exception/types";
+		/**
+		 * 异常列表查询接口路径。
+		 *
+		 * <p>默认值：{@code "/exception/list"}。</p>
+		 *
+		 * @since 1.0.0
+		 */
+		private String list = "/exception/list";
 
 		public String getTypes() {
 			return types;

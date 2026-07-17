@@ -134,7 +134,7 @@ public class RequestBodyDecryptAdvice implements RequestBodyAdvice {
 	 */
 	@Override
 	public boolean supports(MethodParameter methodParameter, Type targetType,
-							Class<? extends HttpMessageConverter<?>> converterType) {
+	                        Class<? extends HttpMessageConverter<?>> converterType) {
 		if (JacksonJsonHttpMessageConverter.class.isAssignableFrom(converterType) ||
 			AbstractJsonHttpMessageConverter.class.isAssignableFrom(converterType) ||
 			StringHttpMessageConverter.class.isAssignableFrom(converterType)) {
@@ -164,7 +164,7 @@ public class RequestBodyDecryptAdvice implements RequestBodyAdvice {
 	 */
 	@Override
 	public HttpInputMessage beforeBodyRead(HttpInputMessage inputMessage, MethodParameter parameter, Type targetType,
-										   Class<? extends HttpMessageConverter<?>> converterType) throws IOException {
+	                                       Class<? extends HttpMessageConverter<?>> converterType) throws IOException {
 		if (StringHttpMessageConverter.class.isAssignableFrom(converterType)) {
 			return inputMessage;
 		}
@@ -233,7 +233,7 @@ public class RequestBodyDecryptAdvice implements RequestBodyAdvice {
 	 */
 	@Override
 	public Object afterBodyRead(Object body, HttpInputMessage inputMessage, MethodParameter parameter, Type targetType,
-								Class<? extends HttpMessageConverter<?>> converterType) {
+	                            Class<? extends HttpMessageConverter<?>> converterType) {
 		if (!StringHttpMessageConverter.class.isAssignableFrom(converterType)) {
 			return body;
 		}
@@ -285,7 +285,7 @@ public class RequestBodyDecryptAdvice implements RequestBodyAdvice {
 	 */
 	@Override
 	public Object handleEmptyBody(Object body, HttpInputMessage inputMessage, MethodParameter parameter,
-								  Type targetType, Class<? extends HttpMessageConverter<?>> converterType) {
+	                              Type targetType, Class<? extends HttpMessageConverter<?>> converterType) {
 		return body;
 	}
 }

@@ -53,176 +53,176 @@ import org.springframework.data.redis.core.StringRedisTemplate;
  * @since 1.0.0
  */
 public class DynamicRedisUtils {
-    /**
-     * {@link RedisConnectionFactory} Bean 名称模板（{name}RedisConnectionFactory）。
-     *
-     * @since 1.0.0
-     */
-    private static final String CONNECTION_FACTORY_BEAN_NAME_TEMPLATE = "%sRedisConnectionFactory";
-    /**
-     * {@link RedisTemplate} Bean 名称模板（{name}RedisTemplate）。
-     *
-     * @since 1.0.0
-     */
-    private static final String TEMPLATE_BEAN_NAME_TEMPLATE = "%sRedisTemplate";
-    /**
-     * {@link ScanRedisTemplate} Bean 名称模板（{name}ScanRedisTemplate）。
-     *
-     * @since 1.0.0
-     */
-    private static final String SCAN_TEMPLATE_BEAN_NAME_TEMPLATE = "%sScanRedisTemplate";
-    /**
-     * {@link StringRedisTemplate} Bean 名称模板（{name}StringRedisTemplate）。
-     *
-     * @since 1.0.0
-     */
-    private static final String STRING_TEMPLATE_BEAN_NAME_TEMPLATE = "%sStringRedisTemplate";
-    /**
-     * {@link StringScanRedisTemplate} Bean 名称模板（{name}StringScanRedisTemplate）。
-     *
-     * @since 1.0.0
-     */
-    private static final String STRING_SCAN_TEMPLATE_BEAN_NAME_TEMPLATE = "%sStringScanRedisTemplate";
+	/**
+	 * {@link RedisConnectionFactory} Bean 名称模板（{name}RedisConnectionFactory）。
+	 *
+	 * @since 1.0.0
+	 */
+	private static final String CONNECTION_FACTORY_BEAN_NAME_TEMPLATE = "%sRedisConnectionFactory";
+	/**
+	 * {@link RedisTemplate} Bean 名称模板（{name}RedisTemplate）。
+	 *
+	 * @since 1.0.0
+	 */
+	private static final String TEMPLATE_BEAN_NAME_TEMPLATE = "%sRedisTemplate";
+	/**
+	 * {@link ScanRedisTemplate} Bean 名称模板（{name}ScanRedisTemplate）。
+	 *
+	 * @since 1.0.0
+	 */
+	private static final String SCAN_TEMPLATE_BEAN_NAME_TEMPLATE = "%sScanRedisTemplate";
+	/**
+	 * {@link StringRedisTemplate} Bean 名称模板（{name}StringRedisTemplate）。
+	 *
+	 * @since 1.0.0
+	 */
+	private static final String STRING_TEMPLATE_BEAN_NAME_TEMPLATE = "%sStringRedisTemplate";
+	/**
+	 * {@link StringScanRedisTemplate} Bean 名称模板（{name}StringScanRedisTemplate）。
+	 *
+	 * @since 1.0.0
+	 */
+	private static final String STRING_SCAN_TEMPLATE_BEAN_NAME_TEMPLATE = "%sStringScanRedisTemplate";
 
 	protected DynamicRedisUtils() {
 	}
 
-    /**
-     * 根据数据源名称获取 {@link RedisConnectionFactory} Bean 名称。
-     *
-     * <p><b>流程</b>：套用模板 -> 返回名称。</p>
-     *
-     * @param name 数据源名称
-     * @return Bean 名称（{name}RedisConnectionFactory）
-     * @since 1.0.0
-     */
-    public static String getRedisConnectionFactoryBeanName(String name) {
-        return CONNECTION_FACTORY_BEAN_NAME_TEMPLATE.formatted(name);
-    }
+	/**
+	 * 根据数据源名称获取 {@link RedisConnectionFactory} Bean 名称。
+	 *
+	 * <p><b>流程</b>：套用模板 -> 返回名称。</p>
+	 *
+	 * @param name 数据源名称
+	 * @return Bean 名称（{name}RedisConnectionFactory）
+	 * @since 1.0.0
+	 */
+	public static String getRedisConnectionFactoryBeanName(String name) {
+		return CONNECTION_FACTORY_BEAN_NAME_TEMPLATE.formatted(name);
+	}
 
-    /**
-     * 根据数据源名称获取 {@link RedisTemplate} Bean 名称。
-     *
-     * <p><b>流程</b>：套用模板 -> 返回名称。</p>
-     *
-     * @param name 数据源名称
-     * @return Bean 名称（{name}RedisTemplate）
-     * @since 1.0.0
-     */
-    public static String getRedisTemplateBeanName(String name) {
-        return TEMPLATE_BEAN_NAME_TEMPLATE.formatted(name);
-    }
+	/**
+	 * 根据数据源名称获取 {@link RedisTemplate} Bean 名称。
+	 *
+	 * <p><b>流程</b>：套用模板 -> 返回名称。</p>
+	 *
+	 * @param name 数据源名称
+	 * @return Bean 名称（{name}RedisTemplate）
+	 * @since 1.0.0
+	 */
+	public static String getRedisTemplateBeanName(String name) {
+		return TEMPLATE_BEAN_NAME_TEMPLATE.formatted(name);
+	}
 
-    /**
-     * 根据数据源名称获取 {@link ScanRedisTemplate} Bean 名称。
-     *
-     * <p><b>流程</b>：套用模板 -> 返回名称。</p>
-     *
-     * @param name 数据源名称
-     * @return Bean 名称（{name}ScanRedisTemplate）
-     * @since 1.0.0
-     */
-    public static String getScanRedisTemplateBeanName(String name) {
-        return SCAN_TEMPLATE_BEAN_NAME_TEMPLATE.formatted(name);
-    }
+	/**
+	 * 根据数据源名称获取 {@link ScanRedisTemplate} Bean 名称。
+	 *
+	 * <p><b>流程</b>：套用模板 -> 返回名称。</p>
+	 *
+	 * @param name 数据源名称
+	 * @return Bean 名称（{name}ScanRedisTemplate）
+	 * @since 1.0.0
+	 */
+	public static String getScanRedisTemplateBeanName(String name) {
+		return SCAN_TEMPLATE_BEAN_NAME_TEMPLATE.formatted(name);
+	}
 
-    /**
-     * 根据数据源名称获取 {@link StringRedisTemplate} Bean 名称。
-     *
-     * <p><b>流程</b>：套用模板 -> 返回名称。</p>
-     *
-     * @param name 数据源名称
-     * @return Bean 名称（{name}StringRedisTemplate）
-     * @since 1.0.0
-     */
-    public static String getStringRedisTemplateBeanName(String name) {
-        return STRING_TEMPLATE_BEAN_NAME_TEMPLATE.formatted(name);
-    }
+	/**
+	 * 根据数据源名称获取 {@link StringRedisTemplate} Bean 名称。
+	 *
+	 * <p><b>流程</b>：套用模板 -> 返回名称。</p>
+	 *
+	 * @param name 数据源名称
+	 * @return Bean 名称（{name}StringRedisTemplate）
+	 * @since 1.0.0
+	 */
+	public static String getStringRedisTemplateBeanName(String name) {
+		return STRING_TEMPLATE_BEAN_NAME_TEMPLATE.formatted(name);
+	}
 
-    /**
-     * 根据数据源名称获取 {@link StringScanRedisTemplate} Bean 名称。
-     *
-     * <p><b>流程</b>：套用模板 -> 返回名称。</p>
-     *
-     * @param name 数据源名称
-     * @return Bean 名称（{name}StringScanRedisTemplate）
-     * @since 1.0.0
-     */
-    public static String getStringRedisScanTemplateBeanName(String name) {
-        return STRING_SCAN_TEMPLATE_BEAN_NAME_TEMPLATE.formatted(name);
-    }
+	/**
+	 * 根据数据源名称获取 {@link StringScanRedisTemplate} Bean 名称。
+	 *
+	 * <p><b>流程</b>：套用模板 -> 返回名称。</p>
+	 *
+	 * @param name 数据源名称
+	 * @return Bean 名称（{name}StringScanRedisTemplate）
+	 * @since 1.0.0
+	 */
+	public static String getStringRedisScanTemplateBeanName(String name) {
+		return STRING_SCAN_TEMPLATE_BEAN_NAME_TEMPLATE.formatted(name);
+	}
 
-    /**
-     * 获取 {@link RedisConnectionFactory} 实例。
-     *
-     * <p><b>流程</b>：构造名称 -> 通过 {@link StaticSpringContext} 获取 Bean -> 返回。</p>
-     * <p><b>约束</b>：名称需对应已注册 Bean；否则 Spring 容器将抛出异常。</p>
-     *
-     * @param name 数据源名称
-     * @return 连接工厂实例
-     * @since 1.0.0
-     */
-    public static RedisConnectionFactory getRedisConnectionFactory(String name) {
-        return StaticSpringContext.getBeanFactory().getBean(CONNECTION_FACTORY_BEAN_NAME_TEMPLATE.formatted(name),
-            RedisConnectionFactory.class);
-    }
+	/**
+	 * 获取 {@link RedisConnectionFactory} 实例。
+	 *
+	 * <p><b>流程</b>：构造名称 -> 通过 {@link StaticSpringContext} 获取 Bean -> 返回。</p>
+	 * <p><b>约束</b>：名称需对应已注册 Bean；否则 Spring 容器将抛出异常。</p>
+	 *
+	 * @param name 数据源名称
+	 * @return 连接工厂实例
+	 * @since 1.0.0
+	 */
+	public static RedisConnectionFactory getRedisConnectionFactory(String name) {
+		return StaticSpringContext.getBeanFactory().getBean(CONNECTION_FACTORY_BEAN_NAME_TEMPLATE.formatted(name),
+			RedisConnectionFactory.class);
+	}
 
-    /**
-     * 获取 {@link RedisTemplate} 实例。
-     *
-     * <p><b>流程</b>：构造名称 -> 通过 {@link StaticSpringContext} 获取 Bean -> 返回。</p>
-     * <p><b>约束</b>：名称需对应已注册 Bean；返回未经泛型擦除的模板实例。</p>
-     *
-     * @param name 数据源名称
-     * @return Redis 模板实例
-     * @since 1.0.0
-     */
-    @SuppressWarnings("unchecked")
-    public static RedisTemplate<Object, Object> getRedisTemplate(String name) {
-        return StaticSpringContext.getBeanFactory().getBean(TEMPLATE_BEAN_NAME_TEMPLATE.formatted(name),
-            RedisTemplate.class);
-    }
+	/**
+	 * 获取 {@link RedisTemplate} 实例。
+	 *
+	 * <p><b>流程</b>：构造名称 -> 通过 {@link StaticSpringContext} 获取 Bean -> 返回。</p>
+	 * <p><b>约束</b>：名称需对应已注册 Bean；返回未经泛型擦除的模板实例。</p>
+	 *
+	 * @param name 数据源名称
+	 * @return Redis 模板实例
+	 * @since 1.0.0
+	 */
+	@SuppressWarnings("unchecked")
+	public static RedisTemplate<Object, Object> getRedisTemplate(String name) {
+		return StaticSpringContext.getBeanFactory().getBean(TEMPLATE_BEAN_NAME_TEMPLATE.formatted(name),
+			RedisTemplate.class);
+	}
 
-    /**
-     * 获取 {@link StringRedisTemplate} 实例。
-     *
-     * <p><b>流程</b>：构造名称 -> 通过 {@link StaticSpringContext} 获取 Bean -> 返回。</p>
-     *
-     * @param name 数据源名称
-     * @return 字符串模板实例
-     * @since 1.0.0
-     */
-    public static StringRedisTemplate getStringRedisTemplate(String name) {
-        return StaticSpringContext.getBeanFactory().getBean(STRING_TEMPLATE_BEAN_NAME_TEMPLATE.formatted(name),
-            StringRedisTemplate.class);
-    }
+	/**
+	 * 获取 {@link StringRedisTemplate} 实例。
+	 *
+	 * <p><b>流程</b>：构造名称 -> 通过 {@link StaticSpringContext} 获取 Bean -> 返回。</p>
+	 *
+	 * @param name 数据源名称
+	 * @return 字符串模板实例
+	 * @since 1.0.0
+	 */
+	public static StringRedisTemplate getStringRedisTemplate(String name) {
+		return StaticSpringContext.getBeanFactory().getBean(STRING_TEMPLATE_BEAN_NAME_TEMPLATE.formatted(name),
+			StringRedisTemplate.class);
+	}
 
-    /**
-     * 获取 {@link ScanRedisTemplate} 实例。
-     *
-     * <p><b>流程</b>：构造名称 -> 通过 {@link StaticSpringContext} 获取 Bean -> 返回。</p>
-     *
-     * @param name 数据源名称
-     * @return 支持游标扫描的模板实例
-     * @since 1.0.0
-     */
-    @SuppressWarnings("unchecked")
-    public static ScanRedisTemplate<Object> getScanRedisTemplate(String name) {
-        return StaticSpringContext.getBeanFactory().getBean(SCAN_TEMPLATE_BEAN_NAME_TEMPLATE.formatted(name),
-            ScanRedisTemplate.class);
-    }
+	/**
+	 * 获取 {@link ScanRedisTemplate} 实例。
+	 *
+	 * <p><b>流程</b>：构造名称 -> 通过 {@link StaticSpringContext} 获取 Bean -> 返回。</p>
+	 *
+	 * @param name 数据源名称
+	 * @return 支持游标扫描的模板实例
+	 * @since 1.0.0
+	 */
+	@SuppressWarnings("unchecked")
+	public static ScanRedisTemplate<Object> getScanRedisTemplate(String name) {
+		return StaticSpringContext.getBeanFactory().getBean(SCAN_TEMPLATE_BEAN_NAME_TEMPLATE.formatted(name),
+			ScanRedisTemplate.class);
+	}
 
-    /**
-     * 获取 {@link StringScanRedisTemplate} 实例。
-     *
-     * <p><b>流程</b>：构造名称 -> 通过 {@link StaticSpringContext} 获取 Bean -> 返回。</p>
-     *
-     * @param name 数据源名称
-     * @return 支持游标扫描的字符串模板实例
-     * @since 1.0.0
-     */
-    public static StringScanRedisTemplate getStringScanRedisTemplate(String name) {
-        return StaticSpringContext.getBeanFactory().getBean(STRING_SCAN_TEMPLATE_BEAN_NAME_TEMPLATE.formatted(name),
-            StringScanRedisTemplate.class);
-    }
+	/**
+	 * 获取 {@link StringScanRedisTemplate} 实例。
+	 *
+	 * <p><b>流程</b>：构造名称 -> 通过 {@link StaticSpringContext} 获取 Bean -> 返回。</p>
+	 *
+	 * @param name 数据源名称
+	 * @return 支持游标扫描的字符串模板实例
+	 * @since 1.0.0
+	 */
+	public static StringScanRedisTemplate getStringScanRedisTemplate(String name) {
+		return StaticSpringContext.getBeanFactory().getBean(STRING_SCAN_TEMPLATE_BEAN_NAME_TEMPLATE.formatted(name),
+			StringScanRedisTemplate.class);
+	}
 }

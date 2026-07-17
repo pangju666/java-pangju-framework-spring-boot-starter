@@ -43,18 +43,18 @@ import jakarta.servlet.http.HttpServletRequest;
  * @since 1.0.0
  */
 public interface RateLimiter {
-    /**
-     * 执行限流检查，判定请求是否允许通过。
-     *
-     * <p>实现需依据 {@link RateLimit} 配置与当前计数进行判断：未超限返回 {@code true}
-     * 并更新计数；已超限返回 {@code false}。</p>
-     *
-     * @param key 限流键，唯一标识一个限流维度
-     * @param annotation 限流配置参数（速率、时间窗口、作用域等）
-     * @param request 当前 HTTP 请求对象
-     * @return 未超限返回 {@code true}；已超限返回 {@code false}
-     * @throws RuntimeException 实现可在存储不可用等严重错误时抛出运行时异常
-     * @since 1.0.0
-     */
+	/**
+	 * 执行限流检查，判定请求是否允许通过。
+	 *
+	 * <p>实现需依据 {@link RateLimit} 配置与当前计数进行判断：未超限返回 {@code true}
+	 * 并更新计数；已超限返回 {@code false}。</p>
+	 *
+	 * @param key        限流键，唯一标识一个限流维度
+	 * @param annotation 限流配置参数（速率、时间窗口、作用域等）
+	 * @param request    当前 HTTP 请求对象
+	 * @return 未超限返回 {@code true}；已超限返回 {@code false}
+	 * @throws RuntimeException 实现可在存储不可用等严重错误时抛出运行时异常
+	 * @since 1.0.0
+	 */
 	boolean tryAcquire(String key, RateLimit annotation, HttpServletRequest request);
 }

@@ -16,7 +16,7 @@ import spock.lang.Specification
 @EnableMongoRepositories(basePackages = "io.github.pangju666.framework.boot.autoconfigure.data.dynamic.mongo",
 	repositoryFactoryBeanClass = DynamicMongoRepositoryFactoryBean.class, repositoryBaseClass = SimpleBaseMongoRepository.class)
 @ContextConfiguration(classes = [DynamicDataMongoAutoConfiguration.class, DynamicDataMongoRepositoriesAutoConfiguration.class],
-loader = SpringBootContextLoader.class)
+	loader = SpringBootContextLoader.class)
 class DynamicMongoRepositoriesSpec extends Specification {
 	@Autowired
 	TestMongoRepository repository

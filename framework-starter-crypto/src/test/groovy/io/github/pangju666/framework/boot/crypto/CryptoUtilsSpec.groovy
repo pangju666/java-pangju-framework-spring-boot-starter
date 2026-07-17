@@ -5,7 +5,6 @@ import io.github.pangju666.framework.boot.crypto.enums.Encoding
 import io.github.pangju666.framework.boot.crypto.factory.impl.AES256CryptoFactory
 import io.github.pangju666.framework.boot.crypto.utils.CryptoUtils
 import io.github.pangju666.framework.boot.spring.StaticSpringContext
-
 import org.apache.commons.codec.DecoderException
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootContextLoader

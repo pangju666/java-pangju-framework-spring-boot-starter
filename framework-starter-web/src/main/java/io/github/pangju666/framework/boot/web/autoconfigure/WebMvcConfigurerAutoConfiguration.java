@@ -83,47 +83,47 @@ public class WebMvcConfigurerAutoConfiguration implements WebMvcConfigurer {
 	 */
 	private final List<HandlerMethodArgumentResolver> resolvers;
 
-    /**
-     * 构造方法，初始化 Web MVC 配置。
-     *
-     * @param interceptors 自定义 HTTP 拦截器列表
-     * @param resolvers    外部参数解析器列表
-     * @since 1.0.0
-     */
-    public WebMvcConfigurerAutoConfiguration(List<BaseHttpInterceptor> interceptors, List<HandlerMethodArgumentResolver> resolvers) {
+	/**
+	 * 构造方法，初始化 Web MVC 配置。
+	 *
+	 * @param interceptors 自定义 HTTP 拦截器列表
+	 * @param resolvers    外部参数解析器列表
+	 * @since 1.0.0
+	 */
+	public WebMvcConfigurerAutoConfiguration(List<BaseHttpInterceptor> interceptors, List<HandlerMethodArgumentResolver> resolvers) {
 		this.interceptors = interceptors;
 		this.resolvers = resolvers;
 	}
 
-    /**
-     * 注册请求参数解析器。
-     *
-     * <p><b>流程</b>：注册枚举解析器 -> 追加外部解析器集合（通过构造方法注入，例如加密参数解析器）。</p>
-     *
-     * @param resolvers 参数解析器集合（由 MVC 框架注入）
-     * @since 1.0.0
-     */
-    @Override
-    public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
+	/**
+	 * 注册请求参数解析器。
+	 *
+	 * <p><b>流程</b>：注册枚举解析器 -> 追加外部解析器集合（通过构造方法注入，例如加密参数解析器）。</p>
+	 *
+	 * @param resolvers 参数解析器集合（由 MVC 框架注入）
+	 * @since 1.0.0
+	 */
+	@Override
+	public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
 		resolvers.add(new EnumRequestParamArgumentResolver());
 		resolvers.addAll(this.resolvers);
 	}
 
-    /**
-     * 注册 HTTP 请求拦截器。
-     *
-     * <p><b>行为</b></p>
-     * <ul>
-     *   <li>遍历并注册通过依赖注入提供的 {@link BaseHttpInterceptor}。</li>
-     *   <li>应用拦截器自身的包含路径（{@link BaseHttpInterceptor#getPatterns()}）与排除路径（{@link BaseHttpInterceptor#getExcludePathPatterns()}）。</li>
-     *   <li>按拦截器定义的顺序（{@link BaseHttpInterceptor#getOrder()}）进行注册。</li>
-     * </ul>
-     *
-     * @param registry MVC 拦截器注册表
-     * @since 1.0.0
-     */
-    @Override
-    public void addInterceptors(InterceptorRegistry registry) {
+	/**
+	 * 注册 HTTP 请求拦截器。
+	 *
+	 * <p><b>行为</b></p>
+	 * <ul>
+	 *   <li>遍历并注册通过依赖注入提供的 {@link BaseHttpInterceptor}。</li>
+	 *   <li>应用拦截器自身的包含路径（{@link BaseHttpInterceptor#getPatterns()}）与排除路径（{@link BaseHttpInterceptor#getExcludePathPatterns()}）。</li>
+	 *   <li>按拦截器定义的顺序（{@link BaseHttpInterceptor#getOrder()}）进行注册。</li>
+	 * </ul>
+	 *
+	 * @param registry MVC 拦截器注册表
+	 * @since 1.0.0
+	 */
+	@Override
+	public void addInterceptors(InterceptorRegistry registry) {
 		for (BaseHttpInterceptor interceptor : this.interceptors) {
 			registry.addInterceptor(interceptor)
 				.addPathPatterns(interceptor.getPatterns())

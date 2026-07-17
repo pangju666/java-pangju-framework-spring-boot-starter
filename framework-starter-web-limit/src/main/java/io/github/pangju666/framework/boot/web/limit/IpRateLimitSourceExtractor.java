@@ -48,15 +48,15 @@ import jakarta.servlet.http.HttpServletRequest;
  * @since 1.0.0
  */
 public class IpRateLimitSourceExtractor implements RateLimitSourceExtractor {
-    /**
-     * 返回客户端 IP 作为限流源标识。
-     *
-     * <p>通过 {@link HttpRequestUtils#getIpAddress(HttpServletRequest)} 获取真实 IP；
-     * 无法获取时回退为 {@code request.getRemoteAddr()}。</p>
-     *
-     * @param request 当前 HTTP 请求
-     * @return 客户端 IP 字符串（IPv4/IPv6），不为 {@code null}
-     */
+	/**
+	 * 返回客户端 IP 作为限流源标识。
+	 *
+	 * <p>通过 {@link HttpRequestUtils#getIpAddress(HttpServletRequest)} 获取真实 IP；
+	 * 无法获取时回退为 {@code request.getRemoteAddr()}。</p>
+	 *
+	 * @param request 当前 HTTP 请求
+	 * @return 客户端 IP 字符串（IPv4/IPv6），不为 {@code null}
+	 */
 	@Override
 	public String getSource(HttpServletRequest request) {
 		return HttpRequestUtils.getIpAddress(request);

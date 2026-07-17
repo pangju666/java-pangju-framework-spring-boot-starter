@@ -67,30 +67,30 @@ import org.springframework.util.StringUtils;
 @ConditionalOnClass({RedissonClient.class})
 @ConditionalOnProperty(prefix = "pangju.web.rate-limit", value = "type", havingValue = "REDISSON")
 class RedissonConfiguration {
-    /**
-     * 创建并注册 {@link RedissonRateLimiter} Bean。
-     *
-     * <p><strong>激活</strong></p>
-     * <ul>
-     *   <li>{@link ConditionalOnMissingBean}：不存在其他 {@link RateLimiter} Bean。</li>
-     * </ul>
-     *
-     * <p><strong>RedissonClient 获取策略</strong></p>
-     * <ul>
-     *   <li>若配置指定客户端 Bean 名称，则按名获取。</li>
-     *   <li>否则使用容器中的默认 {@link RedissonClient}。</li>
-     * </ul>
-     *
-     * <p><strong>行为</strong></p>
-     * <ul>
-     *   <li>将 Redis 键前缀传入限流器以实现命名空间隔离。</li>
-     * </ul>
-     *
-     * @param properties  限流配置属性
-     * @param beanFactory Spring Bean 工厂
-     * @return 初始化完成的 {@link RedissonRateLimiter}
-     * @since 1.0.0
-     */
+	/**
+	 * 创建并注册 {@link RedissonRateLimiter} Bean。
+	 *
+	 * <p><strong>激活</strong></p>
+	 * <ul>
+	 *   <li>{@link ConditionalOnMissingBean}：不存在其他 {@link RateLimiter} Bean。</li>
+	 * </ul>
+	 *
+	 * <p><strong>RedissonClient 获取策略</strong></p>
+	 * <ul>
+	 *   <li>若配置指定客户端 Bean 名称，则按名获取。</li>
+	 *   <li>否则使用容器中的默认 {@link RedissonClient}。</li>
+	 * </ul>
+	 *
+	 * <p><strong>行为</strong></p>
+	 * <ul>
+	 *   <li>将 Redis 键前缀传入限流器以实现命名空间隔离。</li>
+	 * </ul>
+	 *
+	 * @param properties  限流配置属性
+	 * @param beanFactory Spring Bean 工厂
+	 * @return 初始化完成的 {@link RedissonRateLimiter}
+	 * @since 1.0.0
+	 */
 	@ConditionalOnMissingBean(RateLimiter.class)
 	@Bean
 	public RedissonRateLimiter redissonRateLimiter(RateLimitProperties properties, BeanFactory beanFactory) {

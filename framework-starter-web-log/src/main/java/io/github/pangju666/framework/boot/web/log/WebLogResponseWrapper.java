@@ -35,23 +35,23 @@ import java.util.Objects;
  * </ul>
  *
  * @author pangju666
- * @since 1.0.0
  * @see ContentCachingResponseWrapper
+ * @since 1.0.0
  */
 public class WebLogResponseWrapper extends ContentCachingResponseWrapper {
-    /**
-     * 可选的内部响应包装器引用。
-     * <p>当输入的响应对象已被 {@link ContentCachingResponseWrapper} 包装时，优先委托给该实例，避免重复包裹。</p>
+	/**
+	 * 携带的 Web 日志对象，用于在后置阶段补充或读取与响应相关的日志信息。
 	 *
 	 * @since 1.0.0
-     */
-    private ContentCachingResponseWrapper contentCachingResponseWrapper;
-    /**
-     * 携带的 Web 日志对象，用于在后置阶段补充或读取与响应相关的日志信息。
+	 */
+	private final WebLog webLog;
+	/**
+	 * 可选的内部响应包装器引用。
+	 * <p>当输入的响应对象已被 {@link ContentCachingResponseWrapper} 包装时，优先委托给该实例，避免重复包裹。</p>
 	 *
 	 * @since 1.0.0
-     */
-    private final WebLog webLog;
+	 */
+	private ContentCachingResponseWrapper contentCachingResponseWrapper;
 	/**
 	 * 目标控制器类引用。
 	 * <p>用于记录定位信息，通常由上游组件在链路中设置；若未设置可能为 {@code null}。</p>
@@ -67,20 +67,20 @@ public class WebLogResponseWrapper extends ContentCachingResponseWrapper {
 	 */
 	private Method targetMethod;
 
-    /**
-     * 构造方法。
-     *
-     * <p>行为：</p>
-     * <ul>
-     *   <li>若 {@code response} 已被 {@link ContentCachingResponseWrapper} 包装，则记录其引用并委托相关操作。</li>
-     *   <li>否则调用父类构造完成内容缓存包装，提供响应体读取与写回能力。</li>
-     * </ul>
-     *
-     * @param response 原始或已被缓存包装的响应对象
-     * @param webLog   当前请求关联的 Web 日志对象
+	/**
+	 * 构造方法。
+	 *
+	 * <p>行为：</p>
+	 * <ul>
+	 *   <li>若 {@code response} 已被 {@link ContentCachingResponseWrapper} 包装，则记录其引用并委托相关操作。</li>
+	 *   <li>否则调用父类构造完成内容缓存包装，提供响应体读取与写回能力。</li>
+	 * </ul>
+	 *
+	 * @param response 原始或已被缓存包装的响应对象
+	 * @param webLog   当前请求关联的 Web 日志对象
 	 * @since 1.0.0
-     */
-    public WebLogResponseWrapper(HttpServletResponse response, WebLog webLog) {
+	 */
+	public WebLogResponseWrapper(HttpServletResponse response, WebLog webLog) {
 		super(response);
 		if (response instanceof ContentCachingResponseWrapper responseWrapper) {
 			this.contentCachingResponseWrapper = responseWrapper;
@@ -88,23 +88,23 @@ public class WebLogResponseWrapper extends ContentCachingResponseWrapper {
 		this.webLog = webLog;
 	}
 
-	public void setTargetClass(Class<?> targetClass) {
-		this.targetClass = targetClass;
-	}
-
-	public void setTargetMethod(Method targetMethod) {
-		this.targetMethod = targetMethod;
-	}
-
 	public Class<?> getTargetClass() {
 		return targetClass;
+	}
+
+	public void setTargetClass(Class<?> targetClass) {
+		this.targetClass = targetClass;
 	}
 
 	public Method getTargetMethod() {
 		return targetMethod;
 	}
 
-    public WebLog getWebLog() {
+	public void setTargetMethod(Method targetMethod) {
+		this.targetMethod = targetMethod;
+	}
+
+	public WebLog getWebLog() {
 		return webLog;
 	}
 
@@ -281,7 +281,7 @@ public class WebLogResponseWrapper extends ContentCachingResponseWrapper {
 	}
 
 	@Override
-    public byte[] getContentAsByteArray() {
+	public byte[] getContentAsByteArray() {
 		if (Objects.nonNull(contentCachingResponseWrapper)) {
 			return contentCachingResponseWrapper.getContentAsByteArray();
 		} else {
@@ -290,7 +290,7 @@ public class WebLogResponseWrapper extends ContentCachingResponseWrapper {
 	}
 
 	@Override
-    public InputStream getContentInputStream() {
+	public InputStream getContentInputStream() {
 		if (Objects.nonNull(contentCachingResponseWrapper)) {
 			return contentCachingResponseWrapper.getContentInputStream();
 		} else {
@@ -299,7 +299,7 @@ public class WebLogResponseWrapper extends ContentCachingResponseWrapper {
 	}
 
 	@Override
-    public int getContentSize() {
+	public int getContentSize() {
 		if (Objects.nonNull(contentCachingResponseWrapper)) {
 			return contentCachingResponseWrapper.getContentSize();
 		} else {
@@ -308,7 +308,7 @@ public class WebLogResponseWrapper extends ContentCachingResponseWrapper {
 	}
 
 	@Override
-    public void copyBodyToResponse() throws IOException {
+	public void copyBodyToResponse() throws IOException {
 		// 如果由 ContentCachingResponseWrapper 构造，则由上层的ContentCachingResponseWrapper负责写入响应体
 		if (Objects.isNull(contentCachingResponseWrapper)) {
 			super.copyBodyToResponse();

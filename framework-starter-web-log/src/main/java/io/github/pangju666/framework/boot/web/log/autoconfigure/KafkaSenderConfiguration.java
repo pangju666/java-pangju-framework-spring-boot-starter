@@ -123,24 +123,24 @@ class KafkaSenderConfiguration {
 		return new KafkaWebLogSender(kafkaTemplate, properties.getKafka().getTopic());
 	}
 
-    /**
-     * 注册 Kafka 日志消费监听器。
-     *
-     * <p><b>条件</b></p>
-     * <ul>
-     *   <li>配置存在有效的 Topic（{@code pangju.web.log.kafka.topic}）。</li>
-     *   <li>容器中存在 {@link WebLogReceiver}和{@link KafkaWebLogSender}。</li>
-     * </ul>
-     *
-     * <p><b>行为</b></p>
-     * <ul>
-     *   <li>创建 {@link WebLogKafkaListener}，用于订阅并消费日志消息后委托接收器处理。</li>
-     * </ul>
-     *
-     * @param webLogReceiver 日志接收器
-     * @return 监听器实例
-     * @since 1.0.0
-     */
+	/**
+	 * 注册 Kafka 日志消费监听器。
+	 *
+	 * <p><b>条件</b></p>
+	 * <ul>
+	 *   <li>配置存在有效的 Topic（{@code pangju.web.log.kafka.topic}）。</li>
+	 *   <li>容器中存在 {@link WebLogReceiver}和{@link KafkaWebLogSender}。</li>
+	 * </ul>
+	 *
+	 * <p><b>行为</b></p>
+	 * <ul>
+	 *   <li>创建 {@link WebLogKafkaListener}，用于订阅并消费日志消息后委托接收器处理。</li>
+	 * </ul>
+	 *
+	 * @param webLogReceiver 日志接收器
+	 * @return 监听器实例
+	 * @since 1.0.0
+	 */
 	@ConditionalOnBean({WebLogReceiver.class, KafkaWebLogSender.class})
 	@Bean
 	public WebLogKafkaListener webLogKafkaListener(WebLogReceiver webLogReceiver) {

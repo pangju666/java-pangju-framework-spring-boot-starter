@@ -6,7 +6,6 @@ import io.github.pangju666.framework.boot.crypto.factory.impl.AES256CryptoFactor
 import io.github.pangju666.framework.boot.crypto.factory.impl.BasicCryptoFactory
 import io.github.pangju666.framework.boot.crypto.factory.impl.RSACryptoFactory
 import io.github.pangju666.framework.boot.crypto.factory.impl.StrongCryptoFactory
-
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootContextLoader
 import org.springframework.test.context.ContextConfiguration

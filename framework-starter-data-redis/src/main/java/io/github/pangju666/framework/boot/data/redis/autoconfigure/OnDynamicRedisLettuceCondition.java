@@ -43,17 +43,17 @@ import java.util.Objects;
  * @since 1.0.0
  */
 public class OnDynamicRedisLettuceCondition extends SpringBootCondition {
-    /**
-     * 判断条件是否匹配。
-     *
-     * @param context  条件上下文
-     * @param metadata 注解元数据
-     * @return 匹配结果
-     */
-    @Override
-    public ConditionOutcome getMatchOutcome(ConditionContext context, AnnotatedTypeMetadata metadata) {
-        Binder binder = Binder.get(context.getEnvironment());
-        BindResult<DynamicDataRedisProperties> bindResult = binder.bind(DynamicDataRedisProperties.PREFIX,
+	/**
+	 * 判断条件是否匹配。
+	 *
+	 * @param context  条件上下文
+	 * @param metadata 注解元数据
+	 * @return 匹配结果
+	 */
+	@Override
+	public ConditionOutcome getMatchOutcome(ConditionContext context, AnnotatedTypeMetadata metadata) {
+		Binder binder = Binder.get(context.getEnvironment());
+		BindResult<DynamicDataRedisProperties> bindResult = binder.bind(DynamicDataRedisProperties.PREFIX,
 			DynamicDataRedisProperties.class);
 
 		if (bindResult.isBound()) {
@@ -68,7 +68,7 @@ public class OnDynamicRedisLettuceCondition extends SpringBootCondition {
 					}
 				}
 			}
-        }
-        return ConditionOutcome.noMatch("");
-    }
+		}
+		return ConditionOutcome.noMatch("");
+	}
 }

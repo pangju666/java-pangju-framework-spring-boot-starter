@@ -101,38 +101,52 @@ class OnceTaskExecutorSpec extends Specification {
 	}
 
 	def "同步 空键 抛 IllegalArgumentException（注入）"() {
-		when: executor.execute("", { 1 } as Callable<Integer>)
-		then: thrown(IllegalArgumentException)
+		when:
+		executor.execute("", { 1 } as Callable<Integer>)
+		then:
+		thrown(IllegalArgumentException)
 	}
 
 	def "同步 任务为空 抛 IllegalArgumentException（注入）"() {
-		when: executor.execute("键", null)
-		then: thrown(IllegalArgumentException)
+		when:
+		executor.execute("键", null)
+		then:
+		thrown(IllegalArgumentException)
 	}
 
 	def "超时 非正数 抛 IllegalArgumentException（注入）"() {
-		when: executor.execute("键", { 1 } as Callable<Integer>, 0, TimeUnit.MILLISECONDS)
-		then: thrown(IllegalArgumentException)
+		when:
+		executor.execute("键", { 1 } as Callable<Integer>, 0, TimeUnit.MILLISECONDS)
+		then:
+		thrown(IllegalArgumentException)
 	}
 
 	def "超时 单位为空 抛 IllegalArgumentException（注入）"() {
-		when: executor.execute("键", { 1 } as Callable<Integer>, 1, null)
-		then: thrown(IllegalArgumentException)
+		when:
+		executor.execute("键", { 1 } as Callable<Integer>, 1, null)
+		then:
+		thrown(IllegalArgumentException)
 	}
 
 	def "异步 执行器为空 抛 IllegalArgumentException（注入）"() {
-		when: executor.submitToAsyncExecutor(null, "键", { 1 } as Callable<Integer>)
-		then: thrown(IllegalArgumentException)
+		when:
+		executor.submitToAsyncExecutor(null, "键", { 1 } as Callable<Integer>)
+		then:
+		thrown(IllegalArgumentException)
 	}
 
 	def "异步 空键 抛 IllegalArgumentException（注入）"() {
-		when: executor.submitToAsyncExecutor(asyncExecutor, "", { 1 } as Callable<Integer>)
-		then: thrown(IllegalArgumentException)
+		when:
+		executor.submitToAsyncExecutor(asyncExecutor, "", { 1 } as Callable<Integer>)
+		then:
+		thrown(IllegalArgumentException)
 	}
 
 	def "异步 任务为空 抛 IllegalArgumentException（注入）"() {
-		when: executor.submitToAsyncExecutor(asyncExecutor, "键", null)
-		then: thrown(IllegalArgumentException)
+		when:
+		executor.submitToAsyncExecutor(asyncExecutor, "键", null)
+		then:
+		thrown(IllegalArgumentException)
 	}
 
 	def "同步高并发：64 线程同键仅执行一次"() {
@@ -216,7 +230,7 @@ class OnceTaskExecutorSpec extends Specification {
 		} as Callable<String>
 
 		def first = executor.submitToAsyncExecutor(asyncExecutor, "键-异步-压力", task)
-		List<CompletableFuture<String>> futures = (1..(calls-1)).collect {
+		List<CompletableFuture<String>> futures = (1..(calls - 1)).collect {
 			executor.submitToAsyncExecutor(asyncExecutor, "键-异步-压力", { "忽略" } as Callable<String>)
 		}
 		def all = [first] + futures

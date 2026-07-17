@@ -22,7 +22,7 @@ public class DynamicPropertiesMongoConnectionDetails extends PropertiesMongoConn
 	private final MongoProperties properties;
 
 	public DynamicPropertiesMongoConnectionDetails(MongoProperties properties,
-												   ObjectProvider<SslBundles> sslBundlesObjectProvider) {
+	                                               ObjectProvider<SslBundles> sslBundlesObjectProvider) {
 		super(properties, null);
 		this.properties = properties;
 		this.sslBundlesObjectProvider = sslBundlesObjectProvider;

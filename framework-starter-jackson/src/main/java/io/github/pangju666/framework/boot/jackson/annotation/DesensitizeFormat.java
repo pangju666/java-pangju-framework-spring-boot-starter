@@ -47,35 +47,35 @@ import java.lang.annotation.Target;
 @JacksonAnnotationsInside
 @JsonSerialize(using = DesensitizedSerializer.class)
 public @interface DesensitizeFormat {
-    /**
-     * 脱敏策略类型。
-     *
-     * <p>当选择内置类型时，应用对应的内置算法；当选择 {@link DesensitizedType#CUSTOM} 时，
-     * 使用 {@link #prefix()} 与 {@link #suffix()} 控制前后缀保留与中间隐藏。</p>
-     *
-     * @return 脱敏类型
-     * @see DesensitizedType
-     * @since 1.0.0
-     */
+	/**
+	 * 脱敏策略类型。
+	 *
+	 * <p>当选择内置类型时，应用对应的内置算法；当选择 {@link DesensitizedType#CUSTOM} 时，
+	 * 使用 {@link #prefix()} 与 {@link #suffix()} 控制前后缀保留与中间隐藏。</p>
+	 *
+	 * @return 脱敏类型
+	 * @see DesensitizedType
+	 * @since 1.0.0
+	 */
 	DesensitizedType type();
 
-    /**
-     * 保留的前缀长度。
-     *
-     * <p>当 {@link #type()} 为 {@link DesensitizedType#CUSTOM} 时生效；指定保留原始字符串开头的字符数量（&le;-1 表示不保留）。</p>
-     *
-     * @return 保留前缀长度
-     * @since 1.0.0
-     */
+	/**
+	 * 保留的前缀长度。
+	 *
+	 * <p>当 {@link #type()} 为 {@link DesensitizedType#CUSTOM} 时生效；指定保留原始字符串开头的字符数量（&le;-1 表示不保留）。</p>
+	 *
+	 * @return 保留前缀长度
+	 * @since 1.0.0
+	 */
 	int prefix() default -1;
 
-    /**
-     * 保留的后缀长度。
-     *
-     * <p>当 {@link #type()} 为 {@link DesensitizedType#CUSTOM} 时生效；指定保留原始字符串末尾的字符数量（&le;-1 表示不保留）。</p>
-     *
-     * @return 保留后缀长度
-     * @since 1.0.0
-     */
+	/**
+	 * 保留的后缀长度。
+	 *
+	 * <p>当 {@link #type()} 为 {@link DesensitizedType#CUSTOM} 时生效；指定保留原始字符串末尾的字符数量（&le;-1 表示不保留）。</p>
+	 *
+	 * @return 保留后缀长度
+	 * @since 1.0.0
+	 */
 	int suffix() default -1;
 }

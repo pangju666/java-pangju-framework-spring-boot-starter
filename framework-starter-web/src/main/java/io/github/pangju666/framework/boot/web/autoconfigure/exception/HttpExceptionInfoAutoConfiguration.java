@@ -90,11 +90,11 @@ public class HttpExceptionInfoAutoConfiguration {
 	/**
 	 * 注册 HTTP 异常信息过滤器。
 	 *
-     * <p><b>条件</b></p>
-     * <ul>
-     *   <li>配置开启：{@code pangju.web.exception.statistics.enabled=true}（{@link ConditionalOnBooleanProperty}）。</li>
-     *   <li>当前容器中不存在同类过滤器 Bean（{@link ConditionalOnMissingFilterBean}）。</li>
-     * </ul>
+	 * <p><b>条件</b></p>
+	 * <ul>
+	 *   <li>配置开启：{@code pangju.web.exception.statistics.enabled=true}（{@link ConditionalOnBooleanProperty}）。</li>
+	 *   <li>当前容器中不存在同类过滤器 Bean（{@link ConditionalOnMissingFilterBean}）。</li>
+	 * </ul>
 	 *
 	 * <p><b>行为</b></p>
 	 * <ul>

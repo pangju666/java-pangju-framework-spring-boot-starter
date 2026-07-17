@@ -26,6 +26,13 @@ class DynamicPropertiesDataRedisConnectionDetails implements DataRedisConnection
 		this.sslBundlesObjectProvider = sslBundlesObjectProvider;
 	}
 
+	private static Node asNode(String node) {
+		int portSeparatorIndex = node.lastIndexOf(':');
+		String host = node.substring(0, portSeparatorIndex);
+		int port = Integer.parseInt(node.substring(portSeparatorIndex + 1));
+		return new Node(host, port);
+	}
+
 	@Override
 	public @Nullable String getUsername() {
 		DataRedisUrl redisUrl = getRedisUrl();
@@ -87,13 +94,6 @@ class DynamicPropertiesDataRedisConnectionDetails implements DataRedisConnection
 			return Collections.emptyList();
 		}
 		return nodes.stream().map(DynamicPropertiesDataRedisConnectionDetails::asNode).toList();
-	}
-
-	private static Node asNode(String node) {
-		int portSeparatorIndex = node.lastIndexOf(':');
-		String host = node.substring(0, portSeparatorIndex);
-		int port = Integer.parseInt(node.substring(portSeparatorIndex + 1));
-		return new Node(host, port);
 	}
 
 	/**

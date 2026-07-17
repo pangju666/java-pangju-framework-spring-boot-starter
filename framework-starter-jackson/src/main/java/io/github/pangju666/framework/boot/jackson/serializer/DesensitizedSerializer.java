@@ -72,35 +72,35 @@ public final class DesensitizedSerializer extends ValueSerializer<CharSequence> 
 	 * @param converter 字符串转换器，用于执行脱敏操作
 	 * @since 1.0.0
 	 */
-    public DesensitizedSerializer(Converter<String, String> converter) {
-        this.converter = converter;
-    }
+	public DesensitizedSerializer(Converter<String, String> converter) {
+		this.converter = converter;
+	}
 
-    /**
-     * 构造方法，按前后缀保留规则创建序列化器。
-     *
-     * <p>行为：当 {@code prefix} &le; -1 且 {@code suffix} &le; -1 时，脱敏全部字符；
-     * 仅前缀 &le; -1 时保留后缀并隐藏左侧；仅后缀 &le; -1 时保留前缀并隐藏右侧；
-     * 两者均 &gt; -1 时按前后缀保留并隐藏中间。</p>
-     *
-     * @param prefix 前缀保留长度，-1 表示不保留前缀
-     * @param suffix 后缀保留长度，-1 表示不保留后缀
-     * @since 1.0.0
-     */
-    public DesensitizedSerializer(int prefix, int suffix) {
-        this.converter = value -> {
-            if (prefix <= -1) {
-                if (suffix <= -1) {
-                    return DesensitizationUtils.hidePassword(value);
-                }
-                return DesensitizationUtils.hideLeft(value, suffix);
-            }
-            if (suffix <= -1) {
-                return DesensitizationUtils.hideRight(value, prefix);
-            }
-            return DesensitizationUtils.hideRound(value, prefix, suffix);
-        };
-    }
+	/**
+	 * 构造方法，按前后缀保留规则创建序列化器。
+	 *
+	 * <p>行为：当 {@code prefix} &le; -1 且 {@code suffix} &le; -1 时，脱敏全部字符；
+	 * 仅前缀 &le; -1 时保留后缀并隐藏左侧；仅后缀 &le; -1 时保留前缀并隐藏右侧；
+	 * 两者均 &gt; -1 时按前后缀保留并隐藏中间。</p>
+	 *
+	 * @param prefix 前缀保留长度，-1 表示不保留前缀
+	 * @param suffix 后缀保留长度，-1 表示不保留后缀
+	 * @since 1.0.0
+	 */
+	public DesensitizedSerializer(int prefix, int suffix) {
+		this.converter = value -> {
+			if (prefix <= -1) {
+				if (suffix <= -1) {
+					return DesensitizationUtils.hidePassword(value);
+				}
+				return DesensitizationUtils.hideLeft(value, suffix);
+			}
+			if (suffix <= -1) {
+				return DesensitizationUtils.hideRight(value, prefix);
+			}
+			return DesensitizationUtils.hideRound(value, prefix, suffix);
+		};
+	}
 
 	@Override
 	public void serialize(CharSequence value, JsonGenerator gen, SerializationContext context) {
@@ -115,22 +115,22 @@ public final class DesensitizedSerializer extends ValueSerializer<CharSequence> 
 		gen.writeString(converter.convert(value.toString()));
 	}
 
-    /**
-     * 创建上下文相关的序列化器。
-     *
-     * <p>行为：当属性类型为字符串且存在 {@link DesensitizeFormat} 注解时，依据注解与类型选择序列化器：</p>
-     * <ul>
-     *   <li>非 {@link DesensitizedType#CUSTOM} 类型：复用预创建的内置类型序列化器。</li>
-     *   <li>{@link DesensitizedType#CUSTOM} 类型：标准化 {@code prefix}/{@code suffix}（最小为 -1）并按
-     *   {@code "prefix&suffix"} 作为键从缓存 {@code CUSTOM_SERIALIZER_MAP} 获取或创建长度保留序列化器。</li>
-     * </ul>
-     * <p>当属性为空或不满足条件时，返回当前实例或上下文默认序列化器。</p>
-     *
-     * @param context     序列化上下文
-     * @param property 当前处理的 Bean 属性
-     * @return 上下文相关的序列化器实例
-     * @since 1.0.0
-     */
+	/**
+	 * 创建上下文相关的序列化器。
+	 *
+	 * <p>行为：当属性类型为字符串且存在 {@link DesensitizeFormat} 注解时，依据注解与类型选择序列化器：</p>
+	 * <ul>
+	 *   <li>非 {@link DesensitizedType#CUSTOM} 类型：复用预创建的内置类型序列化器。</li>
+	 *   <li>{@link DesensitizedType#CUSTOM} 类型：标准化 {@code prefix}/{@code suffix}（最小为 -1）并按
+	 *   {@code "prefix&suffix"} 作为键从缓存 {@code CUSTOM_SERIALIZER_MAP} 获取或创建长度保留序列化器。</li>
+	 * </ul>
+	 * <p>当属性为空或不满足条件时，返回当前实例或上下文默认序列化器。</p>
+	 *
+	 * @param context  序列化上下文
+	 * @param property 当前处理的 Bean 属性
+	 * @return 上下文相关的序列化器实例
+	 * @since 1.0.0
+	 */
 	@Override
 	public ValueSerializer<?> createContextual(SerializationContext context, BeanProperty property) {
 		if (Objects.isNull(property)) {

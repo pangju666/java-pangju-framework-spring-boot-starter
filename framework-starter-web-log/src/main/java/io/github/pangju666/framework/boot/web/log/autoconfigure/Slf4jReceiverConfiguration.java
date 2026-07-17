@@ -62,15 +62,15 @@ import org.springframework.context.annotation.Configuration;
 @ConditionalOnProperty(prefix = "pangju.web.log.slf4j", name = "logger")
 class Slf4jReceiverConfiguration {
 	/**
-     * 注册 SLF4J Web 日志接收器 Bean。
-     *
-     * <p>根据配置的 Logger 名称，将采集到的 {@link WebLog}
-     * 写入日志系统（SLF4J 兼容实现，如 Logback、Log4j2）。</p>
-     *
-     * @param properties Web 日志配置属性
-     * @return {@link Slf4jWebLogReceiver} 实例
-     * @since 1.0.0
-     */
+	 * 注册 SLF4J Web 日志接收器 Bean。
+	 *
+	 * <p>根据配置的 Logger 名称，将采集到的 {@link WebLog}
+	 * 写入日志系统（SLF4J 兼容实现，如 Logback、Log4j2）。</p>
+	 *
+	 * @param properties Web 日志配置属性
+	 * @return {@link Slf4jWebLogReceiver} 实例
+	 * @since 1.0.0
+	 */
 	@ConditionalOnMissingBean(WebLogReceiver.class)
 	@Bean
 	public Slf4jWebLogReceiver slf4jWebLogReceiver(WebLogProperties properties) {

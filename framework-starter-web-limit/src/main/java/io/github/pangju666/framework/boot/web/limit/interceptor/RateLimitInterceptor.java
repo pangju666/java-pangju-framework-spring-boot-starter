@@ -17,10 +17,10 @@
 package io.github.pangju666.framework.boot.web.limit.interceptor;
 
 import io.github.pangju666.framework.boot.spring.StaticSpringContext;
-import io.github.pangju666.framework.boot.web.limit.annotation.RateLimit;
-import io.github.pangju666.framework.boot.web.limit.exception.RateLimitException;
 import io.github.pangju666.framework.boot.web.limit.RateLimitSourceExtractor;
 import io.github.pangju666.framework.boot.web.limit.RateLimiter;
+import io.github.pangju666.framework.boot.web.limit.annotation.RateLimit;
+import io.github.pangju666.framework.boot.web.limit.exception.RateLimitException;
 import io.github.pangju666.framework.spring.utils.SpELUtils;
 import io.github.pangju666.framework.web.exception.base.ServerException;
 import io.github.pangju666.framework.web.servlet.BaseHttpInterceptor;
@@ -63,34 +63,34 @@ import java.util.Objects;
  * @since 1.0.0
  */
 public class RateLimitInterceptor extends BaseHttpInterceptor {
-    /**
+	/**
 	 * 限流器实现，用于执行速率限制检查。
 	 *
 	 * @since 1.0.0
 	 */
-    private final RateLimiter rateLimiter;
+	private final RateLimiter rateLimiter;
 
-    /**
-     * 初始化拦截器，拦截所有路径（{@code /**}）。
-     *
-     * @param requestLimiter 限流器实现，用于执行限流检查（不可为 null）。
-     * @since 1.0.0
-     */
-    public RateLimitInterceptor(RateLimiter requestLimiter) {
-        super(Collections.emptySet());
-        this.rateLimiter = requestLimiter;
-    }
+	/**
+	 * 初始化拦截器，拦截所有路径（{@code /**}）。
+	 *
+	 * @param requestLimiter 限流器实现，用于执行限流检查（不可为 null）。
+	 * @since 1.0.0
+	 */
+	public RateLimitInterceptor(RateLimiter requestLimiter) {
+		super(Collections.emptySet());
+		this.rateLimiter = requestLimiter;
+	}
 
-    /**
-     * 请求处理前进行限流检查：查找注解→生成键→尝试获取→写入响应。
-     *
-     * @param request  当前 HTTP 请求
-     * @param response 当前 HTTP 响应
-     * @param handler  当前处理器（通常是 {@link HandlerMethod}）
-     * @return 允许请求返回 {@code true}；被限流或异常返回 {@code false}
-     */
-    @Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
+	/**
+	 * 请求处理前进行限流检查：查找注解→生成键→尝试获取→写入响应。
+	 *
+	 * @param request  当前 HTTP 请求
+	 * @param response 当前 HTTP 响应
+	 * @param handler  当前处理器（通常是 {@link HandlerMethod}）
+	 * @return 允许请求返回 {@code true}；被限流或异常返回 {@code false}
+	 */
+	@Override
+	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
 		if (handler instanceof HandlerMethod handlerMethod) {
 			RateLimit annotation = handlerMethod.getMethodAnnotation(RateLimit.class);
 			if (Objects.isNull(annotation)) {
@@ -115,21 +115,21 @@ public class RateLimitInterceptor extends BaseHttpInterceptor {
 		return true;
 	}
 
-    /**
-     * 根据注解与请求生成限流键。
-     *
-     * <p><strong>规则</strong></p>
-     * <ul>
-     *   <li>支持前缀与 SpEL（可选）；缺省为 {@code URI + "_" + 方法}。</li>
-     *   <li>当 scope 为 SOURCE 时追加源信息。</li>
-     * </ul>
-     *
-     * @param annotation 限流配置注解
-     * @param request    当前 HTTP 请求
-     * @return 生成的限流键
-     * @since 1.0.0
-     */
-    private String generateKey(RateLimit annotation, HttpServletRequest request) {
+	/**
+	 * 根据注解与请求生成限流键。
+	 *
+	 * <p><strong>规则</strong></p>
+	 * <ul>
+	 *   <li>支持前缀与 SpEL（可选）；缺省为 {@code URI + "_" + 方法}。</li>
+	 *   <li>当 scope 为 SOURCE 时追加源信息。</li>
+	 * </ul>
+	 *
+	 * @param annotation 限流配置注解
+	 * @param request    当前 HTTP 请求
+	 * @return 生成的限流键
+	 * @since 1.0.0
+	 */
+	private String generateKey(RateLimit annotation, HttpServletRequest request) {
 		StringBuilder keyBuilder = new StringBuilder();
 		if (StringUtils.isNotBlank(annotation.key())) {
 			EvaluationContext context = new StandardEvaluationContext();

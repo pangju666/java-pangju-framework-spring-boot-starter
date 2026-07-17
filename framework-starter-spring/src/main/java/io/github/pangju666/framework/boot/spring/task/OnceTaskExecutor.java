@@ -37,49 +37,49 @@ import java.util.concurrent.TimeUnit;
  * @since 1.0.0
  */
 public interface OnceTaskExecutor {
-    /**
-     * 同步执行一次性任务（按 {@code key} 去重）。
-     * <p>
-     * 当已存在相同 {@code key} 的任务正在或已执行完成时，复用其执行结果；否则触发新的执行。
-     * </p>
-     *
-     * @param key  任务唯一标识
-     * @param task 待执行的任务
-     * @return 任务执行结果
-     * @throws Exception 任务执行失败或被中断时抛出；具体异常由实现决定
-     * @since 1.0.0
-     */
-    <T> T execute(String key, Callable<T> task) throws Exception;
+	/**
+	 * 同步执行一次性任务（按 {@code key} 去重）。
+	 * <p>
+	 * 当已存在相同 {@code key} 的任务正在或已执行完成时，复用其执行结果；否则触发新的执行。
+	 * </p>
+	 *
+	 * @param key  任务唯一标识
+	 * @param task 待执行的任务
+	 * @return 任务执行结果
+	 * @throws Exception 任务执行失败或被中断时抛出；具体异常由实现决定
+	 * @since 1.0.0
+	 */
+	<T> T execute(String key, Callable<T> task) throws Exception;
 
-    /**
-     * 同步执行一次性任务并设置超时（按 {@code key} 去重）。
-     * <p>
-     * 在超时未完成时抛出异常（例如 {@link java.util.concurrent.TimeoutException}），具体异常类型与处理由实现决定；
-     * 已存在相同 {@code key} 的任务时复用其结果。
-     * </p>
-     *
-     * @param key     任务唯一标识
-     * @param task    待执行的任务
-     * @param timeout 超时时长
-     * @param unit    超时单位
-     * @return 任务执行结果
-     * @throws Exception 执行失败或超时抛出；具体异常由实现决定
-     * @since 1.0.0
-     */
+	/**
+	 * 同步执行一次性任务并设置超时（按 {@code key} 去重）。
+	 * <p>
+	 * 在超时未完成时抛出异常（例如 {@link java.util.concurrent.TimeoutException}），具体异常类型与处理由实现决定；
+	 * 已存在相同 {@code key} 的任务时复用其结果。
+	 * </p>
+	 *
+	 * @param key     任务唯一标识
+	 * @param task    待执行的任务
+	 * @param timeout 超时时长
+	 * @param unit    超时单位
+	 * @return 任务执行结果
+	 * @throws Exception 执行失败或超时抛出；具体异常由实现决定
+	 * @since 1.0.0
+	 */
 	<T> T execute(String key, Callable<T> task, long timeout, TimeUnit unit) throws Exception;
 
-    /**
-     * 异步提交一次性任务（按 {@code key} 去重）。
-     * <p>
-     * 使用提供的 {@link AsyncTaskExecutor} 调度任务；若相同 {@code key} 的任务已在执行或已完成，
-     * 返回复用的 {@link CompletableFuture}，其完成状态与结果与该次执行保持一致。
-     * </p>
-     *
-     * @param executor 异步任务执行器
-     * @param key      任务唯一标识
-     * @param task     待提交的任务
-     * @return 可观察任务结果的 {@link CompletableFuture}
-     * @since 1.0.0
-     */
+	/**
+	 * 异步提交一次性任务（按 {@code key} 去重）。
+	 * <p>
+	 * 使用提供的 {@link AsyncTaskExecutor} 调度任务；若相同 {@code key} 的任务已在执行或已完成，
+	 * 返回复用的 {@link CompletableFuture}，其完成状态与结果与该次执行保持一致。
+	 * </p>
+	 *
+	 * @param executor 异步任务执行器
+	 * @param key      任务唯一标识
+	 * @param task     待提交的任务
+	 * @return 可观察任务结果的 {@link CompletableFuture}
+	 * @since 1.0.0
+	 */
 	<T> CompletableFuture<T> submitToAsyncExecutor(AsyncTaskExecutor executor, String key, Callable<T> task);
 }

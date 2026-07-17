@@ -20,9 +20,9 @@ import io.github.pangju666.commons.lang.pool.Constants;
 import io.github.pangju666.framework.boot.web.log.WebLog;
 import io.github.pangju666.framework.boot.web.log.receiver.WebLogReceiver;
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.jspecify.annotations.Nullable;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -59,47 +59,47 @@ import java.util.Objects;
 public class MongoWebLogReceiver implements WebLogReceiver {
 	private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern(Constants.DATE_FORMAT);
 
-    /**
-     * MongoTemplate 实例。
-     *
-     * <p><b>说明</b></p>
-     * <ul>
-     *   <li>用于执行 MongoDB 操作（如集合检测/创建、文档保存）。</li>
-     *   <li>应在配置中预先完成连接参数与映射转换器设置。</li>
-     * </ul>
-     *
-     * @since 1.0.0
-     */
-    private final MongoTemplate mongoTemplate;
-    /**
-     * 基础集合名。
-     *
-     * <p><b>说明</b></p>
-     * <ul>
-     *   <li>用于生成按日归档的集合名称，最终格式为 {@code [prefix]-yyyy-MM-dd}。</li>
-     *   <li>可为空；为空时仅使用日期作为集合名。</li>
-     * </ul>
-     */
-    private final String baseCollectionName;
+	/**
+	 * MongoTemplate 实例。
+	 *
+	 * <p><b>说明</b></p>
+	 * <ul>
+	 *   <li>用于执行 MongoDB 操作（如集合检测/创建、文档保存）。</li>
+	 *   <li>应在配置中预先完成连接参数与映射转换器设置。</li>
+	 * </ul>
+	 *
+	 * @since 1.0.0
+	 */
+	private final MongoTemplate mongoTemplate;
+	/**
+	 * 基础集合名。
+	 *
+	 * <p><b>说明</b></p>
+	 * <ul>
+	 *   <li>用于生成按日归档的集合名称，最终格式为 {@code [prefix]-yyyy-MM-dd}。</li>
+	 *   <li>可为空；为空时仅使用日期作为集合名。</li>
+	 * </ul>
+	 */
+	private final String baseCollectionName;
 
 	public MongoWebLogReceiver(MongoTemplate mongoTemplate, @Nullable String baseCollectionName) {
 		this.mongoTemplate = mongoTemplate;
 		this.baseCollectionName = baseCollectionName;
 	}
 
-    /**
-     * 接收并存储 Web 日志。
-     *
-     * <p><b>行为</b></p>
-     * <ul>
-     *   <li>生成集合名（含可选前缀与当前日期），若集合不存在则创建。</li>
-     *   <li>将 {@link WebLog} 映射为 {@link WebLogDocument} 并保存至目标集合。</li>
-     * </ul>
-     *
-     * @param webLog 接收到的日志数据
-     */
-    @Override
-    public void receive(WebLog webLog) {
+	/**
+	 * 接收并存储 Web 日志。
+	 *
+	 * <p><b>行为</b></p>
+	 * <ul>
+	 *   <li>生成集合名（含可选前缀与当前日期），若集合不存在则创建。</li>
+	 *   <li>将 {@link WebLog} 映射为 {@link WebLogDocument} 并保存至目标集合。</li>
+	 * </ul>
+	 *
+	 * @param webLog 接收到的日志数据
+	 */
+	@Override
+	public void receive(WebLog webLog) {
 		String date = LocalDateTime.now().format(DATE_FORMAT);
 		String collectionName = StringUtils.isNotBlank(baseCollectionName) ? baseCollectionName + "-" + date : date;
 		if (!mongoTemplate.collectionExists(collectionName)) {

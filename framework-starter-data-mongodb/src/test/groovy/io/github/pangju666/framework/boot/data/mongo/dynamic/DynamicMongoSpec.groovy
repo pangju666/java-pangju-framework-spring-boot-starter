@@ -10,7 +10,7 @@ import org.springframework.test.context.ContextConfiguration
 import spock.lang.Specification
 
 @ActiveProfiles("dynamic-mongodb")
-@ContextConfiguration(classes = [DynamicDataMongoAutoConfiguration.class], loader = SpringBootContextLoader .class)
+@ContextConfiguration(classes = [DynamicDataMongoAutoConfiguration.class], loader = SpringBootContextLoader.class)
 class DynamicMongoSpec extends Specification {
 	@Autowired
 	MongoTemplate mongoTemplate

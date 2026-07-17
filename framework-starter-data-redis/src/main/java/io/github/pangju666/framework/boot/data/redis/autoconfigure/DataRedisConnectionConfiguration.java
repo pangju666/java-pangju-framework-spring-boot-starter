@@ -19,27 +19,20 @@ abstract class DataRedisConnectionConfiguration {
 
 	private static final boolean COMMONS_POOL2_AVAILABLE = ClassUtils.isPresent("org.apache.commons.pool2.ObjectPool",
 		DataRedisConnectionConfiguration.class.getClassLoader());
-
+	protected final Mode mode;
 	private final DataRedisProperties properties;
-
 	private final @Nullable RedisStandaloneConfiguration standaloneConfiguration;
-
 	private final @Nullable RedisSentinelConfiguration sentinelConfiguration;
-
 	private final @Nullable RedisClusterConfiguration clusterConfiguration;
-
 	private final @Nullable RedisStaticMasterReplicaConfiguration masterReplicaConfiguration;
-
 	private final DataRedisConnectionDetails connectionDetails;
 
-	protected final Mode mode;
-
 	protected DataRedisConnectionConfiguration(DataRedisProperties properties,
-											   DataRedisConnectionDetails connectionDetails,
-											   ObjectProvider<RedisStandaloneConfiguration> standaloneConfigurationProvider,
-											   ObjectProvider<RedisSentinelConfiguration> sentinelConfigurationProvider,
-											   ObjectProvider<RedisClusterConfiguration> clusterConfigurationProvider,
-											   ObjectProvider<RedisStaticMasterReplicaConfiguration> masterReplicaConfiguration) {
+	                                           DataRedisConnectionDetails connectionDetails,
+	                                           ObjectProvider<RedisStandaloneConfiguration> standaloneConfigurationProvider,
+	                                           ObjectProvider<RedisSentinelConfiguration> sentinelConfigurationProvider,
+	                                           ObjectProvider<RedisClusterConfiguration> clusterConfigurationProvider,
+	                                           ObjectProvider<RedisStaticMasterReplicaConfiguration> masterReplicaConfiguration) {
 		this.properties = properties;
 		this.standaloneConfiguration = standaloneConfigurationProvider.getIfAvailable();
 		this.sentinelConfiguration = sentinelConfigurationProvider.getIfAvailable();
@@ -90,6 +83,7 @@ abstract class DataRedisConnectionConfiguration {
 
 	/**
 	 * Create a {@link RedisClusterConfiguration} if necessary.
+	 *
 	 * @return {@literal null} if no cluster settings are set.
 	 */
 	protected final @Nullable RedisClusterConfiguration getClusterConfiguration() {
