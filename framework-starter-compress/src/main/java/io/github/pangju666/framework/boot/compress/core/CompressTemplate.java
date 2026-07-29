@@ -1,5 +1,7 @@
 package io.github.pangju666.framework.boot.compress.core;
 
+import io.github.pangju666.commons.compress.io.resource.CompressResource;
+import io.github.pangju666.commons.compress.utils.CompressUtils;
 import io.github.pangju666.commons.io.resource.IOResource;
 
 import java.io.File;
@@ -11,6 +13,11 @@ import java.io.OutputStream;
  * 压缩模板接口。
  * <p>
  * 提供数据压缩功能，支持输入流、文件或IO资源到输出流或文件的压缩操作。
+ * </p>
+ *
+ * <p>
+ * 解压直接使用{@link CompressUtils#uncompress(CompressResource, OutputStream)} 或
+ * {@link CompressUtils#uncompress(CompressResource, File)}
  * </p>
  *
  * @since 2.1.0

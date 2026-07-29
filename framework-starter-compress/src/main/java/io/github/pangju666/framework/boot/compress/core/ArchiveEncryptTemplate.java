@@ -1,5 +1,8 @@
 package io.github.pangju666.framework.boot.compress.core;
 
+import io.github.pangju666.commons.compress.io.resource.CompressResource;
+import io.github.pangju666.commons.compress.utils.CompressUtils;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -9,6 +12,10 @@ import java.util.List;
  * 加密归档模板接口。
  * <p>
  * 提供带密码保护的文件归档功能，支持单个文件或多个文件列表的加密归档操作。
+ * </p>
+ *
+ * <p>
+ * 需要解压可以使用{@link CompressUtils#uncompress(CompressResource, File, String)}
  * </p>
  *
  * @since 2.1.0

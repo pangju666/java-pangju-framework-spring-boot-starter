@@ -1,5 +1,8 @@
 package io.github.pangju666.framework.boot.compress.core;
 
+import io.github.pangju666.commons.compress.io.resource.CompressResource;
+import io.github.pangju666.commons.compress.utils.CompressUtils;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -9,6 +12,11 @@ import java.util.Collection;
  * 归档模板接口。
  * <p>
  * 提供文件归档功能，支持单个文件或多个文件集合的归档操作。
+ * </p>
+ *
+ * <p>
+ * 需要解压可以使用{@link CompressUtils#uncompress(CompressResource, OutputStream)} 或
+ * {@link CompressUtils#uncompress(CompressResource, File)}
  * </p>
  *
  * @since 2.1.0
