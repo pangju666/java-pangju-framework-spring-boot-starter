@@ -1,0 +1,3 @@
+pangju:
+  compress:
+    archive-type: tar_gzip

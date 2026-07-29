@@ -1,0 +1,11 @@
+spring:
+  # 禁用 banner
+  main:
+    banner-mode: off
+  threads:
+    virtual:
+      enabled: true
+
+logging:
+  config: classpath:logback/local.xml
+  #config: classpath:log4j2/local.yml

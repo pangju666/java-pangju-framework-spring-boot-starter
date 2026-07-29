@@ -20,3 +20,4 @@
 - feat(image): 新增ImageEngineException表示图像引擎错误，如：GraphicsMagick进程通讯错误
 - feat(image): 新增Direction枚举表示方位、ImageCompressionType表示图像压缩类型
 - perf(image): 废弃旧的ImageTemplate及其实现，新增ImageOperationsTemplate及其实现
+- feat(compress): 新增compress模块，提供归档/加密归档/压缩功能
