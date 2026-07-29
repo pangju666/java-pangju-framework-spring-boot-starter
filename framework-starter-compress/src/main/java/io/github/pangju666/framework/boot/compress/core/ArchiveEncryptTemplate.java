@@ -15,7 +15,7 @@ import java.util.List;
  */
 public interface ArchiveEncryptTemplate {
 	/**
-	 * 将单个文件加密归档到输出文件。
+	 * 将单个文件或目录加密归档到输出文件。
 	 *
 	 * @param inputFile  输入文件
 	 * @param outputFile 输出文件
@@ -26,7 +26,7 @@ public interface ArchiveEncryptTemplate {
 	void archive(File inputFile, File outputFile, String password) throws IOException;
 
 	/**
-	 * 将多个文件加密归档到输出文件。
+	 * 将多个文件或目录加密归档到输出文件。
 	 *
 	 * @param inputFiles 输入文件列表
 	 * @param outputFile 输出文件
@@ -37,7 +37,7 @@ public interface ArchiveEncryptTemplate {
 	void archive(List<File> inputFiles, File outputFile, String password) throws IOException;
 
 	/**
-	 * 将单个文件加密归档到输出流。
+	 * 将单个文件或目录加密归档到输出流。
 	 *
 	 * @param inputFile    输入文件
 	 * @param outputStream 输出流
@@ -48,7 +48,7 @@ public interface ArchiveEncryptTemplate {
 	void archive(File inputFile, OutputStream outputStream, String password) throws IOException;
 
 	/**
-	 * 将多个文件加密归档到输出流。
+	 * 将多个文件或目录加密归档到输出流。
 	 *
 	 * @param inputFiles   输入文件列表
 	 * @param outputStream 输出流
