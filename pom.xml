@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
-		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>4.1.0-RC1</version>
+		<version>4.1.0</version>
 		<relativePath/>
 	</parent>
 	<groupId>io.github.pangju666.framework.boot</groupId>
@@ -23,6 +23,7 @@
 		<module>framework-starter-jackson-crypto</module>
 		<module>framework-starter-validation</module>
 		<module>framework-starter-image</module>
+		<module>framework-starter-ocr</module>
 		<module>framework-starter-data-mybatis-plus</module>
 		<module>framework-starter-data-redis</module>
 		<module>framework-starter-data-mongodb</module>
@@ -34,17 +35,23 @@
 		<module>framework-starter-web-log</module>
 		<module>framework-starter-test</module>
 		<module>framework-starter-test-spock</module>
+		<module>framework-starter-compress</module>
 	</modules>
 
 	<properties>
 		<framework.version>2.1.0</framework.version>
-		<spring-boot.version>4.1.0-RC1</spring-boot.version>
+		<spring-boot.version>4.1.0</spring-boot.version>
+		<javacpp.version>1.5.13</javacpp.version>
+		<openblas.version>0.3.31</openblas.version>
+		<opencv.version>4.13.0</opencv.version>
+		<leptonica.version>1.87.0</leptonica.version>
+		<tesseract.version>5.5.2</tesseract.version>
 		<mapstruct.version>1.6.3</mapstruct.version>
 		<lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
 		<im4java.version>1.2.0</im4java.version>
 		<gm4java.version>1.1.1</gm4java.version>
 		<central-publishing-maven-plugin.version>0.10.0</central-publishing-maven-plugin.version>
-		<gmavenplus-plugin.version>5.0.0</gmavenplus-plugin.version>
+		<gmavenplus-plugin.version>5.1.0</gmavenplus-plugin.version>
 		<smart-doc-plugin.version>3.1.2</smart-doc-plugin.version>
 		<gpg-plugin.version>3.2.8</gpg-plugin.version>
 	</properties>
@@ -283,12 +290,12 @@
 					<configuration>
 						<configFile>${basedir}/src/main/resources/smart-doc.json</configFile>
 						<!--<includes>-->
-							<!-- 使用了mybatis-plus的Page分页需要include所使用的源码包 -->
-							<!--<include>com.baomidou:mybatis-plus-extension</include>-->
-							<!-- 使用了mybatis-plus的IPage分页需要include mybatis-plus-core-->
-							<!--<include>com.baomidou:mybatis-plus-core</include>-->
-							<!-- 使用了jpa的分页需要include所使用的源码包 -->
-							<!--<include>org.springframework.data:spring-data-commons</include>-->
+						<!-- 使用了mybatis-plus的Page分页需要include所使用的源码包 -->
+						<!--<include>com.baomidou:mybatis-plus-extension</include>-->
+						<!-- 使用了mybatis-plus的IPage分页需要include mybatis-plus-core-->
+						<!--<include>com.baomidou:mybatis-plus-core</include>-->
+						<!-- 使用了jpa的分页需要include所使用的源码包 -->
+						<!--<include>org.springframework.data:spring-data-commons</include>-->
 						<!--</includes>-->
 					</configuration>
 				</plugin>

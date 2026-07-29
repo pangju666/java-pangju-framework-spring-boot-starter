@@ -11,6 +11,13 @@
 
 - chore: 升级 spring-boot-starter-parent 为 4.1.0
 - chore: 升级 Pangju Framework 为 2.1.0
+- chore (parent): 升级 spring-boot.version 属性值为 4.1.0
+- chore (parent): 升级 gmavenplus-plugin.version 属性值为 5.1.0
+- chore (parent): 新增 javacpp.version 属性
+- chore (parent): 新增 openblas.version 属性
+- chore (parent): 新增 opencv.version 属性
+- chore (parent): 新增 leptonica.version 属性
+- chore (parent): 新增 tesseract.version 属性
 - feat (image): 新增OpenCv操作模板实现类及相关配置
 - feat (image): 新增GraphicsMagick的IOResource子类：GraphicsMagickResource
 - feat (image): 新增GraphicsMagickUtils提供图像切片和图像信息解析方法
