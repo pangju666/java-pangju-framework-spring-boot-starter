@@ -130,79 +130,78 @@ public class TesseractCliOcrTemplate implements OcrTemplate {
 		Executor executor = null;
 		CommandLine commandLine = new CommandLine(FilenameUtils.separatorsToUnix(properties.getTesseractCli().getPath()));
 
-		try {
-			TesseractResource tesseractResource = new TesseractResource(resource);
+		try (TesseractResource tesseractResource = new TesseractResource(resource)) {
 			commandLine.addArgument(FilenameUtils.separatorsToUnix(tesseractResource.getFile().getAbsolutePath()));
+
+			String outputFilePath = FileUtils.getTempDirectoryPath() + TEMP_FILE_PREFIX + UUID.randomUUID();
+			File outputFile = new File(outputFilePath + FilenameUtils.EXTENSION_SEPARATOR + OUTPUT_FILE_EXTENSION);
+			commandLine.addArgument(FilenameUtils.separatorsToUnix(outputFilePath));
+
+			try {
+				if (Objects.nonNull(dpi) && dpi > 0) {
+					commandLine.addArgument("--dpi")
+						.addArgument(dpi.toString());
+				}
+				if (StringUtils.isNotBlank(properties.getTesseractCli().getLanguage())) {
+					commandLine.addArgument("-l")
+						.addArgument(properties.getTesseractCli().getLanguage());
+				}
+				if (Objects.nonNull(properties.getTesseractCli().getPsm())) {
+					commandLine.addArgument("--psm")
+						.addArgument(String.valueOf(properties.getTesseractCli().getPsm().mode));
+				}
+				if (Objects.nonNull(properties.getTesseractCli().getOem())) {
+					commandLine.addArgument("--oem")
+						.addArgument(String.valueOf(properties.getTesseractCli().getOem().mode));
+				}
+				if (StringUtils.isNotBlank(properties.getTesseractCli().getDataPath())) {
+					commandLine.addArgument("--tessdata-dir")
+						.addArgument(FilenameUtils.separatorsToUnix(properties.getTesseractCli().getDataPath()));
+				}
+				if (StringUtils.isNotBlank(properties.getTesseractCli().getUserPatternsFilePath())) {
+					commandLine.addArgument("--user-patterns")
+						.addArgument(FilenameUtils.separatorsToUnix(properties.getTesseractCli().getUserPatternsFilePath()));
+				}
+				if (StringUtils.isNotBlank(properties.getTesseractCli().getUserWordsFilePath())) {
+					commandLine.addArgument("--user-words")
+						.addArgument(FilenameUtils.separatorsToUnix(properties.getTesseractCli().getUserWordsFilePath()));
+				}
+
+				try {
+					executor = pool.borrowObject();
+				} catch (Exception e) {
+					throw new OcrEngineException("从对象池中获取 Tesseract 进程实例失败", e);
+				}
+
+				String executable = commandLine.getExecutable() + StringUtils.SPACE +
+					StringUtils.join(commandLine.getArguments(), StringUtils.SPACE);
+
+				try {
+					int exitValue = executor.execute(commandLine);
+					if (executor.isFailure(exitValue)) {
+						return StringUtils.EMPTY;
+					}
+				} catch (IOException e) {
+					throw new OcrException("Tesseract 进程执行失败，命令：" + executable, e);
+				}
+
+				LOGGER.info("Tesseract 进程执行成功，命令：{}", executable);
+				return FileUtils.readFileToString(outputFile, StandardCharsets.UTF_8);
+			} catch (IOException e) {
+				throw new OcrException("Tesseract 识别结果读取失败", e);
+			} finally {
+				if (Objects.nonNull(executor)) {
+					pool.returnObject(executor);
+				}
+
+				try {
+					FileUtils.forceDeleteIfExist(outputFile);
+				} catch (IOException e) {
+					LOGGER.error("输出文件删除失败，路径：{}", outputFile.getAbsolutePath());
+				}
+			}
 		} catch (IOException e) {
 			throw new OcrException("读取图像资源失败", e);
-		}
-
-		String outputFilePath = FileUtils.getTempDirectoryPath() + TEMP_FILE_PREFIX + UUID.randomUUID();
-		File outputFile = new File(outputFilePath + FilenameUtils.EXTENSION_SEPARATOR + OUTPUT_FILE_EXTENSION);
-		commandLine.addArgument(FilenameUtils.separatorsToUnix(outputFilePath));
-
-		try {
-			if (Objects.nonNull(dpi) && dpi > 0) {
-				commandLine.addArgument("--dpi")
-					.addArgument(dpi.toString());
-			}
-			if (StringUtils.isNotBlank(properties.getTesseractCli().getLanguage())) {
-				commandLine.addArgument("-l")
-					.addArgument(properties.getTesseractCli().getLanguage());
-			}
-			if (Objects.nonNull(properties.getTesseractCli().getPsm())) {
-				commandLine.addArgument("--psm")
-					.addArgument(String.valueOf(properties.getTesseractCli().getPsm().mode));
-			}
-			if (Objects.nonNull(properties.getTesseractCli().getOem())) {
-				commandLine.addArgument("--oem")
-					.addArgument(String.valueOf(properties.getTesseractCli().getOem().mode));
-			}
-			if (StringUtils.isNotBlank(properties.getTesseractCli().getDataPath())) {
-				commandLine.addArgument("--tessdata-dir")
-					.addArgument(FilenameUtils.separatorsToUnix(properties.getTesseractCli().getDataPath()));
-			}
-			if (StringUtils.isNotBlank(properties.getTesseractCli().getUserPatternsFilePath())) {
-				commandLine.addArgument("--user-patterns")
-					.addArgument(FilenameUtils.separatorsToUnix(properties.getTesseractCli().getUserPatternsFilePath()));
-			}
-			if (StringUtils.isNotBlank(properties.getTesseractCli().getUserWordsFilePath())) {
-				commandLine.addArgument("--user-words")
-					.addArgument(FilenameUtils.separatorsToUnix(properties.getTesseractCli().getUserWordsFilePath()));
-			}
-
-			try {
-				executor = pool.borrowObject();
-			} catch (Exception e) {
-				throw new OcrEngineException("从对象池中获取 Tesseract 进程实例失败", e);
-			}
-
-			String executable = commandLine.getExecutable() + StringUtils.SPACE +
-				StringUtils.join(commandLine.getArguments(), StringUtils.SPACE);
-
-			try {
-				int exitValue = executor.execute(commandLine);
-				if (executor.isFailure(exitValue)) {
-					return StringUtils.EMPTY;
-				}
-			} catch (IOException e) {
-				throw new OcrException("Tesseract 进程执行失败，命令：" + executable, e);
-			}
-
-			LOGGER.info("Tesseract 进程执行成功，命令：{}", executable);
-			return FileUtils.readFileToString(outputFile, StandardCharsets.UTF_8);
-		} catch (IOException e) {
-			throw new OcrException("Tesseract 识别结果读取失败", e);
-		} finally {
-			if (Objects.nonNull(executor)) {
-				pool.returnObject(executor);
-			}
-
-			try {
-				FileUtils.forceDeleteIfExist(outputFile);
-			} catch (IOException e) {
-				LOGGER.error("输出文件删除失败，路径：{}", outputFile.getAbsolutePath());
-			}
 		}
 	}
 }

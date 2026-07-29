@@ -100,32 +100,29 @@ public class TesseractOcrTemplate implements OcrTemplate {
 	public String ocrImage(IOResource resource, @Nullable Integer dpi) {
 		Assert.notNull(resource, "resource 不可为 null");
 
-		TesseractResource tesseractResource;
-		try {
-			tesseractResource = new TesseractResource(resource);
+		try (TesseractResource tesseractResource = new TesseractResource(resource)) {
+			TessBaseAPI tessBaseAPI = null;
+			try {
+				try {
+					tessBaseAPI = pool.borrowObject();
+				} catch (Exception e) {
+					throw new OcrEngineException("从对象池中获取 TessBaseAPI 实例失败", e);
+				}
+
+				TessBaseAPIOption options = new TessBaseAPIOption();
+				options.setPpi(dpi);
+				options.setPsm(properties.getTesseract().getPsm());
+
+				try (PIX image = tesseractResource.getPix()) {
+					return TesseractUtils.ocrImage(tessBaseAPI, image, options);
+				}
+			} finally {
+				if (Objects.nonNull(tessBaseAPI)) {
+					pool.returnObject(tessBaseAPI);
+				}
+			}
 		} catch (IOException e) {
 			throw new OcrException("读取图像资源失败", e);
-		}
-
-		TessBaseAPI tessBaseAPI = null;
-		try {
-			try {
-				tessBaseAPI = pool.borrowObject();
-			} catch (Exception e) {
-				throw new OcrEngineException("从对象池中获取 TessBaseAPI 实例失败", e);
-			}
-
-			TessBaseAPIOption options = new TessBaseAPIOption();
-			options.setPpi(dpi);
-			options.setPsm(properties.getTesseract().getPsm());
-
-			try (PIX image = tesseractResource.getPix()) {
-				return TesseractUtils.ocrImage(tessBaseAPI, image, options);
-			}
-		} finally {
-			if (Objects.nonNull(tessBaseAPI)) {
-				pool.returnObject(tessBaseAPI);
-			}
 		}
 	}
 }
