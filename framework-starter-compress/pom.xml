@@ -10,7 +10,7 @@
 	</parent>
 	<artifactId>framework-starter-compress</artifactId>
 	<name>framework-starter-compress</name>
-	<description>Framework 文件压缩 Starter</description>
+	<description>Framework 归档/加密归档/压缩 Starter</description>
 
 	<licenses>
 		<license>
