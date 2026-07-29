@@ -16,19 +16,23 @@
 
 package io.github.pangju666.framework.boot.image.autoconfigure;
 
+import io.github.pangju666.framework.boot.image.core.ImageOperationsTemplate;
 import io.github.pangju666.framework.boot.image.core.ImageTemplate;
 import io.github.pangju666.framework.boot.image.core.impl.GMImageTemplate;
-import org.apache.commons.pool.impl.GenericObjectPool;
+import io.github.pangju666.framework.boot.image.core.impl.GraphicsMagickOperationsTemplate;
 import org.gm4java.engine.support.GMConnectionPoolConfig;
 import org.gm4java.engine.support.PooledGMService;
 import org.gm4java.engine.support.WhenExhaustedAction;
 import org.im4java.core.GMOperation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 /**
@@ -37,8 +41,9 @@ import org.springframework.util.StringUtils;
  * <p><strong>概述</strong></p>
  * <ul>
  *   <li>在检测到 GM 相关类存在时，按条件提供 GM 连接池与模板实现。</li>
-	 *   <li>当存在配置项 {@code pangju.image.graphics-magick.path} 时，创建 {@link PooledGMService}。</li>
-	 *   <li>当 {@code pangju.image.type=graphics_magick} 且已存在连接池时，创建 {@link GMImageTemplate}。</li>
+ *   <li>当存在配置项 {@code pangju.image.graphics-magick.path} 时，创建 {@link PooledGMService}。</li>
+ *   <li>当 {@code pangju.image.type=GRAPHICS_MAGICK} 且已存在连接池时，创建 {@link GMImageTemplate}。</li>
+ *   <li>当 {@code pangju.image.type=GRAPHICS_MAGICK} 且已存在连接池时，创建 {@link GraphicsMagickOperationsTemplate}。</li>
  * </ul>
  *
  * <p><strong>条件说明</strong></p>
@@ -52,48 +57,56 @@ import org.springframework.util.StringUtils;
  * @since 1.0.0
  */
 @Configuration(proxyBeanMethods = false)
-@ConditionalOnClass({PooledGMService.class, GMOperation.class, GenericObjectPool.class})
+@ConditionalOnClass({PooledGMService.class, GMOperation.class})
 class GraphicsMagickConfiguration {
-    /**
-     * 创建 GraphicsMagick 连接池服务。
-     * <p>当 {@code properties.graphics-magick.path} 为空白时不创建 Bean，
+	/**
+	 * 日志记录器
+	 *
+	 * @since 2.1.0
+	 */
+	private static final Logger LOGGER = LoggerFactory.getLogger(GraphicsMagickConfiguration.class);
+
+	/**
+	 * 创建 GraphicsMagick 连接池服务。
+	 * <p>当 {@code properties.graphics-magick.path} 为空白时不创建 Bean，
 	 * 配合 {@link ConditionalOnMissingBean}
-     * 保持按需注册）。</p>
-     *
-     * @param properties 自动配置属性
-     * @return GM 连接池服务；当 GM 路径为空白时返回 {@code null}
-     * @since 1.0.0
-     */
+	 * 保持按需注册）。</p>
+	 *
+	 * @param properties 自动配置属性
+	 * @return GM 连接池服务；当 GM 路径为空白时返回 {@code null}
+	 * @since 1.0.0
+	 */
 	@ConditionalOnMissingBean(PooledGMService.class)
-    @Bean
-    public PooledGMService pooledGMService(ImageProperties properties) {
+	@Bean
+	public PooledGMService pooledGMService(ImageProperties properties) {
 		String gmPath = properties.getGraphicsMagick().getPath();
 		if (!StringUtils.hasText(gmPath)) {
+			LOGGER.warn("未配置 GraphicsMagick 进程可执行路径");
 			// 未配置有效 GM 路径，跳过创建
 			return null;
 		}
 
-        GMConnectionPoolConfig config = new GMConnectionPoolConfig();
+		GMConnectionPoolConfig config = new GMConnectionPoolConfig();
 		config.setGMPath(gmPath);
-        config.setMaxActive(properties.getGraphicsMagick().getMaxActive());
+		config.setMaxActive(properties.getGraphicsMagick().getMaxActive());
 		WhenExhaustedAction whenExhaustedAction = switch (properties.getGraphicsMagick().getWhenExhaustedAction()) {
 			case BLOCK -> WhenExhaustedAction.BLOCK;
 			case GROW -> WhenExhaustedAction.GROW;
-				case FAIL -> WhenExhaustedAction.FAIL;
+			case FAIL -> WhenExhaustedAction.FAIL;
 		};
-        config.setWhenExhaustedAction(whenExhaustedAction);
-        config.setMaxWait(properties.getGraphicsMagick().getMaxWaitMills());
-        config.setMaxIdle(properties.getGraphicsMagick().getMaxIdle());
-        config.setMinIdle(properties.getGraphicsMagick().getMinIdle());
-        config.setTestOnGet(properties.getGraphicsMagick().isTestOnGet());
-        config.setTestOnReturn(properties.getGraphicsMagick().isTestOnReturn());
-        config.setTimeBetweenEvictionRunsMillis(properties.getGraphicsMagick().getTimeBetweenEvictionRunsMillis());
-        config.setNumTestsPerEvictionRun(properties.getGraphicsMagick().getNumTestsPerEvictionRun());
-        config.setMinEvictableIdleTimeMillis(properties.getGraphicsMagick().getMinEvictableIdleTimeMillis());
-        config.setSoftMinEvictableIdleTimeMillis(properties.getGraphicsMagick().getSoftMinEvictableIdleTimeMillis());
-        config.setTestWhileIdle(properties.getGraphicsMagick().isTestWhileIdle());
-        config.setLifo(properties.getGraphicsMagick().isLifo());
-        config.setEvictAfterNumberOfUse(properties.getGraphicsMagick().getEvictAfterNumberOfUse());
+		config.setWhenExhaustedAction(whenExhaustedAction);
+		config.setMaxWait(properties.getGraphicsMagick().getMaxWaitMills());
+		config.setMaxIdle(properties.getGraphicsMagick().getMaxIdle());
+		config.setMinIdle(properties.getGraphicsMagick().getMinIdle());
+		config.setTestOnGet(properties.getGraphicsMagick().isTestOnGet());
+		config.setTestOnReturn(properties.getGraphicsMagick().isTestOnReturn());
+		config.setTimeBetweenEvictionRunsMillis(properties.getGraphicsMagick().getTimeBetweenEvictionRunsMillis());
+		config.setNumTestsPerEvictionRun(properties.getGraphicsMagick().getNumTestsPerEvictionRun());
+		config.setMinEvictableIdleTimeMillis(properties.getGraphicsMagick().getMinEvictableIdleTimeMillis());
+		config.setSoftMinEvictableIdleTimeMillis(properties.getGraphicsMagick().getSoftMinEvictableIdleTimeMillis());
+		config.setTestWhileIdle(properties.getGraphicsMagick().isTestWhileIdle());
+		config.setLifo(properties.getGraphicsMagick().isLifo());
+		config.setEvictAfterNumberOfUse(properties.getGraphicsMagick().getEvictAfterNumberOfUse());
 		return new PooledGMService(config);
 	}
 
@@ -108,11 +121,28 @@ class GraphicsMagickConfiguration {
 	 * @return GM 图像处理模板
 	 * @since 1.0.0
 	 */
-    @ConditionalOnMissingBean(ImageTemplate.class)
-    @ConditionalOnBean(PooledGMService.class)
+	@ConditionalOnMissingBean(ImageTemplate.class)
+	@ConditionalOnBean(PooledGMService.class)
 	@ConditionalOnProperty(prefix = "pangju.image", name = "type", havingValue = "GRAPHICS_MAGICK")
-    @Bean
-    public GMImageTemplate gmTemplate(PooledGMService pooledGMService) {
-        return new GMImageTemplate(pooledGMService);
-    }
+	@Bean
+	public GMImageTemplate gmImageTemplate(PooledGMService pooledGMService) {
+		return new GMImageTemplate(pooledGMService);
+	}
+
+	/**
+	 * 创建基于 GraphicsMagick 的图像操作模板实现。
+	 *
+	 * <p>条件：当类型为 {@code GRAPHICS_MAGICK}、已存在连接池且未定义其它操作模板实现时注入。</p>
+	 *
+	 * @param pooledGMService GM 连接池服务
+	 * @return GraphicsMagick 图像操作模板
+	 * @since 2.1.0
+	 */
+	@ConditionalOnMissingBean(ImageOperationsTemplate.class)
+	@ConditionalOnBean(PooledGMService.class)
+	@ConditionalOnProperty(prefix = "pangju.image", name = "type", havingValue = "GRAPHICS_MAGICK")
+	@Bean
+	public GraphicsMagickOperationsTemplate graphicsMagickOperationsTemplate(PooledGMService pooledGMService) {
+		return new GraphicsMagickOperationsTemplate(pooledGMService);
+	}
 }

@@ -36,56 +36,58 @@ import java.io.IOException;
  *
  * @author pangju666
  * @since 1.0.0
+ * @deprecated 请使用 {@link ImageOperationsTemplate} 代替
  */
+@Deprecated(forRemoval = true, since = "2.1.0")
 public interface ImageTemplate {
 	/**
 	 * 读取并返回图像信息（尺寸、格式、MIME 类型、文件大小等）。
- 	 *
- 	 * @param file 待解析的图像文件
- 	 * @return 图像信息
- 	 * @throws UnSupportedTypeException 图像类型不受支持
-	 * @throws ImageParsingException       图像类型、摘要或尺寸等信息解析失败
- 	 * @throws ImageOperationException     图像底层操作错误
- 	 * @throws IOException                 图像文件读取或图像解码失败
- 	 * @since 1.0.0
- 	 */
- 	ImageFile read(File file) throws UnSupportedTypeException, ImageParsingException, ImageOperationException, IOException;
+	 *
+	 * @param file 待解析的图像文件
+	 * @return 图像信息
+	 * @throws UnSupportedTypeException 图像类型不受支持
+	 * @throws ImageParsingException    图像类型、摘要或尺寸等信息解析失败
+	 * @throws ImageOperationException  图像底层操作错误
+	 * @throws IOException              图像文件读取或图像解码失败
+	 * @since 1.0.0
+	 */
+	ImageFile read(File file) throws UnSupportedTypeException, ImageParsingException, ImageOperationException, IOException;
 
- 	/**
- 	 * 执行图像操作并写入输出文件（使用文件作为输入；不提供回调）。
- 	 *
- 	 * <p>说明：相当于调用带回调的重载方法并传入 {@code null}，不触发中间处理回调。</p>
- 	 *
- 	 * @param inputFile  输入文件
- 	 * @param outputFile 输出文件
- 	 * @param operation  操作配置，可为 {@code null}
+	/**
+	 * 执行图像操作并写入输出文件（使用文件作为输入；不提供回调）。
+	 *
+	 * <p>说明：相当于调用带回调的重载方法并传入 {@code null}，不触发中间处理回调。</p>
+	 *
+	 * @param inputFile  输入文件
+	 * @param outputFile 输出文件
+	 * @param operation  操作配置，可为 {@code null}
 	 * @throws UnSupportedTypeException 图像类型不受支持时抛出
-	 * @throws ImageParsingException       图像类型、摘要或尺寸解析失败时抛出
-	 * @throws ImageOperationException     图像底层操作错误时抛出
-	 * @throws IOException                 文件读取失败时抛出
- 	 * @since 1.0.0
- 	 */
- 	default void process(File inputFile, File outputFile, ImageOperation operation) throws UnSupportedTypeException,
- 		ImageParsingException, ImageOperationException, IOException {
+	 * @throws ImageParsingException    图像类型、摘要或尺寸解析失败时抛出
+	 * @throws ImageOperationException  图像底层操作错误时抛出
+	 * @throws IOException              文件读取失败时抛出
+	 * @since 1.0.0
+	 */
+	default void process(File inputFile, File outputFile, ImageOperation operation) throws UnSupportedTypeException,
+		ImageParsingException, ImageOperationException, IOException {
 		process(read(inputFile), outputFile, operation);
- 	}
+	}
 
- 	/**
- 	 * 执行图像操作并写入输出文件（使用已解析的图像信息；不提供回调）。
- 	 *
- 	 * <p>说明：相当于调用带回调的重载方法并传入 {@code null}，不触发中间处理回调。</p>
- 	 *
- 	 * @param imageFile  已解析的图像信息
- 	 * @param outputFile 输出文件
- 	 * @param operation  操作配置，可为 {@code null}
+	/**
+	 * 执行图像操作并写入输出文件（使用已解析的图像信息；不提供回调）。
+	 *
+	 * <p>说明：相当于调用带回调的重载方法并传入 {@code null}，不触发中间处理回调。</p>
+	 *
+	 * @param imageFile  已解析的图像信息
+	 * @param outputFile 输出文件
+	 * @param operation  操作配置，可为 {@code null}
 	 * @throws UnSupportedTypeException 图像类型不受支持时抛出
-	 * @throws ImageParsingException       图像类型、摘要或尺寸解析失败时抛出
-	 * @throws ImageOperationException     图像底层操作错误时抛出
-	 * @throws IOException                 文件读取失败时抛出
- 	 * @since 1.0.0
- 	 */
-	 void process(ImageFile imageFile, File outputFile, ImageOperation operation) throws UnSupportedTypeException,
-		 ImageParsingException, ImageOperationException, IOException;
+	 * @throws ImageParsingException    图像类型、摘要或尺寸解析失败时抛出
+	 * @throws ImageOperationException  图像底层操作错误时抛出
+	 * @throws IOException              文件读取失败时抛出
+	 * @since 1.0.0
+	 */
+	void process(ImageFile imageFile, File outputFile, ImageOperation operation) throws UnSupportedTypeException,
+		ImageParsingException, ImageOperationException, IOException;
 
 	/**
 	 * 判断实现是否支持读取图像文件。

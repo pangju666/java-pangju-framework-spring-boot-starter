@@ -17,6 +17,7 @@
 package io.github.pangju666.framework.boot.image.autoconfigure;
 
 import io.github.pangju666.commons.image.model.ImageSize;
+import io.github.pangju666.commons.image.utils.ImageEditor;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -28,21 +29,22 @@ import org.springframework.context.annotation.Import;
  * <p><strong>概述</strong></p>
  * <ul>
  *   <li>启用 {@link ImageProperties} 作为配置载体（{@link EnableConfigurationProperties}）。</li>
- *   <li>按条件导入 {@link GraphicsMagickConfiguration} 与 {@link ImageIOConfiguration} 两个子配置（{@link Import}）。</li>
+ *   <li>按条件导入 {@link GraphicsMagickConfiguration}、{@link OpenCvConfiguration} 与 {@link ImageIOConfiguration} 三个子配置（{@link Import}）。</li>
  * </ul>
  *
-	 * <p><strong>生效条件</strong></p>
-	 * <ul>
-	 *   <li>GraphicsMagick：配置 {@code pangju.image.gm.path} 且类型为 {@code GRAPHICS_MAGICK}。</li>
-	 *   <li>IMAGEIO：类路径存在 {@code ImageEditor} 且类型为 {@code IMAGEIO}（默认）。</li>
-	 * </ul>
+ * <p><strong>生效条件</strong></p>
+ * <ul>
+ *   <li>GraphicsMagick：配置 {@code pangju.image.graphics-magick.path} 且类型为 {@code GRAPHICS_MAGICK}。</li>
+ *   <li>OpenCV：类路径存在 {@link io.github.pangju666.commons.opencv.processor.ImageProcessor} 和 {@link org.bytedeco.opencv.global.opencv_core} 相关类且类型为 {@code OPENCV}。</li>
+ *   <li>IMAGEIO：类路径存在 {@link io.github.pangju666.commons.image.processor.ImageProcessor} 和 {@link ImageEditor} 且类型为 {@code IMAGEIO}（默认）。</li>
+ * </ul>
  *
- * @since 1.0.0
  * @author pangju666
+ * @since 1.0.0
  */
 @AutoConfiguration
 @ConditionalOnClass({ImageSize.class})
 @EnableConfigurationProperties(ImageProperties.class)
-@Import({GraphicsMagickConfiguration.class, ImageIOConfiguration.class})
+@Import({GraphicsMagickConfiguration.class, OpenCvConfiguration.class, ImageIOConfiguration.class})
 public class ImageAutoConfiguration {
 }

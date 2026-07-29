@@ -19,26 +19,16 @@ package io.github.pangju666.framework.boot.image.lang;
 import java.util.Set;
 
 /**
- * 图像能力常量集合。
+ * 图像相关常量集合。
  *
- * <p><b>概述</b></p>
- * <ul>
- *   <li>在框架层面聚合不同图像处理引擎/库的读写能力，提供统一的类型集合。</li>
- *   <li>涵盖 GraphicsMagick 的支持范围，并与上游组件能力保持一致。</li>
- *   <li>便于在运行时进行能力判定与类型校验（例如选择可用的编解码方案）。</li>
- * </ul>
- *
- * <p><b>字段</b></p>
- * <ul>
- *   <li>{@link #GRAPHICS_MAGICK_SUPPORTED_WRITE_IMAGE_FORMAT_SET}：GraphicsMagick 可写出的图像格式扩展名集合。</li>
- *   <li>{@link #GRAPHICS_MAGICK_SUPPORTED_READ_IMAGE_FORMAT_SET}：GraphicsMagick 可读取的图像格式扩展名集合。</li>
- * </ul>
+ * <p>
+ * 聚合GraphicsMagick支持的图像格式，提供统一的读写能力集合，便于运行时能力判定与类型校验。
+ * </p>
  *
  * <p><b>备注</b></p>
  * <ul>
- *   <li>不同平台与安装的依赖库版本可能影响具体支持范围，请以实际环境为准。</li>
- *   <li>以上集合均为文件扩展名（如 {@code jpg}、{@code png}），非 MIME 类型。</li>
- *   <li>本类仅聚合能力信息，不参与具体的读写实现，具体处理由上层服务/工具决定。</li>
+ *   <li>集合元素为文件扩展名（如 {@code jpg}、{@code png}），非 MIME 类型</li>
+ *   <li>实际支持范围受平台和依赖库版本影响，请以实际环境为准</li>
  * </ul>
  *
  * @author pangju666
@@ -46,25 +36,25 @@ import java.util.Set;
  */
 public class ImageConstants extends io.github.pangju666.commons.image.lang.ImageConstants {
 	/**
+	 * TTF 字体文件的 MIME 类型
+	 * <p>用于文字水印功能中的字体文件识别</p>
+	 *
+	 * @since 2.1.0
+	 */
+	public static final String TTF_FONT_MIME_TYPE = "application/x-font-ttf";
+
+	/**
 	 * GraphicsMagick 可写出的图像格式扩展名集合。
 	 *
 	 * <p>参考：<a href="http://www.graphicsmagick.org/formats.html">GraphicsMagick 支持格式文档</a></p>
 	 * <p>说明：集合元素为文件扩展名（如 {@code jpg}、{@code png}），非 MIME 类型。</p>
+	 *
 	 * @since 1.0.0
 	 */
-	public static final Set<String> GRAPHICS_MAGICK_SUPPORTED_WRITE_IMAGE_FORMAT_SET = Set.of(
-		"aai", "art", "avs", "bmp", "cmyk", "dcx", "dib", "dpx", "epdf", "epi", "eps", "eps2", "eps3", "epsf", "epsi",
-		"ept", "fax", "fits", "fpx", "gif", "gray", "graya", "html", "hrz", "jbig", "bie", "jpg", "jng",  "jp2", "jpc",
-		"jpeg", "jxl", "mat", "miff", "mono", "mng", "mpeg", "m2v", "mpc", "msl", "mtv", "mvg", "otb", "p7", "palm",
-		"pam", "pbm", "pcd", "pcds", "pcl", "pcx", "pdb", "pdf", "pgm", "picon", "pict", "png", "pnm", "ppm", "ps",
-		"ps2", "ps3", "psd", "ptif", "rgb", "rgba", "sgi", "shtml", "sun", "svg", "tga", "icb", "vda", "vst", "tiff",
-		"tif", "txt", "uil", "uyvy", "vicar", "viff", "wbmp", "webp", "xbm", "xpm", "xwd", "yuv", "AAI", "ART", "AVS",
-		"BMP", "CMYK", "DCX", "DIB", "DPX", "EPDF", "EPI", "EPS", "EPS2", "EPS3", "EPSF", "EPSI", "EPT", "FAX", "FITS",
-		"FPX", "GIF", "GRAY", "GRAYA", "HTML", "HRZ", "JBIG", "BIE", "JPG", "JNG",  "JP2", "JPC", "JPEG", "JXL", "MAT",
-		"MIFF", "MONO", "MNG", "MPEG", "M2V", "MPC", "MSL", "MTV", "MVG", "OTB", "P7", "PALM", "PAM", "PBM", "PCD",
-		"PCDS", "PCL", "PCX", "PDB", "PDF", "PGM", "PICON", "PICT", "PNG", "PNM", "PPM", "PS", "PS2", "PS3", "PSD",
-		"PTIF", "RGB", "RGBA", "SGI", "SHTML", "SUN", "SVG", "TGA", "ICB", "VDA", "VST", "TIFF", "TIF", "TXT", "UIL",
-		"UYVY", "VICAR", "VIFF", "WBMP", "WEBP", "XBM", "XPM", "XWD", "YUV"
+	public static final Set<String> GRAPHICS_MAGICK_SUPPORTED_WRITE_IMAGE_FORMATS = Set.of(
+		"bmp", "cmyk", "dib", "dpx", "fits", "gif", "gray", "graya", "jpg", "jng", "jp2", "jpc", "jpeg", "jxl", "miff",
+		"otb", "p7", "palm", "pam", "pbm", "pcx", "pgm", "picon", "pict", "png", "pnm", "ppm", "ptif", "rgb", "rgba",
+		"sgi", "sun", "svg", "tga", "icb", "vda", "vst", "tiff", "tif", "webp", "xbm", "xpm", "xwd"
 	);
 
 	/**
@@ -72,24 +62,14 @@ public class ImageConstants extends io.github.pangju666.commons.image.lang.Image
 	 *
 	 * <p>参考：<a href="http://www.graphicsmagick.org/formats.html">GraphicsMagick 支持格式文档</a></p>
 	 * <p>说明：集合元素为文件扩展名（如 {@code jpg}、{@code png}），非 MIME 类型。</p>
+	 *
 	 * @since 1.0.0
 	 */
-	public static final Set<String> GRAPHICS_MAGICK_SUPPORTED_READ_IMAGE_FORMAT_SET = Set.of(
-		"aai", "art", "avif", "avs", "bmp", "cals", "cin", "cgm", "cmyk", "cur", "cut", "dcm", "dcx", "dib", "dpx",
-		"emf", "epdf", "epi", "eps", "epsf", "epsi", "ept", "fax", "fig", "fits", "fpx", "gif", "gray", "graya", "heif",
-		"hpgl", "html", "hrz", "ico", "jbig", "bie", "jpg", "jng",  "jp2", "jpc", "jpeg", "jxl", "man", "mat", "miff",
-		"mono", "mng", "mpeg", "m2v", "mpc", "msl", "mtv", "mvg", "otb", "p7", "palm", "pam", "pbm", "pcd", "pcds",
-		"pcx", "pdb", "pdf", "pfa", "pfb", "pgm", "picon", "pict", "pix", "png", "pnm", "ppm", "ps", "ps2", "ps3",
-		"psd", "ptif", "pwp", "ras", "rad", "rgb", "rgba", "rla", "rle", "sct", "sfw", "sgi", "shtml", "sun", "svg",
-		"tga", "icb", "vda", "vst", "tiff", "tif", "tim", "ttf", "txt", "uyvy", "vicar", "viff", "wbmp", "webp", "wpg",
-		"xbm", "xcf", "xpm", "xwd", "yuv", "AAI", "ART", "AVIF", "AVS", "BMP", "CALS", "CIN", "CGM", "CMYK", "CUR",
-		"CUT", "DCM", "DCX", "DIB", "DPX", "EMF", "EPDF", "EPI", "EPS", "EPSF", "EPSI", "EPT", "FAX", "FIG", "FITS",
-		"FPX", "GIF", "GRAY", "GRAYA", "HEIF", "HPGL", "HTML", "HRZ", "ICO", "JBIG", "BIE", "JPG", "JNG",  "JP2", "JPC",
-		"JPEG", "JXL", "MAN", "MAT", "MIFF", "MONO", "MNG", "MPEG", "M2V", "MPC", "MSL", "MTV", "MVG", "OTB", "P7",
-		"PALM", "PAM", "PBM", "PCD", "PCDS",  "PCX", "PDB", "PDF", "PFA", "PFB", "PGM", "PICON", "PICT", "PIX", "PNG",
-		"PNM", "PPM", "PS", "PS2", "PS3", "PSD", "PTIF", "PWP", "RAS", "RAD", "RGB", "RGBA", "RLA", "RLE", "SCT", "SFW",
-		"SGI", "SHTML", "SUN", "SVG", "TGA", "ICB", "VDA", "VST", "TIFF", "TIF", "TIM", "TTF", "TXT", "UYVY", "VICAR",
-		"VIFF", "WBMP", "WEBP", "WPG", "XBM", "XCF", "XPM", "XWD", "YUV"
+	public static final Set<String> GRAPHICS_MAGICK_SUPPORTED_READ_IMAGE_FORMATS = Set.of(
+		"avif", "bmp", "cmyk", "cur", "dib", "dpx", "emf", "fits", "gif", "gray", "graya", "heif", "ico", "jpg", "jng",
+		"jp2", "jpc", "jpeg", "jxl", "miff", "otb", "p7", "palm", "pam", "pbm", "pcx", "pgm", "picon", "pict", "pix",
+		"png", "pnm", "ppm", "ptif", "ras", "rgb", "rgba", "sgi", "sun", "svg", "tga", "icb", "vda", "vst", "tiff",
+		"tif", "webp", "xbm", "xpm", "xwd"
 	);
 
 	protected ImageConstants() {

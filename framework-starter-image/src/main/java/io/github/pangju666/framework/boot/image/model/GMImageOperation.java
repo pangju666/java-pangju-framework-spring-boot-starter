@@ -18,6 +18,7 @@ package io.github.pangju666.framework.boot.image.model;
 
 import io.github.pangju666.framework.boot.image.core.impl.GMImageTemplate;
 import io.github.pangju666.framework.boot.image.enums.ResampleFilter;
+import io.github.pangju666.framework.boot.image.model.opeartions.GraphicsMagickOperations;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -78,7 +79,9 @@ import java.util.Objects;
  * @see GMImageTemplate
  * @see ImageOperation
  * @since 1.0.0
+ * @deprecated 请使用{@link GraphicsMagickOperations}代替
  */
+@Deprecated(forRemoval = true, since = "2.1.0")
 public class GMImageOperation extends ImageOperation {
 	/**
 	 * 输出质量（部分格式支持，如 JPEG）。

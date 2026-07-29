@@ -1,0 +1,81 @@
+/*
+ *   Copyright 2026 pangju666
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+
+package io.github.pangju666.framework.boot.image.model.tile;
+
+import org.springframework.util.Assert;
+
+/**
+ * 按网格切分瓦片选项。
+ * <p>
+ * 继承自{@link TileOptions}，增加了按指定行列数进行均匀切分的配置选项。
+ * </p>
+ * <p>
+ * 将图像按照指定的行数和列数切分成均匀的瓦片，瓦片尺寸根据图像实际尺寸和行列数自动计算。
+ * </p>
+ *
+ * @author pangju666
+ * @since 2.1.0
+ */
+public final class GridTileOptions extends TileOptions {
+	/**
+	 * 行数
+	 *
+	 * @since 2.1.0
+	 */
+	private final int rows;
+	/**
+	 * 列数
+	 *
+	 * @since 2.1.0
+	 */
+	private final int cols;
+
+	/**
+	 * 构造函数。
+	 *
+	 * @param rows 行数，必须大于0
+	 * @param cols 列数，必须大于0
+	 * @throws IllegalArgumentException 如果rows或cols不大于0
+	 * @since 2.1.0
+	 */
+	public GridTileOptions(int rows, int cols) {
+		Assert.isTrue(rows > 0 && cols > 0, "rows 和 cols 必须大于 0");
+
+		this.cols = cols;
+		this.rows = rows;
+	}
+
+	/**
+	 * 获取行数。
+	 *
+	 * @return 行数
+	 * @since 2.1.0
+	 */
+	public int getRows() {
+		return rows;
+	}
+
+	/**
+	 * 获取列数。
+	 *
+	 * @return 列数
+	 * @since 2.1.0
+	 */
+	public int getCols() {
+		return cols;
+	}
+}

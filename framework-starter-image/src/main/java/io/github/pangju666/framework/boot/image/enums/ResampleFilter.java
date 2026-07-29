@@ -44,139 +44,143 @@ import com.twelvemonkeys.image.ResampleOp;
  * @since 1.0.0
  */
 public enum ResampleFilter {
-    /**
+	/**
 	 * 速度最快、锯齿明显；适合像素风或极少量缩放。
 	 *
-     * @since 1.0.0
-     */
-    POINT(ResampleOp.FILTER_POINT, "Point"),
-    /**
+	 * @since 1.0.0
+	 */
+	POINT(ResampleOp.FILTER_POINT, "Point"),
+	/**
 	 * 快速但偏模糊；适合缩小时的粗略平滑。
 	 *
-     * @since 1.0.0
-     */
-    BOX(ResampleOp.FILTER_BOX, "Box"),
-    /**
+	 * @since 1.0.0
+	 */
+	BOX(ResampleOp.FILTER_BOX, "Box"),
+	/**
 	 * 速度与质量折中；边缘较柔和。
 	 *
-     * @since 1.0.0
-     */
-    TRIANGLE(ResampleOp.FILTER_TRIANGLE, "Triangle"),
-    /**
+	 * @since 1.0.0
+	 */
+	TRIANGLE(ResampleOp.FILTER_TRIANGLE, "Triangle"),
+	/**
 	 * 相对柔和，抑制锯齿；适合小幅缩放。
 	 *
-     * @since 1.0.0
-     */
-    HERMITE(ResampleOp.FILTER_HERMITE, "Hermite"),
-    /**
+	 * @since 1.0.0
+	 */
+	HERMITE(ResampleOp.FILTER_HERMITE, "Hermite"),
+	/**
 	 * 抑制振铃，平滑；适合缩小。
 	 *
-     * @since 1.0.0
-     */
-    HANNING(ResampleOp.FILTER_HANNING, "Hanning"),
-    /**
+	 * @since 1.0.0
+	 */
+	HANNING(ResampleOp.FILTER_HANNING, "Hanning"),
+	/**
 	 * 与 Hanning 类似，抑制振铃；适合缩小。
 	 *
-     * @since 1.0.0
-     */
-    HAMMING(ResampleOp.FILTER_HAMMING, "Hamming"),
-    /**
+	 * @since 1.0.0
+	 */
+	HAMMING(ResampleOp.FILTER_HAMMING, "Hamming"),
+	/**
 	 * 更强的振铃抑制，较平滑；细节略损失。
 	 *
-     * @since 1.0.0
-     */
-    BLACKMAN(ResampleOp.FILTER_BLACKMAN, "Blackman"),
-    /**
+	 * @since 1.0.0
+	 */
+	BLACKMAN(ResampleOp.FILTER_BLACKMAN, "Blackman"),
+	/**
 	 * 柔和平滑，避免伪影；可能偏模糊。
 	 *
-     * @since 1.0.0
-     */
-    GAUSSIAN(ResampleOp.FILTER_GAUSSIAN, "Gaussian"),
-    /**
+	 * @since 1.0.0
+	 */
+	GAUSSIAN(ResampleOp.FILTER_GAUSSIAN, "Gaussian"),
+	/**
 	 * 质量介于线性与立方之间；稳健。
 	 *
-     * @since 1.0.0
-     */
-    QUADRATIC(ResampleOp.FILTER_QUADRATIC, "Quadratic"),
-    /**
+	 * @since 1.0.0
+	 */
+	QUADRATIC(ResampleOp.FILTER_QUADRATIC, "Quadratic"),
+	/**
 	 * 通用高质量；锐度与平滑度平衡良好。
 	 *
-     * @since 1.0.0
-     */
-    CUBIC(ResampleOp.FILTER_CUBIC, "Cubic"),
-    /**
+	 * @since 1.0.0
+	 */
+	CUBIC(ResampleOp.FILTER_CUBIC, "Cubic"),
+	/**
 	 * 更锐利，边缘保留好；可能出现振铃。
 	 *
-     * @since 1.0.0
-     */
-    CATROM(ResampleOp.FILTER_CATROM, "Catrom"),
-    /**
-	 * 平衡锐度与平滑；放大/缩小均适用。
-     *
 	 * @since 1.0.0
-     */
-    MITCHELL(ResampleOp.FILTER_MITCHELL, "Mitchell"),
-    /**
+	 */
+	CATROM(ResampleOp.FILTER_CATROM, "Catrom"),
+	/**
+	 * 平衡锐度与平滑；放大/缩小均适用。
+	 *
+	 * @since 1.0.0
+	 */
+	MITCHELL(ResampleOp.FILTER_MITCHELL, "Mitchell"),
+	/**
 	 * 高质量与高锐度；计算较慢，可能振铃。
 	 *
-     * @since 1.0.0
-     */
-    LANCZOS(ResampleOp.FILTER_LANCZOS, "Lanczos"),
-    /**
+	 * @since 1.0.0
+	 */
+	LANCZOS(ResampleOp.FILTER_LANCZOS, "Lanczos"),
+	/**
 	 * 平滑且细腻；细节保留一般。
 	 *
-     * @since 1.0.0
-     */
-    BESSEL(ResampleOp.FILTER_BLACKMAN_BESSEL, "Bessel"),
-    /**
+	 * @since 1.0.0
+	 */
+	BESSEL(ResampleOp.FILTER_BLACKMAN_BESSEL, "Bessel"),
+	/**
 	 * 细节最好但振铃明显；最慢。
 	 *
-     * @since 1.0.0
-     */
-    SINC(ResampleOp.FILTER_BLACKMAN_SINC, "Sinc");
+	 * @since 1.0.0
+	 */
+	SINC(ResampleOp.FILTER_BLACKMAN_SINC, "Sinc");
 
 	/**
 	 * TwelveMonkeys 滤镜常量值，用于与 {@link ResampleOp} 进行适配。
 	 *
 	 * @since 1.0.0
 	 */
-	private final int filterType;
+	public final int twelveMonkeysFilterType;
 	/**
 	 * GraphicsMagick 滤镜名称。
 	 *
 	 * @since 1.0.0
 	 */
-	private final String filterName;
+	public final String graphicsMagickFilterName;
 
-    /**
-     * 绑定 TwelveMonkeys 滤镜常量值与 GraphicsMagick 滤镜名称。
-     *
-     * @param filterType TwelveMonkeys 滤镜常量值
-     * @param filterName GraphicsMagick 滤镜名称
-     * @since 1.0.0
-     */
-    ResampleFilter(int filterType, String filterName) {
-        this.filterType = filterType;
-        this.filterName = filterName;
-    }
+	/**
+	 * 绑定 TwelveMonkeys 滤镜常量值与 GraphicsMagick 滤镜名称。
+	 *
+	 * @param twelveMonkeysFilterType  TwelveMonkeys 滤镜常量值
+	 * @param graphicsMagickFilterName GraphicsMagick 滤镜名称
+	 * @since 1.0.0
+	 */
+	ResampleFilter(int twelveMonkeysFilterType, String graphicsMagickFilterName) {
+		this.twelveMonkeysFilterType = twelveMonkeysFilterType;
+		this.graphicsMagickFilterName = graphicsMagickFilterName;
+	}
 
-    /**
-     * 获取 TwelveMonkeys 滤镜常量值。
-     *
-     * @return 滤镜常量值
-     * @since 1.0.0
-     */
-    public int getFilterType() {
-        return filterType;
-    }
+	/**
+	 * 获取 TwelveMonkeys 滤镜常量值。
+	 *
+	 * @return 滤镜常量值
+	 * @since 1.0.0
+	 * @deprecated 请使用{@link #twelveMonkeysFilterType}代替
+	 */
+	@Deprecated(forRemoval = true, since = "2.1.0")
+	public int getFilterType() {
+		return twelveMonkeysFilterType;
+	}
 
-    /**
-     * 获取 GraphicsMagick 滤镜名称。
-     *
-     * @return 友好名称
-     * @since 1.0.0
-     */
-    public String getFilterName() {
-        return filterName;
-    }
+	/**
+	 * 获取 GraphicsMagick 滤镜名称。
+	 *
+	 * @return 友好名称
+	 * @since 1.0.0
+	 * @deprecated 请使用{@link #graphicsMagickFilterName}代替
+	 */
+	@Deprecated(forRemoval = true, since = "2.1.0")
+	public String getFilterName() {
+		return graphicsMagickFilterName;
+	}
 }

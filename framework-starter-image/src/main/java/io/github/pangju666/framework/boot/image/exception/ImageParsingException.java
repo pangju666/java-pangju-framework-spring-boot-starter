@@ -16,9 +16,11 @@
 
 package io.github.pangju666.framework.boot.image.exception;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.core.NestedRuntimeException;
 
 import java.io.File;
+import java.util.Objects;
 
 /**
  * 图像解析异常。
@@ -31,7 +33,7 @@ import java.io.File;
  *
  * <p><strong>消息格式</strong></p>
  * <ul>
- *   <li>基于文件的构造方法会拼接消息：{@code "图片文件：<absolute-path> <reason>"}。</li>
+ *   <li>基于文件的构造方法会拼接消息：{@code "<reason>，文件路径：<absolute-path>"}。</li>
  *   <li>使用自定义消息的构造方法原样透传调用方提供的内容。</li>
  * </ul>
  *
@@ -41,8 +43,8 @@ import java.io.File;
  * </ul>
  *
  * @author pangju666
- * @since 1.0.0
  * @see org.springframework.core.NestedRuntimeException
+ * @since 1.0.0
  */
 public class ImageParsingException extends NestedRuntimeException {
 	/**
@@ -50,11 +52,10 @@ public class ImageParsingException extends NestedRuntimeException {
 	 *
 	 * @param file   发生错误的图片文件
 	 * @param reason 失败原因描述
-	 * @throws NullPointerException 当 {@code file} 为 {@code null} 时可能引发空指针（消息拼接依赖绝对路径）
 	 * @since 1.0.0
 	 */
-	public ImageParsingException(File file, String reason) {
-		super("图片文件：" + file.getAbsolutePath() + " " + reason);
+	public ImageParsingException(@Nullable File file, @Nullable String reason) {
+		super(Objects.nonNull(file) ? reason + "，文件路径：" + file.getAbsolutePath() : reason);
 	}
 
 	/**
@@ -63,7 +64,7 @@ public class ImageParsingException extends NestedRuntimeException {
 	 * @param message 异常消息
 	 * @since 1.0.0
 	 */
-	public ImageParsingException(String message) {
+	public ImageParsingException(@Nullable String message) {
 		super(message);
 	}
 
@@ -73,11 +74,10 @@ public class ImageParsingException extends NestedRuntimeException {
 	 * @param file   发生错误的图片文件
 	 * @param reason 失败原因描述
 	 * @param cause  原始异常原因
-	 * @throws NullPointerException 当 {@code file} 为 {@code null} 时可能引发空指针（消息拼接依赖绝对路径）
 	 * @since 1.0.0
 	 */
-	public ImageParsingException(File file, String reason, Throwable cause) {
-		super("图片文件：" + file.getAbsolutePath() + " " + reason, cause);
+	public ImageParsingException(@Nullable File file, @Nullable String reason, Throwable cause) {
+		super(Objects.nonNull(file) ? reason + "，文件路径：" + file.getAbsolutePath() : reason, cause);
 	}
 
 	/**
@@ -87,7 +87,7 @@ public class ImageParsingException extends NestedRuntimeException {
 	 * @param cause   原始异常原因
 	 * @since 1.0.0
 	 */
-	public ImageParsingException(String message, Throwable cause) {
+	public ImageParsingException(@Nullable String message, @Nullable Throwable cause) {
 		super(message, cause);
 	}
 }

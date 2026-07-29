@@ -20,6 +20,7 @@ import io.github.pangju666.framework.boot.image.model.BufferedImageOperation;
 import io.github.pangju666.framework.boot.image.model.GMImageOperation;
 import io.github.pangju666.framework.boot.image.model.GenericImageOperation;
 import io.github.pangju666.framework.boot.image.model.ImageOperation;
+import io.github.pangju666.framework.boot.image.model.opeartions.ImageOperations;
 
 import java.util.Objects;
 
@@ -58,90 +59,92 @@ import java.util.Objects;
  * </ul>
  *
  * @author pangju666
- * @since 1.0.0
  * @see ImageOperation
  * @see GMImageOperation
  * @see BufferedImageOperation
+ * @since 1.0.0
+ * @deprecated 请使用{@link ImageOperations#imageIO()}、{@link ImageOperations#graphicsMagick()}}代替
  */
+@Deprecated(forRemoval = true, since = "2.1.0")
 public class ImageOperationBuilders {
-    /**
-     * 空图像操作。
-     *
-     * <p><b>用途</b>：仅进行图片格式转换；不包含裁剪/缩放/图片水印/旋转/翻转/灰度；不含任何实现特有扩展参数。</p>
-     *
-     * @since 1.0.0
-     */
-    public static final ImageOperation EMPTY = new GenericImageOperation.GenericImageOperationBuilder().build();
+	/**
+	 * 空图像操作。
+	 *
+	 * <p><b>用途</b>：仅进行图片格式转换；不包含裁剪/缩放/图片水印/旋转/翻转/灰度；不含任何实现特有扩展参数。</p>
+	 *
+	 * @since 1.0.0
+	 */
+	public static final ImageOperation EMPTY = new GenericImageOperation.GenericImageOperationBuilder().build();
 
-    /**
-     * 创建通用（Generic）构建器。
-     *
-     * <p><b>流程</b>：初始化通用构建器 -> 返回。</p>
-     * <p><b>用途</b>：用于仅依赖 {@link ImageOperation} 通用字段的场景，或先构建通用配置再与 GM/Buffered 构建器合并。</p>
-     * <p><b>约束</b>：不包含质量/DPI/滤镜等实现特有参数。</p>
-     *
-     * @return 通用构建器
-     * @since 1.0.0
-     */
-    public static GenericImageOperation.GenericImageOperationBuilder generic() {
-        return new GenericImageOperation.GenericImageOperationBuilder();
-    }
+	/**
+	 * 创建通用（Generic）构建器。
+	 *
+	 * <p><b>流程</b>：初始化通用构建器 -> 返回。</p>
+	 * <p><b>用途</b>：用于仅依赖 {@link ImageOperation} 通用字段的场景，或先构建通用配置再与 GM/Buffered 构建器合并。</p>
+	 * <p><b>约束</b>：不包含质量/DPI/滤镜等实现特有参数。</p>
+	 *
+	 * @return 通用构建器
+	 * @since 1.0.0
+	 */
+	public static GenericImageOperation.GenericImageOperationBuilder generic() {
+		return new GenericImageOperation.GenericImageOperationBuilder();
+	}
 
-    /**
-     * 创建 GM 构建器。
-     *
-     * <p><b>流程</b>：初始化 GM 构建器 -> 返回。</p>
-     *
-     * @return GM 构建器
-     * @since 1.0.0
-     */
-    public static GMImageOperation.GMImageOperationBuilder gm() {
-        return new GMImageOperation.GMImageOperationBuilder();
-    }
+	/**
+	 * 创建 GM 构建器。
+	 *
+	 * <p><b>流程</b>：初始化 GM 构建器 -> 返回。</p>
+	 *
+	 * @return GM 构建器
+	 * @since 1.0.0
+	 */
+	public static GMImageOperation.GMImageOperationBuilder gm() {
+		return new GMImageOperation.GMImageOperationBuilder();
+	}
 
-    /**
-     * 创建 Buffered 构建器。
-     *
-     * <p><b>流程</b>：初始化 Buffered 构建器 -> 返回。</p>
-     *
-     * @return Buffered 构建器
-     * @since 1.0.0
-     */
-    public static BufferedImageOperation.BufferedImageOperationBuilder buffered() {
-        return new BufferedImageOperation.BufferedImageOperationBuilder();
-    }
+	/**
+	 * 创建 Buffered 构建器。
+	 *
+	 * <p><b>流程</b>：初始化 Buffered 构建器 -> 返回。</p>
+	 *
+	 * @return Buffered 构建器
+	 * @since 1.0.0
+	 */
+	public static BufferedImageOperation.BufferedImageOperationBuilder buffered() {
+		return new BufferedImageOperation.BufferedImageOperationBuilder();
+	}
 
-    /**
-     * 创建 GM 构建器并合并基础操作配置。
-     *
-     * <p><b>流程</b>：初始化 GM 构建器 ->（可选）合并通用字段（灰度/翻转/裁剪/缩放/定位/尺寸/比例/强制缩放/图片水印）-> 返回。</p>
-     * <p><b>约束</b>：{@code operation} 可为 {@code null}（为空时仅初始化不合并）；合并将覆盖同名字段；不处理子类扩展字段。</p>
-     *
-     * @param operation 基础操作配置（可为 {@code null}）
-     * @return GM 构建器
-     * @since 1.0.0
-     */
-    public static GMImageOperation.GMImageOperationBuilder gm(ImageOperation operation) {
+	/**
+	 * 创建 GM 构建器并合并基础操作配置。
+	 *
+	 * <p><b>流程</b>：初始化 GM 构建器 ->（可选）合并通用字段（灰度/翻转/裁剪/缩放/定位/尺寸/比例/强制缩放/图片水印）-> 返回。</p>
+	 * <p><b>约束</b>：{@code operation} 可为 {@code null}（为空时仅初始化不合并）；合并将覆盖同名字段；不处理子类扩展字段。</p>
+	 *
+	 * @param operation 基础操作配置（可为 {@code null}）
+	 * @return GM 构建器
+	 * @since 1.0.0
+	 */
+	public static GMImageOperation.GMImageOperationBuilder gm(ImageOperation operation) {
 		if (Objects.isNull(operation)) {
 			return new GMImageOperation.GMImageOperationBuilder();
 		}
-        return new GMImageOperation.GMImageOperationBuilder().addOperation(operation);
-    }
+		return new GMImageOperation.GMImageOperationBuilder().addOperation(operation);
+	}
 
-    /**
-     * 创建 Buffered 构建器并合并基础操作配置。
-     *
-     * <p><b>流程</b>：初始化 Buffered 构建器 ->（可选）合并通用字段（灰度/翻转/裁剪/缩放/定位/尺寸/比例/强制缩放/图片水印）-> 返回。</p>
-     * <p><b>约束</b>：{@code operation} 可为 {@code null}（为空时仅初始化不合并）；合并将覆盖同名字段；不处理子类扩展字段。</p>
-     *
-     * @param operation 基础操作配置（可为 {@code null}）
-     * @return Buffered 构建器
-     * @since 1.0.0
-     */
-    public static BufferedImageOperation.BufferedImageOperationBuilder buffered(ImageOperation operation) {
+	/**
+	 * 创建 Buffered 构建器并合并基础操作配置。
+	 *
+	 * <p><b>流程</b>：初始化 Buffered 构建器 ->（可选）合并通用字段（灰度/翻转/裁剪/缩放/定位/尺寸/比例/强制缩放/图片水印）-> 返回。</p>
+	 * <p><b>约束</b>：{@code operation} 可为 {@code null}（为空时仅初始化不合并）；合并将覆盖同名字段；不处理子类扩展字段。</p>
+	 *
+	 * @param operation 基础操作配置（可为 {@code null}）
+	 * @return Buffered 构建器
+	 * @since 1.0.0
+	 */
+	public static BufferedImageOperation.BufferedImageOperationBuilder buffered(ImageOperation operation) {
 		if (Objects.isNull(operation)) {
 			return new BufferedImageOperation.BufferedImageOperationBuilder();
 		}
-        return new BufferedImageOperation.BufferedImageOperationBuilder().addOperation(operation);
-    }
+		return new BufferedImageOperation.BufferedImageOperationBuilder().addOperation(operation);
+	}
 }

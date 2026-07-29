@@ -66,7 +66,7 @@ public class ImageProperties {
 	/**
 	 * GraphicsMagick 相关配置。
 	 *
-	 * <p>配置组前缀：{@code pangju.image.gm}</p>
+	 * <p>配置组前缀：{@code pangju.image.graphics-magick}</p>
 	 *
 	 * @since 1.0.0
 	 */
@@ -93,15 +93,47 @@ public class ImageProperties {
 	 *
 	 * <p>可选值：</p>
 	 * <ul>
-	 *   <li>{@code GM}：使用 GraphicsMagick 进行处理。</li>
+	 *   <li>{@code GRAPHICS_MAGICK}：使用 GraphicsMagick 进行处理。</li>
 	 *   <li>{@code IMAGEIO}：使用 ImageIO 进行处理。</li>
+	 *   <li>{@code OPENCV}：使用 OpenCV 进行处理。</li>
 	 * </ul>
 	 *
 	 * @since 1.0.0
 	 */
 	public enum Type {
 		GRAPHICS_MAGICK,
-		IMAGEIO
+		IMAGEIO,
+		OPENCV
+	}
+
+	/**
+	 * 连接池耗尽时的行为策略。
+	 * <p>
+	 * 定义当连接池耗尽（即活跃连接数已达 {@link GraphicsMagick#maxActive}）时，
+	 * {@link PooledGMService#getConnection()} 应采取的行为。
+	 * </p>
+	 *
+	 * @since 1.0.0
+	 */
+	public enum WhenExhaustedAction {
+		/**
+		 * 抛出一个 {@link java.util.NoSuchElementException}.
+		 *
+		 * @since 1.0.0
+		 */
+		FAIL,
+		/**
+		 * 阻塞直到有新的或空闲的连接可用。或者如果 maxWait 为正且通过则失败。
+		 *
+		 * @since 1.0.0
+		 */
+		BLOCK,
+		/**
+		 * 创建一个新连接并返回它（本质上使 maxActive 变得毫无意义）。
+		 *
+		 * @since 1.0.0
+		 */
+		GROW
 	}
 
 	/**
@@ -114,7 +146,7 @@ public class ImageProperties {
 		/**
 		 * GraphicsMagick 可执行文件路径。
 		 *
-		 * <p>对应属性：{@code pangju.image.gm.path}</p>
+		 * <p>对应属性：{@code pangju.image.graphics-magick.path}</p>
 		 * <p>默认值：{@code gm}（表示从系统环境变量读取）</p>
 		 *
 		 * @since 1.0.0
@@ -128,7 +160,7 @@ public class ImageProperties {
 		 * 这是因为活跃线程暂时归还连接的速度快于请求速度，导致空闲连接数短暂超过此上限。
 		 * 对于高负载系统，最佳值需根据实际情况调整，默认值是一个良好的起点。</p>
 		 *
-		 * <p>对应属性：{@code pangju.image.gm.pool.max-idle}</p>
+		 * <p>对应属性：{@code pangju.image.graphics-magick.max-idle}</p>
 		 * <p>默认值：{@code 0}</p>
 		 *
 		 * @since 1.0.0
@@ -142,7 +174,7 @@ public class ImageProperties {
 		 * 注意：若当前活跃连接数与空闲连接数之和已达到 {@link #maxActive}，则不会创建新连接。
 		 * 此设置仅在驱逐线程启用时生效（即 {@link #timeBetweenEvictionRunsMillis} > 0）。</p>
 		 *
-		 * <p>对应属性：{@code pangju.image.gm.pool.min-idle}</p>
+		 * <p>对应属性：{@code pangju.image.graphics-magick.min-idle}</p>
 		 * <p>默认值：{@code 0}</p>
 		 *
 		 * @since 1.0.0
@@ -154,7 +186,7 @@ public class ImageProperties {
 		 *
 		 * <p>设为负数表示无限制。</p>
 		 *
-		 * <p>对应属性：{@code pangju.image.gm.pool.max-active}</p>
+		 * <p>对应属性：{@code pangju.image.graphics-magick.max-active}</p>
 		 * <p>默认值：{@code 16}</p>
 		 *
 		 * @since 1.0.0
@@ -167,7 +199,7 @@ public class ImageProperties {
 		 *
 		 * <p>若该值 ≤ 0，则表示无限期阻塞，直到有可用连接。</p>
 		 *
-		 * <p>对应属性：{@code pangju.image.gm.pool.max-wait}</p>
+		 * <p>对应属性：{@code pangju.image.graphics-magick.max-wait-mills}</p>
 		 * <p>默认值：{@code 5000}（表示 5 秒）</p>
 		 *
 		 * @since 1.0.0
@@ -179,7 +211,7 @@ public class ImageProperties {
 		 *
 		 * <p>可选值包括：阻塞（BLOCK）、抛异常（FAIL）、创建新连接（GROW）等。</p>
 		 *
-		 * <p>对应属性：{@code pangju.image.gm.pool.when-exhausted-action}</p>
+		 * <p>对应属性：{@code pangju.image.graphics-magick.when-exhausted-action}</p>
 		 * <p>默认值：{@link org.gm4java.engine.support.WhenExhaustedAction#FAIL}</p>
 		 *
 		 * @since 1.0.0
@@ -191,7 +223,7 @@ public class ImageProperties {
 		 *
 		 * <p>若启用且校验失败，该连接将被丢弃，并尝试获取下一个有效连接。</p>
 		 *
-		 * <p>对应属性：{@code pangju.image.gm.pool.test-on-get}</p>
+		 * <p>对应属性：{@code pangju.image.graphics-magick.test-on-get}</p>
 		 * <p>默认值：{@code true}</p>
 		 *
 		 * @since 1.0.0
@@ -203,7 +235,7 @@ public class ImageProperties {
 		 *
 		 * <p>若启用且校验失败，该连接将不会被放回池中，而是直接销毁。</p>
 		 *
-		 * <p>对应属性：{@code pangju.image.gm.pool.test-on-return}</p>
+		 * <p>对应属性：{@code pangju.image.graphics-magick.test-on-return}</p>
 		 * <p>默认值：{@code false}</p>
 		 *
 		 * @since 1.0.0
@@ -215,7 +247,7 @@ public class ImageProperties {
 		 *
 		 * <p>若启用且校验失败，该连接将从池中移除。此功能依赖驱逐线程启用（即 {@link #timeBetweenEvictionRunsMillis} > 0）。</p>
 		 *
-		 * <p>对应属性：{@code pangju.image.gm.pool.test-while-idle}</p>
+		 * <p>对应属性：{@code pangju.image.graphics-magick.test-while-idle}</p>
 		 * <p>默认值：{@code false}</p>
 		 *
 		 * @since 1.0.0
@@ -227,7 +259,7 @@ public class ImageProperties {
 		 *
 		 * <p>若该值 ≤ 0，则不启动驱逐线程。</p>
 		 *
-		 * <p>对应属性：{@code pangju.image.gm.pool.time-between-eviction-runs-millis}</p>
+		 * <p>对应属性：{@code pangju.image.graphics-magick.time-between-eviction-runs-millis}</p>
 		 * <p>默认值：{@code 30000}（表示 30 秒）</p>
 		 *
 		 * @since 1.0.0
@@ -239,7 +271,7 @@ public class ImageProperties {
 		 *
 		 * <p>若为负数（如 -3），则每次检查约 1/3 的空闲连接；若为正数，则取该值与当前空闲连接数的较小者。</p>
 		 *
-		 * <p>对应属性：{@code pangju.image.gm.pool.num-tests-per-eviction-run}</p>
+		 * <p>对应属性：{@code pangju.image.graphics-magick.num-tests-per-eviction-run}</p>
 		 * <p>默认值：{@code 3}</p>
 		 *
 		 * @since 1.0.0
@@ -251,7 +283,7 @@ public class ImageProperties {
 		 *
 		 * <p>若该值 ≤ 0，则不会因空闲时间过长而被驱逐。</p>
 		 *
-		 * <p>对应属性：{@code pangju.image.gm.pool.min-evictable-idle-time-millis}</p>
+		 * <p>对应属性：{@code pangju.image.graphics-magick.min-evictable-idle-time-millis}</p>
 		 * <p>默认值：{@code 1800000}（即 30 分钟）</p>
 		 *
 		 * @since 1.0.0
@@ -265,7 +297,7 @@ public class ImageProperties {
 		 * <p>此策略比 {@link #minEvictableIdleTimeMillis} 更“温和”，用于避免在低负载时过度回收连接。
 		 * 若该值 ≤ 0，则此策略不生效。</p>
 		 *
-		 * <p>对应属性：{@code pangju.image.gm.pool.soft-min-evictable-idle-time-millis}</p>
+		 * <p>对应属性：{@code pangju.image.graphics-magick.soft-min-evictable-idle-time-millis}</p>
 		 * <p>默认值：{@code -1}（表示禁用软驱逐策略）</p>
 		 *
 		 * @since 1.0.0
@@ -278,7 +310,7 @@ public class ImageProperties {
 		 * <p>若为 {@code true}，则从池中获取空闲连接时优先返回最近归还的连接；
 		 * 若为 {@code false}，则按 FIFO（先进先出）顺序返回连接。</p>
 		 *
-		 * <p>对应属性：{@code pangju.image.gm.pool.lifo}</p>
+		 * <p>对应属性：{@code pangju.image.graphics-magick.lifo}</p>
 		 * <p>默认值：{@code true}</p>
 		 *
 		 * @since 1.0.0
@@ -292,7 +324,7 @@ public class ImageProperties {
 		 * 注意：此限制并非严格保证，因为连接一旦被客户端获取，可在归还前执行任意多次命令；
 		 * 实际的驱逐仅发生在连接被获取或归还时检查使用次数。</p>
 		 *
-		 * <p>对应属性：{@code pangju.image.gm.pool.evict-after-number-of-use}</p>
+		 * <p>对应属性：{@code pangju.image.graphics-magick.evict-after-number-of-use}</p>
 		 * <p>默认值：{@code 100}</p>
 		 *
 		 * @since 1.0.0
@@ -418,20 +450,5 @@ public class ImageProperties {
 		public void setEvictAfterNumberOfUse(int evictAfterNumberOfUse) {
 			this.evictAfterNumberOfUse = evictAfterNumberOfUse;
 		}
-	}
-
-	public enum WhenExhaustedAction {
-		/**
-		 * 抛出一个 {@link java.util.NoSuchElementException}.
-		 */
-		FAIL,
-		/**
-		 * 阻塞直到有新的或空闲的连接可用。或者如果 maxWait 为正且通过则失败。
-		 */
-		BLOCK,
-		/**
-		 * 创建一个新连接并返回它（本质上使 maxActive 变得毫无意义）。
-		 */
-		GROW
 	}
 }

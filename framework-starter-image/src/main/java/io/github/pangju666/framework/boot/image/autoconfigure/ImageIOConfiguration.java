@@ -16,9 +16,12 @@
 
 package io.github.pangju666.framework.boot.image.autoconfigure;
 
+import io.github.pangju666.commons.image.processor.ImageProcessor;
 import io.github.pangju666.commons.image.utils.ImageEditor;
+import io.github.pangju666.framework.boot.image.core.ImageOperationsTemplate;
 import io.github.pangju666.framework.boot.image.core.ImageTemplate;
 import io.github.pangju666.framework.boot.image.core.impl.BufferedImageTemplate;
+import io.github.pangju666.framework.boot.image.core.impl.ImageIOOperationsTemplate;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -30,22 +33,23 @@ import org.springframework.context.annotation.Configuration;
  *
  * <p><strong>概述</strong></p>
  * <ul>
- *   <li>当类路径存在 {@link ImageEditor} 且属性 {@code pangju.image.type=IMAGEIO}（默认为该值）时生效。</li>
+ *   <li>当类路径存在 {@link ImageProcessor} 和 {@link ImageEditor} 且属性 {@code pangju.image.type=IMAGEIO}（默认为该值）时生效。</li>
  *   <li>在缺少其它 {@link ImageTemplate} Bean 时，注册 {@link BufferedImageTemplate} 实现。</li>
+ *   <li>在缺少其它 {@link ImageOperationsTemplate} Bean 时，注册 {@link ImageIOOperationsTemplate} 实现。</li>
  * </ul>
  *
  * <p><strong>条件说明</strong></p>
  * <ul>
- *   <li>类条件：依赖 {@link ImageEditor}。</li>
+ *   <li>类条件：依赖 {@link ImageProcessor} 和 {@link ImageEditor}。</li>
  *   <li>属性条件：{@code pangju.image.type} 为 {@code IMAGEIO} 或未配置。</li>
- *   <li>Bean 条件：仅在没有其它 {@link ImageTemplate} Bean 时注入，避免冲突。</li>
+ *   <li>Bean 条件：仅在没有其它 {@link ImageTemplate} 或 {@link ImageOperationsTemplate} Bean 时注入，避免冲突。</li>
  * </ul>
  *
  * @author pangju666
  * @since 1.0.0
  */
 @Configuration(proxyBeanMethods = false)
-@ConditionalOnClass({ImageEditor.class})
+@ConditionalOnClass({ImageProcessor.class, ImageEditor.class})
 @ConditionalOnProperty(prefix = "pangju.image", name = "type", havingValue = "IMAGEIO", matchIfMissing = true)
 class ImageIOConfiguration {
 	/**
@@ -60,5 +64,19 @@ class ImageIOConfiguration {
 	@Bean
 	public BufferedImageTemplate bufferImageTemplate() {
 		return new BufferedImageTemplate();
+	}
+
+	/**
+	 * 注册基于 ImageIO 的图像操作模板实现。
+	 *
+	 * <p>条件：当无其它 {@link ImageOperationsTemplate} Bean，并满足类与属性条件时注入。</p>
+	 *
+	 * @return {@link ImageIOOperationsTemplate} 实例
+	 * @since 2.1.0
+	 */
+	@ConditionalOnMissingBean(ImageOperationsTemplate.class)
+	@Bean
+	public ImageIOOperationsTemplate imageIOOperationsTemplate() {
+		return new ImageIOOperationsTemplate();
 	}
 }

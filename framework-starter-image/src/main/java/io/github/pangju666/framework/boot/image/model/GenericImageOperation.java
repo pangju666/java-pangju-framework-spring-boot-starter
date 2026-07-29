@@ -16,6 +16,8 @@
 
 package io.github.pangju666.framework.boot.image.model;
 
+import io.github.pangju666.framework.boot.image.model.opeartions.ImageOperations;
+
 /**
  * 通用图像操作配置。
  *
@@ -27,18 +29,20 @@ package io.github.pangju666.framework.boot.image.model;
  * 不包含质量/DPI/滤镜等实现特有参数；水印方向与坐标互斥；图片水印与文字水印的互斥由具体实现处理。</p>
  *
  * @author pangju666
- * @since 1.0.0
  * @see ImageOperation
+ * @since 1.0.0
+ * @deprecated 请使用{@link ImageOperations}代替
  */
+@Deprecated(forRemoval = true, since = "2.1.0")
 public class GenericImageOperation extends ImageOperation {
 	/**
-     * 通用图像操作构建器。
-     *
-     * <p><b>流程</b>：初始化 -> 设置通用字段 -> 构建。</p>
-     * <p><b>合并</b>：可与具体实现的构建器配合，作为基础配置进行合并。</p>
-     *
-     * @since 1.0.0
-     */
+	 * 通用图像操作构建器。
+	 *
+	 * <p><b>流程</b>：初始化 -> 设置通用字段 -> 构建。</p>
+	 * <p><b>合并</b>：可与具体实现的构建器配合，作为基础配置进行合并。</p>
+	 *
+	 * @since 1.0.0
+	 */
 	public static class GenericImageOperationBuilder extends ImageOperationBuilder<GenericImageOperationBuilder, GenericImageOperation> {
 		/**
 		 * 初始化构建器。

@@ -25,6 +25,7 @@ import io.github.pangju666.commons.image.model.TextWatermarkOption;
 import io.github.pangju666.commons.io.utils.FileUtils;
 import io.github.pangju666.framework.boot.image.core.ImageTemplate;
 import io.github.pangju666.framework.boot.image.enums.CropType;
+import io.github.pangju666.framework.boot.image.model.opeartions.ImageOperations;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -34,6 +35,7 @@ import java.awt.*;
 import java.io.File;
 import java.util.Objects;
 import java.util.function.Function;
+import java.util.function.ToIntFunction;
 
 /**
  * 图像处理操作配置基类，定义了通用的图像处理参数与行为规范。
@@ -83,11 +85,13 @@ import java.util.function.Function;
  * </ul>
  *
  * @author pangju666
- * @since 1.0.0
  * @see ImageTemplate
  * @see BufferedImageOperation
  * @see GMImageOperation
+ * @since 1.0.0
+ * @deprecated 请使用{@link ImageOperations}代替
  */
+@Deprecated(forRemoval = true, since = "2.1.0")
 public abstract class ImageOperation {
 	/**
 	 * 水印文本（与图片水印互斥）。
@@ -226,64 +230,64 @@ public abstract class ImageOperation {
 	 *
 	 * @since 1.0.0
 	 */
-    protected Integer cropRectHeight;
-    /**
-     * 旋转角度（单位：度）。
-     *
-     * <p>符号含义：正数顺时针，负数逆时针；当设置此值时将按照给定角度旋转。</p>
-     *
-     * @since 1.0.0
-     */
-    protected Double rotateAngle;
-    /**
-     * 翻转方向。
-     *
-     * <p>取值为水平或垂直翻转，具体见 {@link FlipDirection}。</p>
-     *
-     * @since 1.0.0
-     */
-    protected FlipDirection flipDirection;
-    /**
-     * 是否灰度化。
-     *
-     * <p>开启后输出图像为灰度模式。</p>
-     *
-     * @since 1.0.0
-     */
-    protected boolean grayscale = false;
+	protected Integer cropRectHeight;
+	/**
+	 * 旋转角度（单位：度）。
+	 *
+	 * <p>符号含义：正数顺时针，负数逆时针；当设置此值时将按照给定角度旋转。</p>
+	 *
+	 * @since 1.0.0
+	 */
+	protected Double rotateAngle;
+	/**
+	 * 翻转方向。
+	 *
+	 * <p>取值为水平或垂直翻转，具体见 {@link FlipDirection}。</p>
+	 *
+	 * @since 1.0.0
+	 */
+	protected FlipDirection flipDirection;
+	/**
+	 * 是否灰度化。
+	 *
+	 * <p>开启后输出图像为灰度模式。</p>
+	 *
+	 * @since 1.0.0
+	 */
+	protected boolean grayscale = false;
 
 	protected ImageOperation() {
 	}
 
-    /**
-     * 是否启用灰度化输出。
-     *
-     * @return {@code true} 表示灰度化输出
-     * @since 1.0.0
-     */
-    public boolean isGrayscale() {
-        return grayscale;
-    }
+	/**
+	 * 是否启用灰度化输出。
+	 *
+	 * @return {@code true} 表示灰度化输出
+	 * @since 1.0.0
+	 */
+	public boolean isGrayscale() {
+		return grayscale;
+	}
 
-    /**
-     * 获取翻转方向。
-     *
-     * @return 翻转方向，未设置则为 {@code null}
-     * @since 1.0.0
-     */
-    public @Nullable FlipDirection getFlipDirection() {
-        return flipDirection;
-    }
+	/**
+	 * 获取翻转方向。
+	 *
+	 * @return 翻转方向，未设置则为 {@code null}
+	 * @since 1.0.0
+	 */
+	public @Nullable FlipDirection getFlipDirection() {
+		return flipDirection;
+	}
 
-    /**
-     * 获取旋转角度（度）。
-     *
-     * @return 角度值，正数顺时针、负数逆时针；未设置则为 {@code null}
-     * @since 1.0.0
-     */
-    public @Nullable Double getRotateAngle() {
-        return rotateAngle;
-    }
+	/**
+	 * 获取旋转角度（度）。
+	 *
+	 * @return 角度值，正数顺时针、负数逆时针；未设置则为 {@code null}
+	 * @since 1.0.0
+	 */
+	public @Nullable Double getRotateAngle() {
+		return rotateAngle;
+	}
 
 	/**
 	 * 获取裁剪类型。
@@ -877,7 +881,7 @@ public abstract class ImageOperation {
 		 * @return 构建器本身
 		 * @since 1.0.0
 		 */
-		public T watermarkTextFontSizeStrategy(Function<ImageSize, Integer> fontSizeStrategy) {
+		public T watermarkTextFontSizeStrategy(ToIntFunction<ImageSize> fontSizeStrategy) {
 			if (Objects.nonNull(fontSizeStrategy)) {
 				imageOperation.watermarkTextOption.setFontSizeStrategy(fontSizeStrategy);
 			}
@@ -948,80 +952,80 @@ public abstract class ImageOperation {
 			return self();
 		}
 
-        /**
-         * 按固定方向旋转。
-         *
-         * <p>参数校验规则：如果 {@code direction} 为 null，则不设置。</p>
-         *
-         * @param direction 旋转方向枚举（包含角度值）
-         * @return 构建器本身
-         * @since 1.0.0
-         */
-        public T rotate(RotateDirection direction) {
-            if (Objects.nonNull(direction)) {
-                imageOperation.rotateAngle = direction.getAngle();
-            }
-            return self();
-        }
+		/**
+		 * 按固定方向旋转。
+		 *
+		 * <p>参数校验规则：如果 {@code direction} 为 null，则不设置。</p>
+		 *
+		 * @param direction 旋转方向枚举（包含角度值）
+		 * @return 构建器本身
+		 * @since 1.0.0
+		 */
+		public T rotate(RotateDirection direction) {
+			if (Objects.nonNull(direction)) {
+				imageOperation.rotateAngle = direction.getAngle();
+			}
+			return self();
+		}
 
-        /**
-         * 按给定角度旋转。
-         *
-         * <p>参数校验规则：如果 {@code angle} 为 null，则不设置；正数表示顺时针，负数表示逆时针。</p>
-         *
-         * @param angle 旋转角度（度）
-         * @return 构建器本身
-         * @since 1.0.0
-         */
-        public T rotate(Double angle) {
-            if (Objects.nonNull(angle)) {
-                imageOperation.rotateAngle = angle;
-            }
-            return self();
-        }
+		/**
+		 * 按给定角度旋转。
+		 *
+		 * <p>参数校验规则：如果 {@code angle} 为 null，则不设置；正数表示顺时针，负数表示逆时针。</p>
+		 *
+		 * @param angle 旋转角度（度）
+		 * @return 构建器本身
+		 * @since 1.0.0
+		 */
+		public T rotate(Double angle) {
+			if (Objects.nonNull(angle)) {
+				imageOperation.rotateAngle = angle;
+			}
+			return self();
+		}
 
-        /**
-         * 按方向进行翻转。
-         *
-         * <p>参数校验规则：如果 {@code direction} 为 null，则不设置。</p>
-         *
-         * @param direction 翻转方向（水平/垂直）
-         * @return 构建器本身
-         * @since 1.0.0
-         */
-        public T flip(FlipDirection direction) {
-            if (Objects.nonNull(direction)) {
-                imageOperation.flipDirection = direction;
-            }
-            return self();
-        }
+		/**
+		 * 按方向进行翻转。
+		 *
+		 * <p>参数校验规则：如果 {@code direction} 为 null，则不设置。</p>
+		 *
+		 * @param direction 翻转方向（水平/垂直）
+		 * @return 构建器本身
+		 * @since 1.0.0
+		 */
+		public T flip(FlipDirection direction) {
+			if (Objects.nonNull(direction)) {
+				imageOperation.flipDirection = direction;
+			}
+			return self();
+		}
 
-        /**
-         * 启用灰度化输出。
-         *
-         * @return 构建器本身
-         * @since 1.0.0
-         */
-        public T grayscale() {
-            imageOperation.grayscale = true;
-            return self();
-        }
+		/**
+		 * 启用灰度化输出。
+		 *
+		 * @return 构建器本身
+		 * @since 1.0.0
+		 */
+		public T grayscale() {
+			imageOperation.grayscale = true;
+			return self();
+		}
 
-        /**
-         * 设置是否启用灰度化输出。
-         *
-         * <p>参数校验规则：如果 {@code grayscale} 为 null，则不设置。</p>
-         *
-         * @param grayscale 是否灰度化
-         * @return 构建器本身
-         * @since 1.0.0
-         */
-        public T grayscale(Boolean grayscale) {
-            if (Objects.nonNull(grayscale)) {
-                imageOperation.grayscale = grayscale;
-            }
-            return self();
-        }
+		/**
+		 * 设置是否启用灰度化输出。
+		 *
+		 * <p>参数校验规则：如果 {@code grayscale} 为 null，则不设置。</p>
+		 *
+		 * @param grayscale 是否灰度化
+		 * @return 构建器本身
+		 * @since 1.0.0
+		 */
+		public T grayscale(Boolean grayscale) {
+			if (Objects.nonNull(grayscale)) {
+				imageOperation.grayscale = grayscale;
+			}
+			return self();
+		}
 
 		/**
 		 * 合并另一个操作配置的通用字段到当前构建器。

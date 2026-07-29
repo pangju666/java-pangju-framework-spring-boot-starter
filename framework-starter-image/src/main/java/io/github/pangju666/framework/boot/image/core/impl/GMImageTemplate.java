@@ -18,7 +18,6 @@ package io.github.pangju666.framework.boot.image.core.impl;
 
 import io.github.pangju666.commons.image.model.ImageSize;
 import io.github.pangju666.commons.io.utils.FileUtils;
-import io.github.pangju666.commons.lang.utils.RegExUtils;
 import io.github.pangju666.framework.boot.image.core.ImageTemplate;
 import io.github.pangju666.framework.boot.image.enums.CropType;
 import io.github.pangju666.framework.boot.image.exception.ImageOperationException;
@@ -45,8 +44,11 @@ import org.springframework.util.Assert;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -157,8 +159,8 @@ import java.util.regex.Pattern;
  *
  * <p><b>格式支持</b></p>
  * <ul>
- *   <li>读取格式：{@link ImageConstants#GRAPHICS_MAGICK_SUPPORTED_READ_IMAGE_FORMAT_SET}。</li>
- *   <li>写出格式：{@link ImageConstants#GRAPHICS_MAGICK_SUPPORTED_WRITE_IMAGE_FORMAT_SET}。</li>
+ *   <li>读取格式：{@link ImageConstants#GRAPHICS_MAGICK_SUPPORTED_READ_IMAGE_FORMATS}。</li>
+ *   <li>写出格式：{@link ImageConstants#GRAPHICS_MAGICK_SUPPORTED_WRITE_IMAGE_FORMATS}。</li>
  * </ul>
  *
  * <p><b>异常与容错</b></p>
@@ -170,7 +172,9 @@ import java.util.regex.Pattern;
  * @author pangju666
  * @see GMImageOperation
  * @since 1.0.0
+ * @deprecated 请使用 {@link GraphicsMagickOperationsTemplate} 代替
  */
+@Deprecated(forRemoval = true, since = "2.1.0")
 public class GMImageTemplate implements ImageTemplate {
 	/**
 	 * 日志记录器。
@@ -234,7 +238,7 @@ public class GMImageTemplate implements ImageTemplate {
 	@Override
 	public ImageFile read(File file) throws IOException {
 		ImageFile imageFile = new ImageFile(file);
-		if (!ImageConstants.GRAPHICS_MAGICK_SUPPORTED_READ_IMAGE_FORMAT_SET.contains(imageFile.getFormat())) {
+		if (!ImageConstants.GRAPHICS_MAGICK_SUPPORTED_READ_IMAGE_FORMATS.contains(imageFile.getFormat())) {
 			throw new UnSupportedTypeException("不支持读取 " + imageFile.getFormat() + " 格式图片");
 		}
 
@@ -289,7 +293,13 @@ public class GMImageTemplate implements ImageTemplate {
 			operation.addImage(file);
 			try {
 				String result = doExecute(operation);
-				List<String> geometryResult = RegExUtils.find(GEOMETRY_REGEX, result);
+				List<String> geometryResult = new ArrayList<>();
+				if (StringUtils.isNotBlank(result)) {
+					Matcher matcher = GEOMETRY_REGEX.matcher(result);
+					while (matcher.find()) {
+						geometryResult.add(matcher.group());
+					}
+				}
 				if (!geometryResult.isEmpty()) {
 					String[] geometryValue = StringUtils.substringBefore(geometryResult.get(0), "+").strip()
 						.split("x");
@@ -527,7 +537,7 @@ public class GMImageTemplate implements ImageTemplate {
 
 		String format = StringUtils.defaultIfBlank(imageFile.getFormat(),
 			FilenameUtils.getExtension(imageFile.getFile().getName()).toUpperCase());
-		if (!ImageConstants.GRAPHICS_MAGICK_SUPPORTED_READ_IMAGE_FORMAT_SET.contains(format)) {
+		if (!ImageConstants.GRAPHICS_MAGICK_SUPPORTED_READ_IMAGE_FORMATS.contains(format)) {
 			throw new UnSupportedTypeException("不支持读取 " + format + " 格式图片");
 		}
 
@@ -551,7 +561,7 @@ public class GMImageTemplate implements ImageTemplate {
 		FileUtils.check(file, "file 不可为 null");
 
 		String fileFormat = FilenameUtils.getExtension(file.getName()).toUpperCase();
-		return ImageConstants.GRAPHICS_MAGICK_SUPPORTED_READ_IMAGE_FORMAT_SET.contains(fileFormat);
+		return ImageConstants.GRAPHICS_MAGICK_SUPPORTED_READ_IMAGE_FORMATS.contains(fileFormat);
 	}
 
 	/**
@@ -563,7 +573,7 @@ public class GMImageTemplate implements ImageTemplate {
 	@Override
 	public boolean canWrite(String format) {
 		Assert.hasText(format, "format 不可为空");
-		return ImageConstants.GRAPHICS_MAGICK_SUPPORTED_WRITE_IMAGE_FORMAT_SET.contains(format.toUpperCase());
+		return ImageConstants.GRAPHICS_MAGICK_SUPPORTED_WRITE_IMAGE_FORMATS.contains(format.toUpperCase());
 	}
 
 	/**
@@ -751,7 +761,7 @@ public class GMImageTemplate implements ImageTemplate {
 	 * @throws IOException 输出文件父级目录创建失败时抛出
 	 */
 	protected void executeComposite(File inputFile, ImageSize imageSize, File outputFile, ImageOperation operation,
-									GMImageOperation gmImageOperation) throws IOException {
+	                                GMImageOperation gmImageOperation) throws IOException {
 		GMOperation gmOperation = createCompositeGMOperation(imageSize, operation);
 
 		// 判断是否需要修改重采样过滤器
@@ -805,7 +815,7 @@ public class GMImageTemplate implements ImageTemplate {
 	 * @throws IOException 输出文件父级目录创建失败时抛出
 	 */
 	protected void executeConvert(File inputFile, ImageSize imageSize, File outputFile,
-								  ImageOperation operation, GMImageOperation gmImageOperation) throws IOException {
+	                              ImageOperation operation, GMImageOperation gmImageOperation) throws IOException {
 		GMOperation gmOperation = new GMOperation();
 		gmOperation.addRawArg("convert");
 		// 传入输入文件
@@ -859,7 +869,7 @@ public class GMImageTemplate implements ImageTemplate {
 		// 判断是否需要添加文字水印
 		if (Objects.nonNull(gmImageOperation) && ObjectUtils.allNotNull(
 			gmImageOperation.getWatermarkTextFontName(), gmImageOperation.getWatermarkText())) {
-			int fontSize = operation.getWatermarkTextOption().getFontSizeStrategy().apply(imageSize);
+			int fontSize = operation.getWatermarkTextOption().getFontSizeStrategy().applyAsInt(imageSize);
 			if (Objects.nonNull(operation.getWatermarkDirection())) {
 				setGravityArg(operation, gmOperation);
 				setTextWatermarkArgs(fontSize, gmImageOperation, gmOperation);
@@ -928,7 +938,7 @@ public class GMImageTemplate implements ImageTemplate {
 		if (StringUtils.isBlank(outputImageFormat)) {
 			throw new UnSupportedTypeException("未知的输出格式");
 		}
-		if (!ImageConstants.GRAPHICS_MAGICK_SUPPORTED_WRITE_IMAGE_FORMAT_SET.contains(outputImageFormat)) {
+		if (!ImageConstants.GRAPHICS_MAGICK_SUPPORTED_WRITE_IMAGE_FORMATS.contains(outputImageFormat)) {
 			throw new UnSupportedTypeException("不支持输出为" + outputImageFormat + "格式");
 		}
 	}
@@ -988,7 +998,7 @@ public class GMImageTemplate implements ImageTemplate {
 	/**
 	 * 设置文字水印相关参数（字体、字号、填充颜色、描边颜色、描边宽度）。
 	 *
-	 * @param fontSize 字体大小（单位：pt）
+	 * @param fontSize    字体大小（单位：pt）
 	 * @param operation   操作配置
 	 * @param gmOperation GM 操作对象
 	 * @since 1.0.0
@@ -1055,7 +1065,7 @@ public class GMImageTemplate implements ImageTemplate {
 	 * @since 1.0.0
 	 */
 	protected void setWatermarkImageGeometryArg(ImageSize inputImageSize, ImageOperation operation, Integer x, Integer y,
-												GMOperation gmOperation) {
+	                                            GMOperation gmOperation) {
 		ImageSize scaleWatermarkImageSize = inputImageSize.scale(operation.getWatermarkImageOption().getRelativeScale());
 		Pair<ImageSize, ImageSize> waterImageSizeRange = operation.getWatermarkImageOption().getSizeLimitStrategy()
 			.apply(inputImageSize);
@@ -1131,8 +1141,8 @@ public class GMImageTemplate implements ImageTemplate {
 	 *
 	 * @param operation GM 命令对象
 	 * @return 命令执行的标准输出结果
-	 * @throws IOException        IO 异常
-	 * @throws GMException        GM 命令执行异常（如命令语法错误、文件不存在）
+	 * @throws IOException             IO 异常
+	 * @throws GMException             GM 命令执行异常（如命令语法错误、文件不存在）
 	 * @throws ImageOperationException 与 GM 进程通信错误时抛出
 	 * @since 1.0.0
 	 */

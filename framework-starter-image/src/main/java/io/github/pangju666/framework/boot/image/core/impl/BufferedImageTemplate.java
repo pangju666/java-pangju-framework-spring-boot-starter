@@ -85,7 +85,9 @@ import java.util.Objects;
  * @author pangju666
  * @see BufferedImageOperation
  * @since 1.0.0
+ * @deprecated 请使用{@link ImageIOOperationsTemplate}代替
  */
+@Deprecated(forRemoval = true, since = "2.1.0")
 public class BufferedImageTemplate implements ImageTemplate {
 	/**
 	 * 读取并返回图像信息（尺寸、格式、MIME 类型、文件大小等）。
@@ -255,7 +257,7 @@ public class BufferedImageTemplate implements ImageTemplate {
 	 */
 	protected void doProcess(ImageFile imageFile, File outputFile, String outputFormat, ImageOperation operation) throws IOException {
 		ImageEditor imageEditor = ImageEditor.of(imageFile.getFile(), ObjectUtils.getIfNull(
-			imageFile.getImageSize().getOrientation(), ImageConstants.NORMAL_EXIF_ORIENTATION))
+				imageFile.getImageSize().getOrientation(), ImageConstants.NORMAL_EXIF_ORIENTATION))
 			.outputFormat(outputFormat);
 
 		BufferedImageOperation bufferedImageOperation = null;

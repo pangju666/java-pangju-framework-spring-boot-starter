@@ -16,6 +16,7 @@
 
 package io.github.pangju666.framework.boot.image.exception;
 
+import io.github.pangju666.commons.io.exception.UnsupportedResourceException;
 import org.springframework.core.NestedRuntimeException;
 
 /**
@@ -28,9 +29,11 @@ import org.springframework.core.NestedRuntimeException;
  * </ul>
  *
  * @author pangju666
- * @since 1.0.0
  * @see NestedRuntimeException
+ * @since 1.0.0
+ * @deprecated 请使用 {@link UnsupportedResourceException} 代替
  */
+@Deprecated(forRemoval = true, since = "2.1.0")
 public class UnSupportedTypeException extends NestedRuntimeException {
 	/**
 	 * 通过消息构造异常。

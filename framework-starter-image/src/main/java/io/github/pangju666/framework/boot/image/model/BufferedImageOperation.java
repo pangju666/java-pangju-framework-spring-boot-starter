@@ -18,6 +18,7 @@ package io.github.pangju666.framework.boot.image.model;
 
 import io.github.pangju666.framework.boot.image.core.impl.BufferedImageTemplate;
 import io.github.pangju666.framework.boot.image.enums.ResampleFilter;
+import io.github.pangju666.framework.boot.image.model.opeartions.ImageIOOperations;
 import org.jspecify.annotations.Nullable;
 import org.springframework.util.CollectionUtils;
 
@@ -62,10 +63,12 @@ import java.util.Objects;
  * <p><strong>使用注意</strong>：通过构建器链式设置参数；不满足校验规则（如负数尺寸、无效坐标）的参数将被自动忽略。</p>
  *
  * @author pangju666
- * @since 1.0.0
  * @see BufferedImageTemplate
  * @see ImageOperation
+ * @since 1.0.0
+ * @deprecated 请使用{@link ImageIOOperations}代替
  */
+@Deprecated(forRemoval = true, since = "2.1.0")
 public class BufferedImageOperation extends ImageOperation {
 	/**
 	 * 缩放重采样滤镜类型，用于控制缩放质量与性能。
