@@ -17,66 +17,95 @@
 package io.github.pangju666.framework.boot.data.mybatisplus.injector;
 
 import com.baomidou.mybatisplus.core.enums.SqlMethod;
-import com.baomidou.mybatisplus.core.injector.AbstractMethod;
+import com.baomidou.mybatisplus.core.metadata.TableFieldInfo;
 import com.baomidou.mybatisplus.core.metadata.TableInfo;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
+import com.baomidou.mybatisplus.core.toolkit.Constants;
+import com.baomidou.mybatisplus.core.toolkit.StringPool;
 import com.baomidou.mybatisplus.core.toolkit.sql.SqlScriptUtils;
-import org.apache.ibatis.mapping.MappedStatement;
-import org.apache.ibatis.mapping.SqlSource;
+
+import java.util.List;
+
+import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toList;
 
 /**
  * 自定义根据ID批量删除方法实现类
  * <p>
- * 重写了MyBatis-Plus的根据ID批量删除方法，支持在逻辑删除时进行字段自动填充。
- * 当表配置了逻辑删除时，会使用{@link TableLogicFillUtils#logicDeleteSetSql(TableInfo)}
- * 生成包含自定义填充字段的SQL语句。
+ * 继承自MyBatis-Plus的{@link com.baomidou.mybatisplus.core.injector.methods.DeleteByIds}，
+ * 重写了根据ID批量删除的SQL生成逻辑，支持在逻辑删除时自动填充自定义字段。
+ * </p>
+ * <p>
+ * 当表配置了逻辑删除时，除了设置逻辑删除字段外，还会通过
+ * {@link TableLogicFillUtils#sqlLogicFillSet(TableInfo)}方法
+ * 自动填充标注了{@link io.github.pangju666.framework.boot.data.mybatisplus.annotation.TableLogicFill}注解的字段。
+ * </p>
+ * <p>
+ * 该方法会根据表字段配置自动生成不同的SQL语句：
+ * <ul>
+ *     <li>如果字段配置了更新填充注解，会生成对应的SET语句（带条件判断）</li>
+ *     <li>如果逻辑删除字段配置了更新填充注解，会生成条件判断的SET语句</li>
+ *     <li>最后追加自定义逻辑删除填充字段的SET语句</li>
+ * </ul>
+ * </p>
+ * <p>
+ * 使用场景：在根据ID批量逻辑删除时需要同时更新其他字段（如删除时间、删除人等）
  * </p>
  *
  * @author pangju666
  * @since 1.0.0
  */
-final class DeleteByIds extends AbstractMethod {
+final class DeleteByIds extends com.baomidou.mybatisplus.core.injector.methods.DeleteByIds {
 	public DeleteByIds() {
-		this(SqlMethod.DELETE_BY_IDS.getMethod());
-	}
-
-	public DeleteByIds(String name) {
-		super(name);
+		super();
 	}
 
 	/**
-	 * 注入{@link MappedStatement}
+	 * 重写逻辑删除脚本生成方法
 	 * <p>
-	 * 根据表是否配置了逻辑删除，生成不同的SQL语句：
+	 * 根据表字段配置生成逻辑删除的SQL脚本：
 	 * <ul>
-	 *     <li>如果配置了逻辑删除，则生成带有自定义字段填充的UPDATE语句</li>
-	 *     <li>如果没有配置逻辑删除，则生成标准的DELETE语句</li>
+	 *     <li>筛选出配置了更新填充的字段（非逻辑删除字段）</li>
+	 *     <li>检查逻辑删除字段是否配置了更新填充</li>
+	 *     <li>生成包含所有填充字段的SET语句</li>
+	 *     <li>追加自定义逻辑删除填充字段的SET语句</li>
 	 * </ul>
-	 * 使用SqlScriptUtils.convertForeach生成批量处理的SQL片段
+	 * </p>
+	 * <p>
+	 * 生成的SQL会使用MyBatis的动态SQL标签（如&lt;if&gt;、&lt;choose&gt;）来处理条件判断
 	 * </p>
 	 *
-	 * @param mapperClass Mapper接口类
-	 * @param modelClass  实体类
-	 * @param tableInfo   表信息
-	 * @return 生成的MappedStatement对象
+	 * @param tableInfo 表信息对象
+	 * @param sqlMethod SQL方法枚举
+	 * @return 完整的逻辑删除SQL脚本
 	 * @since 1.0.0
 	 */
 	@Override
-	public MappedStatement injectMappedStatement(Class<?> mapperClass, Class<?> modelClass, TableInfo tableInfo) {
-		String sql;
-		SqlMethod sqlMethod = SqlMethod.LOGIC_DELETE_BY_IDS;
-		if (tableInfo.isWithLogicDelete()) {
-			String sqlSet = TableLogicFillUtils.logicDeleteSetSql(tableInfo);
-			sql = String.format(sqlMethod.getSql(), tableInfo.getTableName(), sqlSet, tableInfo.getKeyColumn(),
-				SqlScriptUtils.convertForeach("#{item}", COLL, null, "item", COMMA),
-				tableInfo.getLogicDeleteSql(true, true));
-			SqlSource sqlSource = languageDriver.createSqlSource(configuration, sql, Object.class);
-			return addUpdateMappedStatement(mapperClass, modelClass, methodName, sqlSource);
-		} else {
-			sqlMethod = SqlMethod.DELETE_BY_IDS;
-			sql = String.format(sqlMethod.getSql(), tableInfo.getTableName(), tableInfo.getKeyColumn(),
-				SqlScriptUtils.convertForeach("#{item}", COLL, null, "item", COMMA));
-			SqlSource sqlSource = languageDriver.createSqlSource(configuration, sql, Object.class);
-			return this.addDeleteMappedStatement(mapperClass, methodName, sqlSource);
+	public String logicDeleteScript(TableInfo tableInfo, SqlMethod sqlMethod) {
+		List<TableFieldInfo> fieldInfos = tableInfo.getFieldList().stream()
+			.filter(TableFieldInfo::isWithUpdateFill)
+			.filter(f -> !f.isLogicDelete())
+			.collect(toList());
+		TableFieldInfo logicDeleteField = tableInfo.getLogicDeleteFieldInfo();
+		boolean logicDeleteWithFill = logicDeleteField != null && logicDeleteField.isWithUpdateFill();
+		String sqlSet = "SET ";
+		if (CollectionUtils.isNotEmpty(fieldInfos)) {
+			sqlSet += SqlScriptUtils.convertIf(fieldInfos.stream()
+				.map(i -> i.getSqlSet(Constants.MP_FILL_ET + StringPool.DOT)).collect(joining(EMPTY)), String.format("%s != null", Constants.MP_FILL_ET), true);
 		}
+		if (logicDeleteWithFill) {
+			String fillSql = logicDeleteField.getSqlSet(true, Constants.MP_FILL_ET + StringPool.DOT);
+			fillSql = fillSql.substring(0, fillSql.length() - COMMA.length());
+			String whenCondition = String.format("%s != null", Constants.MP_FILL_ET);
+			sqlSet += SqlScriptUtils.convertChoose(whenCondition, fillSql, tableInfo.getLogicDeleteSql(false, false));
+		} else {
+			sqlSet += StringPool.EMPTY + tableInfo.getLogicDeleteSql(false, false);
+		}
+
+		// 拼接逻辑删除填充SQL
+		sqlSet += "," + TableLogicFillUtils.sqlLogicFillSet(tableInfo);
+
+		return sqlMethod.format(tableInfo.getTableName(), sqlSet, tableInfo.getKeyColumn(),
+			getConvertForeachScript(tableInfo), tableInfo.getLogicDeleteSql(true, true));
 	}
 }

@@ -16,21 +16,30 @@
 
 package io.github.pangju666.framework.boot.data.mybatisplus.injector;
 
-import com.baomidou.mybatisplus.core.metadata.TableFieldInfo;
 import com.baomidou.mybatisplus.core.metadata.TableInfo;
 import io.github.pangju666.framework.boot.data.mybatisplus.annotation.TableLogicFill;
-import org.springframework.util.CollectionUtils;
 
-import java.lang.reflect.Field;
-import java.util.List;
+import java.util.Objects;
 
 import static java.util.stream.Collectors.joining;
 
 /**
  * 逻辑删除字段填充工具类（内部使用）
  * <p>
- * 提供了一系列用于处理逻辑删除时字段自动填充的工具方法。
- * 主要用于生成包含自定义填充字段的SQL语句。
+ * 提供用于处理逻辑删除时字段自动填充的工具方法。
+ * 该工具类主要用于生成包含自定义填充字段的SQL语句，
+ * 这些字段通过{@link io.github.pangju666.framework.boot.data.mybatisplus.annotation.TableLogicFill}注解标注。
+ * </p>
+ * <p>
+ * 主要功能：
+ * <ul>
+ *     <li>扫描实体类字段，查找标注了TableLogicFill注解的字段</li>
+ *     <li>根据注解配置生成对应的SQL SET语句</li>
+ *     <li>将生成的SET语句拼接成完整的SQL片段</li>
+ * </ul>
+ * </p>
+ * <p>
+ * 使用场景：在逻辑删除时需要自动填充额外的字段值（如删除时间、删除人ID等）
  * </p>
  *
  * @author pangju666
@@ -41,67 +50,32 @@ final class TableLogicFillUtils {
 	}
 
 	/**
-	 * 判断字段是否标注了TableLogicFill注解
-	 * <p>
-	 * 通过反射检查字段是否包含TableLogicFill注解
-	 * </p>
-	 *
-	 * @param field 需要检查的字段
-	 * @return 如果字段包含TableLogicFill注解则返回true，否则返回false
-	 */
-	private static boolean isTableLogicFill(final Field field) {
-		return field.getAnnotation(TableLogicFill.class) != null;
-	}
-
-	/**
-	 * 获取字段的填充SQL片段
-	 * <p>
-	 * 根据字段的TableLogicFill注解生成对应的SQL赋值语句
-	 * </p>
-	 *
-	 * @param info 表字段信息
-	 * @return 生成的SQL赋值语句，格式为"column=value,"
-	 */
-	private static String getFillSql(final TableFieldInfo info) {
-		TableLogicFill logicDelFill = info.getField().getAnnotation(TableLogicFill.class);
-		return info.getColumn() + "=" + logicDelFill.value() + ",";
-	}
-
-	/**
-	 * 获取需要填充的字段列表
-	 * <p>
-	 * 从表信息中筛选出所有标注了TableLogicFill注解的字段
-	 * </p>
-	 *
-	 * @param tableInfo 表信息
-	 * @return 需要填充的字段列表
-	 */
-	private static List<TableFieldInfo> getFillFieldInfoList(final TableInfo tableInfo) {
-		return tableInfo.getFieldList()
-			.stream()
-			.filter(i -> TableLogicFillUtils.isTableLogicFill(i.getField()))
-			.toList();
-	}
-
-	/**
 	 * 生成逻辑删除的SET SQL语句
 	 * <p>
-	 * 根据表信息生成包含所有需要填充字段的SET语句，
-	 * 并附加上MyBatis-Plus原生的逻辑删除SQL
+	 * 该方法会扫描表的所有字段，筛选出标注了
+	 * {@link io.github.pangju666.framework.boot.data.mybatisplus.annotation.TableLogicFill}注解的字段，
+	 * 并根据注解配置生成对应的SET语句。
+	 * </p>
+	 * <p>
+	 * 生成的SQL格式为：column1=value1,column2=value2,...
+	 * 其中value值来自注解的value属性，可以是SQL表达式或常量值。
+	 * </p>
+	 * <p>
+	 * 示例：
+	 * <pre>
+	 * // 如果字段标注了：@TableLogicFill("NOW()")
+	 * // 生成的SQL：deleted_time=NOW()
+	 * </pre>
 	 * </p>
 	 *
-	 * @param tableInfo 表信息
-	 * @return 完整的SET SQL语句
+	 * @param tableInfo 表信息对象，包含字段列表等元数据
+	 * @return 包含所有自定义填充字段的SET语句片段，多个字段用逗号分隔
 	 */
-	public static String logicDeleteSetSql(final TableInfo tableInfo) {
-		List<TableFieldInfo> list = getFillFieldInfoList(tableInfo);
-		String sqlSet = "";
-		if (!CollectionUtils.isEmpty(list)) {
-			sqlSet = list.stream()
-				.map(TableLogicFillUtils::getFillSql)
-				.collect(joining(""));
-		}
-		sqlSet += tableInfo.getLogicDeleteSql(false, false);
-		return "SET " + sqlSet;
+	static String sqlLogicFillSet(final TableInfo tableInfo) {
+		return tableInfo.getFieldList()
+			.stream()
+			.filter(info -> Objects.nonNull(info.getField().getAnnotation(TableLogicFill.class)))
+			.map(info -> info.getColumn() + "=" + info.getField().getAnnotation(TableLogicFill.class).value())
+			.collect(joining(","));
 	}
 }
