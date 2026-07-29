@@ -1,0 +1,17 @@
+spring:
+  # 禁用 banner
+  main:
+    banner-mode: off
+  threads:
+    virtual:
+      enabled: true
+
+logging:
+  config: classpath:logback/local.xml
+
+pangju:
+  ocr:
+    engine: tesseract
+    tesseract:
+      data-path: E:\tessdata_data
+      language: chi_sim
