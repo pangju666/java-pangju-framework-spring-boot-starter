@@ -756,7 +756,7 @@ public class CompressProperties {
 	 */
 	public static class SevenZ {
 		/**
-		 * 压缩方法。
+		 * 压缩方法（目前仅支持 COPY、LZMA2、BZIP2 和 DEFLATE）。
 		 *
 		 * @since 2.1.0
 		 */

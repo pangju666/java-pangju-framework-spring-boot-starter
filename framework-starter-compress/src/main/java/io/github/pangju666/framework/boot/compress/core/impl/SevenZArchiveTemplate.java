@@ -27,7 +27,7 @@ import java.util.UUID;
  * <ul>
  *   <li>支持单个文件和多个文件的归档操作</li>
  *   <li>支持密码保护的加密归档</li>
- *   <li>可配置压缩方法（LZMA、LZMA2、PPMD等）</li>
+ *   <li>可配置压缩方法（目前仅支持 COPY、LZMA2、BZIP2 和 DEFLATE）</li>
  *   <li>支持输出到文件或输出流</li>
  *   <li>通过临时文件实现输出流输出，自动清理临时文件</li>
  * </ul>

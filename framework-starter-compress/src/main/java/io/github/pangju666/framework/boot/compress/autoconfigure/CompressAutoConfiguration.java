@@ -25,7 +25,7 @@ import org.springframework.context.annotation.Import;
  * <ul>
  *   <li>{@code GZIP}：GZIP压缩，基于Deflater算法，兼容性好</li>
  *   <li>{@code XZ}：XZ压缩，基于LZMA2算法，压缩率高</li>
- *   <li>{@code Zstd}：Zstandard压缩，压缩速度和压缩率平衡</li>
+ *   <li>{@code Zstd}：Zstandard压缩，压缩率和速度均优于GZIP</li>
  * </ul>
  *
  * <p><strong>支持的归档格式</strong></p>
@@ -36,6 +36,13 @@ import org.springframework.context.annotation.Import;
  *   <li>{@code TAR_ZSTD}：TAR+Zstd组合格式，性能优化</li>
  *   <li>{@code SEVEN_Z}：7-Zip归档，支持高压缩率和加密</li>
  *   <li>{@code ZIP}：ZIP归档，通用性强，支持加密</li>
+ * </ul>
+ *
+ * <p><strong>依赖要求</strong></p>
+ * <ul>
+ *   <li>{@code XZ}压缩：需要添加依赖{@code org.tukaani:xz}</li>
+ *   <li>{@code 7-Zip}归档：需要添加依赖{@code org.tukaani:xz}</li>
+ *   <li>{@code Zstd}压缩：需要添加依赖{@code com.github.luben:zstd-jni}</li>
  * </ul>
  *
  * <p><strong>导入的配置类</strong></p>
