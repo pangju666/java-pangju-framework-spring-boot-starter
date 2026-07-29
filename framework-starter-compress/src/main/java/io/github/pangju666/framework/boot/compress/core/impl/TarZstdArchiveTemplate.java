@@ -69,7 +69,7 @@ public class TarZstdArchiveTemplate implements ArchiveTemplate {
 	 * 先进行TAR归档，再进行Zstd压缩，通过临时文件实现两步处理。
 	 * </p>
 	 *
-	 * @param inputFile 输入文件
+	 * @param inputFile  输入文件
 	 * @param outputFile 输出文件
 	 * @throws IOException IO异常
 	 * @since 2.1.0
@@ -92,7 +92,7 @@ public class TarZstdArchiveTemplate implements ArchiveTemplate {
 	 * 先进行TAR归档，再进行Zstd压缩，通过临时文件实现两步处理。
 	 * </p>
 	 *
-	 * @param inputFile 输入文件
+	 * @param inputFile    输入文件
 	 * @param outputStream 输出流
 	 * @throws IOException IO异常
 	 * @since 2.1.0
@@ -138,7 +138,7 @@ public class TarZstdArchiveTemplate implements ArchiveTemplate {
 	 * 先进行TAR归档，再进行Zstd压缩，通过临时文件实现两步处理。
 	 * </p>
 	 *
-	 * @param inputFiles 输入文件集合
+	 * @param inputFiles   输入文件集合
 	 * @param outputStream 输出流
 	 * @throws IOException IO异常
 	 * @since 2.1.0

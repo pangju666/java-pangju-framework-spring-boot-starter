@@ -66,7 +66,7 @@ public class GzipCompressTemplate implements CompressTemplate {
 	/**
 	 * 将输入流压缩到输出流。
 	 *
-	 * @param inputStream 输入流
+	 * @param inputStream  输入流
 	 * @param outputStream 输出流
 	 * @throws IOException IO异常
 	 * @since 2.1.0
@@ -80,7 +80,7 @@ public class GzipCompressTemplate implements CompressTemplate {
 	 * 将输入流压缩到输出文件。
 	 *
 	 * @param inputStream 输入流
-	 * @param outputFile 输出文件
+	 * @param outputFile  输出文件
 	 * @throws IOException IO异常
 	 * @since 2.1.0
 	 */
@@ -95,7 +95,7 @@ public class GzipCompressTemplate implements CompressTemplate {
 	 * 根据资源大小自动设置缓冲区大小以优化性能。
 	 * </p>
 	 *
-	 * @param resource IO资源
+	 * @param resource     IO资源
 	 * @param outputStream 输出流
 	 * @throws IOException IO异常
 	 * @since 2.1.0
@@ -113,7 +113,7 @@ public class GzipCompressTemplate implements CompressTemplate {
 	 * 根据资源大小自动设置缓冲区大小以优化性能。
 	 * </p>
 	 *
-	 * @param resource IO资源
+	 * @param resource   IO资源
 	 * @param outputFile 输出文件
 	 * @throws IOException IO异常
 	 * @since 2.1.0

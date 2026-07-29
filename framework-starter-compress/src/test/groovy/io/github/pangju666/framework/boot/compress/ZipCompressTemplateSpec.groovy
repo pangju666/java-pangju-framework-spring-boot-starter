@@ -2,7 +2,6 @@ package io.github.pangju666.framework.boot.compress
 
 import io.github.pangju666.framework.boot.compress.autoconfigure.CompressAutoConfiguration
 import io.github.pangju666.framework.boot.compress.core.ArchiveEncryptTemplate
-
 import io.github.pangju666.framework.boot.compress.core.ArchiveTemplate
 import io.github.pangju666.framework.boot.compress.core.impl.ZipArchiveTemplate
 import org.springframework.beans.factory.annotation.Autowired

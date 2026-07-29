@@ -64,13 +64,6 @@ import java.util.Objects;
  */
 public class GraphicsMagickUtils {
 	/**
-	 * 日志记录器
-	 *
-	 * @since 2.1.0
-	 */
-	private static final Logger LOGGER = LoggerFactory.getLogger(GraphicsMagickUtils.class);
-
-	/**
 	 * 瓦片输出文件前缀
 	 *
 	 * @since 2.1.0
@@ -82,6 +75,12 @@ public class GraphicsMagickUtils {
 	 * @since 2.1.0
 	 */
 	protected static final int TILE_PYRAMID_BASE = 2;
+	/**
+	 * 日志记录器
+	 *
+	 * @since 2.1.0
+	 */
+	private static final Logger LOGGER = LoggerFactory.getLogger(GraphicsMagickUtils.class);
 
 	/**
 	 * 私有构造函数，防止实例化。
@@ -98,15 +97,15 @@ public class GraphicsMagickUtils {
 	 * 瓦片尺寸根据图像实际尺寸和行列数自动计算，确保覆盖整个图像区域。
 	 * </p>
 	 *
-	 * @param inputFile   输入图像文件
-	 * @param outputDir   输出目录
-	 * @param options     瓦片切分选项
-	 * @param connection  GraphicsMagick连接对象
-	 * @throws IOException         IO异常
-	 * @throws GMServiceException  GraphicsMagick服务异常
-	 * @throws GMException         GraphicsMagick执行异常
-	 * @since 2.1.0
+	 * @param inputFile  输入图像文件
+	 * @param outputDir  输出目录
+	 * @param options    瓦片切分选项
+	 * @param connection GraphicsMagick连接对象
+	 * @throws IOException        IO异常
+	 * @throws GMServiceException GraphicsMagick服务异常
+	 * @throws GMException        GraphicsMagick执行异常
 	 * @see GridTileOptions
+	 * @since 2.1.0
 	 */
 	public static void splitByGrid(final File inputFile, final File outputDir, final GridTileOptions options,
 	                               final GMConnection connection) throws IOException, GMServiceException, GMException {
@@ -143,15 +142,15 @@ public class GraphicsMagickUtils {
 	 * </ul>
 	 * </p>
 	 *
-	 * @param inputFile   输入图像文件
-	 * @param outputDir   输出目录
-	 * @param options     瓦片切分选项
-	 * @param connection  GraphicsMagick连接对象
-	 * @throws IOException         IO异常
-	 * @throws GMServiceException  GraphicsMagick服务异常
-	 * @throws GMException         GraphicsMagick执行异常
-	 * @since 2.1.0
+	 * @param inputFile  输入图像文件
+	 * @param outputDir  输出目录
+	 * @param options    瓦片切分选项
+	 * @param connection GraphicsMagick连接对象
+	 * @throws IOException        IO异常
+	 * @throws GMServiceException GraphicsMagick服务异常
+	 * @throws GMException        GraphicsMagick执行异常
 	 * @see SizeTileOptions
+	 * @since 2.1.0
 	 */
 	public static void splitTilesBySize(final File inputFile, final File outputDir, final SizeTileOptions options,
 	                                    final GMConnection connection) throws IOException, GMServiceException, GMException {
@@ -218,12 +217,12 @@ public class GraphicsMagickUtils {
 	 * @param file       图像文件
 	 * @param connection GraphicsMagick连接对象
 	 * @return 图像尺寸对象，包含宽度、高度和EXIF方向
-	 * @throws IOException              IO异常
-	 * @throws GMServiceException      GraphicsMagick服务异常
-	 * @throws GMException              GraphicsMagick执行异常
-	 * @throws ImageParsingException   图像解析异常
-	 * @since 2.1.0
+	 * @throws IOException           IO异常
+	 * @throws GMServiceException    GraphicsMagick服务异常
+	 * @throws GMException           GraphicsMagick执行异常
+	 * @throws ImageParsingException 图像解析异常
 	 * @see ImageSize
+	 * @since 2.1.0
 	 */
 	public static ImageSize identifySize(final File file, final GMConnection connection) throws IOException, GMServiceException, GMException {
 		String[] result = executeIdentifyByFormat(file, connection, "%w", "%h", "%[EXIF:Orientation]");
@@ -254,11 +253,11 @@ public class GraphicsMagickUtils {
 	 * @param file       图像文件
 	 * @param connection GraphicsMagick连接对象
 	 * @return 图像识别结果对象
-	 * @throws IOException         IO异常
-	 * @throws GMServiceException  GraphicsMagick服务异常
-	 * @throws GMException         GraphicsMagick执行异常
-	 * @since 2.1.0
+	 * @throws IOException        IO异常
+	 * @throws GMServiceException GraphicsMagick服务异常
+	 * @throws GMException        GraphicsMagick执行异常
 	 * @see IdentifyResult
+	 * @since 2.1.0
 	 */
 	public static IdentifyResult identify(final File file, final GMConnection connection) throws IOException, GMServiceException, GMException {
 		/*
@@ -315,9 +314,9 @@ public class GraphicsMagickUtils {
 	 * @param connection GraphicsMagick连接对象
 	 * @param formats    格式字符串数组，支持GraphicsMagick的格式占位符
 	 * @return 解析后的结果数组，每个元素对应一个格式字符串的输出
-	 * @throws IOException              IO异常
-	 * @throws GMServiceException      GraphicsMagick服务异常
-	 * @throws GMException              GraphicsMagick执行异常
+	 * @throws IOException        IO异常
+	 * @throws GMServiceException GraphicsMagick服务异常
+	 * @throws GMException        GraphicsMagick执行异常
 	 * @since 2.1.0
 	 */
 	public static String[] executeIdentifyByFormat(final File file, final GMConnection connection, final String... formats)
@@ -353,17 +352,17 @@ public class GraphicsMagickUtils {
 	 * </ul>
 	 * </p>
 	 *
-	 * @param inputFile   输入图像文件
-	 * @param outputDir   输出目录
-	 * @param layerSize   当前层级的图像尺寸
-	 * @param canvasSize  画布尺寸
-	 * @param options     瓦片切分选项
-	 * @param level       当前层级（金字塔模式使用）
-	 * @param connection  GraphicsMagick连接对象
+	 * @param inputFile  输入图像文件
+	 * @param outputDir  输出目录
+	 * @param layerSize  当前层级的图像尺寸
+	 * @param canvasSize 画布尺寸
+	 * @param options    瓦片切分选项
+	 * @param level      当前层级（金字塔模式使用）
+	 * @param connection GraphicsMagick连接对象
 	 * @return 当前层级的输出目录
-	 * @throws IOException         IO异常
-	 * @throws GMServiceException  GraphicsMagick服务异常
-	 * @throws GMException         GraphicsMagick执行异常
+	 * @throws IOException        IO异常
+	 * @throws GMServiceException GraphicsMagick服务异常
+	 * @throws GMException        GraphicsMagick执行异常
 	 * @since 2.1.0
 	 */
 	protected static File doSplitTiles(final File inputFile, final File outputDir, final ImageSize layerSize,

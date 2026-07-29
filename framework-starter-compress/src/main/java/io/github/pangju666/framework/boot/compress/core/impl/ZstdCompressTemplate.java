@@ -64,7 +64,7 @@ public class ZstdCompressTemplate implements CompressTemplate {
 	 * 如果配置了压缩级别且在有效范围内，则使用指定的压缩级别进行压缩。
 	 * </p>
 	 *
-	 * @param inputStream 输入流
+	 * @param inputStream  输入流
 	 * @param outputStream 输出流
 	 * @throws IOException IO异常
 	 * @since 2.1.0
@@ -86,7 +86,7 @@ public class ZstdCompressTemplate implements CompressTemplate {
 	 * </p>
 	 *
 	 * @param inputStream 输入流
-	 * @param outputFile 输出文件
+	 * @param outputFile  输出文件
 	 * @throws IOException IO异常
 	 * @since 2.1.0
 	 */
@@ -106,7 +106,7 @@ public class ZstdCompressTemplate implements CompressTemplate {
 	 * 如果配置了压缩级别且在有效范围内，则使用指定的压缩级别进行压缩。
 	 * </p>
 	 *
-	 * @param resource IO资源
+	 * @param resource     IO资源
 	 * @param outputStream 输出流
 	 * @throws IOException IO异常
 	 * @since 2.1.0
@@ -127,7 +127,7 @@ public class ZstdCompressTemplate implements CompressTemplate {
 	 * 如果配置了压缩级别且在有效范围内，则使用指定的压缩级别进行压缩。
 	 * </p>
 	 *
-	 * @param resource IO资源
+	 * @param resource   IO资源
 	 * @param outputFile 输出文件
 	 * @throws IOException IO异常
 	 * @since 2.1.0

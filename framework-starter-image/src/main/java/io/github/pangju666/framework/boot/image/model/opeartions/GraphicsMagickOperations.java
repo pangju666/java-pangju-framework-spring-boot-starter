@@ -17,10 +17,12 @@
 package io.github.pangju666.framework.boot.image.model.opeartions;
 
 import io.github.pangju666.commons.image.model.ImageSize;
-import io.github.pangju666.commons.io.lang.IOConstants;
 import io.github.pangju666.commons.io.resource.IOResource;
 import io.github.pangju666.commons.io.utils.FileUtils;
-import io.github.pangju666.framework.boot.image.enums.*;
+import io.github.pangju666.framework.boot.image.enums.CropType;
+import io.github.pangju666.framework.boot.image.enums.Direction;
+import io.github.pangju666.framework.boot.image.enums.ImageCompressionType;
+import io.github.pangju666.framework.boot.image.enums.ResampleFilter;
 import io.github.pangju666.framework.boot.image.exception.ImageOperationException;
 import io.github.pangju666.framework.boot.image.io.resource.GraphicsMagickResource;
 import io.github.pangju666.framework.boot.image.lang.ImageConstants;
@@ -223,7 +225,7 @@ public class GraphicsMagickOperations extends ImageOperations<GraphicsMagickOper
 	 */
 	protected IOResource watermarkImage;
 	/**
-	 *  图像水印相对缩放因子，默认为0.15
+	 * 图像水印相对缩放因子，默认为0.15
 	 *
 	 * @since 2.1.0
 	 */
@@ -735,7 +737,7 @@ public class GraphicsMagickOperations extends ImageOperations<GraphicsMagickOper
 	 * 设置模糊效果。
 	 *
 	 * @param radius 模糊半径
-	 * @param sigma 模糊sigma值
+	 * @param sigma  模糊sigma值
 	 * @return 当前实例，支持链式调用
 	 * @since 2.1.0
 	 */
@@ -772,7 +774,7 @@ public class GraphicsMagickOperations extends ImageOperations<GraphicsMagickOper
 	 * 设置高斯模糊效果。
 	 *
 	 * @param radius 高斯模糊半径
-	 * @param sigma 高斯模糊sigma值
+	 * @param sigma  高斯模糊sigma值
 	 * @return 当前实例，支持链式调用
 	 * @since 2.1.0
 	 */
@@ -834,7 +836,7 @@ public class GraphicsMagickOperations extends ImageOperations<GraphicsMagickOper
 	 * 设置锐化效果。
 	 *
 	 * @param radius 锐化半径
-	 * @param sigma 锐化sigma值
+	 * @param sigma  锐化sigma值
 	 * @return 当前实例，支持链式调用
 	 * @since 2.1.0
 	 */
@@ -870,9 +872,9 @@ public class GraphicsMagickOperations extends ImageOperations<GraphicsMagickOper
 	/**
 	 * 设置反锐化掩模效果。
 	 *
-	 * @param radius 半径
-	 * @param sigma sigma值
-	 * @param amount 强度
+	 * @param radius    半径
+	 * @param sigma     sigma值
+	 * @param amount    强度
 	 * @param threshold 阈值
 	 * @return 当前实例，支持链式调用
 	 * @since 2.1.0
@@ -1022,7 +1024,7 @@ public class GraphicsMagickOperations extends ImageOperations<GraphicsMagickOper
 	/**
 	 * 设置图像水印。
 	 *
-	 * @param watermarkImage 图像水印资源
+	 * @param watermarkImage     图像水印资源
 	 * @param watermarkImageSize 图像水印尺寸
 	 * @return 当前实例，支持链式调用
 	 * @since 2.1.0
@@ -1118,7 +1120,7 @@ public class GraphicsMagickOperations extends ImageOperations<GraphicsMagickOper
 	 *
 	 * <p>尽量使用图像水印</p>
 	 *
-	 * @param text 文字水印文本
+	 * @param text     文字水印文本
 	 * @param fontFile 字体文件（TTF格式）
 	 * @return 当前实例，支持链式调用
 	 * @throws IOException IO异常
@@ -1139,7 +1141,7 @@ public class GraphicsMagickOperations extends ImageOperations<GraphicsMagickOper
 	 *
 	 * <p>尽量使用图像水印</p>
 	 *
-	 * @param text 文字水印文本
+	 * @param text     文字水印文本
 	 * @param fontName 字体名称
 	 * @return 当前实例，支持链式调用
 	 * @since 2.1.0
@@ -1410,7 +1412,7 @@ public class GraphicsMagickOperations extends ImageOperations<GraphicsMagickOper
 
 		this.triggerConvert = false;
 
-    }
+	}
 
 	/**
 	 * 判断是否需要执行convert命令。
@@ -1428,7 +1430,7 @@ public class GraphicsMagickOperations extends ImageOperations<GraphicsMagickOper
 	/**
 	 * 转换为GraphicsMagick的convert命令操作。
 	 *
-	 * @param resource 图像资源
+	 * @param resource   图像资源
 	 * @param outputFile 输出文件
 	 * @return GMOperation对象
 	 * @throws IOException IO异常
@@ -1443,8 +1445,8 @@ public class GraphicsMagickOperations extends ImageOperations<GraphicsMagickOper
 	/**
 	 * 转换为GraphicsMagick的convert命令操作。
 	 *
-	 * @param resource 图像资源
-	 * @param outputFile 输出文件
+	 * @param resource       图像资源
+	 * @param outputFile     输出文件
 	 * @param isIntermediate 是否为中间文件
 	 * @return GMOperation对象
 	 * @throws IOException IO异常
@@ -1489,10 +1491,10 @@ public class GraphicsMagickOperations extends ImageOperations<GraphicsMagickOper
 	/**
 	 * 转换为GraphicsMagick的composite命令操作。
 	 *
-	 * @param resource 图像资源
+	 * @param resource   图像资源
 	 * @param outputFile 输出文件
 	 * @return GMOperation对象
-	 * @throws IOException IO异常
+	 * @throws IOException             IO异常
 	 * @throws ImageOperationException 图像操作异常
 	 * @since 2.1.0
 	 */
@@ -1579,7 +1581,7 @@ public class GraphicsMagickOperations extends ImageOperations<GraphicsMagickOper
 	 * 包括自动方向、裁剪、缩放、旋转和翻转。
 	 * </p>
 	 *
-	 * @param imageSize 图像尺寸
+	 * @param imageSize   图像尺寸
 	 * @param gmOperation GMOperation对象
 	 * @since 2.1.0
 	 */
@@ -1705,7 +1707,7 @@ public class GraphicsMagickOperations extends ImageOperations<GraphicsMagickOper
 	 * 支持中心裁剪、偏移裁剪和矩形裁剪。
 	 * </p>
 	 *
-	 * @param imageSize 图像尺寸
+	 * @param imageSize   图像尺寸
 	 * @param gmOperation GMOperation对象
 	 * @since 2.1.0
 	 */
@@ -1833,7 +1835,7 @@ public class GraphicsMagickOperations extends ImageOperations<GraphicsMagickOper
 	 * 包括DPI、去除元数据和输出文件。
 	 * </p>
 	 *
-	 * @param outputFile 输出文件
+	 * @param outputFile  输出文件
 	 * @param gmOperation GMOperation对象
 	 * @since 2.1.0
 	 */
@@ -1858,9 +1860,9 @@ public class GraphicsMagickOperations extends ImageOperations<GraphicsMagickOper
 	/**
 	 * 反锐化掩模核参数记录。
 	 *
-	 * @param radius 半径
-	 * @param sigma sigma值
-	 * @param amount 强度
+	 * @param radius    半径
+	 * @param sigma     sigma值
+	 * @param amount    强度
 	 * @param threshold 阈值
 	 * @since 2.1.0
 	 */

@@ -42,12 +42,12 @@ public interface ImageOperationsTemplate {
 	 * 使用资源本身的格式作为输出格式。
 	 * </p>
 	 *
-	 * @param resource 图像资源
+	 * @param resource     图像资源
 	 * @param outputStream 输出流
-	 * @param operations 图像操作配置
+	 * @param operations   图像操作配置
 	 * @throws UnsupportedResourceException 不支持的资源异常
-	 * @throws ImageParsingException 图像解析异常
-	 * @throws ImageOperationException 图像操作异常
+	 * @throws ImageParsingException        图像解析异常
+	 * @throws ImageOperationException      图像操作异常
 	 * @since 2.1.0
 	 */
 	default void process(IOResource resource, OutputStream outputStream, ImageOperations<?> operations)
@@ -60,13 +60,13 @@ public interface ImageOperationsTemplate {
 	/**
 	 * 处理图像资源并输出到输出流。
 	 *
-	 * @param resource 图像资源
+	 * @param resource     图像资源
 	 * @param outputStream 输出流
 	 * @param outputFormat 输出格式
-	 * @param operations 图像操作配置
+	 * @param operations   图像操作配置
 	 * @throws UnsupportedResourceException 不支持的资源异常
-	 * @throws ImageParsingException 图像解析异常
-	 * @throws ImageOperationException 图像操作异常
+	 * @throws ImageParsingException        图像解析异常
+	 * @throws ImageOperationException      图像操作异常
 	 * @since 2.1.0
 	 */
 	void process(IOResource resource, OutputStream outputStream, String outputFormat, ImageOperations<?> operations)
@@ -75,12 +75,12 @@ public interface ImageOperationsTemplate {
 	/**
 	 * 处理图像资源并输出到文件。
 	 *
-	 * @param resource 图像资源
+	 * @param resource   图像资源
 	 * @param outputFile 输出文件
 	 * @param operations 图像操作配置
 	 * @throws UnsupportedResourceException 不支持的资源异常
-	 * @throws ImageParsingException 图像解析异常
-	 * @throws ImageOperationException 图像操作异常
+	 * @throws ImageParsingException        图像解析异常
+	 * @throws ImageOperationException      图像操作异常
 	 * @since 2.1.0
 	 */
 	void process(IOResource resource, File outputFile, ImageOperations<?> operations)

@@ -44,7 +44,7 @@ public class OcrEngineException extends NestedRuntimeException {
 	 * 构造函数。
 	 *
 	 * @param message 异常消息（可为null）
-	 * @param cause 原始异常（可为null）
+	 * @param cause   原始异常（可为null）
 	 * @since 2.1.0
 	 */
 	public OcrEngineException(@Nullable String message, @Nullable Throwable cause) {

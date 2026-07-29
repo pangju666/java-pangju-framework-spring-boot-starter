@@ -51,24 +51,22 @@ import java.util.UUID;
  * 使用连接池管理GraphicsMagick进程，提高性能和资源利用率。
  * </p>
  *
- * @since 2.1.0
  * @see PooledGMService
+ * @since 2.1.0
  */
 public class GraphicsMagickOperationsTemplate implements ImageOperationsTemplate {
-	/**
-	 * 日志记录器
-	 *
-	 * @since 2.1.0
-	 */
-	private static final Logger LOGGER = LoggerFactory.getLogger(GraphicsMagickOperationsTemplate.class);
-
 	/**
 	 * 临时文件前缀。
 	 *
 	 * @since 2.1.0
 	 */
 	protected static final String TMP_FILE_PREFIX = "graphics-magick-tmp-";
-
+	/**
+	 * 日志记录器
+	 *
+	 * @since 2.1.0
+	 */
+	private static final Logger LOGGER = LoggerFactory.getLogger(GraphicsMagickOperationsTemplate.class);
 	/**
 	 * GraphicsMagick连接池服务。
 	 *
@@ -92,14 +90,14 @@ public class GraphicsMagickOperationsTemplate implements ImageOperationsTemplate
 	 * 通过临时文件实现输出流输出，处理完成后自动清理临时文件。
 	 * </p>
 	 *
-	 * @param resource 图像资源
+	 * @param resource     图像资源
 	 * @param outputStream 输出流
 	 * @param outputFormat 输出格式
-	 * @param operations 图像操作配置
+	 * @param operations   图像操作配置
 	 * @throws UnsupportedResourceException 不支持的资源异常
-	 * @throws ImageParsingException 图像解析异常
-	 * @throws ImageOperationException 图像操作异常
-	 * @throws ImageEngineException 图像引擎异常
+	 * @throws ImageParsingException        图像解析异常
+	 * @throws ImageOperationException      图像操作异常
+	 * @throws ImageEngineException         图像引擎异常
 	 * @since 2.1.0
 	 */
 	@Override
@@ -136,13 +134,13 @@ public class GraphicsMagickOperationsTemplate implements ImageOperationsTemplate
 	 * 如果需要图像水印且需要其他变换操作，会先生成中间文件再执行composite命令。
 	 * </p>
 	 *
-	 * @param resource 图像资源
+	 * @param resource   图像资源
 	 * @param outputFile 输出文件
 	 * @param operations 图像操作配置
 	 * @throws UnsupportedResourceException 不支持的资源异常
-	 * @throws ImageParsingException 图像解析异常
-	 * @throws ImageOperationException 图像操作异常
-	 * @throws ImageEngineException 图像引擎异常
+	 * @throws ImageParsingException        图像解析异常
+	 * @throws ImageOperationException      图像操作异常
+	 * @throws ImageEngineException         图像引擎异常
 	 * @since 2.1.0
 	 */
 	@Override
@@ -275,10 +273,10 @@ public class GraphicsMagickOperationsTemplate implements ImageOperationsTemplate
 	 * </p>
 	 *
 	 * @param connection GraphicsMagick连接
-	 * @param operation GMOperation对象
+	 * @param operation  GMOperation对象
 	 * @return 执行结果
-	 * @throws IOException IO异常
-	 * @throws ImageEngineException 图像引擎异常
+	 * @throws IOException             IO异常
+	 * @throws ImageEngineException    图像引擎异常
 	 * @throws ImageOperationException 图像操作异常
 	 * @since 2.1.0
 	 */
@@ -290,11 +288,11 @@ public class GraphicsMagickOperationsTemplate implements ImageOperationsTemplate
 	 * 执行GraphicsMagick命令。
 	 *
 	 * @param connection GraphicsMagick连接
-	 * @param operation GMOperation对象
-	 * @param autoClose 是否自动关闭连接
+	 * @param operation  GMOperation对象
+	 * @param autoClose  是否自动关闭连接
 	 * @return 执行结果
-	 * @throws IOException IO异常
-	 * @throws ImageEngineException 图像引擎异常
+	 * @throws IOException             IO异常
+	 * @throws ImageEngineException    图像引擎异常
 	 * @throws ImageOperationException 图像操作异常
 	 * @since 2.1.0
 	 */

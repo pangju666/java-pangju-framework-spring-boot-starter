@@ -37,6 +37,7 @@ import org.jspecify.annotations.Nullable;
  * @since 2.1.0
  */
 public record IdentifyResult(@Nullable String format, @Nullable String signature, @Nullable ImageSize imageSize,
-                             @Nullable Boolean hasAlpha, @Nullable Integer depth, @Nullable ImageCompressionType compression,
+                             @Nullable Boolean hasAlpha, @Nullable Integer depth,
+                             @Nullable ImageCompressionType compression,
                              @Nullable Integer quality) {
 }

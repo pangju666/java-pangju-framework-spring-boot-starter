@@ -49,15 +49,15 @@ import java.util.Objects;
  * </p>
  *
  * @author pangju666
- * @since 2.1.0
  * @see IOResource
+ * @since 2.1.0
  */
 public class GraphicsMagickResource extends IOResource {
 	/**
 	 * GraphicsMagick识别结果，包含图像的尺寸、格式、透明通道等信息
 	 *
-	 * @since 2.1.0
 	 * @see IdentifyResult
+	 * @since 2.1.0
 	 */
 	protected final IdentifyResult identifyResult;
 
@@ -70,8 +70,8 @@ public class GraphicsMagickResource extends IOResource {
 	 *
 	 * @param resource   基础资源对象
 	 * @param connection GraphicsMagick连接对象
-	 * @throws IOException              IO异常
-	 * @throws GMServiceException      GraphicsMagick服务异常
+	 * @throws IOException                  IO异常
+	 * @throws GMServiceException           GraphicsMagick服务异常
 	 * @throws UnsupportedResourceException 不支持的资源类型异常
 	 * @since 2.1.0
 	 */
@@ -106,8 +106,8 @@ public class GraphicsMagickResource extends IOResource {
 	 *
 	 * @param filePath   图像文件路径
 	 * @param connection GraphicsMagick连接对象
-	 * @throws IOException              IO异常
-	 * @throws GMServiceException      GraphicsMagick服务异常
+	 * @throws IOException                  IO异常
+	 * @throws GMServiceException           GraphicsMagick服务异常
 	 * @throws UnsupportedResourceException 不支持的资源类型异常
 	 * @since 2.1.0
 	 */
@@ -138,8 +138,8 @@ public class GraphicsMagickResource extends IOResource {
 	 *
 	 * @param file       图像文件对象
 	 * @param connection GraphicsMagick连接对象
-	 * @throws IOException              IO异常
-	 * @throws GMServiceException      GraphicsMagick服务异常
+	 * @throws IOException                  IO异常
+	 * @throws GMServiceException           GraphicsMagick服务异常
 	 * @throws UnsupportedResourceException 不支持的资源类型异常
 	 * @since 2.1.0
 	 */
@@ -171,8 +171,8 @@ public class GraphicsMagickResource extends IOResource {
 	 *
 	 * @param bytes      图像字节数组
 	 * @param connection GraphicsMagick连接对象
-	 * @throws IOException              IO异常
-	 * @throws GMServiceException      GraphicsMagick服务异常
+	 * @throws IOException                  IO异常
+	 * @throws GMServiceException           GraphicsMagick服务异常
 	 * @throws UnsupportedResourceException 不支持的资源类型异常
 	 * @since 2.1.0
 	 */
@@ -203,9 +203,9 @@ public class GraphicsMagickResource extends IOResource {
 	 * 基于输入流构造GraphicsMagick资源。
 	 *
 	 * @param inputStream 图像数据输入流
-	 * @param connection GraphicsMagick连接对象
-	 * @throws IOException              IO异常
-	 * @throws GMServiceException      GraphicsMagick服务异常
+	 * @param connection  GraphicsMagick连接对象
+	 * @throws IOException                  IO异常
+	 * @throws GMServiceException           GraphicsMagick服务异常
 	 * @throws UnsupportedResourceException 不支持的资源类型异常
 	 * @since 2.1.0
 	 */

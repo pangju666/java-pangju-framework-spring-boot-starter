@@ -37,7 +37,7 @@ public class TarArchiveTemplate implements ArchiveTemplate {
 	/**
 	 * 将单个文件归档到输出文件。
 	 *
-	 * @param inputFile 输入文件
+	 * @param inputFile  输入文件
 	 * @param outputFile 输出文件
 	 * @throws IOException IO异常
 	 * @since 2.1.0
@@ -50,7 +50,7 @@ public class TarArchiveTemplate implements ArchiveTemplate {
 	/**
 	 * 将单个文件归档到输出流。
 	 *
-	 * @param inputFile 输入文件
+	 * @param inputFile    输入文件
 	 * @param outputStream 输出流
 	 * @throws IOException IO异常
 	 * @since 2.1.0
@@ -76,7 +76,7 @@ public class TarArchiveTemplate implements ArchiveTemplate {
 	/**
 	 * 将多个文件归档到输出流。
 	 *
-	 * @param inputFiles 输入文件集合
+	 * @param inputFiles   输入文件集合
 	 * @param outputStream 输出流
 	 * @throws IOException IO异常
 	 * @since 2.1.0

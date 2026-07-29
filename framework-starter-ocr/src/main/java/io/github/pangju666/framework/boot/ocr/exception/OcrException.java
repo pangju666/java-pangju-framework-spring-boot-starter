@@ -39,7 +39,7 @@ public class OcrException extends NestedRuntimeException {
 	 * 根据文件和原因构造异常信息，如果文件不为空则包含文件路径。
 	 * </p>
 	 *
-	 * @param file 处理的文件（可为null）
+	 * @param file   处理的文件（可为null）
 	 * @param reason 异常原因（可为null）
 	 * @since 2.1.0
 	 */
@@ -63,9 +63,9 @@ public class OcrException extends NestedRuntimeException {
 	 * 根据文件、原因和原始异常构造异常信息，如果文件不为空则包含文件路径。
 	 * </p>
 	 *
-	 * @param file 处理的文件（可为null）
+	 * @param file   处理的文件（可为null）
 	 * @param reason 异常原因（可为null）
-	 * @param cause 原始异常（可为null）
+	 * @param cause  原始异常（可为null）
 	 * @since 2.1.0
 	 */
 	public OcrException(@Nullable File file, @Nullable String reason, @Nullable Throwable cause) {
@@ -76,7 +76,7 @@ public class OcrException extends NestedRuntimeException {
 	 * 构造函数。
 	 *
 	 * @param message 异常消息（可为null）
-	 * @param cause 原始异常（可为null）
+	 * @param cause   原始异常（可为null）
 	 * @since 2.1.0
 	 */
 	public OcrException(@Nullable String message, @Nullable Throwable cause) {

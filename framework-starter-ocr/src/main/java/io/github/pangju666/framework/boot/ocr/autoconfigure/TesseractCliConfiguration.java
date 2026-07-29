@@ -78,7 +78,7 @@ class TesseractCliConfiguration {
 	 * 使用Tesseract CLI工厂和配置的对象池配置创建执行器对象池实例。
 	 * </p>
 	 *
-	 * @param factory Tesseract CLI工厂
+	 * @param factory    Tesseract CLI工厂
 	 * @param properties OCR配置属性
 	 * @return 执行器对象池实例
 	 * @since 2.1.0
@@ -99,7 +99,7 @@ class TesseractCliConfiguration {
 	 * </p>
 	 *
 	 * @param tesseractCliPool 执行器对象池
-	 * @param properties OCR配置属性
+	 * @param properties       OCR配置属性
 	 * @return Tesseract CLI OCR模板实例，如果未配置路径则返回null
 	 * @since 2.1.0
 	 */

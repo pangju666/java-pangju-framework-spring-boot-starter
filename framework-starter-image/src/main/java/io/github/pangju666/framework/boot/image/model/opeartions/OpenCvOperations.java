@@ -54,13 +54,13 @@ public class OpenCvOperations extends ImageOperations<OpenCvOperations> {
 	/**
 	 * 缩放插值标志，默认为INTER_LANCZOS4
 	 *
-	 * @since 2.1.0
 	 * @see opencv_imgproc#INTER_LANCZOS4
+	 * @since 2.1.0
 	 */
 	protected int resizeInterpolationFlag = opencv_imgproc.INTER_LANCZOS4;
 
 	/**
-	 *  图像水印资源
+	 * 图像水印资源
 	 *
 	 * @since 2.1.0
 	 */
@@ -449,7 +449,7 @@ public class OpenCvOperations extends ImageOperations<OpenCvOperations> {
 	 * 设置高斯模糊效果。
 	 *
 	 * @param kernelSize 高斯核大小
-	 * @param sigmaX 高斯核在X方向的标准差
+	 * @param sigmaX     高斯核在X方向的标准差
 	 * @return 当前实例，支持链式调用
 	 * @since 2.1.0
 	 */
@@ -551,7 +551,7 @@ public class OpenCvOperations extends ImageOperations<OpenCvOperations> {
 	 *
 	 * @param thresh 阈值，范围0-255
 	 * @param maxVal 最大值，范围0-255
-	 * @param type 阈值类型
+	 * @param type   阈值类型
 	 * @return 当前实例，支持链式调用
 	 * @since 2.1.0
 	 */
@@ -578,11 +578,11 @@ public class OpenCvOperations extends ImageOperations<OpenCvOperations> {
 	/**
 	 * 设置自适应阈值化效果。
 	 *
-	 * @param maxValue 最大值，范围0-255
+	 * @param maxValue       最大值，范围0-255
 	 * @param adaptiveMethod 自适应方法
-	 * @param thresholdType 阈值类型
-	 * @param blockSize 块大小，必须大于等于3且为奇数
-	 * @param c 常数
+	 * @param thresholdType  阈值类型
+	 * @param blockSize      块大小，必须大于等于3且为奇数
+	 * @param c              常数
 	 * @return 当前实例，支持链式调用
 	 * @since 2.1.0
 	 */
@@ -657,16 +657,16 @@ public class OpenCvOperations extends ImageOperations<OpenCvOperations> {
 		this.watermarkImage = null;
 		this.watermarkImageOption = new ImageWatermarkOption();
 
-    }
+	}
 
 	/**
 	 * 阈值参数记录。
 	 *
 	 * @param thresh 阈值
 	 * @param maxVal 最大值
-	 * @param type 阈值类型
-	 * @since 2.1.0
+	 * @param type   阈值类型
 	 * @see opencv_imgproc#threshold(Mat, Mat, double, double, int)
+	 * @since 2.1.0
 	 */
 	public record ThresholdArgs(double thresh, double maxVal, int type) {
 	}
@@ -674,14 +674,15 @@ public class OpenCvOperations extends ImageOperations<OpenCvOperations> {
 	/**
 	 * 自适应阈值参数记录。
 	 *
-	 * @param maxValue 最大值
+	 * @param maxValue       最大值
 	 * @param adaptiveMethod 自适应方法
-	 * @param thresholdType 阈值类型
-	 * @param blockSize 块大小
-	 * @param c 常数
-	 * @since 2.1.0
+	 * @param thresholdType  阈值类型
+	 * @param blockSize      块大小
+	 * @param c              常数
 	 * @see opencv_imgproc#adaptiveThreshold(Mat, Mat, double, int, int, int, double)
+	 * @since 2.1.0
 	 */
-	public record AdaptiveThresholdArgs(double maxValue, int adaptiveMethod, int thresholdType, int blockSize, double c) {
+	public record AdaptiveThresholdArgs(double maxValue, int adaptiveMethod, int thresholdType, int blockSize,
+	                                    double c) {
 	}
 }

@@ -459,5 +459,5 @@ public class ImageIOOperations extends ImageOperations<ImageIOOperations> {
 		this.watermarkImage = null;
 		this.watermarkImageOption = new ImageWatermarkOption();
 
-    }
+	}
 }

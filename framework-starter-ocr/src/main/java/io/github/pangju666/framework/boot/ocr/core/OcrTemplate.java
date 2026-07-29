@@ -57,7 +57,7 @@ public interface OcrTemplate {
 	 * </p>
 	 *
 	 * @param resource 图像资源
-	 * @param dpi 每英寸点数（DPI），可为null表示使用默认值
+	 * @param dpi      每英寸点数（DPI），可为null表示使用默认值
 	 * @return 识别出的文本内容
 	 * @since 2.1.0
 	 */

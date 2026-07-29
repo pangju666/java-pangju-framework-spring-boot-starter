@@ -21,17 +21,17 @@ import spock.lang.Specification
 	MybatisPlusAutoConfiguration.class
 ], loader = SpringBootContextLoader.class)
 class MybatisPlusISqlInjectorSpec extends Specification {
-    @Autowired
+	@Autowired
 	ISqlInjector sqlInjector
 	@Autowired
 	MybatisPlusProperties mybatisPlusProperties
 
-    def "测试是否正确装配Bean"() {
-        expect:
+	def "测试是否正确装配Bean"() {
+		expect:
 		sqlInjector != null
-		sqlInjector instanceof TableLogicFillSqlInjector;
+		sqlInjector instanceof TableLogicFillSqlInjector
 
 		mybatisPlusProperties != null
 		mybatisPlusProperties.getGlobalConfig().getSqlInjector() instanceof TableLogicFillSqlInjector
-    }
+	}
 }

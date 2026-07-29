@@ -66,9 +66,9 @@ public class SevenZArchiveTemplate implements ArchiveTemplate, ArchiveEncryptTem
 	 * 如果配置了压缩方法，则使用指定的压缩方法进行归档。
 	 * </p>
 	 *
-	 * @param inputFile 输入文件
+	 * @param inputFile  输入文件
 	 * @param outputFile 输出文件
-	 * @param password 加密密码
+	 * @param password   加密密码
 	 * @throws IOException IO异常
 	 * @since 2.1.0
 	 */
@@ -89,7 +89,7 @@ public class SevenZArchiveTemplate implements ArchiveTemplate, ArchiveEncryptTem
 	 *
 	 * @param inputFiles 输入文件列表
 	 * @param outputFile 输出文件
-	 * @param password 加密密码
+	 * @param password   加密密码
 	 * @throws IOException IO异常
 	 * @since 2.1.0
 	 */
@@ -109,9 +109,9 @@ public class SevenZArchiveTemplate implements ArchiveTemplate, ArchiveEncryptTem
 	 * 如果配置了压缩方法，则使用指定的压缩方法进行归档。
 	 * </p>
 	 *
-	 * @param inputFile 输入文件
+	 * @param inputFile    输入文件
 	 * @param outputStream 输出流
-	 * @param password 加密密码
+	 * @param password     加密密码
 	 * @throws IOException IO异常
 	 * @since 2.1.0
 	 */
@@ -139,9 +139,9 @@ public class SevenZArchiveTemplate implements ArchiveTemplate, ArchiveEncryptTem
 	 * 如果配置了压缩方法，则使用指定的压缩方法进行归档。
 	 * </p>
 	 *
-	 * @param inputFiles 输入文件列表
+	 * @param inputFiles   输入文件列表
 	 * @param outputStream 输出流
-	 * @param password 加密密码
+	 * @param password     加密密码
 	 * @throws IOException IO异常
 	 * @since 2.1.0
 	 */
@@ -168,7 +168,7 @@ public class SevenZArchiveTemplate implements ArchiveTemplate, ArchiveEncryptTem
 	 * 如果配置了压缩方法，则使用指定的压缩方法进行归档。
 	 * </p>
 	 *
-	 * @param inputFile 输入文件
+	 * @param inputFile  输入文件
 	 * @param outputFile 输出文件
 	 * @throws IOException IO异常
 	 * @since 2.1.0
@@ -189,7 +189,7 @@ public class SevenZArchiveTemplate implements ArchiveTemplate, ArchiveEncryptTem
 	 * 如果配置了压缩方法，则使用指定的压缩方法进行归档。
 	 * </p>
 	 *
-	 * @param inputFile 输入文件
+	 * @param inputFile    输入文件
 	 * @param outputStream 输出流
 	 * @throws IOException IO异常
 	 * @since 2.1.0
@@ -238,7 +238,7 @@ public class SevenZArchiveTemplate implements ArchiveTemplate, ArchiveEncryptTem
 	 * 如果配置了压缩方法，则使用指定的压缩方法进行归档。
 	 * </p>
 	 *
-	 * @param inputFiles 输入文件集合
+	 * @param inputFiles   输入文件集合
 	 * @param outputStream 输出流
 	 * @throws IOException IO异常
 	 * @since 2.1.0

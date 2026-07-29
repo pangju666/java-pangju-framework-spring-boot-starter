@@ -45,20 +45,20 @@ import java.util.Objects;
  * 基于OpenCV实现图像处理，支持丰富的图像变换、滤镜和水印操作。
  * </p>
  *
- * @since 2.1.0
  * @see ImageProcessor
+ * @since 2.1.0
  */
 public class OpenCvOperationsTemplate implements ImageOperationsTemplate {
 	/**
 	 * 处理图像资源并输出到输出流。
 	 *
-	 * @param resource 图像资源
+	 * @param resource     图像资源
 	 * @param outputStream 输出流
 	 * @param outputFormat 输出格式
-	 * @param operations 图像操作配置
+	 * @param operations   图像操作配置
 	 * @throws UnsupportedResourceException 不支持的资源异常
-	 * @throws ImageParsingException 图像解析异常
-	 * @throws ImageOperationException 图像操作异常
+	 * @throws ImageParsingException        图像解析异常
+	 * @throws ImageOperationException      图像操作异常
 	 * @since 2.1.0
 	 */
 	@Override
@@ -80,12 +80,12 @@ public class OpenCvOperationsTemplate implements ImageOperationsTemplate {
 	/**
 	 * 处理图像资源并输出到文件。
 	 *
-	 * @param resource 图像资源
+	 * @param resource   图像资源
 	 * @param outputFile 输出文件
 	 * @param operations 图像操作配置
 	 * @throws UnsupportedResourceException 不支持的资源异常
-	 * @throws ImageParsingException 图像解析异常
-	 * @throws ImageOperationException 图像操作异常
+	 * @throws ImageParsingException        图像解析异常
+	 * @throws ImageOperationException      图像操作异常
 	 * @since 2.1.0
 	 */
 	@Override
@@ -144,10 +144,10 @@ public class OpenCvOperationsTemplate implements ImageOperationsTemplate {
 	 * 将资源转换为ImageProcessor，执行变换、滤镜和水印操作。
 	 * </p>
 	 *
-	 * @param resource 图像资源
+	 * @param resource   图像资源
 	 * @param operations 图像操作配置
 	 * @return ImageProcessor对象
-	 * @throws ImageParsingException 图像解析异常
+	 * @throws ImageParsingException   图像解析异常
 	 * @throws ImageOperationException 图像操作异常
 	 * @since 2.1.0
 	 */
@@ -204,7 +204,7 @@ public class OpenCvOperationsTemplate implements ImageOperationsTemplate {
 	 * 包括裁剪、缩放、旋转和翻转。
 	 * </p>
 	 *
-	 * @param imageProcessor 图像处理器
+	 * @param imageProcessor  图像处理器
 	 * @param imageOperations OpenCV操作配置
 	 * @since 2.1.0
 	 */
@@ -270,7 +270,7 @@ public class OpenCvOperationsTemplate implements ImageOperationsTemplate {
 	 * 包括灰度化、亮度调整、对比度调整、透明度、锐化、模糊、浮雕和阈值化。
 	 * </p>
 	 *
-	 * @param imageProcessor 图像处理器
+	 * @param imageProcessor  图像处理器
 	 * @param imageOperations OpenCV操作配置
 	 * @since 2.1.0
 	 */
@@ -337,7 +337,7 @@ public class OpenCvOperationsTemplate implements ImageOperationsTemplate {
 	 * 支持图像水印和文字水印。
 	 * </p>
 	 *
-	 * @param imageProcessor 图像处理器
+	 * @param imageProcessor  图像处理器
 	 * @param imageOperations OpenCV操作配置
 	 * @throws ImageParsingException 图像解析异常
 	 * @since 2.1.0

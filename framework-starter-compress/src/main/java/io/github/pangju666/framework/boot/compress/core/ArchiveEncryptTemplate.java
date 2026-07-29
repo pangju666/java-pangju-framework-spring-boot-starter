@@ -17,9 +17,9 @@ public interface ArchiveEncryptTemplate {
 	/**
 	 * 将单个文件加密归档到输出文件。
 	 *
-	 * @param inputFile 输入文件
+	 * @param inputFile  输入文件
 	 * @param outputFile 输出文件
-	 * @param password 加密密码
+	 * @param password   加密密码
 	 * @throws IOException IO异常
 	 * @since 2.1.0
 	 */
@@ -30,7 +30,7 @@ public interface ArchiveEncryptTemplate {
 	 *
 	 * @param inputFiles 输入文件列表
 	 * @param outputFile 输出文件
-	 * @param password 加密密码
+	 * @param password   加密密码
 	 * @throws IOException IO异常
 	 * @since 2.1.0
 	 */
@@ -39,9 +39,9 @@ public interface ArchiveEncryptTemplate {
 	/**
 	 * 将单个文件加密归档到输出流。
 	 *
-	 * @param inputFile 输入文件
+	 * @param inputFile    输入文件
 	 * @param outputStream 输出流
-	 * @param password 加密密码
+	 * @param password     加密密码
 	 * @throws IOException IO异常
 	 * @since 2.1.0
 	 */
@@ -50,9 +50,9 @@ public interface ArchiveEncryptTemplate {
 	/**
 	 * 将多个文件加密归档到输出流。
 	 *
-	 * @param inputFiles 输入文件列表
+	 * @param inputFiles   输入文件列表
 	 * @param outputStream 输出流
-	 * @param password 加密密码
+	 * @param password     加密密码
 	 * @throws IOException IO异常
 	 * @since 2.1.0
 	 */

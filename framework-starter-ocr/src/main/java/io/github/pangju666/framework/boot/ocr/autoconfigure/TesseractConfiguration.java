@@ -82,7 +82,7 @@ class TesseractConfiguration {
 	 * 使用TessBaseAPI工厂和配置的对象池配置创建对象池实例。
 	 * </p>
 	 *
-	 * @param factory TessBaseAPI工厂
+	 * @param factory    TessBaseAPI工厂
 	 * @param properties OCR配置属性
 	 * @return TessBaseAPI对象池实例
 	 * @since 2.1.0
@@ -100,7 +100,7 @@ class TesseractConfiguration {
 	 * 使用TessBaseAPI对象池和配置属性创建OCR模板实例。
 	 * </p>
 	 *
-	 * @param pool TessBaseAPI对象池
+	 * @param pool       TessBaseAPI对象池
 	 * @param properties OCR配置属性
 	 * @return Tesseract OCR模板实例
 	 * @since 2.1.0

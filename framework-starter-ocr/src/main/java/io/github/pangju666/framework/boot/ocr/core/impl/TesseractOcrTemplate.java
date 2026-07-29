@@ -67,7 +67,7 @@ public class TesseractOcrTemplate implements OcrTemplate {
 	/**
 	 * 构造函数。
 	 *
-	 * @param pool TessBaseAPI对象池
+	 * @param pool       TessBaseAPI对象池
 	 * @param properties OCR配置属性
 	 * @since 2.1.0
 	 */
@@ -90,9 +90,9 @@ public class TesseractOcrTemplate implements OcrTemplate {
 	 * </ol>
 	 *
 	 * @param resource 图像资源
-	 * @param dpi 每英寸点数（DPI），可为null表示使用默认值
+	 * @param dpi      每英寸点数（DPI），可为null表示使用默认值
 	 * @return 识别出的文本内容
-	 * @throws OcrException 读取图像资源失败时抛出
+	 * @throws OcrException       读取图像资源失败时抛出
 	 * @throws OcrEngineException 从对象池获取实例失败时抛出
 	 * @since 2.1.0
 	 */

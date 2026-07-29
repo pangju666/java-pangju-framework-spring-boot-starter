@@ -490,7 +490,7 @@ public abstract class ImageOperations<T extends ImageOperations<T>> {
 	 * 强制将图像缩放到指定的宽度和高度，不考虑原始宽高比。
 	 * </p>
 	 *
-	 * @param targetWidth 目标宽度
+	 * @param targetWidth  目标宽度
 	 * @param targetHeight 目标高度
 	 * @return 当前实例，支持链式调用
 	 * @since 2.1.0
@@ -511,7 +511,7 @@ public abstract class ImageOperations<T extends ImageOperations<T>> {
 	 * 将图像缩放到指定的宽度和高度，保持原始宽高比。
 	 * </p>
 	 *
-	 * @param targetWidth 目标宽度
+	 * @param targetWidth  目标宽度
 	 * @param targetHeight 目标高度
 	 * @return 当前实例，支持链式调用
 	 * @since 2.1.0
@@ -647,7 +647,7 @@ public abstract class ImageOperations<T extends ImageOperations<T>> {
 	 * 从图像中心裁剪指定尺寸的区域。
 	 * </p>
 	 *
-	 * @param width 裁剪宽度
+	 * @param width  裁剪宽度
 	 * @param height 裁剪高度
 	 * @return 当前实例，支持链式调用
 	 * @since 2.1.0
@@ -667,10 +667,10 @@ public abstract class ImageOperations<T extends ImageOperations<T>> {
 	 * 根据四边的偏移量裁剪图像。
 	 * </p>
 	 *
-	 * @param topOffset 顶部偏移量
+	 * @param topOffset    顶部偏移量
 	 * @param bottomOffset 底部偏移量
-	 * @param leftOffset 左侧偏移量
-	 * @param rightOffset 右侧偏移量
+	 * @param leftOffset   左侧偏移量
+	 * @param rightOffset  右侧偏移量
 	 * @return 当前实例，支持链式调用
 	 * @since 2.1.0
 	 */
@@ -693,9 +693,9 @@ public abstract class ImageOperations<T extends ImageOperations<T>> {
 	 * 根据指定的矩形区域裁剪图像。
 	 * </p>
 	 *
-	 * @param x 矩形左上角X坐标
-	 * @param y 矩形左上角Y坐标
-	 * @param width 矩形宽度
+	 * @param x      矩形左上角X坐标
+	 * @param y      矩形左上角Y坐标
+	 * @param width  矩形宽度
 	 * @param height 矩形高度
 	 * @return 当前实例，支持链式调用
 	 * @since 2.1.0
