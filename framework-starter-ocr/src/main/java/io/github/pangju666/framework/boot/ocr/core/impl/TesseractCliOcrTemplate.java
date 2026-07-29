@@ -58,6 +58,13 @@ import java.util.UUID;
  */
 public class TesseractCliOcrTemplate implements OcrTemplate {
 	/**
+	 * 日志记录器。
+	 *
+	 * @since 2.1.0
+	 */
+	private static final Logger LOGGER = LoggerFactory.getLogger(TesseractCliOcrTemplate.class);
+
+	/**
 	 * 临时文件前缀。
 	 *
 	 * @since 2.1.0
@@ -69,12 +76,6 @@ public class TesseractCliOcrTemplate implements OcrTemplate {
 	 * @since 2.1.0
 	 */
 	protected static final String OUTPUT_FILE_EXTENSION = "txt";
-	/**
-	 * 日志记录器。
-	 *
-	 * @since 2.1.0
-	 */
-	private static final Logger LOGGER = LoggerFactory.getLogger(TesseractCliOcrTemplate.class);
 
 	/**
 	 * 命令行执行器对象池。

@@ -68,8 +68,8 @@ class TesseractConfiguration {
 	@Bean
 	public TessBaseAPIFactory tessBaseAPIFactory(OcrProperties properties) throws IOException {
 		if (StringUtils.hasText(properties.getTesseract().getDataPath())) {
-			return new TessBaseAPIFactory(properties.getTesseract().getDataPath(), properties.getTesseract().getLanguage(),
-				properties.getTesseract().getOem());
+			return new TessBaseAPIFactory(properties.getTesseract().getDataPath(),
+				properties.getTesseract().getLanguage(), properties.getTesseract().getOem());
 		} else {
 			return new TessBaseAPIFactory(TessBaseAPIFactory.LanguageType.CHINESE,
 				properties.getTesseract().getOem());

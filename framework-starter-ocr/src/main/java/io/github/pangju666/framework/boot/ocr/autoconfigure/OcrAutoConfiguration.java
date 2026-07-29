@@ -41,6 +41,11 @@ import org.springframework.context.annotation.Import;
  *   <li>{@code TESSERACT_CLI}：基于命令行的Tesseract CLI实现，兼容性更好，需要安装Tesseract CLI</li>
  * </ul>
  *
+ * <p><strong>依赖要求</strong></p>
+ * <ul>
+ *   <li>{@code TESSERACT_CLI}引擎：需要添加依赖{@code org.apache.commons:commons-exec}</li>
+ * </ul>
+ *
  * <p><strong>导入的配置类</strong></p>
  * <ul>
  *   <li>{@link TesseractConfiguration}：Tesseract API配置，当engine为TESSERACT时生效</li>
