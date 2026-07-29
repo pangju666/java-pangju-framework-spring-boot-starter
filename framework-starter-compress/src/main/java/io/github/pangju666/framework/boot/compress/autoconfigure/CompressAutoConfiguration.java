@@ -59,8 +59,8 @@ import org.springframework.context.annotation.Import;
  * <p>启用{@link CompressProperties}配置属性绑定，配置前缀为{@code pangju.compress}。</p>
  * <ul>
  *   <li>{@code pangju.compress.compression-type}：压缩类型（默认：GZIP）</li>
- *   <li>{@code pangju.compress.archive-type}：归档类型（默认：TAR_GZIP）</li>
- *   <li>{@code pangju.compress.archive-encrypt-type}：加密归档类型</li>
+ *   <li>{@code pangju.compress.archive-type}：归档类型（默认：ZIP）</li>
+ *   <li>{@code pangju.compress.archive-encrypt-type}：加密归档类型（默认：ZIP）</li>
  *   <li>{@code pangju.compress.gzip}：GZIP压缩配置</li>
  *   <li>{@code pangju.compress.xz}：XZ压缩配置</li>
  *   <li>{@code pangju.compress.zstd}：Zstd压缩配置</li>
