@@ -5,6 +5,8 @@ import io.github.pangju666.commons.io.utils.FileUtils;
 import io.github.pangju666.framework.boot.compress.autoconfigure.CompressProperties;
 import io.github.pangju666.framework.boot.compress.core.ArchiveEncryptTemplate;
 import io.github.pangju666.framework.boot.compress.core.ArchiveTemplate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -44,6 +46,13 @@ import java.util.UUID;
  * @since 2.1.0
  */
 public class ZipArchiveTemplate implements ArchiveTemplate, ArchiveEncryptTemplate {
+	/**
+	 * 日志记录器
+	 *
+	 * @since 2.1.0
+	 */
+	private static final Logger LOGGER = LoggerFactory.getLogger(ZipArchiveTemplate.class);
+
 	/**
 	 * 压缩级别。
 	 *
@@ -110,7 +119,9 @@ public class ZipArchiveTemplate implements ArchiveTemplate, ArchiveEncryptTempla
 		try (InputStream inputStream = FileUtils.newUnsynchronizedBufferedInputStream(tmpOutputFile)) {
 			inputStream.transferTo(outputStream);
 		} finally {
-			FileUtils.forceDeleteIfExist(tmpOutputFile);
+			if (!FileUtils.deleteQuietly(tmpOutputFile)) {
+				LOGGER.error("临时输出文件：{} 删除失败", tmpOutputFile.getAbsolutePath());
+			}
 		}
 	}
 
@@ -135,7 +146,9 @@ public class ZipArchiveTemplate implements ArchiveTemplate, ArchiveEncryptTempla
 		try (InputStream inputStream = FileUtils.newUnsynchronizedBufferedInputStream(tmpOutputFile)) {
 			inputStream.transferTo(outputStream);
 		} finally {
-			FileUtils.forceDeleteIfExist(tmpOutputFile);
+			if (!FileUtils.deleteQuietly(tmpOutputFile)) {
+				LOGGER.error("临时输出文件：{} 删除失败", tmpOutputFile.getAbsolutePath());
+			}
 		}
 	}
 

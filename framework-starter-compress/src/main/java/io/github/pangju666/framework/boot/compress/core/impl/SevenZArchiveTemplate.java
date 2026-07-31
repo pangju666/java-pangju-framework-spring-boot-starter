@@ -6,6 +6,8 @@ import io.github.pangju666.framework.boot.compress.autoconfigure.CompressPropert
 import io.github.pangju666.framework.boot.compress.core.ArchiveEncryptTemplate;
 import io.github.pangju666.framework.boot.compress.core.ArchiveTemplate;
 import org.apache.commons.compress.archivers.sevenz.SevenZMethod;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -43,6 +45,13 @@ import java.util.UUID;
  * @since 2.1.0
  */
 public class SevenZArchiveTemplate implements ArchiveTemplate, ArchiveEncryptTemplate {
+	/**
+	 * 日志记录器
+	 *
+	 * @since 2.1.0
+	 */
+	private static final Logger LOGGER = LoggerFactory.getLogger(SevenZArchiveTemplate.class);
+
 	/**
 	 * 7-Zip压缩方法。
 	 *
@@ -158,7 +167,9 @@ public class SevenZArchiveTemplate implements ArchiveTemplate, ArchiveEncryptTem
 		try (InputStream inputStream = FileUtils.newUnsynchronizedBufferedInputStream(tmpOutputFile)) {
 			inputStream.transferTo(outputStream);
 		} finally {
-			FileUtils.forceDeleteIfExist(tmpOutputFile);
+			if (!FileUtils.deleteQuietly(tmpOutputFile)) {
+				LOGGER.error("临时输出文件：{} 删除失败", tmpOutputFile.getAbsolutePath());
+			}
 		}
 	}
 
@@ -207,7 +218,9 @@ public class SevenZArchiveTemplate implements ArchiveTemplate, ArchiveEncryptTem
 		try (InputStream inputStream = FileUtils.newUnsynchronizedBufferedInputStream(tmpOutputFile)) {
 			inputStream.transferTo(outputStream);
 		} finally {
-			FileUtils.forceDeleteIfExist(tmpOutputFile);
+			if (!FileUtils.deleteQuietly(tmpOutputFile)) {
+				LOGGER.error("临时输出文件：{} 删除失败", tmpOutputFile.getAbsolutePath());
+			}
 		}
 	}
 
@@ -256,7 +269,9 @@ public class SevenZArchiveTemplate implements ArchiveTemplate, ArchiveEncryptTem
 		try (InputStream inputStream = FileUtils.newUnsynchronizedBufferedInputStream(tmpOutputFile)) {
 			inputStream.transferTo(outputStream);
 		} finally {
-			FileUtils.forceDeleteIfExist(tmpOutputFile);
+			if (!FileUtils.deleteQuietly(tmpOutputFile)) {
+				LOGGER.error("临时输出文件：{} 删除失败", tmpOutputFile.getAbsolutePath());
+			}
 		}
 	}
 }
