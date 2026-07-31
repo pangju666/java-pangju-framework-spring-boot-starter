@@ -190,10 +190,8 @@ public class TesseractCliOcrTemplate implements OcrTemplate {
 			} catch (IOException e) {
 				throw new OcrException("Tesseract 识别结果读取失败", e);
 			} finally {
-				try {
-					FileUtils.forceDeleteIfExist(outputFile);
-				} catch (IOException e) {
-					LOGGER.error("输出文件删除失败，路径：{}", outputFile.getAbsolutePath());
+				if (!FileUtils.deleteQuietly(outputFile)) {
+					LOGGER.error("临时输出文件删除失败，路径：{}", outputFile.getAbsolutePath());
 				}
 
 				if (Objects.nonNull(executor)) {

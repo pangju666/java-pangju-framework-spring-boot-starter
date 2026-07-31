@@ -100,13 +100,13 @@ class TesseractCliConfiguration {
 	 *
 	 * @param tesseractCliPool 执行器对象池
 	 * @param properties       OCR配置属性
-	 * @return Tesseract CLI OCR模板实例，如果未配置路径则返回null
+	 * @return {@link OcrTemplate} 实例，如果未配置路径则返回null
 	 * @since 2.1.0
 	 */
 	@ConditionalOnMissingBean(OcrTemplate.class)
 	@ConditionalOnBean(name = "tesseractCliPool")
 	@Bean
-	public TesseractCliOcrTemplate tesseractCliOcrTemplate(GenericObjectPool<Executor> tesseractCliPool, OcrProperties properties) {
+	public OcrTemplate ocrTemplate(GenericObjectPool<Executor> tesseractCliPool, OcrProperties properties) {
 		if (!StringUtils.hasText(properties.getTesseractCli().getPath())) {
 			LOGGER.error("未配置 Tesseract 进程可执行路径");
 			// 未配置有效 Tesseract 路径，跳过创建

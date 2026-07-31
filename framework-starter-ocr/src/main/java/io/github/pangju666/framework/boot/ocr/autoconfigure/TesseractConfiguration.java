@@ -102,13 +102,13 @@ class TesseractConfiguration {
 	 *
 	 * @param pool       TessBaseAPI对象池
 	 * @param properties OCR配置属性
-	 * @return Tesseract OCR模板实例
+	 * @return {@link OcrTemplate} 实例
 	 * @since 2.1.0
 	 */
 	@ConditionalOnMissingBean(OcrTemplate.class)
 	@ConditionalOnBean(name = "tessBaseAPIPool")
 	@Bean
-	public TesseractOcrTemplate tesseractOcrTemplate(GenericObjectPool<TessBaseAPI> pool, OcrProperties properties) {
+	public OcrTemplate ocrTemplate(GenericObjectPool<TessBaseAPI> pool, OcrProperties properties) {
 		return new TesseractOcrTemplate(pool, properties);
 	}
 }
