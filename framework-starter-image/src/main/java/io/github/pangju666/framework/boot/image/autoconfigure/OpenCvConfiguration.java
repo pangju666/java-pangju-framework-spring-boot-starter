@@ -53,12 +53,12 @@ class OpenCvConfiguration {
 	 *
 	 * <p>条件：当无其它 {@link ImageOperationsTemplate} Bean，并满足类与属性条件时注入。</p>
 	 *
-	 * @return {@link OpenCvOperationsTemplate} 实例
+	 * @return {@link ImageOperationsTemplate} 实例
 	 * @since 2.1.0
 	 */
 	@ConditionalOnMissingBean(ImageOperationsTemplate.class)
 	@Bean
-	public OpenCvOperationsTemplate openCvOperationsTemplate() {
+	public ImageOperationsTemplate imageOperationsTemplate() {
 		return new OpenCvOperationsTemplate();
 	}
 }

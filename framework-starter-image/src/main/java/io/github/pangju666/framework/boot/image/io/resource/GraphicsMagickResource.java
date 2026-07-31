@@ -50,6 +50,7 @@ import java.util.Objects;
  *
  * @author pangju666
  * @see IOResource
+ * @see GraphicsMagickUtils
  * @since 2.1.0
  */
 public class GraphicsMagickResource extends IOResource {

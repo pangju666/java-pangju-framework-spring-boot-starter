@@ -17,16 +17,14 @@
 package io.github.pangju666.framework.boot.image.utils;
 
 import io.github.pangju666.commons.image.model.ImageSize;
+import io.github.pangju666.commons.io.resource.IOResource;
 import io.github.pangju666.commons.io.utils.FileUtils;
-import io.github.pangju666.framework.boot.image.enums.ImageCompressionType;
-import io.github.pangju666.framework.boot.image.enums.TileLayout;
-import io.github.pangju666.framework.boot.image.enums.TileMode;
+import io.github.pangju666.framework.boot.image.enums.CompressionType;
+import io.github.pangju666.framework.boot.image.exception.ImageEngineException;
 import io.github.pangju666.framework.boot.image.exception.ImageParsingException;
+import io.github.pangju666.framework.boot.image.io.resource.GraphicsMagickResource;
 import io.github.pangju666.framework.boot.image.lang.ImageConstants;
 import io.github.pangju666.framework.boot.image.model.gm.IdentifyResult;
-import io.github.pangju666.framework.boot.image.model.tile.GridTileOptions;
-import io.github.pangju666.framework.boot.image.model.tile.SizeTileOptions;
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.EnumUtils;
@@ -41,40 +39,39 @@ import org.springframework.util.Assert;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
 
 /**
  * GraphicsMagick工具类。
  * <p>
- * 提供使用GraphicsMagick引擎进行图像处理的工具方法，包括图像信息识别、瓦片切分等功能。
+ * 提供使用GraphicsMagick引擎进行图像处理的工具方法，包括图像信息识别、资源转换等功能。
  * </p>
- * <p>
- * 主要功能：
+ *
+ * <p><strong>功能特性</strong></p>
  * <ul>
- *     <li>图像信息识别：获取图像尺寸、格式、压缩类型、质量等元数据</li>
- *     <li>瓦片切分：支持按网格和按尺寸两种切分方式，支持单一模式和金字塔模式</li>
- *     <li>支持DeepZoom和XYZ两种瓦片布局格式</li>
+ *   <li>图像信息识别：获取图像尺寸、格式、压缩类型、质量、EXIF方向等元数据</li>
+ *   <li>资源转换：将IOResource转换为GraphicsMagickResource以便于GraphicsMagick处理</li>
+ *   <li>自定义格式识别：支持使用GraphicsMagick格式占位符获取自定义图像信息</li>
  * </ul>
- * </p>
+ *
+ * <p><strong>使用场景</strong></p>
+ * <ul>
+ *   <li>图像元数据提取：获取图像的详细属性信息</li>
+ *   <li>图像预处理：获取图像尺寸和方向信息以便于后续处理</li>
+ *   <li>资源适配：将通用图像资源转换为GraphicsMagick专用资源</li>
+ * </ul>
+ *
+ * <p><strong>使用注意事项</strong></p>
+ * <ul>
+ *   <li>需要GraphicsMagick引擎支持</li>
+ *   <li>需要有效的GMConnection连接对象</li>
+ *   <li>处理大图像时可能需要较长时间和较多内存</li>
+ *   <li>GraphicsMagick输入文件路径不支持中文或非ASCII字符，需要使用纯英文路径，否则可能导致命令执行失败</li>
+ * </ul>
  *
  * @author pangju666
  * @since 2.1.0
  */
 public class GraphicsMagickUtils {
-	/**
-	 * 瓦片输出文件前缀
-	 *
-	 * @since 2.1.0
-	 */
-	protected static final String TILE_OUTPUT_FILE_PREFIX = "tile_";
-	/**
-	 * 金字塔模式基数
-	 *
-	 * @since 2.1.0
-	 */
-	protected static final int TILE_PYRAMID_BASE = 2;
 	/**
 	 * 日志记录器
 	 *
@@ -91,119 +88,40 @@ public class GraphicsMagickUtils {
 	}
 
 	/**
-	 * 按网格切分图像。
+	 * 将IOResource转换为GraphicsMagickResource。
 	 * <p>
-	 * 将图像按照指定的行数和列数切分成均匀的瓦片。
-	 * 瓦片尺寸根据图像实际尺寸和行列数自动计算，确保覆盖整个图像区域。
+	 * 如果资源已经是GraphicsMagickResource类型，直接返回。
+	 * 否则创建新的GraphicsMagickResource实例。
 	 * </p>
 	 *
-	 * @param inputFile  输入图像文件
-	 * @param outputDir  输出目录
-	 * @param options    瓦片切分选项
-	 * @param connection GraphicsMagick连接对象
-	 * @throws IOException        IO异常
-	 * @throws GMServiceException GraphicsMagick服务异常
-	 * @throws GMException        GraphicsMagick执行异常
-	 * @see GridTileOptions
-	 * @since 2.1.0
-	 */
-	public static void splitByGrid(final File inputFile, final File outputDir, final GridTileOptions options,
-	                               final GMConnection connection) throws IOException, GMServiceException, GMException {
-		Assert.notNull(outputDir, "outputDir 不可为 null");
-		Assert.notNull(options, "options 不可为 null");
-
-		ImageSize imageSize = identifySize(inputFile, connection);
-		ImageSize visualImageSize = imageSize.getVisualSize();
-
-		int tileWidth = (int) Math.ceil((double) visualImageSize.getWidth() / options.getCols());
-		int tileHeight = (int) Math.ceil((double) visualImageSize.getHeight() / options.getRows());
-
-		int canvasWidth = tileWidth * options.getCols();
-		int canvasHeight = tileHeight * options.getRows();
-		ImageSize canvasSize = new ImageSize(canvasWidth, canvasHeight);
-
-		SizeTileOptions sizeTileOptions = new SizeTileOptions(options);
-		sizeTileOptions.setMode(TileMode.SINGLE);
-		sizeTileOptions.setTileWidth(tileWidth);
-		sizeTileOptions.setTileHeight(tileHeight);
-
-		doSplitTiles(inputFile, outputDir, imageSize, canvasSize, sizeTileOptions, 0, connection);
-	}
-
-	/**
-	 * 按尺寸切分图像瓦片。
-	 * <p>
-	 * 将图像按照指定的瓦片尺寸进行切分，支持单一模式和金字塔模式。
-	 * </p>
-	 * <p>
-	 * <ul>
-	 * <li>单一模式：仅生成单一分辨率的瓦片。</li>
-	 * <li>金字塔模式：生成多级分辨率的瓦片，每级分辨率为上一级的1/2，适用于深度缩放场景。</li>
-	 * </ul>
-	 * </p>
+	 * <p><strong>处理步骤</strong></p>
+	 * <ol>
+	 *   <li>验证参数有效性</li>
+	 *   <li>检查资源类型</li>
+	 *   <li>如果是GraphicsMagickResource，直接返回</li>
+	 *   <li>否则创建新的GraphicsMagickResource实例</li>
+	 * </ol>
 	 *
-	 * @param inputFile  输入图像文件
-	 * @param outputDir  输出目录
-	 * @param options    瓦片切分选项
-	 * @param connection GraphicsMagick连接对象
-	 * @throws IOException        IO异常
-	 * @throws GMServiceException GraphicsMagick服务异常
-	 * @throws GMException        GraphicsMagick执行异常
-	 * @see SizeTileOptions
+	 * @param resource   图像资源，不能为null
+	 * @param connection GraphicsMagick连接，不能为null
+	 * @return GraphicsMagickResource实例
+	 * @throws ImageEngineException 图像引擎异常，当进程通信失败时抛出
+	 * @throws ImageParsingException 图像解析异常，当图像读取失败时抛出
 	 * @since 2.1.0
 	 */
-	public static void splitTilesBySize(final File inputFile, final File outputDir, final SizeTileOptions options,
-	                                    final GMConnection connection) throws IOException, GMServiceException, GMException {
-		Assert.notNull(outputDir, "outputDir 不可为 null");
-		Assert.notNull(options, "options 不可为 null");
+	public static GraphicsMagickResource toGraphicsMagickResource(final IOResource resource, final GMConnection connection) {
+		Assert.notNull(resource, "resource 不可为 null");
+		Assert.notNull(connection, "connection 不可为 null");
 
-		ImageSize imageSize = identifySize(inputFile, connection);
-		ImageSize visualImageSize = imageSize.getVisualSize();
-
-		if (options.getMode() == TileMode.SINGLE) {
-			int canvasWidth = (int) Math.ceil((double) visualImageSize.getWidth() / options.getTileWidth()) *
-				options.getTileWidth();
-			int canvasHeight = (int) Math.ceil((double) visualImageSize.getHeight() / options.getTileHeight()) *
-				options.getTileHeight();
-			ImageSize canvasSize = new ImageSize(canvasWidth, canvasHeight);
-
-			doSplitTiles(inputFile, outputDir, imageSize, canvasSize, options, 0, connection);
+		if (resource instanceof GraphicsMagickResource graphicsMagickResource) {
+			return graphicsMagickResource;
 		} else {
-			int maxLevel = 0;
-			long candidateWidth = options.getTileWidth();
-			long candidateHeight = options.getTileHeight();
-			while (candidateWidth < visualImageSize.getWidth() || candidateHeight < visualImageSize.getHeight()) {
-				candidateWidth *= TILE_PYRAMID_BASE;
-				candidateHeight *= TILE_PYRAMID_BASE;
-				maxLevel++;
-			}
-
-			List<File> levelOutputDirs = new ArrayList<>(maxLevel + 1);
 			try {
-				for (int level = 0; level <= maxLevel; level++) {
-					double scaleFactor = Math.pow(TILE_PYRAMID_BASE, level) / Math.pow(TILE_PYRAMID_BASE, maxLevel);
-					ImageSize layerTargetSize = imageSize.scale(scaleFactor);
-
-					int canvasWidth = ((layerTargetSize.getWidth() + options.getTileWidth() - 1) /
-						options.getTileWidth()) * options.getTileWidth();
-					int canvasHeight = ((layerTargetSize.getHeight() + options.getTileHeight() - 1) /
-						options.getTileHeight()) * options.getTileHeight();
-					ImageSize canvasSize = new ImageSize(canvasWidth, canvasHeight);
-
-					File levelOutputDir = doSplitTiles(inputFile, outputDir, layerTargetSize, canvasSize, options,
-						level, connection);
-					if (Objects.isNull(levelOutputDir)) {
-						throw new IOException();
-					} else {
-						levelOutputDirs.add(levelOutputDir);
-					}
-				}
-			} catch (Exception e) {
-				for (File dir : levelOutputDirs) {
-					FileUtils.forceDeleteIfExist(dir);
-				}
-
-				throw e;
+				return new GraphicsMagickResource(resource, connection);
+			} catch (GMServiceException e) {
+				throw new ImageEngineException("与 GraphicsMagick 进程通信时出现错误", e);
+			} catch (IOException e) {
+				throw new ImageParsingException("图像读取失败", e);
 			}
 		}
 	}
@@ -214,14 +132,30 @@ public class GraphicsMagickUtils {
 	 * 使用GraphicsMagick的identify命令获取图像的宽度和高度，并解析EXIF方向信息。
 	 * </p>
 	 *
-	 * @param file       图像文件
-	 * @param connection GraphicsMagick连接对象
+	 * <p><strong>处理步骤</strong></p>
+	 * <ol>
+	 *   <li>执行identify命令，获取宽度、高度和EXIF方向</li>
+	 *   <li>解析EXIF方向，如果解析失败则使用默认值</li>
+	 *   <li>解析宽度和高度，如果解析失败则抛出异常</li>
+	 *   <li>返回包含尺寸和方向信息的ImageSize对象</li>
+	 * </ol>
+	 *
+	 * <p><strong>注意事项</strong></p>
+	 * <ul>
+	 *   <li>返回的尺寸是图像的物理尺寸，不考虑EXIF方向</li>
+	 *   <li>EXIF方向用于后续的自动方向校正</li>
+	 *   <li>如果图像没有EXIF方向信息，使用默认值1（正常方向）</li>
+	 * </ul>
+	 *
+	 * @param file       图像文件，不能为null
+	 * @param connection GraphicsMagick连接对象，不能为null
 	 * @return 图像尺寸对象，包含宽度、高度和EXIF方向
-	 * @throws IOException           IO异常
-	 * @throws GMServiceException    GraphicsMagick服务异常
-	 * @throws GMException           GraphicsMagick执行异常
-	 * @throws ImageParsingException 图像解析异常
+	 * @throws IOException           IO异常，当文件操作失败时抛出
+	 * @throws GMServiceException    GraphicsMagick服务异常，当服务不可用时抛出
+	 * @throws GMException           GraphicsMagick执行异常，当命令执行失败时抛出
+	 * @throws ImageParsingException 图像解析异常，当尺寸解析失败时抛出
 	 * @see ImageSize
+	 * @see #executeIdentifyByFormat(File, GMConnection, String...)
 	 * @since 2.1.0
 	 */
 	public static ImageSize identifySize(final File file, final GMConnection connection) throws IOException, GMServiceException, GMException {
@@ -250,13 +184,42 @@ public class GraphicsMagickUtils {
 	 * 透明通道、位深度、压缩类型和质量等。
 	 * </p>
 	 *
-	 * @param file       图像文件
-	 * @param connection GraphicsMagick连接对象
-	 * @return 图像识别结果对象
-	 * @throws IOException        IO异常
-	 * @throws GMServiceException GraphicsMagick服务异常
-	 * @throws GMException        GraphicsMagick执行异常
+	 * <p><strong>获取的信息</strong></p>
+	 * <ul>
+	 *   <li>尺寸：宽度、高度、EXIF方向</li>
+	 *   <li>格式：图像格式（如JPEG、PNG等）</li>
+	 *   <li>签名：图像的唯一标识符</li>
+	 *   <li>透明通道：是否存在透明通道</li>
+	 *   <li>位深度：图像的位深度（如8、16、32等）</li>
+	 *   <li>压缩类型：图像使用的压缩算法</li>
+	 *   <li>质量：图像质量（适用于有损压缩格式）</li>
+	 * </ul>
+	 *
+	 * <p><strong>处理步骤</strong></p>
+	 * <ol>
+	 *   <li>执行identify命令，获取所有格式化信息</li>
+	 *   <li>解析格式、签名、透明通道、压缩类型等字符串信息</li>
+	 *   <li>解析EXIF方向，如果解析失败则使用默认值</li>
+	 *   <li>解析尺寸、位深度、质量等数值信息，如果解析失败则设为null</li>
+	 *   <li>返回包含所有信息的IdentifyResult对象</li>
+	 * </ol>
+	 *
+	 * <p><strong>注意事项</strong></p>
+	 * <ul>
+	 *   <li>某些信息可能不存在，对应的字段将为null</li>
+	 *   <li>位深度和质量信息可能不适用于所有格式</li>
+	 *   <li>压缩类型枚举会忽略大小写</li>
+	 * </ul>
+	 *
+	 * @param file       图像文件，不能为null
+	 * @param connection GraphicsMagick连接对象，不能为null
+	 * @return 图像识别结果对象，包含所有可获取的图像信息
+	 * @throws IOException        IO异常，当文件操作失败时抛出
+	 * @throws GMServiceException GraphicsMagick服务异常，当服务不可用时抛出
+	 * @throws GMException        GraphicsMagick执行异常，当命令执行失败时抛出
 	 * @see IdentifyResult
+	 * @see CompressionType
+	 * @see #executeIdentifyByFormat(File, GMConnection, String...)
 	 * @since 2.1.0
 	 */
 	public static IdentifyResult identify(final File file, final GMConnection connection) throws IOException, GMServiceException, GMException {
@@ -278,8 +241,8 @@ public class GraphicsMagickUtils {
 		String format = ArrayUtils.get(result, 2);
 		String signature = ArrayUtils.get(result, 4);
 		Boolean hasAlpha = BooleanUtils.toBooleanObject(ArrayUtils.get(result, 5));
-		ImageCompressionType compression = EnumUtils.getEnumIgnoreCase(ImageCompressionType.class,
-			ArrayUtils.get(result, 6), ImageCompressionType.NONE);
+		CompressionType compression = EnumUtils.getEnumIgnoreCase(CompressionType.class,
+			ArrayUtils.get(result, 6), CompressionType.NONE);
 
 		int orientation;
 		try {
@@ -310,17 +273,46 @@ public class GraphicsMagickUtils {
 	 * 使用指定的格式字符串执行GraphicsMagick的identify命令，返回解析后的结果数组。
 	 * </p>
 	 *
-	 * @param file       图像文件
-	 * @param connection GraphicsMagick连接对象
-	 * @param formats    格式字符串数组，支持GraphicsMagick的格式占位符
+	 * <p><strong>格式占位符</strong></p>
+	 * <ul>
+	 *   <li>%w：图像宽度</li>
+	 *   <li>%h：图像高度</li>
+	 *   <li>%m：图像格式</li>
+	 *   <li>%[EXIF:Orientation]：EXIF方向</li>
+	 *   <li>%#：图像签名</li>
+	 *   <li>%A：是否存在透明通道</li>
+	 *   <li>%q：位深度</li>
+	 *   <li>%C：压缩类型</li>
+	 *   <li>%Q：图像质量</li>
+	 * </ul>
+	 *
+	 * <p><strong>处理步骤</strong></p>
+	 * <ol>
+	 *   <li>验证参数有效性</li>
+	 *   <li>构建GMOperation命令，添加identify和格式参数</li>
+	 *   <li>执行GraphicsMagick命令</li>
+	 *   <li>按竖线分隔符解析结果</li>
+	 *   <li>返回结果数组</li>
+	 * </ol>
+	 *
+	 * <p><strong>注意事项</strong></p>
+	 * <ul>
+	 *   <li>格式字符串使用竖线（|）作为分隔符</li>
+	 *   <li>结果数组长度与格式字符串数组长度一致</li>
+	 *   <li>如果某个格式占位符无法解析，对应位置可能为空字符串</li>
+	 * </ul>
+	 *
+	 * @param file       图像文件，不能为null，必须是图像类型
+	 * @param connection GraphicsMagick连接对象，不能为null
+	 * @param formats    格式字符串数组，不能为空，支持GraphicsMagick的格式占位符
 	 * @return 解析后的结果数组，每个元素对应一个格式字符串的输出
-	 * @throws IOException        IO异常
-	 * @throws GMServiceException GraphicsMagick服务异常
-	 * @throws GMException        GraphicsMagick执行异常
+	 * @throws IOException        IO异常，当文件操作失败时抛出
+	 * @throws GMServiceException GraphicsMagick服务异常，当服务不可用时抛出
+	 * @throws GMException        GraphicsMagick执行异常，当命令执行失败时抛出
 	 * @since 2.1.0
 	 */
-	public static String[] executeIdentifyByFormat(final File file, final GMConnection connection, final String... formats)
-		throws IOException, GMServiceException, GMException {
+	public static String[] executeIdentifyByFormat(final File file, final GMConnection connection,
+	                                               final String... formats) throws IOException, GMServiceException, GMException {
 
 		Assert.notEmpty(formats, "formats 不可为空");
 		Assert.notNull(connection, "connection 不可为 null");
@@ -334,104 +326,5 @@ public class GraphicsMagickUtils {
 		String result = connection.execute(operation.toString());
 		LOGGER.info("GraphicsMagick 进程执行成功，命令：{}，结果：{}", operation, result);
 		return StringUtils.splitPreserveAllTokens(result, '|');
-	}
-
-	/**
-	 * 执行瓦片切分操作。
-	 * <p>
-	 * 内部方法，实际执行图像的切分、重命名和目录组织操作。
-	 * </p>
-	 * <p>
-	 * 处理流程：
-	 * <ul>
-	 *     <li>根据EXIF方向自动校正图像方向</li>
-	 *     <li>如果是金字塔模式，按层级缩放图像</li>
-	 *     <li>扩展画布到指定尺寸（使用背景色填充）</li>
-	 *     <li>按瓦片尺寸裁剪图像</li>
-	 *     <li>根据布局格式重命名和组织瓦片文件</li>
-	 * </ul>
-	 * </p>
-	 *
-	 * @param inputFile  输入图像文件
-	 * @param outputDir  输出目录
-	 * @param layerSize  当前层级的图像尺寸
-	 * @param canvasSize 画布尺寸
-	 * @param options    瓦片切分选项
-	 * @param level      当前层级（金字塔模式使用）
-	 * @param connection GraphicsMagick连接对象
-	 * @return 当前层级的输出目录
-	 * @throws IOException        IO异常
-	 * @throws GMServiceException GraphicsMagick服务异常
-	 * @throws GMException        GraphicsMagick执行异常
-	 * @since 2.1.0
-	 */
-	protected static File doSplitTiles(final File inputFile, final File outputDir, final ImageSize layerSize,
-	                                   final ImageSize canvasSize, final SizeTileOptions options, final int level,
-	                                   final GMConnection connection) throws IOException, GMServiceException, GMException {
-
-		GMOperation operation = new GMOperation();
-		operation.addRawArg("convert");
-		operation.addImage(inputFile);
-
-		if (layerSize.getOrientation() != ImageConstants.NORMAL_EXIF_ORIENTATION) {
-			operation.addRawArg("-auto-orient");
-		}
-
-		ImageSize layerVisualImageSize = layerSize.getVisualSize();
-
-		if (options.getMode() == TileMode.PYRAMID) {
-			operation.resize(layerVisualImageSize.getWidth(),
-				layerVisualImageSize.getHeight(), '!');
-		}
-
-		if (canvasSize.getHeight() != layerVisualImageSize.getHeight() ||
-			canvasSize.getWidth() != layerVisualImageSize.getWidth()) {
-			operation.background(options.getBackgroundColor());
-			operation.addRawArg("-extent");
-			operation.addRawArg(canvasSize.getWidth() + "x" + canvasSize.getHeight());
-		}
-
-		operation.crop(options.getTileWidth(), options.getTileHeight());
-		operation.addRawArg("+adjoin");
-
-		File levelOutputDir = outputDir;
-		if (options.getMode() == TileMode.PYRAMID) {
-			levelOutputDir = new File(outputDir.getAbsolutePath(), String.valueOf(level));
-		}
-		operation.addRawArg(FilenameUtils.separatorsToUnix(levelOutputDir.getAbsolutePath()) + "/" +
-			TILE_OUTPUT_FILE_PREFIX + "%d." + options.getOutputFormat());
-
-		FileUtils.forceMkdir(levelOutputDir);
-
-		connection.execute(operation.toString());
-		LOGGER.info("GraphicsMagick 进程执行成功，命令：{}", operation);
-
-		int totalCols = canvasSize.getWidth() / options.getTileWidth();
-		File[] tileFiles = levelOutputDir.listFiles();
-		if (Objects.isNull(tileFiles)) {
-			return null;
-		}
-		try {
-			for (File tileFile : tileFiles) {
-				String indexStr = StringUtils.substringAfter(FilenameUtils.getBaseName(tileFile.getName()),
-					TILE_OUTPUT_FILE_PREFIX);
-				int index = Integer.parseInt(indexStr);
-				int x = index % totalCols;
-				int y = index / totalCols;
-
-				if (options.getLayout() == TileLayout.DEEP_ZOOM) {
-					FileUtils.replaceBaseName(tileFile, x + "_" + y);
-				} else {
-					File newTileFile = FileUtils.replaceBaseName(tileFile, String.valueOf(y));
-					File newTileDir = new File(FilenameUtils.separatorsToUnix(
-						levelOutputDir.getAbsolutePath()) + "/" + x);
-					FileUtils.moveFileToDirectory(newTileFile, newTileDir, true);
-				}
-			}
-		} catch (Exception e) {
-			FileUtils.forceDelete(levelOutputDir);
-			throw e;
-		}
-		return levelOutputDir;
 	}
 }

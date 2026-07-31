@@ -45,7 +45,7 @@ package io.github.pangju666.framework.boot.image.enums;
  * @author pangju666
  * @since 2.1.0
  */
-public enum ImageCompressionType {
+public enum CompressionType {
 	/**
 	 * 无压缩
 	 *
@@ -156,7 +156,7 @@ public enum ImageCompressionType {
 	 * @param graphicsMagickCompressionType GraphicsMagick压缩类型字符串
 	 * @since 2.1.0
 	 */
-	ImageCompressionType(String graphicsMagickCompressionType) {
+	CompressionType(String graphicsMagickCompressionType) {
 		this.graphicsMagickCompressionType = graphicsMagickCompressionType;
 	}
 }

@@ -26,13 +26,15 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * <p><strong>前缀</strong>：{@code pangju.image}</p>
  * <p><strong>概述</strong></p>
  * <ul>
- *   <li>选择图像处理实现类型（{@code GRAPHICS_MAGICK} 或 {@code IMAGEIO}）。</li>
+ *   <li>选择图像处理实现类型（{@code GRAPHICS_MAGICK}、{@code IMAGEIO} 或 {@code OPENCV}）。</li>
+ *   <li>选择图像分割实现类型（{@code GRAPHICS_MAGICK}）。</li>
  *   <li>提供 GraphicsMagick 相关配置（可执行路径与连接池）。</li>
  * </ul>
  *
  * <p><strong>属性映射（含默认值）</strong></p>
  * <ul>
  *   <li>{@code pangju.image.type}：处理实现类型，默认 {@code IMAGEIO}。</li>
+ *   <li>{@code pangju.image.split-type}：分割实现类型，默认 {@code GRAPHICS_MAGICK}。</li>
  *   <li>{@code pangju.image.graphics-magick.path}：GraphicsMagick 可执行文件路径，默认 {@code gm}（从系统环境解析）。</li>
  *   <li>{@code pangju.image.graphics-magick.max-idle}：最大空闲连接数，默认 {@code 0}。</li>
  *   <li>{@code pangju.image.graphics-magick.min-idle}：最小空闲连接数，默认 {@code 0}。</li>
@@ -64,6 +66,14 @@ public class ImageProperties {
 	 */
 	private Type type = Type.IMAGEIO;
 	/**
+	 * 图像分割实现类型（默认使用 {@code GRAPHICS_MAGICK}）。
+	 *
+	 * <p>对应属性：{@code pangju.image.split-type}</p>
+	 *
+	 * @since 2.1.0
+	 */
+	private SplitType splitType = SplitType.GRAPHICS_MAGICK;
+	/**
 	 * GraphicsMagick 相关配置。
 	 *
 	 * <p>配置组前缀：{@code pangju.image.graphics-magick}</p>
@@ -88,6 +98,14 @@ public class ImageProperties {
 		this.type = type;
 	}
 
+	public SplitType getSplitType() {
+		return splitType;
+	}
+
+	public void setSplitType(SplitType splitType) {
+		this.splitType = splitType;
+	}
+
 	/**
 	 * 图像处理实现类型。
 	 *
@@ -104,6 +122,20 @@ public class ImageProperties {
 		GRAPHICS_MAGICK,
 		IMAGEIO,
 		OPENCV
+	}
+
+	/**
+	 * 图像分割实现类型。
+	 *
+	 * <p>可选值：</p>
+	 * <ul>
+	 *   <li>{@code GRAPHICS_MAGICK}：使用 GraphicsMagick 进行分割。</li>
+	 * </ul>
+	 *
+	 * @since 2.1.0
+	 */
+	public enum SplitType {
+		GRAPHICS_MAGICK
 	}
 
 	/**

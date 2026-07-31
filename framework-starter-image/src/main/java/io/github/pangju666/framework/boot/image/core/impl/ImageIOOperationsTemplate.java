@@ -30,6 +30,8 @@ import io.github.pangju666.framework.boot.image.model.opeartions.ImageIOOperatio
 import io.github.pangju666.framework.boot.image.model.opeartions.ImageOperations;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.ObjectUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
@@ -45,22 +47,55 @@ import java.util.Objects;
  * ImageIO图像操作模板实现类。
  * <p>
  * 基于Java ImageIO实现图像处理，支持基本的图像变换、滤镜和水印操作。
+ * 轻量级实现，无需额外依赖，兼容性好，适合简单的图像处理需求。
  * </p>
  *
+ * <p><strong>功能特性</strong></p>
+ * <ul>
+ *   <li>支持图像变换：裁剪、缩放、旋转、翻转</li>
+ *   <li>支持滤镜效果：灰度化、亮度调整、对比度调整、透明度、锐化、模糊、自定义滤镜</li>
+ *   <li>支持水印功能：图像水印和文字水印</li>
+ *   <li>纯Java实现，无需本地依赖</li>
+ * </ul>
+ *
+ * <p><strong>使用注意事项</strong></p>
+ * <ul>
+ *   <li>使用{@link io.github.pangju666.commons.image.io.resource.ImageIOResource}作为图像资源类型</li>
+ *   <li>功能相对简单，不支持复杂的图像操作</li>
+ *   <li>性能不如GraphicsMagick和OpenCV</li>
+ *   <li>某些高级滤镜效果可能不支持</li>
+ * </ul>
+ *
  * @see ImageProcessor
+ * @see ImageIOOperations
  * @since 2.1.0
  */
 public class ImageIOOperationsTemplate implements ImageOperationsTemplate {
+	private static final Logger LOGGER = LoggerFactory.getLogger(ImageIOOperationsTemplate.class);
+
 	/**
 	 * 处理图像资源并输出到输出流。
+	 * <p>
+	 * 将图像资源转换为ImageProcessor，执行指定的图像操作，然后输出到输出流。
+	 * </p>
 	 *
-	 * @param resource     图像资源
-	 * @param outputStream 输出流
-	 * @param outputFormat 输出格式
-	 * @param operations   图像操作配置
-	 * @throws UnsupportedResourceException 不支持的资源异常
-	 * @throws ImageParsingException        图像解析异常
-	 * @throws ImageOperationException      图像操作异常
+	 * <p><strong>处理步骤</strong></p>
+	 * <ol>
+	 *   <li>检查输出格式是否支持</li>
+	 *   <li>将图像资源转换为ImageProcessor</li>
+	 *   <li>执行图像变换操作</li>
+	 *   <li>执行滤镜操作</li>
+	 *   <li>执行水印操作</li>
+	 *   <li>输出到输出流</li>
+	 * </ol>
+	 *
+	 * @param resource     图像资源，不能为null
+	 * @param outputStream 输出流，不能为null
+	 * @param outputFormat 输出格式，不能为null
+	 * @param operations   图像操作配置，不能为null
+	 * @throws UnsupportedResourceException 不支持的资源异常，当输出格式不被支持时抛出
+	 * @throws ImageParsingException        图像解析异常，当图像解析失败时抛出
+	 * @throws ImageOperationException      图像操作异常，当图像操作失败时抛出
 	 * @since 2.1.0
 	 */
 	@Override
@@ -81,13 +116,28 @@ public class ImageIOOperationsTemplate implements ImageOperationsTemplate {
 
 	/**
 	 * 处理图像资源并输出到文件。
+	 * <p>
+	 * 将图像资源转换为ImageProcessor，执行指定的图像操作，然后输出到文件。
+	 * 使用文件扩展名作为输出格式。
+	 * </p>
 	 *
-	 * @param resource   图像资源
-	 * @param outputFile 输出文件
-	 * @param operations 图像操作配置
-	 * @throws UnsupportedResourceException 不支持的资源异常
-	 * @throws ImageParsingException        图像解析异常
-	 * @throws ImageOperationException      图像操作异常
+	 * <p><strong>处理步骤</strong></p>
+	 * <ol>
+	 *   <li>从文件名提取输出格式</li>
+	 *   <li>检查输出格式是否支持</li>
+	 *   <li>将图像资源转换为ImageProcessor</li>
+	 *   <li>执行图像变换操作</li>
+	 *   <li>执行滤镜操作</li>
+	 *   <li>执行水印操作</li>
+	 *   <li>输出到文件</li>
+	 * </ol>
+	 *
+	 * @param resource   图像资源，不能为null
+	 * @param outputFile 输出文件，不能为null
+	 * @param operations 图像操作配置，不能为null
+	 * @throws UnsupportedResourceException 不支持的资源异常，当输出格式不被支持时抛出
+	 * @throws ImageParsingException        图像解析异常，当图像解析失败时抛出
+	 * @throws ImageOperationException      图像操作异常，当图像操作失败时抛出
 	 * @since 2.1.0
 	 */
 	@Override
@@ -109,8 +159,11 @@ public class ImageIOOperationsTemplate implements ImageOperationsTemplate {
 
 	/**
 	 * 检查是否支持读取指定资源。
+	 * <p>
+	 * 支持读取ImageIOResource类型的资源，以及MIME类型在支持列表中的图像资源。
+	 * </p>
 	 *
-	 * @param resource 图像资源
+	 * @param resource 图像资源，不能为null
 	 * @return 如果支持读取返回true，否则返回false
 	 * @since 2.1.0
 	 */
@@ -127,8 +180,11 @@ public class ImageIOOperationsTemplate implements ImageOperationsTemplate {
 
 	/**
 	 * 检查是否支持写入指定格式。
+	 * <p>
+	 * 检查格式是否在ImageIO支持的写入格式列表中。
+	 * </p>
 	 *
-	 * @param format 图像格式
+	 * @param format 图像格式，不能为null
 	 * @return 如果支持写入返回true，否则返回false
 	 * @since 2.1.0
 	 */
@@ -168,33 +224,41 @@ public class ImageIOOperationsTemplate implements ImageOperationsTemplate {
 			}
 		}
 
-		ImageIOOperations imageOperations;
-		if (operations instanceof ImageIOOperations imageIOOperations) {
-			imageOperations = imageIOOperations;
-		} else {
-			imageOperations = new ImageIOOperations(operations);
-		}
-
-		ImageProcessor imageProcessor;
 		try {
-			imageProcessor = ImageProcessor.of(imageResource);
-		} catch (IOException e) {
-			throw new ImageParsingException("图像读取失败", e);
-		}
+			ImageIOOperations imageOperations;
+			if (operations instanceof ImageIOOperations imageIOOperations) {
+				imageOperations = imageIOOperations;
+			} else {
+				imageOperations = new ImageIOOperations(operations);
+			}
 
-		try {
-			// 执行变换操作
-			processTransform(imageProcessor, imageOperations);
+			ImageProcessor imageProcessor;
+			try {
+				imageProcessor = ImageProcessor.of(imageResource);
+			} catch (IOException e) {
+				throw new ImageParsingException("图像读取失败", e);
+			}
 
-			// 执行滤镜操作
-			processFilter(imageProcessor, imageOperations);
+			try {
+				// 执行变换操作
+				processTransform(imageProcessor, imageOperations);
 
-			// 执行水印操作
-			processWatermark(imageProcessor, imageOperations);
+				// 执行滤镜操作
+				processFilter(imageProcessor, imageOperations);
 
-			return imageProcessor;
-		} catch (ImagingOpException | RasterFormatException e) {
-			throw new ImageOperationException("图像处理失败", e);
+				// 执行水印操作
+				processWatermark(imageProcessor, imageOperations);
+
+				return imageProcessor;
+			} catch (ImagingOpException | RasterFormatException e) {
+				throw new ImageOperationException("图像处理失败", e);
+			}
+		} finally {
+			try {
+				imageResource.close();
+			} catch (IOException e) {
+				LOGGER.error("ImageIO 图像资源关闭失败", e);
+			}
 		}
 	}
 

@@ -32,10 +32,9 @@ import org.springframework.context.annotation.Import;
  * <p><strong>功能特性</strong></p>
  * <ul>
  *   <li>支持多种图像处理引擎：GraphicsMagick、OpenCV、ImageIO</li>
+ *   <li>支持图像分割功能（默认使用GraphicsMagick）</li>
  *   <li>支持图像缩放、裁剪、旋转、水印等常用操作</li>
- *   <li>支持多种图像格式：JPEG、PNG、GIF、BMP等</li>
  *   <li>提供统一的图像处理接口，简化使用</li>
- *   <li>支持自定义图像处理参数和质量设置</li>
  * </ul>
  *
  * <p><strong>支持的图像处理引擎</strong></p>
@@ -47,23 +46,25 @@ import org.springframework.context.annotation.Import;
  *
  * <p><strong>导入的配置类</strong></p>
  * <ul>
- *   <li>{@link GraphicsMagickConfiguration}：GraphicsMagick图像处理配置，当engine为GRAPHICS_MAGICK时生效</li>
- *   <li>{@link OpenCvConfiguration}：OpenCV图像处理配置，当engine为OPENCV时生效</li>
- *   <li>{@link ImageIOConfiguration}：ImageIO图像处理配置，当engine为IMAGEIO时生效（默认）</li>
+ *   <li>{@link GraphicsMagickConfiguration}：GraphicsMagick图像处理配置，当type为GRAPHICS_MAGICK时生效</li>
+ *   <li>{@link OpenCvConfiguration}：OpenCV图像处理配置，当type为OPENCV时生效</li>
+ *   <li>{@link ImageIOConfiguration}：ImageIO图像处理配置，当type为IMAGEIO时生效（默认）</li>
  * </ul>
  *
  * <p><strong>生效条件</strong></p>
  * <ul>
- *   <li>类路径中存在ImageSize类</li>
- *   <li>GraphicsMagick：配置{@code pangju.image.graphics-magick.path}且类型为{@code GRAPHICS_MAGICK}</li>
- *   <li>OpenCV：类路径存在ImageProcessor和opencv_core相关类且类型为{@code OPENCV}</li>
- *   <li>IMAGEIO：类路径存在ImageProcessor和ImageEditor且类型为{@code IMAGEIO}（默认）</li>
+ *   <li>类路径中存在{@link ImageSize}类</li>
+ *   <li>GraphicsMagick：配置{@code pangju.image.graphics-magick.path}且type为{@code GRAPHICS_MAGICK}</li>
+ *   <li>OpenCV：类路径存在{@link io.github.pangju666.commons.opencv.processor.ImageProcessor}和{@link org.bytedeco.opencv.global.opencv_core}相关类且type为{@code OPENCV}</li>
+ *   <li>IMAGEIO：类路径存在{@link io.github.pangju666.commons.image.processor.ImageProcessor}和{@link io.github.pangju666.commons.image.utils.ImageEditor}且type为{@code IMAGEIO}（默认）</li>
+ *   <li>图像分割：split-type为{@code GRAPHICS_MAGICK}时生效（默认）</li>
  * </ul>
  *
  * <p><strong>配置属性</strong></p>
  * <p>启用{@link ImageProperties}配置属性绑定，配置前缀为{@code pangju.image}。</p>
  * <ul>
- *   <li>{@code pangju.image.engine}：图像处理引擎类型（默认：IMAGEIO）</li>
+ *   <li>{@code pangju.image.type}：图像处理引擎类型（默认：IMAGEIO）</li>
+ *   <li>{@code pangju.image.split-type}：图像分割实现类型（默认：GRAPHICS_MAGICK）</li>
  *   <li>{@code pangju.image.graphics-magick}：GraphicsMagick配置</li>
  *   <li>{@code pangju.image.opencv}：OpenCV配置</li>
  *   <li>{@code pangju.image.imageio}：ImageIO配置</li>

@@ -8,12 +8,10 @@ import io.github.pangju666.commons.io.resource.IOResource
 import io.github.pangju666.commons.io.utils.FileUtils
 import io.github.pangju666.framework.boot.image.autoconfigure.ImageAutoConfiguration
 import io.github.pangju666.framework.boot.image.core.impl.GraphicsMagickOperationsTemplate
+import io.github.pangju666.framework.boot.image.enums.Direction
 import io.github.pangju666.framework.boot.image.enums.ResampleFilter
-import io.github.pangju666.framework.boot.image.enums.TileLayout
 import io.github.pangju666.framework.boot.image.io.resource.GraphicsMagickResource
 import io.github.pangju666.framework.boot.image.model.opeartions.ImageOperations
-import io.github.pangju666.framework.boot.image.model.tile.GridTileOptions
-import io.github.pangju666.framework.boot.image.utils.GraphicsMagickUtils
 import org.gm4java.engine.GMConnection
 import org.gm4java.engine.support.PooledGMService
 import org.springframework.beans.factory.annotation.Autowired
@@ -26,6 +24,7 @@ import spock.lang.Specification
 import javax.imageio.ImageIO
 import java.awt.*
 import java.awt.image.BufferedImage
+import java.util.function.ToIntFunction
 
 @ActiveProfiles("gm")
 @ContextConfiguration(classes = [ImageAutoConfiguration.class], loader = SpringBootContextLoader.class)
@@ -459,8 +458,7 @@ class GraphicsMagickOperationsTemplateSpec extends Specification {
 
 		and: "构建裁剪配置"
 		def operation = ImageOperations.graphicsMagick()
-			.watermarkText("测试水印")
-			.textWatermarkFontName("simhei")
+			.watermarkText("测试水印", "simhei")
 
 		when: "执行处理"
 		template.process(new IOResource(sourceFile), outputFile, operation)
@@ -526,9 +524,10 @@ class GraphicsMagickOperationsTemplateSpec extends Specification {
 			.rotate(RotateDirection.CLOCKWISE_90)
 			.flip(FlipDirection.VERTICAL)
 			.grayscale()
-			.watermarkImage(new IOResource(new ClassPathResource("images/watermark.png").getFile()))
 		def bufferedOperation = ImageOperations.graphicsMagick(genericOperation)
 			.resizeFilter(ResampleFilter.LANCZOS)
+			.watermarkImage(new GraphicsMagickResource(new ClassPathResource("images/watermark.png").getFile(),
+				gmService.getConnection()))
 			.sharpen(1.2)
 			.blur(2.0)
 			.dpi(200)
@@ -748,9 +747,8 @@ class GraphicsMagickOperationsTemplateSpec extends Specification {
 
 		and: "构建文字水印透明度配置"
 		def operation = ImageOperations.graphicsMagick()
-			.watermarkText("测试水印")
-			.textWatermarkFontName("simhei")
-			.textWatermarkOpacity(0.6f)
+			.watermarkText("测试水印", "simhei")
+			.watermarkTextOpacity(0.6f)
 
 		when: "执行处理"
 		template.process(new IOResource(sourceFile), outputFile, operation)
@@ -774,9 +772,8 @@ class GraphicsMagickOperationsTemplateSpec extends Specification {
 
 		and: "构建文字水印颜色配置"
 		def operation = ImageOperations.graphicsMagick()
-			.watermarkText("测试水印")
-			.textWatermarkFontName("simhei")
-			.textWatermarkColor(Color.RED)
+			.watermarkText("测试水印", "simhei")
+			.watermarkTextFillColor(Color.RED)
 
 		when: "执行处理"
 		template.process(new IOResource(sourceFile), outputFile, operation)
@@ -800,11 +797,10 @@ class GraphicsMagickOperationsTemplateSpec extends Specification {
 
 		and: "构建文字水印描边配置"
 		def operation = ImageOperations.graphicsMagick()
-			.watermarkText("测试水印")
-			.textWatermarkFontName("simhei")
-			.textWatermarkStroke(true)
-			.textWatermarkStrokeColor(Color.BLACK)
-			.textWatermarkStrokeWidth(2)
+			.watermarkText("测试水印", "simhei")
+			.watermarkTextStroke()
+			.watermarkTextStrokeColor(Color.BLACK)
+			.watermarkTextStrokeWidth(2)
 
 		when: "执行处理"
 		template.process(new IOResource(sourceFile), outputFile, operation)
@@ -887,8 +883,7 @@ class GraphicsMagickOperationsTemplateSpec extends Specification {
 			.grayscale()
 		def bufferedOperation = ImageOperations.graphicsMagick(genericOperation)
 			.resizeFilter(ResampleFilter.LANCZOS)
-			.watermarkText("测试水印")
-			.watermarkTextFont("simhei")
+			.watermarkText("测试水印", "simhei")
 			.watermarkTextFillColor(Color.RED)
 			.watermarkImageOpacity(0.7f)
 			.watermarkTextStroke()
@@ -1039,8 +1034,23 @@ class GraphicsMagickOperationsTemplateSpec extends Specification {
 	def "test2"() {
 		setup:
 		//File sourceFile = new ClassPathResource("images/" + "watermark.png").getFile()
-		File sourceFile = new File("E:\\Roaming\\test.png")
+		File sourceFile = new File("E:\\Roaming\\camera.jpg")
 		File outputFile = new File("E:\\Roaming", "output.png")
+
+		ToIntFunction<ImageSize> fontSizeStrategy = imageSize -> {
+			int shorter = Math.min(imageSize.getWidth(), imageSize.getHeight());
+			if (shorter < 600) {
+				return 32;
+			} else if (shorter >= 1920) {
+				double ratio = Math.min(1.0, (shorter - 1920.0) / (6000 - 1920.0));
+				return (int) Math.round(48 + ratio * (160 - 48));
+			} else {
+				double ratio = (shorter - 600.0) / (1920.0 - 600.0);
+				return (int) Math.round(32 + ratio * (48 - 32));
+			}
+		}
+
+		int fontSize = fontSizeStrategy.applyAsInt(new ImageSize(3016, 4032))
 
 		def genericOperation = ImageOperations.generic()
 		//.cropByCenter(350, 350)
@@ -1050,18 +1060,18 @@ class GraphicsMagickOperationsTemplateSpec extends Specification {
 		//.grayscale()
 		def operations = ImageOperations.graphicsMagick(genericOperation)
 		//.resizeFilter(ResampleFilter.LANCZOS)
-		//.watermarkText("测试水印")
+			.watermarkText("测试水印", new File("E:\\Roaming\\test.ttf"))
 		//.watermarkTextFont(new File("E:\\Roaming\\test.ttf"))
 		//.watermarkTextFillColor(Color.RED)
 		//.watermarkTextOpacity(0.7f)
 		//.watermarkTextStroke()
-		//.watermarkDirection(Direction.BOTTOM_RIGHT)
+			.watermarkDirection(Direction.BOTTOM)
 		//.watermarkTextMargin(20)
 		//.watermarkTextStrokeColor(Color.WHITE)
 		//.watermarkTextStrokeWidth(1)
-		//.watermarkTextFontSize(55)
+			.watermarkTextFontSize(fontSize)
 		//.watermarkImage(new GraphicsMagickResource(new ClassPathResource("images/" + "watermark.png").getFile(),gmService.getConnection()))
-			.threshold()
+		//.threshold()
 		//.brightness(120)
 		//.opacity(0.5f)
 		//.blur(2.0)
@@ -1077,12 +1087,12 @@ class GraphicsMagickOperationsTemplateSpec extends Specification {
 		template.process(new IOResource(sourceFile), outputFile, operations)
 	}
 
-	def "test"() {
+	/*def "test"() {
 		setup:
 		GridTileOptions options = new GridTileOptions(20, 20)
 		options.setLayout(TileLayout.XYZ)
 
 		GraphicsMagickUtils.splitByGrid(new File("E:\\Roaming\\camera.jpg"),
 			new File("E:\\Roaming\\tiles"), options, gmService.getConnection())
-	}
+	}*/
 }

@@ -24,8 +24,14 @@ import org.springframework.core.NestedRuntimeException;
  *
  * <p><strong>概述</strong></p>
  * <ul>
- *   <li>用于标识图像处理引擎的错误。</li>
- *   <li>适用于图像引擎不可用、进程通信错误、配置错误等场景。</li>
+ *   <li>用于标识图像处理引擎本身的错误，而非图像操作或解析错误。</li>
+ *   <li>主要表示引擎层面的故障，如进程通信错误。</li>
+ *   <li>与{@link ImageOperationException}（图像操作错误）和{@link ImageParsingException}（图像解析错误）区分开。</li>
+ * </ul>
+ *
+ * <p><strong>常见场景</strong></p>
+ * <ul>
+ *   <li>图像引擎进程启动/通信失败</li>
  * </ul>
  *
  * <p><strong>异常类型</strong></p>
@@ -35,6 +41,8 @@ import org.springframework.core.NestedRuntimeException;
  *
  * @author pangju666
  * @see org.springframework.core.NestedRuntimeException
+ * @see ImageOperationException
+ * @see ImageParsingException
  * @since 2.1.0
  */
 public class ImageEngineException extends NestedRuntimeException {

@@ -27,6 +27,7 @@ import io.github.pangju666.framework.boot.image.io.resource.GraphicsMagickResour
 import io.github.pangju666.framework.boot.image.lang.ImageConstants;
 import io.github.pangju666.framework.boot.image.model.opeartions.GraphicsMagickOperations;
 import io.github.pangju666.framework.boot.image.model.opeartions.ImageOperations;
+import io.github.pangju666.framework.boot.image.utils.GraphicsMagickUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.gm4java.engine.GMConnection;
 import org.gm4java.engine.GMException;
@@ -51,7 +52,27 @@ import java.util.UUID;
  * 使用连接池管理GraphicsMagick进程，提高性能和资源利用率。
  * </p>
  *
+ * <p><strong>功能特性</strong></p>
+ * <ul>
+ *   <li>支持多种图像变换：自动方向、裁剪、缩放、旋转、翻转</li>
+ *   <li>支持丰富的滤镜效果：模糊、高斯模糊、锐化、反锐化掩模</li>
+ *   <li>支持水印功能：图像水印和文字水印</li>
+ *   <li>支持输出配置：DPI设置、去除元数据、压缩质量和压缩方法</li>
+ * </ul>
+ *
+ * <p><strong>使用注意事项</strong></p>
+ * <ul>
+ *   <li>需要安装GraphicsMagick软件</li>
+ *   <li>使用{@link GraphicsMagickResource}作为图像资源类型</li>
+ *   <li>通过临时文件实现输出流输出，处理完成后自动清理临时文件</li>
+ *   <li>如果需要图像水印且需要其他变换操作，会先生成中间文件再执行composite命令</li>
+ *   <li>GraphicsMagick输入/输出文件路径不支持中文或非ASCII字符，需要使用纯英文路径，否则可能导致命令执行失败</li>
+ * </ul>
+ *
  * @see PooledGMService
+ * @see GraphicsMagickResource
+ * @see GraphicsMagickOperations
+ * @see GraphicsMagickUtils
  * @since 2.1.0
  */
 public class GraphicsMagickOperationsTemplate implements ImageOperationsTemplate {
@@ -67,6 +88,7 @@ public class GraphicsMagickOperationsTemplate implements ImageOperationsTemplate
 	 * @since 2.1.0
 	 */
 	private static final Logger LOGGER = LoggerFactory.getLogger(GraphicsMagickOperationsTemplate.class);
+
 	/**
 	 * GraphicsMagick连接池服务。
 	 *
@@ -76,8 +98,11 @@ public class GraphicsMagickOperationsTemplate implements ImageOperationsTemplate
 
 	/**
 	 * 构造函数。
+	 * <p>
+	 * 使用GraphicsMagick连接池服务初始化图像操作模板。
+	 * </p>
 	 *
-	 * @param pooledGMService GraphicsMagick连接池服务
+	 * @param pooledGMService GraphicsMagick连接池服务，不能为null
 	 * @since 2.1.0
 	 */
 	public GraphicsMagickOperationsTemplate(PooledGMService pooledGMService) {
@@ -90,14 +115,22 @@ public class GraphicsMagickOperationsTemplate implements ImageOperationsTemplate
 	 * 通过临时文件实现输出流输出，处理完成后自动清理临时文件。
 	 * </p>
 	 *
-	 * @param resource     图像资源
-	 * @param outputStream 输出流
-	 * @param outputFormat 输出格式
-	 * @param operations   图像操作配置
-	 * @throws UnsupportedResourceException 不支持的资源异常
-	 * @throws ImageParsingException        图像解析异常
-	 * @throws ImageOperationException      图像操作异常
-	 * @throws ImageEngineException         图像引擎异常
+	 * <p><strong>处理步骤</strong></p>
+	 * <ol>
+	 *   <li>创建临时文件用于存储处理结果</li>
+	 *   <li>调用process方法处理图像资源到临时文件</li>
+	 *   <li>将临时文件内容传输到输出流</li>
+	 *   <li>清理临时文件</li>
+	 * </ol>
+	 *
+	 * @param resource     图像资源，不能为null
+	 * @param outputStream 输出流，不能为null
+	 * @param outputFormat 输出格式，不能为空
+	 * @param operations   图像操作配置，不能为null
+	 * @throws UnsupportedResourceException 不支持的资源异常，当资源类型不被支持时抛出
+	 * @throws ImageParsingException        图像解析异常，当图像解析失败时抛出
+	 * @throws ImageOperationException      图像操作异常，当图像操作失败时抛出
+	 * @throws ImageEngineException         图像引擎异常，当GraphicsMagick执行失败时抛出
 	 * @since 2.1.0
 	 */
 	@Override
@@ -119,9 +152,7 @@ public class GraphicsMagickOperationsTemplate implements ImageOperationsTemplate
 		} catch (IOException e) {
 			throw new ImageOperationException("图像输出失败", e);
 		} finally {
-			try {
-				FileUtils.forceDeleteIfExist(tmpOutputFile);
-			} catch (IOException e) {
+			if (!FileUtils.deleteQuietly(tmpOutputFile)) {
 				LOGGER.error("临时输出文件删除失败，路径：{}", tmpOutputFile.getAbsolutePath());
 			}
 		}
@@ -134,13 +165,28 @@ public class GraphicsMagickOperationsTemplate implements ImageOperationsTemplate
 	 * 如果需要图像水印且需要其他变换操作，会先生成中间文件再执行composite命令。
 	 * </p>
 	 *
-	 * @param resource   图像资源
-	 * @param outputFile 输出文件
-	 * @param operations 图像操作配置
-	 * @throws UnsupportedResourceException 不支持的资源异常
-	 * @throws ImageParsingException        图像解析异常
-	 * @throws ImageOperationException      图像操作异常
-	 * @throws ImageEngineException         图像引擎异常
+	 * <p><strong>处理步骤</strong></p>
+	 * <ol>
+	 *   <li>检查输出格式是否支持</li>
+	 *   <li>获取GraphicsMagick连接</li>
+	 *   <li>将资源转换为{@link GraphicsMagickResource}</li>
+	 *   <li>判断是否需要图像水印</li>
+	 *   <li>如果需要图像水印且需要其他变换操作：
+	 *     <ul>
+	 *       <li>先生成中间文件执行变换操作</li>
+	 *       <li>再执行composite命令添加水印</li>
+	 *     </ul>
+	 *   <li>如果只需要图像水印：直接执行composite命令</li>
+	 *   <li>如果不需要图像水印：直接执行convert命令</li>
+	 * </ol>
+	 *
+	 * @param resource   图像资源，不能为null
+	 * @param outputFile 输出文件，不能为null
+	 * @param operations 图像操作配置，不能为null
+	 * @throws UnsupportedResourceException 不支持的资源异常，当资源类型不被支持时抛出
+	 * @throws ImageParsingException        图像解析异常，当图像解析失败时抛出
+	 * @throws ImageOperationException      图像操作异常，当图像操作失败时抛出
+	 * @throws ImageEngineException         图像引擎异常，当GraphicsMagick执行失败时抛出
 	 * @since 2.1.0
 	 */
 	@Override
@@ -163,76 +209,82 @@ public class GraphicsMagickOperationsTemplate implements ImageOperationsTemplate
 			throw new ImageEngineException("获取 GraphicsMagick 进程失败", e);
 		}
 
-		GraphicsMagickResource imageResource;
-		if (resource instanceof GraphicsMagickResource graphicsMagickResource) {
-			imageResource = graphicsMagickResource;
-		} else {
-			try {
-				imageResource = new GraphicsMagickResource(resource, connection);
-			} catch (GMServiceException e) {
-				throw new ImageEngineException("与 GraphicsMagick 进程通信时出现错误", e);
-			} catch (IOException e) {
-				throw new ImageParsingException("图像读取失败", e);
+		GraphicsMagickResource imageResource = null;
+		try {
+			imageResource = GraphicsMagickUtils.toGraphicsMagickResource(resource, connection);
+
+			GraphicsMagickOperations imageOperations;
+			if (operations instanceof GraphicsMagickOperations graphicsMagickOperations) {
+				imageOperations = graphicsMagickOperations;
+			} else {
+				imageOperations = new GraphicsMagickOperations(operations);
 			}
-		}
 
-		GraphicsMagickOperations imageOperations;
-		if (operations instanceof GraphicsMagickOperations graphicsMagickOperations) {
-			imageOperations = graphicsMagickOperations;
-		} else {
-			imageOperations = new GraphicsMagickOperations(operations);
-		}
-
-		// 如果不需要添加图片水印，则直接执行convert命令
-		if (Objects.isNull(imageOperations.getWatermarkImage())) {
-			try {
-				GMOperation convertGMOperation = imageOperations.toConvertGMOperation(imageResource, outputFile);
-				execute(connection, convertGMOperation);
-			} catch (IOException e) {
-				throw new ImageParsingException("图像读取失败", e);
-			}
-		} else {
-			// 判断是否需要先执行convert命令输出中间文件
-			if (imageOperations.isConvertRequired()) {
-				File tmpOutputFile = new File(FileUtils.getTempDirectory(), TMP_FILE_PREFIX +
-					UUID.randomUUID() + FilenameUtils.EXTENSION_SEPARATOR +
-					FilenameUtils.getExtension(outputFile.getName()));
-
+			// 如果不需要添加图片水印，则直接执行convert命令
+			if (Objects.isNull(imageOperations.getWatermarkImage())) {
 				try {
-					GMOperation convertGMOperation = imageOperations.toConvertGMOperation(imageResource, tmpOutputFile,
-						true);
-					execute(connection, convertGMOperation, false);
-
-					GMOperation compositeGMOperation = imageOperations.toCompositeGMOperation(
-						new GraphicsMagickResource(tmpOutputFile, connection), outputFile);
-					execute(connection, compositeGMOperation);
-				} catch (GMServiceException e) {
-					throw new ImageEngineException("与 GraphicsMagick 进程通信时出现错误", e);
+					GMOperation convertGMOperation = imageOperations.toConvertGMOperation(imageResource, outputFile);
+					execute(connection, convertGMOperation);
 				} catch (IOException e) {
 					throw new ImageParsingException("图像读取失败", e);
-				} finally {
-					try {
-						FileUtils.forceDeleteIfExist(tmpOutputFile);
-					} catch (IOException e) {
-						LOGGER.error("临时输出文件删除失败，路径：{}", tmpOutputFile.getAbsolutePath());
-					}
 				}
 			} else {
-				try {
-					GMOperation compositeGMOperation = imageOperations.toCompositeGMOperation(imageResource, outputFile);
-					execute(connection, compositeGMOperation);
-				} catch (IOException e) {
-					throw new ImageParsingException("图像读取失败", e);
+				// 判断是否需要先执行convert命令输出中间文件
+				if (imageOperations.isConvertRequired()) {
+					File tmpOutputFile = new File(FileUtils.getTempDirectory(), TMP_FILE_PREFIX +
+						UUID.randomUUID() + FilenameUtils.EXTENSION_SEPARATOR +
+						FilenameUtils.getExtension(outputFile.getName()));
+
+					try {
+						GMOperation convertGMOperation = imageOperations.toConvertGMOperation(imageResource, tmpOutputFile,
+							true);
+						execute(connection, convertGMOperation);
+
+						GMOperation compositeGMOperation = imageOperations.toCompositeGMOperation(
+							new GraphicsMagickResource(tmpOutputFile, connection), outputFile);
+						execute(connection, compositeGMOperation);
+					} catch (GMServiceException e) {
+						throw new ImageEngineException("与 GraphicsMagick 进程通信时出现错误", e);
+					} catch (IOException e) {
+						throw new ImageParsingException("图像读取失败", e);
+					} finally {
+						if (!FileUtils.deleteQuietly(tmpOutputFile)) {
+							LOGGER.error("临时输出文件删除失败，路径：{}", tmpOutputFile.getAbsolutePath());
+						}
+					}
+				} else {
+					try {
+						GMOperation compositeGMOperation = imageOperations.toCompositeGMOperation(imageResource, outputFile);
+						execute(connection, compositeGMOperation);
+					} catch (IOException e) {
+						throw new ImageParsingException("图像读取失败", e);
+					}
 				}
 			}
-		}
+		} finally {
+			try {
+				connection.close();
+			} catch (GMServiceException e) {
+				LOGGER.error("GraphicsMagick 进程关闭失败", e);
+			}
 
+			try {
+				if (Objects.nonNull(imageResource)) {
+					imageResource.close();
+				}
+			} catch (IOException e) {
+				LOGGER.error("GraphicsMagick 图像资源关闭失败", e);
+			}
+		}
 	}
 
 	/**
 	 * 检查是否支持读取指定资源。
+	 * <p>
+	 * 支持读取GraphicsMagickResource类型的资源，以及可以转换为GraphicsMagickResource的资源。
+	 * </p>
 	 *
-	 * @param resource 图像资源
+	 * @param resource 图像资源，不能为null
 	 * @return 如果支持读取返回true，否则返回false
 	 * @since 2.1.0
 	 */
@@ -254,8 +306,11 @@ public class GraphicsMagickOperationsTemplate implements ImageOperationsTemplate
 
 	/**
 	 * 检查是否支持写入指定格式。
+	 * <p>
+	 * 检查格式是否在GraphicsMagick支持的写入格式列表中。
+	 * </p>
 	 *
-	 * @param format 图像格式
+	 * @param format 图像格式，不能为null
 	 * @return 如果支持写入返回true，否则返回false
 	 * @since 2.1.0
 	 */
@@ -269,53 +324,34 @@ public class GraphicsMagickOperationsTemplate implements ImageOperationsTemplate
 	/**
 	 * 执行GraphicsMagick命令。
 	 * <p>
-	 * 执行完成后自动关闭连接。
+	 * 通过GMConnection执行GraphicsMagick命令，并记录执行日志。
 	 * </p>
 	 *
-	 * @param connection GraphicsMagick连接
-	 * @param operation  GMOperation对象
-	 * @return 执行结果
-	 * @throws IOException             IO异常
-	 * @throws ImageEngineException    图像引擎异常
-	 * @throws ImageOperationException 图像操作异常
-	 * @since 2.1.0
-	 */
-	public String execute(GMConnection connection, GMOperation operation) throws IOException {
-		return execute(connection, operation, true);
-	}
-
-	/**
-	 * 执行GraphicsMagick命令。
+	 * <p><strong>处理步骤</strong></p>
+	 * <ol>
+	 *   <li>验证参数有效性</li>
+	 *   <li>执行GraphicsMagick命令</li>
+	 *   <li>记录执行结果日志</li>
+	 * </ol>
 	 *
-	 * @param connection GraphicsMagick连接
-	 * @param operation  GMOperation对象
-	 * @param autoClose  是否自动关闭连接
-	 * @return 执行结果
-	 * @throws IOException             IO异常
-	 * @throws ImageEngineException    图像引擎异常
-	 * @throws ImageOperationException 图像操作异常
+	 * @param connection GraphicsMagick连接，不能为null
+	 * @param operation  GMOperation对象，不能为null
+	 * @throws IOException             IO异常，当文件操作失败时抛出
+	 * @throws ImageEngineException    图像引擎异常，当进程通信失败时抛出
+	 * @throws ImageOperationException 图像操作异常，当命令执行失败时抛出
 	 * @since 2.1.0
 	 */
-	public String execute(GMConnection connection, GMOperation operation, boolean autoClose) throws IOException {
+	protected void execute(GMConnection connection, GMOperation operation) throws IOException {
 		Assert.notNull(operation, "operation 不可为 null");
 		Assert.notNull(connection, "connection 不可为 null");
 
 		try {
 			String result = connection.execute(operation.toString());
 			LOGGER.info("GraphicsMagick 进程执行成功，命令：{}，结果：{}", operation, result);
-			return result;
 		} catch (GMServiceException e) {
 			throw new ImageEngineException("与 GraphicsMagick 进程通信时出现错误", e);
 		} catch (GMException e) {
 			throw new ImageOperationException("GraphicsMagick 命令: " + operation + " 执行失败", e);
-		} finally {
-			if (autoClose) {
-				try {
-					connection.close();
-				} catch (GMServiceException e) {
-					LOGGER.error("GM 进程关闭时出现错误", e);
-				}
-			}
 		}
 	}
 }

@@ -71,12 +71,12 @@ class ImageIOConfiguration {
 	 *
 	 * <p>条件：当无其它 {@link ImageOperationsTemplate} Bean，并满足类与属性条件时注入。</p>
 	 *
-	 * @return {@link ImageIOOperationsTemplate} 实例
+	 * @return {@link ImageOperationsTemplate} 实例
 	 * @since 2.1.0
 	 */
 	@ConditionalOnMissingBean(ImageOperationsTemplate.class)
 	@Bean
-	public ImageIOOperationsTemplate imageIOOperationsTemplate() {
+	public ImageOperationsTemplate imageOperationsTemplate() {
 		return new ImageIOOperationsTemplate();
 	}
 }

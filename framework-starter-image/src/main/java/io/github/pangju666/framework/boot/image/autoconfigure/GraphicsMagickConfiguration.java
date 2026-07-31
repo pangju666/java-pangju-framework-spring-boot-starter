@@ -17,9 +17,13 @@
 package io.github.pangju666.framework.boot.image.autoconfigure;
 
 import io.github.pangju666.framework.boot.image.core.ImageOperationsTemplate;
+import io.github.pangju666.framework.boot.image.core.ImageSplitTemplate;
 import io.github.pangju666.framework.boot.image.core.ImageTemplate;
 import io.github.pangju666.framework.boot.image.core.impl.GMImageTemplate;
 import io.github.pangju666.framework.boot.image.core.impl.GraphicsMagickOperationsTemplate;
+import io.github.pangju666.framework.boot.image.core.impl.GraphicsMagickSplitTemplate;
+import org.apache.commons.exec.CommandLine;
+import org.apache.commons.exec.DefaultExecutor;
 import org.gm4java.engine.support.GMConnectionPoolConfig;
 import org.gm4java.engine.support.PooledGMService;
 import org.gm4java.engine.support.WhenExhaustedAction;
@@ -34,21 +38,24 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.util.StringUtils;
 
+import java.io.IOException;
+
 /**
  * <a href="http://www.graphicsmagick.org/index.html">GraphicsMagick</a> 自动配置。
  *
  * <p><strong>概述</strong></p>
  * <ul>
  *   <li>在检测到 GM 相关类存在时，按条件提供 GM 连接池与模板实现。</li>
- *   <li>当存在配置项 {@code pangju.image.graphics-magick.path} 时，创建 {@link PooledGMService}。</li>
+ *   <li>创建 {@link PooledGMService} GM 连接池。</li>
  *   <li>当 {@code pangju.image.type=GRAPHICS_MAGICK} 且已存在连接池时，创建 {@link GMImageTemplate}。</li>
  *   <li>当 {@code pangju.image.type=GRAPHICS_MAGICK} 且已存在连接池时，创建 {@link GraphicsMagickOperationsTemplate}。</li>
+ *   <li>当 {@code pangju.image.split-type=GRAPHICS_MAGICK} 且已存在连接池时，创建 {@link ImageSplitTemplate}。当配置项未设置时，默认使用 GraphicsMagick 作为分割实现。</li>
  * </ul>
  *
  * <p><strong>条件说明</strong></p>
  * <ul>
  *   <li>类条件：依赖 {@link PooledGMService} 与 {@link GMOperation}。</li>
- *   <li>属性条件：{@code pangju.image.graphics-magick.path} 与 {@code pangju.image.type}。</li>
+ *   <li>属性条件：{@code pangju.image.graphics-magick.path}、{@code pangju.image.type} 与 {@code pangju.image.split-type}。</li>
  *   <li>Bean 条件：避免重复定义，使用缺失 Bean 条件与依赖 Bean 条件。</li>
  * </ul>
  *
@@ -67,12 +74,19 @@ class GraphicsMagickConfiguration {
 
 	/**
 	 * 创建 GraphicsMagick 连接池服务。
-	 * <p>当 {@code properties.graphics-magick.path} 为空白时不创建 Bean，
-	 * 配合 {@link ConditionalOnMissingBean}
-	 * 保持按需注册）。</p>
+	 *
+	 * <p>在创建前验证GraphicsMagick可执行文件路径是否已配置且有效。</p>
+	 *
+	 * <p>
+	 * 验证步骤：
+	 * <ol>
+	 *   <li>检查路径是否已配置，未配置则记录警告日志并返回null</li>
+	 *   <li>执行GraphicsMagick命令验证路径有效性，执行失败则记录警告日志并返回null</li>
+	 * </ol>
+	 * </p>
 	 *
 	 * @param properties 自动配置属性
-	 * @return GM 连接池服务；当 GM 路径为空白时返回 {@code null}
+	 * @return GM 连接池服务；当 GM 路径为空白或无效时返回 {@code null}
 	 * @since 1.0.0
 	 */
 	@ConditionalOnMissingBean(PooledGMService.class)
@@ -80,7 +94,20 @@ class GraphicsMagickConfiguration {
 	public PooledGMService pooledGMService(ImageProperties properties) {
 		String gmPath = properties.getGraphicsMagick().getPath();
 		if (!StringUtils.hasText(gmPath)) {
-			LOGGER.warn("未配置 GraphicsMagick 进程可执行路径");
+			LOGGER.warn("未配置 GraphicsMagick 可执行文件路径");
+			// 未配置有效 GM 路径，跳过创建
+			return null;
+		}
+
+		try {
+			CommandLine cmdLine = new CommandLine(gmPath);
+			cmdLine.addArgument("--version");
+
+			DefaultExecutor executor = DefaultExecutor.builder().get();
+			executor.setExitValue(0);
+			executor.execute(cmdLine);
+		} catch (IOException e) {
+			LOGGER.warn("路径：{} 不是有效的 GraphicsMagick 可执行文件路径", gmPath);
 			// 未配置有效 GM 路径，跳过创建
 			return null;
 		}
@@ -134,14 +161,33 @@ class GraphicsMagickConfiguration {
 	 * <p>条件：当类型为 {@code GRAPHICS_MAGICK}、已存在连接池且未定义其它操作模板实现时注入。</p>
 	 *
 	 * @param pooledGMService GM 连接池服务
-	 * @return GraphicsMagick 图像操作模板
+	 * @return {@link ImageOperationsTemplate} 实例
 	 * @since 2.1.0
 	 */
 	@ConditionalOnMissingBean(ImageOperationsTemplate.class)
 	@ConditionalOnBean(PooledGMService.class)
 	@ConditionalOnProperty(prefix = "pangju.image", name = "type", havingValue = "GRAPHICS_MAGICK")
 	@Bean
-	public GraphicsMagickOperationsTemplate graphicsMagickOperationsTemplate(PooledGMService pooledGMService) {
+	public ImageOperationsTemplate imageOperationsTemplate(PooledGMService pooledGMService) {
 		return new GraphicsMagickOperationsTemplate(pooledGMService);
+	}
+
+	/**
+	 * 创建基于 GraphicsMagick 的图像分割模板实现。
+	 *
+	 * <p>条件：当分割类型为 {@code GRAPHICS_MAGICK}、已存在连接池且未定义其它分割模板实现时注入。</p>
+	 *
+	 * <p>当配置项 {@code pangju.image.split-type} 未设置时，默认使用 GraphicsMagick 作为分割实现。</p>
+	 *
+	 * @param pooledGMService GM 连接池服务
+	 * @return {@link ImageSplitTemplate} 实例
+	 * @since 2.1.0
+	 */
+	@ConditionalOnMissingBean(ImageSplitTemplate.class)
+	@ConditionalOnBean(PooledGMService.class)
+	@ConditionalOnProperty(prefix = "pangju.image", name = "split-type", havingValue = "GRAPHICS_MAGICK", matchIfMissing = true)
+	@Bean
+	public ImageSplitTemplate imageSplitTemplate(PooledGMService pooledGMService) {
+		return new GraphicsMagickSplitTemplate(pooledGMService);
 	}
 }
