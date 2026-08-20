@@ -26,6 +26,9 @@
 - feat (image): 废弃旧的ImageFile，改为使用IOResource及其子类
 - feat (image): 新增ImageEngineException表示图像引擎错误，如：GraphicsMagick进程通讯错误
 - feat (image): 新增Direction枚举表示方位、ImageCompressionType表示图像压缩类型
-- perf (image): 废弃旧的ImageTemplate及其实现，新增ImageOperationsTemplate及其实现
+- perf (image): 废弃旧的ImageTemplate接口及其实现，新增ImageOperationsTemplate及其实现
+- feat (image): 新增图像切片配置TileOptions及其子类
+- feat (image): 新增ImageSplitTemplate接口及其实现，提供图像切片功能
+- perf (image): PooledGMService Bean 创建方法增加使用`Apache Commons Exec`进行可执行文件路径有效性检测
 - feat (compress): 新增compress模块，提供归档/加密归档/压缩功能
 - feat (ocr): 新增ocr模块，提供图像ocr功能
