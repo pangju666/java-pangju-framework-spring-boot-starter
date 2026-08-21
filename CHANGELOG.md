@@ -1,12 +1,5 @@
 # CHANGELOG
 
-## [2.0.1] 2026.3.26
-
-- build (image): 增加tika-parser-image-module依赖
-- perf (data-mongodb): 修正javadoc并优化代码
-- perf (web-limit): 去除无用依赖
-- perf (web-signature): 去除无用依赖并修正模块名称
-
 ## [2.1.0] 2026.6.7
 
 - chore: 升级 spring-boot-starter-parent 为 4.1.0
@@ -32,3 +25,10 @@
 - perf (image): PooledGMService Bean 创建方法增加使用`Apache Commons Exec`进行可执行文件路径有效性检测
 - feat (compress): 新增compress模块，提供归档/加密归档/压缩功能
 - feat (ocr): 新增ocr模块，提供图像ocr功能
+
+## [2.0.1] 2026.3.26
+
+- build (image): 增加tika-parser-image-module依赖
+- perf (data-mongodb): 修正javadoc并优化代码
+- perf (web-limit): 去除无用依赖
+- perf (web-signature): 去除无用依赖并修正模块名称
