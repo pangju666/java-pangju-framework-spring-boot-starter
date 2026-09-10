@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>4.1.0</version>
+		<version>4.1.1</version>
 		<relativePath/>
 	</parent>
 	<groupId>io.github.pangju666.framework.boot</groupId>
@@ -40,7 +40,7 @@
 
 	<properties>
 		<framework.version>2.1.0</framework.version>
-		<spring-boot.version>4.1.0</spring-boot.version>
+		<spring-boot.version>4.1.1</spring-boot.version>
 		<javacpp.version>1.5.14</javacpp.version>
 		<openblas.version>0.3.34</openblas.version>
 		<opencv.version>4.14.0</opencv.version>
@@ -50,7 +50,7 @@
 		<lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
 		<im4java.version>1.2.0</im4java.version>
 		<gm4java.version>1.1.1</gm4java.version>
-		<central-publishing-maven-plugin.version>0.10.0</central-publishing-maven-plugin.version>
+		<central-publishing-maven-plugin.version>0.11.0</central-publishing-maven-plugin.version>
 		<gmavenplus-plugin.version>5.1.0</gmavenplus-plugin.version>
 		<smart-doc-plugin.version>3.1.2</smart-doc-plugin.version>
 		<gpg-plugin.version>3.2.8</gpg-plugin.version>
